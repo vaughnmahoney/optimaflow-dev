@@ -20,8 +20,9 @@ const Admin = () => {
     const technician: Technician = {
       id: Date.now().toString(),
       ...newTechnician,
-      supervisorId: "mock-supervisor-id",
-      createdAt: new Date(),
+      supervisor_id: "mock-supervisor-id",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
     setTechnicians([...technicians, technician]);

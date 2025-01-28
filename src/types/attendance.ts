@@ -13,8 +13,8 @@ export interface Technician {
   email: string;
   phone: string | null;
   supervisor_id: string;
-  created_at: string;
-  updated_at: string;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 export interface AttendanceRecord {
@@ -24,8 +24,8 @@ export interface AttendanceRecord {
   date: string;
   status: "present" | "absent" | "excused";
   note?: string | null;
-  submitted_at: string;
-  updated_at: string;
+  submitted_at: string | null;
+  updated_at: string | null;
 }
 
 export interface AttendanceStats {

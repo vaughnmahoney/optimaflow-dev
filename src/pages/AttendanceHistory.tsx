@@ -1,14 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Layout } from "@/components/Layout";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Folder, ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { Folder } from "lucide-react";
 import type { DailyAttendanceRecord, Technician } from "@/types/attendance";
 import { groupAttendanceRecords } from "@/utils/attendanceUtils";
 
@@ -18,44 +17,48 @@ const mockTechnicians: Technician[] = [
     name: "John Doe",
     email: "john@example.com",
     phone: "123-456-7890",
-    supervisorId: "supervisor1",
-    createdAt: new Date(),
+    supervisor_id: "supervisor1",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
   {
     id: "2",
     name: "Jane Smith",
     email: "jane@example.com",
     phone: "123-456-7891",
-    supervisorId: "supervisor1",
-    createdAt: new Date(),
+    supervisor_id: "supervisor1",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
 ];
 
 const mockAttendanceHistory: DailyAttendanceRecord[] = [
   {
     id: "1",
-    date: new Date(),
+    date: new Date().toISOString(),
     records: [
       {
         id: "1",
-        technicianId: "1",
-        supervisorId: "supervisor1",
-        date: new Date(),
+        technician_id: "1",
+        supervisor_id: "supervisor1",
+        date: new Date().toISOString(),
         status: "present",
-        submittedAt: new Date(),
+        submitted_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       },
       {
         id: "2",
-        technicianId: "2",
-        supervisorId: "supervisor1",
-        date: new Date(),
+        technician_id: "2",
+        supervisor_id: "supervisor1",
+        date: new Date().toISOString(),
         status: "absent",
         note: "Called in sick",
-        submittedAt: new Date(),
+        submitted_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       },
     ],
     submittedBy: "supervisor1",
-    submittedAt: new Date(),
+    submittedAt: new Date().toISOString(),
     stats: {
       present: 1,
       absent: 1,
@@ -68,9 +71,9 @@ const mockAttendanceHistory: DailyAttendanceRecord[] = [
 const AttendanceHistory = () => {
   const groupedRecords = groupAttendanceRecords(mockAttendanceHistory);
 
-  const getTechnicianName = (technicianId: string) => {
+  const getTechnicianName = (technician_id: string) => {
     return (
-      mockTechnicians.find((tech) => tech.id === technicianId)?.name ||
+      mockTechnicians.find((tech) => tech.id === technician_id)?.name ||
       "Unknown Technician"
     );
   };
@@ -137,8 +140,8 @@ const AttendanceHistory = () => {
                                         <Folder className="h-4 w-4 text-primary" />
                                         <span>
                                           Week {weekGroup.weekNumber} (
-                                          {format(weekGroup.startDate, "MMM d")} -{" "}
-                                          {format(weekGroup.endDate, "MMM d")})
+                                          {format(parseISO(weekGroup.startDate), "MMM d")} -{" "}
+                                          {format(parseISO(weekGroup.endDate), "MMM d")})
                                         </span>
                                       </div>
                                     </AccordionTrigger>
@@ -148,7 +151,7 @@ const AttendanceHistory = () => {
                                           <Card key={record.id}>
                                             <CardHeader className="pb-3">
                                               <CardTitle className="text-lg">
-                                                {format(record.date, "MMMM d, yyyy")}
+                                                {format(parseISO(record.date), "MMMM d, yyyy")}
                                               </CardTitle>
                                             </CardHeader>
                                             <CardContent>
@@ -179,7 +182,7 @@ const AttendanceHistory = () => {
                                                     className="flex justify-between items-center p-2 bg-gray-50 rounded"
                                                   >
                                                     <span>
-                                                      {getTechnicianName(attendance.technicianId)}
+                                                      {getTechnicianName(attendance.technician_id)}
                                                     </span>
                                                     <span
                                                       className={`px-2 py-1 rounded text-sm ${

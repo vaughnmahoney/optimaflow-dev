@@ -1,10 +1,10 @@
 import { DailyAttendanceRecord } from "@/types/attendance";
-import { format, getWeek, startOfWeek, endOfWeek } from "date-fns";
+import { format, getWeek, startOfWeek, endOfWeek, parseISO } from "date-fns";
 
 interface WeekGroup {
   weekNumber: number;
-  startDate: Date;
-  endDate: Date;
+  startDate: string;
+  endDate: string;
   records: DailyAttendanceRecord[];
 }
 
@@ -19,14 +19,17 @@ interface YearGroup {
 }
 
 export const groupAttendanceRecords = (records: DailyAttendanceRecord[]): YearGroup[] => {
-  const sortedRecords = [...records].sort((a, b) => b.date.getTime() - a.date.getTime());
+  const sortedRecords = [...records].sort((a, b) => 
+    parseISO(b.date).getTime() - parseISO(a.date).getTime()
+  );
   
   const yearGroups = new Map<string, Map<string, Map<number, DailyAttendanceRecord[]>>>();
 
   sortedRecords.forEach(record => {
-    const year = format(record.date, "yyyy");
-    const month = format(record.date, "MMMM");
-    const weekNumber = getWeek(record.date);
+    const date = parseISO(record.date);
+    const year = format(date, "yyyy");
+    const month = format(date, "MMMM");
+    const weekNumber = getWeek(date);
 
     if (!yearGroups.has(year)) {
       yearGroups.set(year, new Map());
@@ -48,12 +51,15 @@ export const groupAttendanceRecords = (records: DailyAttendanceRecord[]): YearGr
     year,
     months: Array.from(months.entries()).map(([month, weeks]) => ({
       month,
-      weeks: Array.from(weeks.entries()).map(([weekNumber, records]) => ({
-        weekNumber,
-        startDate: startOfWeek(records[0].date),
-        endDate: endOfWeek(records[0].date),
-        records,
-      })),
+      weeks: Array.from(weeks.entries()).map(([weekNumber, records]) => {
+        const firstDate = parseISO(records[0].date);
+        return {
+          weekNumber,
+          startDate: startOfWeek(firstDate).toISOString(),
+          endDate: endOfWeek(firstDate).toISOString(),
+          records,
+        };
+      }),
     })),
   }));
 };
