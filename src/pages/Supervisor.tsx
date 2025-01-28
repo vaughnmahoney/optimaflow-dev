@@ -135,6 +135,24 @@ const Supervisor = () => {
     submitAttendanceMutation.mutate([newRecord]);
   };
 
+  // Calculate attendance stats
+  const calculateStats = (records: AttendanceRecord[] = []) => {
+    const stats = {
+      present: 0,
+      absent: 0,
+      excused: 0,
+      total: records.length
+    };
+
+    records.forEach(record => {
+      if (record.status === 'present') stats.present++;
+      else if (record.status === 'absent') stats.absent++;
+      else if (record.status === 'excused') stats.excused++;
+    });
+
+    return stats;
+  };
+
   // Set up real-time subscription
   useEffect(() => {
     const channel = supabase
@@ -188,7 +206,7 @@ const Supervisor = () => {
           isSubmitting={submitAttendanceMutation.isPending}
         />
 
-        <AttendanceStats todayAttendance={todayAttendance} />
+        <AttendanceStats stats={calculateStats(todayAttendance)} />
       </div>
     </Layout>
   );
