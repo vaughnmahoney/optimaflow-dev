@@ -11,20 +11,21 @@ export interface Technician {
   id: string;
   name: string;
   email: string;
-  phone: string;
-  supervisorId: string;
-  createdAt: Date;
+  phone: string | null;
+  supervisor_id: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface AttendanceRecord {
   id: string;
-  technicianId: string;
-  supervisorId: string;
-  date: Date;
+  technician_id: string;
+  supervisor_id: string;
+  date: string;
   status: "present" | "absent" | "excused";
-  note?: string;
-  submittedAt: Date;
-  updatedAt?: Date;
+  note?: string | null;
+  submitted_at: string;
+  updated_at: string;
 }
 
 export interface AttendanceStats {
@@ -36,9 +37,9 @@ export interface AttendanceStats {
 
 export interface DailyAttendanceRecord {
   id: string;
-  date: Date;
+  date: string;
   records: AttendanceRecord[];
   submittedBy: string;
-  submittedAt: Date;
+  submittedAt: string;
   stats: AttendanceStats;
 }

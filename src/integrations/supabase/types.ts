@@ -9,7 +9,77 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      attendance_records: {
+        Row: {
+          date: string
+          id: string
+          note: string | null
+          status: string
+          submitted_at: string | null
+          supervisor_id: string
+          technician_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          date?: string
+          id?: string
+          note?: string | null
+          status: string
+          submitted_at?: string | null
+          supervisor_id: string
+          technician_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          date?: string
+          id?: string
+          note?: string | null
+          status?: string
+          submitted_at?: string | null
+          supervisor_id?: string
+          technician_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_records_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      technicians: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          name: string
+          phone: string | null
+          supervisor_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          name: string
+          phone?: string | null
+          supervisor_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          supervisor_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
