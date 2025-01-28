@@ -7,55 +7,92 @@ import { supabase } from "@/integrations/supabase/client";
 import type { AttendanceRecord, Technician } from "@/types/attendance";
 import { AttendanceList } from "@/components/attendance/AttendanceList";
 import { AttendanceStats } from "@/components/attendance/AttendanceStats";
+import { useNavigate } from "react-router-dom";
 
 const Supervisor = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
-  // Fetch technicians
+  // Check authentication
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate("/login");
+        return;
+      }
+    };
+    checkAuth();
+  }, [navigate]);
+
+  // Fetch technicians with proper error handling
   const { data: technicians, isLoading: isLoadingTechnicians } = useQuery({
     queryKey: ["technicians"],
     queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+
       const { data, error } = await supabase
         .from("technicians")
         .select("*")
+        .eq("supervisor_id", session.user.id)
         .order("name");
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching technicians:", error);
+        throw error;
+      }
       return data as Technician[];
     },
   });
 
-  // Fetch today's attendance records
+  // Fetch today's attendance records with proper error handling
   const { data: todayAttendance, isLoading: isLoadingAttendance } = useQuery({
     queryKey: ["attendance", new Date().toISOString().split("T")[0]],
     queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+
       const today = new Date().toISOString().split("T")[0];
       const { data, error } = await supabase
         .from("attendance_records")
         .select("*")
-        .eq("date", today);
+        .eq("date", today)
+        .eq("supervisor_id", session.user.id);
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching attendance:", error);
+        throw error;
+      }
       return data as AttendanceRecord[];
     },
   });
 
-  // Submit attendance mutation
+  // Submit attendance mutation with proper error handling
   const submitAttendanceMutation = useMutation({
     mutationFn: async (records: Omit<AttendanceRecord, "id" | "submitted_at" | "updated_at">[]) => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+
       const { data, error } = await supabase
         .from("attendance_records")
-        .insert(records)
+        .insert(records.map(record => ({
+          ...record,
+          supervisor_id: session.user.id
+        })))
         .select();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error submitting attendance:", error);
+        throw error;
+      }
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["attendance"] });
       toast({
-        title: "Attendance submitted",
+        title: "Success",
         description: "Today's attendance has been recorded successfully.",
       });
     },
@@ -78,12 +115,19 @@ const Supervisor = () => {
 
     if (existingRecord) return;
 
-    const user = await supabase.auth.getUser();
-    if (!user.data.user) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to submit attendance.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const newRecord = {
       technician_id: technicianId,
-      supervisor_id: user.data.user.id,
+      supervisor_id: session.user.id,
       date: new Date().toISOString().split("T")[0],
       status,
     };
