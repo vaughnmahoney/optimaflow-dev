@@ -33,3 +33,12 @@ export interface AttendanceStats {
   excused: number;
   total: number;
 }
+
+export interface DailyAttendanceRecord {
+  id: string;
+  date: Date;
+  records: AttendanceRecord[];
+  submittedBy: string;
+  submittedAt: Date;
+  stats: AttendanceStats;
+}

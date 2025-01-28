@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Admin from "./pages/Admin";
 import Supervisor from "./pages/Supervisor";
+import AttendanceHistory from "./pages/AttendanceHistory";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,6 +22,7 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/supervisor" element={<Supervisor />} />
+          <Route path="/attendance-history" element={<AttendanceHistory />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
