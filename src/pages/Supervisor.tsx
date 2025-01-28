@@ -39,15 +39,12 @@ const Supervisor = () => {
         .eq("supervisor_id", session.user.id)
         .order("name");
       
-      if (error) {
-        console.error("Error fetching technicians:", error);
-        throw error;
-      }
+      if (error) throw error;
       return data as Technician[];
     },
   });
 
-  // Fetch today's attendance records with proper error handling
+  // Fetch today's attendance records
   const { data: todayAttendance, isLoading: isLoadingAttendance } = useQuery({
     queryKey: ["attendance", new Date().toISOString().split("T")[0]],
     queryFn: async () => {
@@ -61,15 +58,12 @@ const Supervisor = () => {
         .eq("date", today)
         .eq("supervisor_id", session.user.id);
       
-      if (error) {
-        console.error("Error fetching attendance:", error);
-        throw error;
-      }
+      if (error) throw error;
       return data as AttendanceRecord[];
     },
   });
 
-  // Submit attendance mutation with proper error handling
+  // Submit attendance mutation
   const submitAttendanceMutation = useMutation({
     mutationFn: async (records: Omit<AttendanceRecord, "id" | "submitted_at" | "updated_at">[]) => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -77,16 +71,13 @@ const Supervisor = () => {
 
       const { data, error } = await supabase
         .from("attendance_records")
-        .insert(records.map(record => ({
+        .upsert(records.map(record => ({
           ...record,
           supervisor_id: session.user.id
         })))
         .select();
       
-      if (error) {
-        console.error("Error submitting attendance:", error);
-        throw error;
-      }
+      if (error) throw error;
       return data;
     },
     onSuccess: () => {
@@ -107,14 +98,6 @@ const Supervisor = () => {
   });
 
   const handleStatusChange = async (technicianId: string, status: AttendanceRecord["status"]) => {
-    if (submitAttendanceMutation.isPending) return;
-
-    const existingRecord = todayAttendance?.find(
-      (record) => record.technician_id === technicianId
-    );
-
-    if (existingRecord) return;
-
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       toast({
@@ -125,14 +108,39 @@ const Supervisor = () => {
       return;
     }
 
+    const today = new Date().toISOString().split("T")[0];
     const newRecord = {
       technician_id: technicianId,
       supervisor_id: session.user.id,
-      date: new Date().toISOString().split("T")[0],
+      date: today,
       status,
     };
 
     submitAttendanceMutation.mutate([newRecord]);
+  };
+
+  const handleSubmit = () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to submit attendance.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const today = new Date().toISOString().split("T")[0];
+    const records = technicians?.map(tech => ({
+      technician_id: tech.id,
+      supervisor_id: session.user.id,
+      date: today,
+      status: todayAttendance?.find(record => record.technician_id === tech.id)?.status || "absent"
+    }));
+
+    if (records) {
+      submitAttendanceMutation.mutate(records);
+    }
   };
 
   // Calculate attendance stats
@@ -203,6 +211,7 @@ const Supervisor = () => {
           technicians={technicians}
           todayAttendance={todayAttendance}
           onStatusChange={handleStatusChange}
+          onSubmit={handleSubmit}
           isSubmitting={submitAttendanceMutation.isPending}
         />
 

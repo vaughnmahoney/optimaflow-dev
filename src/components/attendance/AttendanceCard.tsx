@@ -33,7 +33,7 @@ export const AttendanceCard = ({
                   status as AttendanceRecord["status"]
                 )
               }
-              disabled={isSubmitting || (!isEditable && !!todayRecord)}
+              disabled={isSubmitting || !isEditable}
               className={`px-4 py-2 rounded-md border transition-colors ${
                 todayRecord?.status === status
                   ? getStatusColor(status as AttendanceRecord["status"])
