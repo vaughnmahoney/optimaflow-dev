@@ -7,7 +7,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Folder } from "lucide-react";
-import type { Technician, AttendanceRecord } from "@/types/attendance";
+import type { Technician, AttendanceRecord, DailyAttendanceRecord } from "@/types/attendance";
 import { groupAttendanceRecords } from "@/utils/attendanceUtils";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -46,6 +46,29 @@ const AttendanceHistory = () => {
     },
   });
 
+  // Transform AttendanceRecord[] to DailyAttendanceRecord[]
+  const transformAttendanceRecords = (records: AttendanceRecord[]): DailyAttendanceRecord[] => {
+    const groupedByDate = records.reduce((acc, record) => {
+      const date = record.date;
+      if (!acc[date]) {
+        acc[date] = {
+          id: date,
+          date,
+          records: [],
+          submittedBy: record.supervisor_id,
+          submittedAt: record.submitted_at || '',
+          stats: { present: 0, absent: 0, excused: 0, total: 0 }
+        };
+      }
+      acc[date].records.push(record);
+      acc[date].stats[record.status as keyof typeof acc[typeof date]['stats']]++;
+      acc[date].stats.total++;
+      return acc;
+    }, {} as Record<string, DailyAttendanceRecord>);
+
+    return Object.values(groupedByDate);
+  };
+
   const handleStatusChange = async (technicianId: string, status: AttendanceRecord["status"], date: string) => {
     try {
       setIsSubmitting(true);
@@ -75,7 +98,8 @@ const AttendanceHistory = () => {
     }
   };
 
-  const groupedRecords = groupAttendanceRecords(attendanceRecords);
+  const dailyRecords = transformAttendanceRecords(attendanceRecords);
+  const groupedRecords = groupAttendanceRecords(dailyRecords);
 
   const getTechnicianName = (technician_id: string) => {
     return technicians.find((tech) => tech.id === technician_id)?.name || "Unknown Technician";

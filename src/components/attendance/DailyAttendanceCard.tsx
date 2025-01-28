@@ -26,6 +26,8 @@ export const DailyAttendanceCard: React.FC<DailyAttendanceCardProps> = ({
   onStatusChange,
   getTechnicianName,
 }) => {
+  if (!record || !record.records) return null;
+
   return (
     <Card key={record.id}>
       {editingDate === record.date ? (

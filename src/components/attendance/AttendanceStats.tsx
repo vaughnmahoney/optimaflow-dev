@@ -6,6 +6,8 @@ interface AttendanceStatsProps {
 }
 
 export const AttendanceStats: React.FC<AttendanceStatsProps> = ({ stats }) => {
+  if (!stats) return null;
+
   return (
     <div className="grid grid-cols-3 gap-4 mb-4">
       <div className="text-center p-3 bg-green-100 rounded-lg">
