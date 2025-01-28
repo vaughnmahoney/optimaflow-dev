@@ -119,7 +119,7 @@ const Supervisor = () => {
     submitAttendanceMutation.mutate([newRecord]);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       toast({
