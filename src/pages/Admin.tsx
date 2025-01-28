@@ -3,36 +3,105 @@ import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import type { Technician } from "@/types/attendance";
 
 const Admin = () => {
   const { toast } = useToast();
-  const [technicians, setTechnicians] = useState<Technician[]>([]);
+  const queryClient = useQueryClient();
   const [newTechnician, setNewTechnician] = useState({
     name: "",
     email: "",
     phone: "",
   });
 
+  // Fetch technicians
+  const { data: technicians, isLoading } = useQuery({
+    queryKey: ["technicians"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("technicians")
+        .select("*")
+        .order("name");
+      
+      if (error) throw error;
+      return data as Technician[];
+    },
+  });
+
+  // Add technician mutation
+  const addTechnicianMutation = useMutation({
+    mutationFn: async (technicianData: Omit<Technician, "id" | "created_at" | "updated_at" | "supervisor_id">) => {
+      const user = await supabase.auth.getUser();
+      if (!user.data.user) throw new Error("No user found");
+
+      const { data, error } = await supabase
+        .from("technicians")
+        .insert([{ ...technicianData, supervisor_id: user.data.user.id }])
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["technicians"] });
+      setNewTechnician({ name: "", email: "", phone: "" });
+      toast({
+        title: "Technician added",
+        description: "The technician has been added successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to add technician. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Error adding technician:", error);
+    },
+  });
+
+  // Remove technician mutation
+  const removeTechnicianMutation = useMutation({
+    mutationFn: async (technicianId: string) => {
+      const { error } = await supabase
+        .from("technicians")
+        .delete()
+        .eq("id", technicianId);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["technicians"] });
+      toast({
+        title: "Technician removed",
+        description: "The technician has been removed successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to remove technician. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Error removing technician:", error);
+    },
+  });
+
   const handleAddTechnician = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const technician: Technician = {
-      id: Date.now().toString(),
-      ...newTechnician,
-      supervisor_id: "mock-supervisor-id",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-
-    setTechnicians([...technicians, technician]);
-    setNewTechnician({ name: "", email: "", phone: "" });
-    
-    toast({
-      title: "Technician added",
-      description: `${technician.name} has been added successfully.`,
-    });
+    addTechnicianMutation.mutate(newTechnician);
   };
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="p-6">Loading...</div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -93,7 +162,12 @@ const Admin = () => {
                 />
               </div>
             </div>
-            <Button type="submit">Add Technician</Button>
+            <Button 
+              type="submit"
+              disabled={addTechnicianMutation.isPending}
+            >
+              {addTechnicianMutation.isPending ? "Adding..." : "Add Technician"}
+            </Button>
           </form>
         </div>
 
@@ -110,7 +184,7 @@ const Admin = () => {
                 </tr>
               </thead>
               <tbody>
-                {technicians.map((tech) => (
+                {technicians?.map((tech) => (
                   <tr key={tech.id} className="border-b">
                     <td className="py-3 px-4">{tech.name}</td>
                     <td className="py-3 px-4">{tech.email}</td>
@@ -119,23 +193,16 @@ const Admin = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => {
-                          setTechnicians(
-                            technicians.filter((t) => t.id !== tech.id)
-                          );
-                          toast({
-                            title: "Technician removed",
-                            description: `${tech.name} has been removed successfully.`,
-                          });
-                        }}
-                        className="text-danger hover:text-danger/80"
+                        onClick={() => removeTechnicianMutation.mutate(tech.id)}
+                        disabled={removeTechnicianMutation.isPending}
+                        className="text-red-600 hover:text-red-800"
                       >
                         Remove
                       </Button>
                     </td>
                   </tr>
                 ))}
-                {technicians.length === 0 && (
+                {(!technicians || technicians.length === 0) && (
                   <tr>
                     <td colSpan={4} className="py-4 text-center text-gray-500">
                       No technicians added yet
