@@ -1,18 +1,17 @@
-import { useEffect, useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { AttendanceList } from "./AttendanceList";
-import { AttendanceStats } from "./AttendanceStats";
-import { Button } from "@/components/ui/button";
-import type { AttendanceRecord, Technician } from "@/types/attendance";
+import { AttendanceControls } from "./AttendanceControls";
+import { useToast } from "@/hooks/use-toast";
 import { useAttendance } from "@/hooks/useAttendance";
+import { useAttendanceSubmission } from "@/hooks/useAttendanceSubmission";
+import type { AttendanceRecord } from "@/types/attendance";
 
 export const AttendanceForm = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [isEditing, setIsEditing] = useState(false);
   const {
     technicians,
     todayAttendance,
@@ -20,6 +19,12 @@ export const AttendanceForm = () => {
     isLoadingAttendance,
     submitAttendanceMutation,
   } = useAttendance();
+
+  const {
+    isEditing,
+    setIsEditing,
+    handleSubmission,
+  } = useAttendanceSubmission();
 
   const handleStatusChange = async (technicianId: string, status: AttendanceRecord["status"]) => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -42,10 +47,9 @@ export const AttendanceForm = () => {
 
     submitAttendanceMutation.mutate([newRecord], {
       onSuccess: () => {
-        // Don't show success toast for individual status changes
         queryClient.invalidateQueries({ queryKey: ["attendance"] });
       },
-      onError: (error) => {
+      onError: () => {
         toast({
           title: "Error",
           description: "Failed to update status. Please try again.",
@@ -102,17 +106,7 @@ export const AttendanceForm = () => {
     }));
 
     if (records) {
-      submitAttendanceMutation.mutate(records, {
-        onSuccess: () => {
-          toast({
-            title: "Success",
-            description: isEditing 
-              ? "Successfully updated today's attendance"
-              : "Today's attendance has been recorded",
-          });
-          setIsEditing(false);
-        }
-      });
+      await handleSubmission(records);
     }
   };
 
@@ -172,17 +166,12 @@ export const AttendanceForm = () => {
 
   return (
     <div className="space-y-8 animate-fade-in">
-      <div className="flex justify-between items-center">
-        <AttendanceStats stats={calculateStats(todayAttendance)} />
-        {allSubmitted && !isEditing && (
-          <Button 
-            variant="outline"
-            onClick={() => setIsEditing(true)}
-          >
-            Edit Attendance
-          </Button>
-        )}
-      </div>
+      <AttendanceControls
+        stats={calculateStats(todayAttendance)}
+        allSubmitted={allSubmitted}
+        isEditing={isEditing}
+        onEdit={() => setIsEditing(true)}
+      />
       <AttendanceList
         technicians={technicians}
         todayAttendance={todayAttendance}
