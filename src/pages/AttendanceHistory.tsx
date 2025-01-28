@@ -2,16 +2,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Layout } from "@/components/Layout";
 import { format } from "date-fns";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { Button } from "@/components/ui/button";
-import { ChevronDown } from "lucide-react";
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Folder, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import type { DailyAttendanceRecord, Technician } from "@/types/attendance";
+import { groupAttendanceRecords } from "@/utils/attendanceUtils";
 
-// Mock data - replace with actual data store later
 const mockTechnicians: Technician[] = [
   {
     id: "1",
@@ -66,15 +66,7 @@ const mockAttendanceHistory: DailyAttendanceRecord[] = [
 ];
 
 const AttendanceHistory = () => {
-  const [openRecords, setOpenRecords] = useState<string[]>([]);
-
-  const toggleRecord = (id: string) => {
-    setOpenRecords((current) =>
-      current.includes(id)
-        ? current.filter((recordId) => recordId !== id)
-        : [...current, id]
-    );
-  };
+  const groupedRecords = groupAttendanceRecords(mockAttendanceHistory);
 
   const getTechnicianName = (technicianId: string) => {
     return (
@@ -89,11 +81,11 @@ const AttendanceHistory = () => {
         <div>
           <h2 className="text-2xl font-bold text-primary">Attendance History</h2>
           <p className="mt-2 text-sm text-gray-600">
-            View past attendance records and statistics
+            View past attendance records organized by year, month, and week
           </p>
         </div>
 
-        {mockAttendanceHistory.length === 0 ? (
+        {groupedRecords.length === 0 ? (
           <Card>
             <CardContent className="pt-6">
               <p className="text-center text-gray-500">
@@ -102,79 +94,126 @@ const AttendanceHistory = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
-            {mockAttendanceHistory.map((record) => (
-              <Card key={record.id}>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-xl">
-                    {format(record.date, "MMMM d, yyyy")}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-3 gap-4 mb-4">
-                    <div className="text-center p-3 bg-green-100 rounded-lg">
-                      <p className="text-sm text-gray-600">Present</p>
-                      <p className="text-2xl font-bold text-green-600">
-                        {record.stats.present}
-                      </p>
-                    </div>
-                    <div className="text-center p-3 bg-red-100 rounded-lg">
-                      <p className="text-sm text-gray-600">Absent</p>
-                      <p className="text-2xl font-bold text-red-600">
-                        {record.stats.absent}
-                      </p>
-                    </div>
-                    <div className="text-center p-3 bg-yellow-100 rounded-lg">
-                      <p className="text-sm text-gray-600">Excused</p>
-                      <p className="text-2xl font-bold text-yellow-600">
-                        {record.stats.excused}
-                      </p>
-                    </div>
+          <Accordion type="single" collapsible className="space-y-4">
+            {groupedRecords.map((yearGroup) => (
+              <AccordionItem
+                key={yearGroup.year}
+                value={yearGroup.year}
+                className="border rounded-lg p-4"
+              >
+                <AccordionTrigger className="hover:no-underline">
+                  <div className="flex items-center gap-2">
+                    <Folder className="h-5 w-5 text-primary" />
+                    <span className="font-semibold">{yearGroup.year}</span>
                   </div>
-
-                  <Collapsible
-                    open={openRecords.includes(record.id)}
-                    onOpenChange={() => toggleRecord(record.id)}
-                  >
-                    <CollapsibleTrigger asChild>
-                      <Button variant="outline" className="w-full">
-                        View Details
-                        <ChevronDown
-                          className={`ml-2 h-4 w-4 transition-transform ${
-                            openRecords.includes(record.id) ? "rotate-180" : ""
-                          }`}
-                        />
-                      </Button>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="mt-4">
-                      <div className="space-y-2">
-                        {record.records.map((attendance) => (
-                          <div
-                            key={attendance.id}
-                            className="flex justify-between items-center p-2 bg-gray-50 rounded"
-                          >
-                            <span>{getTechnicianName(attendance.technicianId)}</span>
-                            <span
-                              className={`px-2 py-1 rounded text-sm ${
-                                attendance.status === "present"
-                                  ? "bg-green-100 text-green-800"
-                                  : attendance.status === "absent"
-                                  ? "bg-red-100 text-red-800"
-                                  : "bg-yellow-100 text-yellow-800"
-                              }`}
-                            >
-                              {attendance.status.charAt(0).toUpperCase() +
-                                attendance.status.slice(1)}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </CollapsibleContent>
-                  </Collapsible>
-                </CardContent>
-              </Card>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="pl-6 space-y-4">
+                    {yearGroup.months.map((monthGroup) => (
+                      <Accordion
+                        key={monthGroup.month}
+                        type="single"
+                        collapsible
+                        className="border-l-2 border-gray-200"
+                      >
+                        <AccordionItem value={monthGroup.month}>
+                          <AccordionTrigger className="hover:no-underline pl-4">
+                            <div className="flex items-center gap-2">
+                              <Folder className="h-4 w-4 text-primary" />
+                              <span>{monthGroup.month}</span>
+                            </div>
+                          </AccordionTrigger>
+                          <AccordionContent>
+                            <div className="pl-8 space-y-4">
+                              {monthGroup.weeks.map((weekGroup) => (
+                                <Accordion
+                                  key={weekGroup.weekNumber}
+                                  type="single"
+                                  collapsible
+                                >
+                                  <AccordionItem value={weekGroup.weekNumber.toString()}>
+                                    <AccordionTrigger className="hover:no-underline">
+                                      <div className="flex items-center gap-2">
+                                        <Folder className="h-4 w-4 text-primary" />
+                                        <span>
+                                          Week {weekGroup.weekNumber} (
+                                          {format(weekGroup.startDate, "MMM d")} -{" "}
+                                          {format(weekGroup.endDate, "MMM d")})
+                                        </span>
+                                      </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent>
+                                      <div className="space-y-4">
+                                        {weekGroup.records.map((record) => (
+                                          <Card key={record.id}>
+                                            <CardHeader className="pb-3">
+                                              <CardTitle className="text-lg">
+                                                {format(record.date, "MMMM d, yyyy")}
+                                              </CardTitle>
+                                            </CardHeader>
+                                            <CardContent>
+                                              <div className="grid grid-cols-3 gap-4 mb-4">
+                                                <div className="text-center p-3 bg-green-100 rounded-lg">
+                                                  <p className="text-sm text-gray-600">Present</p>
+                                                  <p className="text-xl font-bold text-green-600">
+                                                    {record.stats.present}
+                                                  </p>
+                                                </div>
+                                                <div className="text-center p-3 bg-red-100 rounded-lg">
+                                                  <p className="text-sm text-gray-600">Absent</p>
+                                                  <p className="text-xl font-bold text-red-600">
+                                                    {record.stats.absent}
+                                                  </p>
+                                                </div>
+                                                <div className="text-center p-3 bg-yellow-100 rounded-lg">
+                                                  <p className="text-sm text-gray-600">Excused</p>
+                                                  <p className="text-xl font-bold text-yellow-600">
+                                                    {record.stats.excused}
+                                                  </p>
+                                                </div>
+                                              </div>
+                                              <div className="space-y-2">
+                                                {record.records.map((attendance) => (
+                                                  <div
+                                                    key={attendance.id}
+                                                    className="flex justify-between items-center p-2 bg-gray-50 rounded"
+                                                  >
+                                                    <span>
+                                                      {getTechnicianName(attendance.technicianId)}
+                                                    </span>
+                                                    <span
+                                                      className={`px-2 py-1 rounded text-sm ${
+                                                        attendance.status === "present"
+                                                          ? "bg-green-100 text-green-800"
+                                                          : attendance.status === "absent"
+                                                          ? "bg-red-100 text-red-800"
+                                                          : "bg-yellow-100 text-yellow-800"
+                                                      }`}
+                                                    >
+                                                      {attendance.status.charAt(0).toUpperCase() +
+                                                        attendance.status.slice(1)}
+                                                    </span>
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            </CardContent>
+                                          </Card>
+                                        ))}
+                                      </div>
+                                    </AccordionContent>
+                                  </AccordionItem>
+                                </Accordion>
+                              ))}
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
             ))}
-          </div>
+          </Accordion>
         )}
       </div>
     </Layout>
