@@ -23,7 +23,7 @@ export const AttendanceControls = ({
   return (
     <div className="flex justify-between items-center">
       <div className="flex-1">
-        <AttendanceStats stats={stats} />
+        <AttendanceStats stats={stats} isDraft={!allSubmitted} />
         {!allSubmitted && (
           <p className="text-sm text-muted-foreground mt-2">
             Draft - Submit attendance to finalize counts
