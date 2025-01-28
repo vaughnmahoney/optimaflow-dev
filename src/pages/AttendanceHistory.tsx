@@ -15,13 +15,67 @@ import { AttendanceList } from "@/components/attendance/AttendanceList";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 const AttendanceHistory = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [editingDate, setEditingDate] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Fetch technicians
+  const { data: technicians = [] } = useQuery<Technician[]>({
+    queryKey: ['technicians'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('technicians')
+        .select('*');
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Fetch attendance records
+  const { data: attendanceRecords = [], isLoading } = useQuery<AttendanceRecord[]>({
+    queryKey: ['attendance'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('attendance_records')
+        .select('*')
+        .order('date', { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Process attendance records into daily records
+  const processedRecords: DailyAttendanceRecord[] = attendanceRecords.reduce((acc: DailyAttendanceRecord[], record) => {
+    const existingDay = acc.find(day => day.date === record.date);
+    
+    if (existingDay) {
+      existingDay.records.push(record);
+      // Update stats
+      existingDay.stats[record.status]++;
+    } else {
+      const stats = {
+        present: record.status === 'present' ? 1 : 0,
+        absent: record.status === 'absent' ? 1 : 0,
+        excused: record.status === 'excused' ? 1 : 0,
+        total: 1
+      };
+      
+      acc.push({
+        id: record.date,
+        date: record.date,
+        records: [record],
+        submittedBy: record.supervisor_id,
+        submittedAt: record.submitted_at || '',
+        stats
+      });
+    }
+    
+    return acc;
+  }, []);
 
   const handleStatusChange = async (technicianId: string, status: AttendanceRecord["status"], date: string) => {
     try {
@@ -39,7 +93,6 @@ const AttendanceHistory = () => {
         description: "Attendance record updated successfully",
       });
 
-      // Invalidate queries to refresh the data
       queryClient.invalidateQueries({ queryKey: ["attendance"] });
     } catch (error) {
       console.error("Error updating attendance:", error);
@@ -53,14 +106,21 @@ const AttendanceHistory = () => {
     }
   };
 
-  const groupedRecords = groupAttendanceRecords(mockAttendanceHistory);
+  const groupedRecords = groupAttendanceRecords(processedRecords);
 
   const getTechnicianName = (technician_id: string) => {
-    return (
-      mockTechnicians.find((tech) => tech.id === technician_id)?.name ||
-      "Unknown Technician"
-    );
+    return technicians.find((tech) => tech.id === technician_id)?.name || "Unknown Technician";
   };
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center h-full">
+          <p>Loading attendance history...</p>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -135,7 +195,7 @@ const AttendanceHistory = () => {
                                           <Card key={record.id}>
                                             {editingDate === record.date ? (
                                               <AttendanceList
-                                                technicians={mockTechnicians}
+                                                technicians={technicians}
                                                 todayAttendance={record.records}
                                                 onStatusChange={(techId, status) =>
                                                   handleStatusChange(techId, status, record.date)
@@ -161,50 +221,50 @@ const AttendanceHistory = () => {
                                                   </div>
                                                 </CardHeader>
                                                 <CardContent>
-                                              <div className="grid grid-cols-3 gap-4 mb-4">
-                                                <div className="text-center p-3 bg-green-100 rounded-lg">
-                                                  <p className="text-sm text-gray-600">Present</p>
-                                                  <p className="text-xl font-bold text-green-600">
-                                                    {record.stats.present}
-                                                  </p>
-                                                </div>
-                                                <div className="text-center p-3 bg-red-100 rounded-lg">
-                                                  <p className="text-sm text-gray-600">Absent</p>
-                                                  <p className="text-xl font-bold text-red-600">
-                                                    {record.stats.absent}
-                                                  </p>
-                                                </div>
-                                                <div className="text-center p-3 bg-yellow-100 rounded-lg">
-                                                  <p className="text-sm text-gray-600">Excused</p>
-                                                  <p className="text-xl font-bold text-yellow-600">
-                                                    {record.stats.excused}
-                                                  </p>
-                                                </div>
-                                              </div>
-                                              <div className="space-y-2">
-                                                {record.records.map((attendance) => (
-                                                  <div
-                                                    key={attendance.id}
-                                                    className="flex justify-between items-center p-2 bg-gray-50 rounded"
-                                                  >
-                                                    <span>
-                                                      {getTechnicianName(attendance.technician_id)}
-                                                    </span>
-                                                    <span
-                                                      className={`px-2 py-1 rounded text-sm ${
-                                                        attendance.status === "present"
-                                                          ? "bg-green-100 text-green-800"
-                                                          : attendance.status === "absent"
-                                                          ? "bg-red-100 text-red-800"
-                                                          : "bg-yellow-100 text-yellow-800"
-                                                      }`}
-                                                    >
-                                                      {attendance.status.charAt(0).toUpperCase() +
-                                                        attendance.status.slice(1)}
-                                                    </span>
+                                                  <div className="grid grid-cols-3 gap-4 mb-4">
+                                                    <div className="text-center p-3 bg-green-100 rounded-lg">
+                                                      <p className="text-sm text-gray-600">Present</p>
+                                                      <p className="text-xl font-bold text-green-600">
+                                                        {record.stats.present}
+                                                      </p>
+                                                    </div>
+                                                    <div className="text-center p-3 bg-red-100 rounded-lg">
+                                                      <p className="text-sm text-gray-600">Absent</p>
+                                                      <p className="text-xl font-bold text-red-600">
+                                                        {record.stats.absent}
+                                                      </p>
+                                                    </div>
+                                                    <div className="text-center p-3 bg-yellow-100 rounded-lg">
+                                                      <p className="text-sm text-gray-600">Excused</p>
+                                                      <p className="text-xl font-bold text-yellow-600">
+                                                        {record.stats.excused}
+                                                      </p>
+                                                    </div>
                                                   </div>
-                                                ))}
-                                              </div>
+                                                  <div className="space-y-2">
+                                                    {record.records.map((attendance) => (
+                                                      <div
+                                                        key={attendance.id}
+                                                        className="flex justify-between items-center p-2 bg-gray-50 rounded"
+                                                      >
+                                                        <span>
+                                                          {getTechnicianName(attendance.technician_id)}
+                                                        </span>
+                                                        <span
+                                                          className={`px-2 py-1 rounded text-sm ${
+                                                            attendance.status === "present"
+                                                              ? "bg-green-100 text-green-800"
+                                                              : attendance.status === "absent"
+                                                              ? "bg-red-100 text-red-800"
+                                                              : "bg-yellow-100 text-yellow-800"
+                                                          }`}
+                                                        >
+                                                          {attendance.status.charAt(0).toUpperCase() +
+                                                            attendance.status.slice(1)}
+                                                        </span>
+                                                      </div>
+                                                    ))}
+                                                  </div>
                                                 </CardContent>
                                               </>
                                             )}
