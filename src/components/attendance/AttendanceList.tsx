@@ -22,15 +22,26 @@ export const AttendanceList = ({
   date = new Date(),
   isEditable = true,
 }: AttendanceListProps) => {
+  const allMarked = technicians.every(tech => 
+    todayAttendance?.find(record => record.technician_id === tech.id)
+  );
+
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h3 className="text-lg font-semibold">Attendance for {format(date, "EEEE, MMMM d, yyyy")}</h3>
-          <p className="text-sm text-gray-500">Mark attendance for your team</p>
+          <p className="text-sm text-gray-500">
+            {isEditable 
+              ? "Mark attendance for your team" 
+              : "Attendance has been submitted for today"}
+          </p>
         </div>
         {isEditable && onSubmit && (
-          <Button onClick={onSubmit} disabled={isSubmitting}>
+          <Button 
+            onClick={onSubmit} 
+            disabled={isSubmitting || !allMarked}
+          >
             {isSubmitting ? "Submitting..." : "Submit Attendance"}
           </Button>
         )}

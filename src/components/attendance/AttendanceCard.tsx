@@ -37,7 +37,9 @@ export const AttendanceCard = ({
               className={`px-4 py-2 rounded-md border transition-colors ${
                 todayRecord?.status === status
                   ? getStatusColor(status as AttendanceRecord["status"])
-                  : "hover:bg-gray-100"
+                  : isEditable 
+                    ? "hover:bg-gray-100" 
+                    : "opacity-50 cursor-not-allowed"
               }`}
             >
               {status.charAt(0).toUpperCase() + status.slice(1)}
