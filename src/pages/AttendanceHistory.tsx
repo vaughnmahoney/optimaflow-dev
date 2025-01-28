@@ -7,68 +7,52 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Folder } from "lucide-react";
-import type { DailyAttendanceRecord, Technician } from "@/types/attendance";
+import { Folder, PencilIcon } from "lucide-react";
+import type { DailyAttendanceRecord, Technician, AttendanceRecord } from "@/types/attendance";
 import { groupAttendanceRecords } from "@/utils/attendanceUtils";
-
-const mockTechnicians: Technician[] = [
-  {
-    id: "1",
-    name: "John Doe",
-    email: "john@example.com",
-    phone: "123-456-7890",
-    supervisor_id: "supervisor1",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: "2",
-    name: "Jane Smith",
-    email: "jane@example.com",
-    phone: "123-456-7891",
-    supervisor_id: "supervisor1",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-];
-
-const mockAttendanceHistory: DailyAttendanceRecord[] = [
-  {
-    id: "1",
-    date: new Date().toISOString(),
-    records: [
-      {
-        id: "1",
-        technician_id: "1",
-        supervisor_id: "supervisor1",
-        date: new Date().toISOString(),
-        status: "present",
-        submitted_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-      {
-        id: "2",
-        technician_id: "2",
-        supervisor_id: "supervisor1",
-        date: new Date().toISOString(),
-        status: "absent",
-        note: "Called in sick",
-        submitted_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-    ],
-    submittedBy: "supervisor1",
-    submittedAt: new Date().toISOString(),
-    stats: {
-      present: 1,
-      absent: 1,
-      excused: 0,
-      total: 2,
-    },
-  },
-];
+import { useState } from "react";
+import { AttendanceList } from "@/components/attendance/AttendanceList";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 const AttendanceHistory = () => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [editingDate, setEditingDate] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleStatusChange = async (technicianId: string, status: AttendanceRecord["status"], date: string) => {
+    try {
+      setIsSubmitting(true);
+      const { error } = await supabase
+        .from("attendance_records")
+        .update({ status })
+        .eq("technician_id", technicianId)
+        .eq("date", date);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Attendance record updated successfully",
+      });
+
+      // Invalidate queries to refresh the data
+      queryClient.invalidateQueries({ queryKey: ["attendance"] });
+    } catch (error) {
+      console.error("Error updating attendance:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update attendance record",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const groupedRecords = groupAttendanceRecords(mockAttendanceHistory);
 
   const getTechnicianName = (technician_id: string) => {
@@ -84,7 +68,7 @@ const AttendanceHistory = () => {
         <div>
           <h2 className="text-2xl font-bold text-primary">Attendance History</h2>
           <p className="mt-2 text-sm text-gray-600">
-            View past attendance records organized by year, month, and week
+            View and edit past attendance records
           </p>
         </div>
 
@@ -149,12 +133,34 @@ const AttendanceHistory = () => {
                                       <div className="space-y-4">
                                         {weekGroup.records.map((record) => (
                                           <Card key={record.id}>
-                                            <CardHeader className="pb-3">
-                                              <CardTitle className="text-lg">
-                                                {format(parseISO(record.date), "MMMM d, yyyy")}
-                                              </CardTitle>
-                                            </CardHeader>
-                                            <CardContent>
+                                            {editingDate === record.date ? (
+                                              <AttendanceList
+                                                technicians={mockTechnicians}
+                                                todayAttendance={record.records}
+                                                onStatusChange={(techId, status) =>
+                                                  handleStatusChange(techId, status, record.date)
+                                                }
+                                                isSubmitting={isSubmitting}
+                                                date={parseISO(record.date)}
+                                                isEditable={true}
+                                              />
+                                            ) : (
+                                              <>
+                                                <CardHeader className="pb-3">
+                                                  <div className="flex justify-between items-center">
+                                                    <CardTitle className="text-lg">
+                                                      {format(parseISO(record.date), "EEEE, MMMM d, yyyy")}
+                                                    </CardTitle>
+                                                    <Button
+                                                      variant="ghost"
+                                                      size="sm"
+                                                      onClick={() => setEditingDate(record.date)}
+                                                    >
+                                                      <PencilIcon className="h-4 w-4" />
+                                                    </Button>
+                                                  </div>
+                                                </CardHeader>
+                                                <CardContent>
                                               <div className="grid grid-cols-3 gap-4 mb-4">
                                                 <div className="text-center p-3 bg-green-100 rounded-lg">
                                                   <p className="text-sm text-gray-600">Present</p>
@@ -199,7 +205,9 @@ const AttendanceHistory = () => {
                                                   </div>
                                                 ))}
                                               </div>
-                                            </CardContent>
+                                                </CardContent>
+                                              </>
+                                            )}
                                           </Card>
                                         ))}
                                       </div>

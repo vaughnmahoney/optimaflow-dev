@@ -6,6 +6,7 @@ interface AttendanceCardProps {
   todayRecord?: AttendanceRecord;
   onStatusChange: (technicianId: string, status: AttendanceRecord["status"]) => void;
   isSubmitting: boolean;
+  isEditable?: boolean;
 }
 
 export const AttendanceCard = ({
@@ -13,6 +14,7 @@ export const AttendanceCard = ({
   todayRecord,
   onStatusChange,
   isSubmitting,
+  isEditable = true,
 }: AttendanceCardProps) => {
   return (
     <div className="p-4 rounded-lg border bg-gray-50/50 animate-slide-in">
@@ -31,7 +33,7 @@ export const AttendanceCard = ({
                   status as AttendanceRecord["status"]
                 )
               }
-              disabled={isSubmitting || !!todayRecord}
+              disabled={isSubmitting || (!isEditable && !!todayRecord)}
               className={`px-4 py-2 rounded-md border transition-colors ${
                 todayRecord?.status === status
                   ? getStatusColor(status as AttendanceRecord["status"])
