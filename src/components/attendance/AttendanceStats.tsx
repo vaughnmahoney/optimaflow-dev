@@ -1,44 +1,30 @@
-import { type AttendanceRecord } from "@/types/attendance";
-import { getStatusColor } from "@/utils/attendanceUtils";
+import React from 'react';
+import { AttendanceStats as StatsType } from '@/types/attendance';
 
 interface AttendanceStatsProps {
-  todayAttendance?: AttendanceRecord[];
+  stats: StatsType;
 }
 
-export const AttendanceStats = ({ todayAttendance }: AttendanceStatsProps) => {
-  const getAttendanceStats = () => {
-    const stats = {
-      present: 0,
-      absent: 0,
-      excused: 0,
-    };
-
-    todayAttendance?.forEach((record) => {
-      if (record.status in stats) {
-        stats[record.status as keyof typeof stats]++;
-      }
-    });
-
-    return stats;
-  };
-
+export const AttendanceStats: React.FC<AttendanceStatsProps> = ({ stats }) => {
   return (
-    <div className="bg-white rounded-lg shadow-sm border p-6">
-      <h3 className="text-lg font-semibold mb-4">Quick Stats</h3>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {Object.entries(getAttendanceStats()).map(([status, count]) => (
-          <div
-            key={status}
-            className={`p-4 rounded-lg border ${getStatusColor(
-              status as AttendanceRecord["status"]
-            )}`}
-          >
-            <p className="text-sm text-gray-600">
-              {status.charAt(0).toUpperCase() + status.slice(1)}
-            </p>
-            <p className="text-2xl font-semibold mt-1">{count}</p>
-          </div>
-        ))}
+    <div className="grid grid-cols-3 gap-4 mb-4">
+      <div className="text-center p-3 bg-green-100 rounded-lg">
+        <p className="text-sm text-gray-600">Present</p>
+        <p className="text-xl font-bold text-green-600">
+          {stats.present}
+        </p>
+      </div>
+      <div className="text-center p-3 bg-red-100 rounded-lg">
+        <p className="text-sm text-gray-600">Absent</p>
+        <p className="text-xl font-bold text-red-600">
+          {stats.absent}
+        </p>
+      </div>
+      <div className="text-center p-3 bg-yellow-100 rounded-lg">
+        <p className="text-sm text-gray-600">Excused</p>
+        <p className="text-xl font-bold text-yellow-600">
+          {stats.excused}
+        </p>
       </div>
     </div>
   );

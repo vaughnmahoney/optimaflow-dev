@@ -1,21 +1,19 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Layout } from "@/components/Layout";
-import { format, parseISO } from "date-fns";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Folder, PencilIcon } from "lucide-react";
-import type { DailyAttendanceRecord, Technician, AttendanceRecord } from "@/types/attendance";
+import { Folder } from "lucide-react";
+import type { Technician, AttendanceRecord } from "@/types/attendance";
 import { groupAttendanceRecords } from "@/utils/attendanceUtils";
 import { useState } from "react";
-import { AttendanceList } from "@/components/attendance/AttendanceList";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { MonthGroup } from "@/components/attendance/MonthGroup";
 
 const AttendanceHistory = () => {
   const { toast } = useToast();
@@ -44,38 +42,9 @@ const AttendanceHistory = () => {
         .select('*')
         .order('date', { ascending: false });
       if (error) throw error;
-      return data;
+      return data as AttendanceRecord[];
     },
   });
-
-  // Process attendance records into daily records
-  const processedRecords: DailyAttendanceRecord[] = attendanceRecords.reduce((acc: DailyAttendanceRecord[], record) => {
-    const existingDay = acc.find(day => day.date === record.date);
-    
-    if (existingDay) {
-      existingDay.records.push(record);
-      // Update stats
-      existingDay.stats[record.status]++;
-    } else {
-      const stats = {
-        present: record.status === 'present' ? 1 : 0,
-        absent: record.status === 'absent' ? 1 : 0,
-        excused: record.status === 'excused' ? 1 : 0,
-        total: 1
-      };
-      
-      acc.push({
-        id: record.date,
-        date: record.date,
-        records: [record],
-        submittedBy: record.supervisor_id,
-        submittedAt: record.submitted_at || '',
-        stats
-      });
-    }
-    
-    return acc;
-  }, []);
 
   const handleStatusChange = async (technicianId: string, status: AttendanceRecord["status"], date: string) => {
     try {
@@ -106,7 +75,7 @@ const AttendanceHistory = () => {
     }
   };
 
-  const groupedRecords = groupAttendanceRecords(processedRecords);
+  const groupedRecords = groupAttendanceRecords(attendanceRecords);
 
   const getTechnicianName = (technician_id: string) => {
     return technicians.find((tech) => tech.id === technician_id)?.name || "Unknown Technician";
@@ -157,128 +126,16 @@ const AttendanceHistory = () => {
                 <AccordionContent>
                   <div className="pl-6 space-y-4">
                     {yearGroup.months.map((monthGroup) => (
-                      <Accordion
+                      <MonthGroup
                         key={monthGroup.month}
-                        type="single"
-                        collapsible
-                        className="border-l-2 border-gray-200"
-                      >
-                        <AccordionItem value={monthGroup.month}>
-                          <AccordionTrigger className="hover:no-underline pl-4">
-                            <div className="flex items-center gap-2">
-                              <Folder className="h-4 w-4 text-primary" />
-                              <span>{monthGroup.month}</span>
-                            </div>
-                          </AccordionTrigger>
-                          <AccordionContent>
-                            <div className="pl-8 space-y-4">
-                              {monthGroup.weeks.map((weekGroup) => (
-                                <Accordion
-                                  key={weekGroup.weekNumber}
-                                  type="single"
-                                  collapsible
-                                >
-                                  <AccordionItem value={weekGroup.weekNumber.toString()}>
-                                    <AccordionTrigger className="hover:no-underline">
-                                      <div className="flex items-center gap-2">
-                                        <Folder className="h-4 w-4 text-primary" />
-                                        <span>
-                                          Week {weekGroup.weekNumber} (
-                                          {format(parseISO(weekGroup.startDate), "MMM d")} -{" "}
-                                          {format(parseISO(weekGroup.endDate), "MMM d")})
-                                        </span>
-                                      </div>
-                                    </AccordionTrigger>
-                                    <AccordionContent>
-                                      <div className="space-y-4">
-                                        {weekGroup.records.map((record) => (
-                                          <Card key={record.id}>
-                                            {editingDate === record.date ? (
-                                              <AttendanceList
-                                                technicians={technicians}
-                                                todayAttendance={record.records}
-                                                onStatusChange={(techId, status) =>
-                                                  handleStatusChange(techId, status, record.date)
-                                                }
-                                                isSubmitting={isSubmitting}
-                                                date={parseISO(record.date)}
-                                                isEditable={true}
-                                              />
-                                            ) : (
-                                              <>
-                                                <CardHeader className="pb-3">
-                                                  <div className="flex justify-between items-center">
-                                                    <CardTitle className="text-lg">
-                                                      {format(parseISO(record.date), "EEEE, MMMM d, yyyy")}
-                                                    </CardTitle>
-                                                    <Button
-                                                      variant="ghost"
-                                                      size="sm"
-                                                      onClick={() => setEditingDate(record.date)}
-                                                    >
-                                                      <PencilIcon className="h-4 w-4" />
-                                                    </Button>
-                                                  </div>
-                                                </CardHeader>
-                                                <CardContent>
-                                                  <div className="grid grid-cols-3 gap-4 mb-4">
-                                                    <div className="text-center p-3 bg-green-100 rounded-lg">
-                                                      <p className="text-sm text-gray-600">Present</p>
-                                                      <p className="text-xl font-bold text-green-600">
-                                                        {record.stats.present}
-                                                      </p>
-                                                    </div>
-                                                    <div className="text-center p-3 bg-red-100 rounded-lg">
-                                                      <p className="text-sm text-gray-600">Absent</p>
-                                                      <p className="text-xl font-bold text-red-600">
-                                                        {record.stats.absent}
-                                                      </p>
-                                                    </div>
-                                                    <div className="text-center p-3 bg-yellow-100 rounded-lg">
-                                                      <p className="text-sm text-gray-600">Excused</p>
-                                                      <p className="text-xl font-bold text-yellow-600">
-                                                        {record.stats.excused}
-                                                      </p>
-                                                    </div>
-                                                  </div>
-                                                  <div className="space-y-2">
-                                                    {record.records.map((attendance) => (
-                                                      <div
-                                                        key={attendance.id}
-                                                        className="flex justify-between items-center p-2 bg-gray-50 rounded"
-                                                      >
-                                                        <span>
-                                                          {getTechnicianName(attendance.technician_id)}
-                                                        </span>
-                                                        <span
-                                                          className={`px-2 py-1 rounded text-sm ${
-                                                            attendance.status === "present"
-                                                              ? "bg-green-100 text-green-800"
-                                                              : attendance.status === "absent"
-                                                              ? "bg-red-100 text-red-800"
-                                                              : "bg-yellow-100 text-yellow-800"
-                                                          }`}
-                                                        >
-                                                          {attendance.status.charAt(0).toUpperCase() +
-                                                            attendance.status.slice(1)}
-                                                        </span>
-                                                      </div>
-                                                    ))}
-                                                  </div>
-                                                </CardContent>
-                                              </>
-                                            )}
-                                          </Card>
-                                        ))}
-                                      </div>
-                                    </AccordionContent>
-                                  </AccordionItem>
-                                </Accordion>
-                              ))}
-                            </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      </Accordion>
+                        {...monthGroup}
+                        technicians={technicians}
+                        editingDate={editingDate}
+                        isSubmitting={isSubmitting}
+                        onEdit={setEditingDate}
+                        onStatusChange={handleStatusChange}
+                        getTechnicianName={getTechnicianName}
+                      />
                     ))}
                   </div>
                 </AccordionContent>
