@@ -7,8 +7,9 @@ import { AttendanceControls } from "./AttendanceControls";
 import { useToast } from "@/hooks/use-toast";
 import { useAttendance } from "@/hooks/useAttendance";
 import { useAttendanceSubmission } from "@/hooks/useAttendanceSubmission";
+import { useAttendanceDraft } from "@/hooks/useAttendanceDraft";
+import { calculateAttendanceStats, validateAttendanceSubmission } from "@/utils/attendanceCalculations";
 import type { AttendanceRecord } from "@/types/attendance";
-import { useState } from "react";
 
 export const AttendanceForm = () => {
   const { toast } = useToast();
@@ -21,46 +22,17 @@ export const AttendanceForm = () => {
     submitAttendanceMutation,
   } = useAttendance();
 
-  const [draftAttendance, setDraftAttendance] = useState<AttendanceRecord[]>([]);
-
   const {
     isEditing,
     setIsEditing,
     handleSubmission,
   } = useAttendanceSubmission();
 
-  // Initialize draft attendance from existing records
-  useEffect(() => {
-    if (todayAttendance) {
-      setDraftAttendance(todayAttendance);
-    }
-  }, [todayAttendance]);
-
-  const handleStatusChange = (technicianId: string, status: AttendanceRecord["status"]) => {
-    setDraftAttendance(prev => {
-      const existingIndex = prev.findIndex(record => record.technician_id === technicianId);
-      const today = new Date().toISOString().split("T")[0];
-      
-      if (existingIndex >= 0) {
-        const newDraft = [...prev];
-        newDraft[existingIndex] = {
-          ...newDraft[existingIndex],
-          status
-        };
-        return newDraft;
-      }
-
-      return [...prev, {
-        id: `draft-${technicianId}`,
-        technician_id: technicianId,
-        supervisor_id: '', // Will be set on submission
-        date: today,
-        status,
-        submitted_at: null,
-        updated_at: null
-      } as AttendanceRecord];
-    });
-  };
+  const {
+    draftAttendance,
+    updateDraft,
+    clearDraft
+  } = useAttendanceDraft(todayAttendance);
 
   const handleSubmit = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -73,22 +45,18 @@ export const AttendanceForm = () => {
       return;
     }
 
-    // Check if all technicians have attendance marked
-    const unmarkedTechnicians = technicians?.filter(
-      tech => !draftAttendance.find(record => record.technician_id === tech.id)
-    );
+    if (!technicians) return;
 
-    if (unmarkedTechnicians?.length > 0) {
+    if (!validateAttendanceSubmission(draftAttendance, technicians.length)) {
       toast({
         title: "Warning",
-        description: `Please mark attendance for all technicians before submitting.`,
+        description: "Please mark attendance for all technicians before submitting.",
         variant: "destructive",
       });
       return;
     }
 
-    // Check if attendance is already submitted for today (all technicians have records)
-    const allSubmitted = technicians?.every(tech => 
+    const allSubmitted = technicians.every(tech => 
       todayAttendance?.find(record => 
         record.technician_id === tech.id && record.submitted_at !== null
       )
@@ -113,7 +81,7 @@ export const AttendanceForm = () => {
     if (records.length > 0) {
       const success = await handleSubmission(records);
       if (success) {
-        setDraftAttendance([]); // Clear draft after successful submission
+        clearDraft();
       }
     }
   };
@@ -151,33 +119,20 @@ export const AttendanceForm = () => {
     );
   }
 
-  const calculateStats = (records: AttendanceRecord[] = []) => {
-    const stats = {
-      present: 0,
-      absent: 0,
-      excused: 0,
-      total: records.length
-    };
-
-    records.forEach(record => {
-      if (record.status === 'present') stats.present++;
-      else if (record.status === 'absent') stats.absent++;
-      else if (record.status === 'excused') stats.excused++;
-    });
-
-    return stats;
-  };
-
-  const allSubmitted = technicians?.every(tech => 
+  const allSubmitted = technicians.every(tech => 
     todayAttendance?.find(record => 
       record.technician_id === tech.id && record.submitted_at !== null
     )
   );
 
+  const currentStats = calculateAttendanceStats(
+    allSubmitted ? todayAttendance : draftAttendance
+  );
+
   return (
     <div className="space-y-8 animate-fade-in">
       <AttendanceControls
-        stats={calculateStats(allSubmitted ? todayAttendance : draftAttendance)}
+        stats={currentStats}
         allSubmitted={allSubmitted}
         isEditing={isEditing}
         onEdit={() => setIsEditing(true)}
@@ -185,7 +140,7 @@ export const AttendanceForm = () => {
       <AttendanceList
         technicians={technicians}
         todayAttendance={isEditing || !allSubmitted ? draftAttendance : todayAttendance}
-        onStatusChange={handleStatusChange}
+        onStatusChange={updateDraft}
         onSubmit={handleSubmit}
         isSubmitting={submitAttendanceMutation.isPending}
         isEditable={!allSubmitted || isEditing}
