@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAttendance } from "@/hooks/useAttendance";
 import { useAttendanceSubmission } from "@/hooks/useAttendanceSubmission";
 import type { AttendanceRecord } from "@/types/attendance";
+import { useState } from "react";
 
 export const AttendanceForm = () => {
   const { toast } = useToast();
@@ -20,42 +21,44 @@ export const AttendanceForm = () => {
     submitAttendanceMutation,
   } = useAttendance();
 
+  const [draftAttendance, setDraftAttendance] = useState<AttendanceRecord[]>([]);
+
   const {
     isEditing,
     setIsEditing,
     handleSubmission,
   } = useAttendanceSubmission();
 
-  const handleStatusChange = async (technicianId: string, status: AttendanceRecord["status"]) => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      toast({
-        title: "Error",
-        description: "You must be logged in to submit attendance.",
-        variant: "destructive",
-      });
-      return;
+  // Initialize draft attendance from existing records
+  useEffect(() => {
+    if (todayAttendance) {
+      setDraftAttendance(todayAttendance);
     }
+  }, [todayAttendance]);
 
-    const today = new Date().toISOString().split("T")[0];
-    const newRecord = {
-      technician_id: technicianId,
-      supervisor_id: session.user.id,
-      date: today,
-      status,
-    };
-
-    submitAttendanceMutation.mutate([newRecord], {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["attendance"] });
-      },
-      onError: () => {
-        toast({
-          title: "Error",
-          description: "Failed to update status. Please try again.",
-          variant: "destructive",
-        });
+  const handleStatusChange = (technicianId: string, status: AttendanceRecord["status"]) => {
+    setDraftAttendance(prev => {
+      const existingIndex = prev.findIndex(record => record.technician_id === technicianId);
+      const today = new Date().toISOString().split("T")[0];
+      
+      if (existingIndex >= 0) {
+        const newDraft = [...prev];
+        newDraft[existingIndex] = {
+          ...newDraft[existingIndex],
+          status
+        };
+        return newDraft;
       }
+
+      return [...prev, {
+        id: `draft-${technicianId}`,
+        technician_id: technicianId,
+        supervisor_id: '', // Will be set on submission
+        date: today,
+        status,
+        submitted_at: null,
+        updated_at: null
+      } as AttendanceRecord];
     });
   };
 
@@ -72,7 +75,7 @@ export const AttendanceForm = () => {
 
     // Check if all technicians have attendance marked
     const unmarkedTechnicians = technicians?.filter(
-      tech => !todayAttendance?.find(record => record.technician_id === tech.id)
+      tech => !draftAttendance.find(record => record.technician_id === tech.id)
     );
 
     if (unmarkedTechnicians?.length > 0) {
@@ -86,7 +89,9 @@ export const AttendanceForm = () => {
 
     // Check if attendance is already submitted for today (all technicians have records)
     const allSubmitted = technicians?.every(tech => 
-      todayAttendance?.find(record => record.technician_id === tech.id)
+      todayAttendance?.find(record => 
+        record.technician_id === tech.id && record.submitted_at !== null
+      )
     );
 
     if (allSubmitted && !isEditing) {
@@ -98,15 +103,18 @@ export const AttendanceForm = () => {
     }
 
     const today = new Date().toISOString().split("T")[0];
-    const records = technicians?.map(tech => ({
-      technician_id: tech.id,
+    const records = draftAttendance.map(record => ({
+      technician_id: record.technician_id,
       supervisor_id: session.user.id,
       date: today,
-      status: todayAttendance?.find(record => record.technician_id === tech.id)?.status || "absent"
+      status: record.status
     }));
 
-    if (records) {
-      await handleSubmission(records);
+    if (records.length > 0) {
+      const success = await handleSubmission(records);
+      if (success) {
+        setDraftAttendance([]); // Clear draft after successful submission
+      }
     }
   };
 
@@ -161,20 +169,22 @@ export const AttendanceForm = () => {
   };
 
   const allSubmitted = technicians?.every(tech => 
-    todayAttendance?.find(record => record.technician_id === tech.id)
+    todayAttendance?.find(record => 
+      record.technician_id === tech.id && record.submitted_at !== null
+    )
   );
 
   return (
     <div className="space-y-8 animate-fade-in">
       <AttendanceControls
-        stats={calculateStats(todayAttendance)}
+        stats={calculateStats(allSubmitted ? todayAttendance : draftAttendance)}
         allSubmitted={allSubmitted}
         isEditing={isEditing}
         onEdit={() => setIsEditing(true)}
       />
       <AttendanceList
         technicians={technicians}
-        todayAttendance={todayAttendance}
+        todayAttendance={isEditing || !allSubmitted ? draftAttendance : todayAttendance}
         onStatusChange={handleStatusChange}
         onSubmit={handleSubmit}
         isSubmitting={submitAttendanceMutation.isPending}

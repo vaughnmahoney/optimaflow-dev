@@ -21,11 +21,14 @@ export const useAttendanceSubmission = () => {
     }
 
     try {
+      const now = new Date().toISOString();
       const { error } = await supabase
         .from("attendance_records")
         .upsert(records.map(record => ({
           ...record,
-          supervisor_id: session.user.id
+          supervisor_id: session.user.id,
+          submitted_at: now,
+          updated_at: now
         })))
         .select();
 
