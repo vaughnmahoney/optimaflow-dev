@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 import type { AttendanceRecord, Technician } from "@/types/attendance";
 
 export const useAttendance = () => {
@@ -74,6 +75,27 @@ export const useAttendance = () => {
       console.error("Error submitting attendance:", error);
     },
   });
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("attendance_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "attendance_records",
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["attendance"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   return {
     technicians,

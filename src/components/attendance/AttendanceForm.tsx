@@ -1,7 +1,5 @@
-import { useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
 import { AttendanceList } from "./AttendanceList";
 import { AttendanceControls } from "./AttendanceControls";
 import { useToast } from "@/hooks/use-toast";
@@ -13,7 +11,6 @@ import type { AttendanceRecord } from "@/types/attendance";
 
 export const AttendanceForm = () => {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   const {
     technicians,
     todayAttendance,
@@ -85,27 +82,6 @@ export const AttendanceForm = () => {
       }
     }
   };
-
-  useEffect(() => {
-    const channel = supabase
-      .channel("attendance_changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "attendance_records",
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["attendance"] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient]);
 
   if (isLoadingTechnicians || !technicians) {
     return (
