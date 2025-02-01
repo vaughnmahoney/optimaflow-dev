@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { Technician } from "@/types/attendance";
-import { AttendanceState, AttendanceStatus } from "@/utils/attendanceUtils";
+import type { AttendanceState, AttendanceStatus } from "@/utils/attendanceUtils";
 
 export const useAttendanceStateManager = (technicians: Technician[]) => {
   const [attendanceStates, setAttendanceStates] = useState<AttendanceState[]>([]);
