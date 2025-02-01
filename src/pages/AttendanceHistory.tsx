@@ -87,7 +87,9 @@ const AttendanceHistory = () => {
             {groupedRecords.map((yearGroup) => (
               <YearGroup
                 key={yearGroup.year}
-                {...yearGroup}
+                year={yearGroup.year}
+                months={yearGroup.months}
+                records={dailyRecords}
                 technicians={technicians}
                 editingDate={editingDate}
                 isSubmitting={isSubmitting}
