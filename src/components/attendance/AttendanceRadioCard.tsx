@@ -1,4 +1,4 @@
-import { RadioGroup } from "@/components/ui/radio-group";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { type AttendanceRecord, type Technician } from "@/types/attendance";
 import { cn } from "@/lib/utils";
@@ -38,7 +38,7 @@ export const AttendanceRadioCard = ({
         >
           {statusOptions.map((option) => (
             <div key={option.value} className="flex items-center space-x-2">
-              <RadioGroup.Root
+              <RadioGroupItem
                 value={option.value}
                 id={`${technician.id}-${option.value}`}
                 className={cn(
