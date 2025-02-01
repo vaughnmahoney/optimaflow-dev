@@ -38,7 +38,7 @@ export const AttendanceRadioCard = ({
         >
           {statusOptions.map((option) => (
             <div key={option.value} className="flex items-center space-x-2">
-              <RadioGroup.Item
+              <RadioGroup.Root
                 value={option.value}
                 id={`${technician.id}-${option.value}`}
                 className={cn(
