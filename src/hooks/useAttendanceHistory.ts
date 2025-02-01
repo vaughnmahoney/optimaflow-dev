@@ -7,13 +7,21 @@ export const useAttendanceHistory = () => {
     queryKey: ['technicians'],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("Not authenticated");
+      if (!session) {
+        console.error('No active session found');
+        throw new Error("Not authenticated");
+      }
+      console.log('Session found, fetching technicians for supervisor:', session.user.id);
 
       const { data, error } = await supabase
         .from('technicians')
         .select('*')
         .eq('supervisor_id', session.user.id);
-      if (error) throw error;
+
+      if (error) {
+        console.error('Error fetching technicians:', error);
+        throw error;
+      }
       console.log('Fetched technicians:', data);
       return data;
     },
@@ -41,7 +49,6 @@ export const useAttendanceHistory = () => {
         throw error;
       }
       
-      // Add detailed logging
       console.log('Raw attendance records:', data);
       console.log('Number of records fetched:', data?.length || 0);
       if (data && data.length > 0) {
