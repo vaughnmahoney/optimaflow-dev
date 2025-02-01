@@ -1,87 +1,28 @@
+import { useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { supabase } from "@/integrations/supabase/client";
-import { AttendanceList } from "./AttendanceList";
-import { AttendanceControls } from "./AttendanceControls";
-import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
 import { useAttendance } from "@/hooks/useAttendance";
-import { useAttendanceSubmission } from "@/hooks/useAttendanceSubmission";
-import { useAttendanceDraft } from "@/hooks/useAttendanceDraft";
-import { calculateAttendanceStats, validateAttendanceSubmission } from "@/utils/attendanceCalculations";
-import type { AttendanceRecord } from "@/types/attendance";
+import { useAttendanceState } from "@/hooks/useAttendanceState";
+import { AttendanceRadioCard } from "./AttendanceRadioCard";
+import { format } from "date-fns";
 
 export const AttendanceForm = () => {
-  const { toast } = useToast();
   const {
     technicians,
-    todayAttendance,
     isLoadingTechnicians,
-    isLoadingAttendance,
-    submitAttendanceMutation,
   } = useAttendance();
 
   const {
-    isEditing,
-    setIsEditing,
-    handleSubmission,
-  } = useAttendanceSubmission();
+    attendanceStates,
+    updateStatus,
+    initializeStates,
+  } = useAttendanceState(technicians || []);
 
-  const {
-    draftAttendance,
-    updateDraft,
-    clearDraft
-  } = useAttendanceDraft(todayAttendance);
-
-  const handleSubmit = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      toast({
-        title: "Error",
-        description: "You must be logged in to submit attendance.",
-        variant: "destructive",
-      });
-      return;
+  useEffect(() => {
+    if (technicians) {
+      initializeStates();
     }
-
-    if (!technicians) return;
-
-    if (!validateAttendanceSubmission(draftAttendance, technicians.length)) {
-      toast({
-        title: "Warning",
-        description: "Please mark attendance for all technicians before submitting.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const allSubmitted = technicians.every(tech => 
-      todayAttendance?.find(record => 
-        record.technician_id === tech.id && record.submitted_at !== null
-      )
-    );
-
-    if (allSubmitted && !isEditing) {
-      toast({
-        title: "Notice",
-        description: "Attendance already submitted for today. Click 'Edit Attendance' to make changes.",
-      });
-      return;
-    }
-
-    const today = new Date().toISOString().split("T")[0];
-    const records = draftAttendance.map(record => ({
-      technician_id: record.technician_id,
-      supervisor_id: session.user.id,
-      date: today,
-      status: record.status
-    }));
-
-    if (records.length > 0) {
-      const success = await handleSubmission(records);
-      if (success) {
-        clearDraft();
-      }
-    }
-  };
+  }, [technicians]);
 
   if (isLoadingTechnicians || !technicians) {
     return (
@@ -95,32 +36,36 @@ export const AttendanceForm = () => {
     );
   }
 
-  const allSubmitted = technicians.every(tech => 
-    todayAttendance?.find(record => 
-      record.technician_id === tech.id && record.submitted_at !== null
-    )
-  );
-
-  const currentStats = calculateAttendanceStats(
-    allSubmitted ? todayAttendance : draftAttendance
-  );
-
   return (
     <div className="space-y-8 animate-fade-in">
-      <AttendanceControls
-        stats={currentStats}
-        allSubmitted={allSubmitted}
-        isEditing={isEditing}
-        onEdit={() => setIsEditing(true)}
-      />
-      <AttendanceList
-        technicians={technicians}
-        todayAttendance={isEditing || !allSubmitted ? draftAttendance : todayAttendance}
-        onStatusChange={updateDraft}
-        onSubmit={handleSubmit}
-        isSubmitting={submitAttendanceMutation.isPending}
-        isEditable={!allSubmitted || isEditing}
-      />
+      <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold">
+            Attendance for {format(new Date(), "EEEE, MMMM d, yyyy")}
+          </h3>
+          <p className="text-sm text-gray-500">
+            Mark attendance for your team using the radio buttons below
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          {technicians.map((tech) => {
+            const state = attendanceStates.find(
+              (state) => state.technicianId === tech.id
+            );
+
+            return (
+              <AttendanceRadioCard
+                key={tech.id}
+                technician={tech}
+                currentStatus={state?.status || null}
+                onStatusChange={(status) => updateStatus(tech.id, status)}
+                isSubmitting={state?.isSubmitting || false}
+              />
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 };
