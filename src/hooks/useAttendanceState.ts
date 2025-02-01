@@ -1,70 +1,17 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { type AttendanceRecord, type Technician } from "@/types/attendance";
+import { type Technician } from "@/types/attendance";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-
-type AttendanceStatus = AttendanceRecord["status"];
-
-interface AttendanceState {
-  technicianId: string;
-  status: AttendanceStatus | null;
-  isSubmitting: boolean;
-}
+import { useAttendanceStateManager } from "./useAttendanceStateManager";
+import { createAttendanceRecords, submitAttendanceRecords } from "@/utils/attendanceUtils";
 
 export const useAttendanceState = (technicians: Technician[]) => {
-  const [attendanceStates, setAttendanceStates] = useState<AttendanceState[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { attendanceStates, updateStatus, initializeStates } = useAttendanceStateManager(technicians);
 
-  // Initialize states for all technicians
-  const initializeStates = (existingStates?: { technicianId: string; status: AttendanceStatus }[]) => {
-    const initialStates = technicians.map((tech) => ({
-      technicianId: tech.id,
-      status: existingStates?.find(state => state.technicianId === tech.id)?.status || null,
-      isSubmitting: false,
-    }));
-    setAttendanceStates(initialStates);
-  };
-
-  // Update status for a specific technician
-  const updateStatus = async (technicianId: string, newStatus: AttendanceStatus) => {
-    // Prevent rapid status changes
-    const existingState = attendanceStates.find(
-      (state) => state.technicianId === technicianId
-    );
-    if (existingState?.isSubmitting) {
-      toast({
-        title: "Please wait",
-        description: "Previous status update is still processing",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Update local state with new status
-    setAttendanceStates((prev) =>
-      prev.map((state) =>
-        state.technicianId === technicianId
-          ? { ...state, status: newStatus }
-          : state
-      )
-    );
-  };
-
-  // Check if attendance has already been submitted for today
-  const checkTodayAttendance = async () => {
-    const today = new Date().toISOString().split('T')[0];
-    const { data: existingRecords } = await supabase
-      .from("attendance_records")
-      .select("*")
-      .eq("date", today);
-
-    return existingRecords && existingRecords.length > 0;
-  };
-
-  // Submit all attendance records for the day
   const submitDailyAttendance = async () => {
     try {
       setIsSubmitting(true);
@@ -75,17 +22,7 @@ export const useAttendanceState = (technicians: Technician[]) => {
       }
 
       const today = new Date().toISOString().split("T")[0];
-      
-      // Create attendance records for all technicians
-      const records = attendanceStates
-        .filter(state => state.status !== null) // Only include records with a status set
-        .map((state) => ({
-          technician_id: state.technicianId,
-          supervisor_id: session.user.id,
-          date: today,
-          status: state.status,
-          updated_at: new Date().toISOString(),
-        }));
+      const records = createAttendanceRecords(attendanceStates, session.user.id, today);
 
       if (records.length === 0) {
         toast({
@@ -96,17 +33,7 @@ export const useAttendanceState = (technicians: Technician[]) => {
         return;
       }
 
-      // Use upsert with the unique constraint on technician_id and date
-      const { error } = await supabase
-        .from("attendance_records")
-        .upsert(records, {
-          onConflict: 'technician_id,date',
-          ignoreDuplicates: false,
-        });
-
-      if (error) throw error;
-
-      // Invalidate queries to refresh data
+      await submitAttendanceRecords(records);
       queryClient.invalidateQueries({ queryKey: ["attendance"] });
 
       toast({

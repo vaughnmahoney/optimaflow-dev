@@ -1,92 +1,37 @@
-import { DailyAttendanceRecord } from "@/types/attendance";
+import { type AttendanceRecord, type Technician } from "@/types/attendance";
+import { supabase } from "@/integrations/supabase/client";
 
-interface YearGroup {
-  year: string;
-  months: MonthGroup[];
+export type AttendanceStatus = AttendanceRecord["status"];
+
+export interface AttendanceState {
+  technicianId: string;
+  status: AttendanceStatus | null;
+  isSubmitting: boolean;
 }
 
-interface MonthGroup {
-  month: string;
-  weeks: WeekGroup[];
-}
-
-interface WeekGroup {
-  weekNumber: number;
-  startDate: string;
-  endDate: string;
-  records: DailyAttendanceRecord[];
-}
-
-export const groupAttendanceRecords = (records: DailyAttendanceRecord[]): YearGroup[] => {
-  const groupedByYear: { [key: string]: { [key: string]: DailyAttendanceRecord[] } } = {};
-
-  // Sort records by date in descending order
-  records.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-  // Group records by year and month
-  records.forEach(record => {
-    const date = new Date(record.date);
-    const year = date.getFullYear().toString();
-    const month = date.toLocaleString('default', { month: 'long' });
-
-    if (!groupedByYear[year]) {
-      groupedByYear[year] = {};
-    }
-    if (!groupedByYear[year][month]) {
-      groupedByYear[year][month] = [];
-    }
-    groupedByYear[year][month].push(record);
-  });
-
-  // Transform into the required format
-  return Object.entries(groupedByYear).map(([year, months]) => ({
-    year,
-    months: Object.entries(months).map(([month, records]) => ({
-      month,
-      weeks: groupIntoWeeks(records),
-    })),
-  }));
+export const createAttendanceRecords = (
+  attendanceStates: AttendanceState[],
+  supervisorId: string,
+  date: string
+) => {
+  return attendanceStates
+    .filter(state => state.status !== null)
+    .map((state) => ({
+      technician_id: state.technicianId,
+      supervisor_id: supervisorId,
+      date,
+      status: state.status,
+      updated_at: new Date().toISOString(),
+    }));
 };
 
-const groupIntoWeeks = (records: DailyAttendanceRecord[]): WeekGroup[] => {
-  const weeks: { [key: number]: WeekGroup } = {};
+export const submitAttendanceRecords = async (records: any[]) => {
+  const { error } = await supabase
+    .from("attendance_records")
+    .upsert(records, {
+      onConflict: 'technician_id,date',
+      ignoreDuplicates: false,
+    });
 
-  records.forEach(record => {
-    const date = new Date(record.date);
-    const weekNumber = getWeekNumber(date);
-    
-    if (!weeks[weekNumber]) {
-      weeks[weekNumber] = {
-        weekNumber,
-        startDate: getWeekStart(date).toISOString().split('T')[0],
-        endDate: getWeekEnd(date).toISOString().split('T')[0],
-        records: [],
-      };
-    }
-    weeks[weekNumber].records.push(record);
-  });
-
-  return Object.values(weeks).sort((a, b) => b.weekNumber - a.weekNumber);
-};
-
-const getWeekNumber = (date: Date): number => {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
-};
-
-const getWeekStart = (date: Date): Date => {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  return new Date(d.setDate(diff));
-};
-
-const getWeekEnd = (date: Date): Date => {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = d.getDate() - day + 7;
-  return new Date(d.setDate(diff));
+  if (error) throw error;
 };
