@@ -33,16 +33,22 @@ const AttendanceHistory = () => {
         .select('*')
         .eq('supervisor_id', session.user.id);
       if (error) throw error;
+      console.log('Fetched technicians:', data);
       return data;
     },
   });
 
-  // Fetch attendance records
+  // Fetch attendance records with detailed error handling
   const { data: attendanceRecords = [], isLoading } = useQuery({
     queryKey: ['attendance'],
     queryFn: async () => {
+      console.log('Starting attendance records fetch...');
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("Not authenticated");
+      if (!session) {
+        console.error('No active session found');
+        throw new Error("Not authenticated");
+      }
+      console.log('Session found, user ID:', session.user.id);
 
       const { data, error } = await supabase
         .from('attendance_records')
@@ -50,11 +56,12 @@ const AttendanceHistory = () => {
         .eq('supervisor_id', session.user.id)
         .order('date', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching attendance records:', error);
+        throw error;
+      }
       
-      // Log the fetched records for debugging
       console.log('Fetched attendance records:', data);
-      
       return data as AttendanceRecord[];
     },
   });
@@ -88,15 +95,12 @@ const AttendanceHistory = () => {
     }
   };
 
+  console.log('Before transformation - attendanceRecords:', attendanceRecords);
   const dailyRecords = transformAttendanceRecords(attendanceRecords);
-  
-  // Log transformed records for debugging
-  console.log('Transformed daily records:', dailyRecords);
+  console.log('After transformation - dailyRecords:', dailyRecords);
   
   const groupedRecords = groupAttendanceRecords(dailyRecords);
-  
-  // Log grouped records for debugging
-  console.log('Grouped records:', groupedRecords);
+  console.log('Final grouped records:', groupedRecords);
 
   const getTechnicianName = (technician_id: string) => {
     return technicians.find((tech) => tech.id === technician_id)?.name || "Unknown Technician";
@@ -171,12 +175,15 @@ const AttendanceHistory = () => {
   );
 };
 
-// Helper function to transform attendance records
 const transformAttendanceRecords = (records: AttendanceRecord[]): DailyAttendanceRecord[] => {
-  // Log input records for debugging
-  console.log('Input records for transformation:', records);
-  
+  console.log('Starting records transformation with:', records);
+  if (!Array.isArray(records)) {
+    console.error('Records is not an array:', records);
+    return [];
+  }
+
   const groupedByDate = records.reduce((acc, record) => {
+    console.log('Processing record:', record);
     const date = record.date;
     if (!acc[date]) {
       acc[date] = {
@@ -194,10 +201,10 @@ const transformAttendanceRecords = (records: AttendanceRecord[]): DailyAttendanc
     return acc;
   }, {} as Record<string, DailyAttendanceRecord>);
 
-  // Log the grouped records before returning
   console.log('Grouped by date:', groupedByDate);
-  
-  return Object.values(groupedByDate);
+  const result = Object.values(groupedByDate);
+  console.log('Final transformed records:', result);
+  return result;
 };
 
 export default AttendanceHistory;
