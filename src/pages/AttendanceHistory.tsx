@@ -49,7 +49,12 @@ const AttendanceHistory = () => {
         .select('*')
         .eq('supervisor_id', session.user.id)
         .order('date', { ascending: false });
+      
       if (error) throw error;
+      
+      // Log the fetched records for debugging
+      console.log('Fetched attendance records:', data);
+      
       return data as AttendanceRecord[];
     },
   });
@@ -84,7 +89,14 @@ const AttendanceHistory = () => {
   };
 
   const dailyRecords = transformAttendanceRecords(attendanceRecords);
+  
+  // Log transformed records for debugging
+  console.log('Transformed daily records:', dailyRecords);
+  
   const groupedRecords = groupAttendanceRecords(dailyRecords);
+  
+  // Log grouped records for debugging
+  console.log('Grouped records:', groupedRecords);
 
   const getTechnicianName = (technician_id: string) => {
     return technicians.find((tech) => tech.id === technician_id)?.name || "Unknown Technician";
@@ -161,6 +173,9 @@ const AttendanceHistory = () => {
 
 // Helper function to transform attendance records
 const transformAttendanceRecords = (records: AttendanceRecord[]): DailyAttendanceRecord[] => {
+  // Log input records for debugging
+  console.log('Input records for transformation:', records);
+  
   const groupedByDate = records.reduce((acc, record) => {
     const date = record.date;
     if (!acc[date]) {
@@ -179,6 +194,9 @@ const transformAttendanceRecords = (records: AttendanceRecord[]): DailyAttendanc
     return acc;
   }, {} as Record<string, DailyAttendanceRecord>);
 
+  // Log the grouped records before returning
+  console.log('Grouped by date:', groupedByDate);
+  
   return Object.values(groupedByDate);
 };
 
