@@ -22,52 +22,37 @@ const AttendanceHistory = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch technicians
-  const { data: technicians = [] } = useQuery<Technician[]>({
+  const { data: technicians = [] } = useQuery({
     queryKey: ['technicians'],
     queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+
       const { data, error } = await supabase
         .from('technicians')
-        .select('*');
+        .select('*')
+        .eq('supervisor_id', session.user.id);
       if (error) throw error;
       return data;
     },
   });
 
   // Fetch attendance records
-  const { data: attendanceRecords = [], isLoading } = useQuery<AttendanceRecord[]>({
+  const { data: attendanceRecords = [], isLoading } = useQuery({
     queryKey: ['attendance'],
     queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+
       const { data, error } = await supabase
         .from('attendance_records')
         .select('*')
+        .eq('supervisor_id', session.user.id)
         .order('date', { ascending: false });
       if (error) throw error;
       return data as AttendanceRecord[];
     },
   });
-
-  // Transform AttendanceRecord[] to DailyAttendanceRecord[]
-  const transformAttendanceRecords = (records: AttendanceRecord[]): DailyAttendanceRecord[] => {
-    const groupedByDate = records.reduce((acc, record) => {
-      const date = record.date;
-      if (!acc[date]) {
-        acc[date] = {
-          id: date,
-          date,
-          records: [],
-          submittedBy: record.supervisor_id,
-          submittedAt: record.submitted_at || '',
-          stats: { present: 0, absent: 0, excused: 0, total: 0 }
-        };
-      }
-      acc[date].records.push(record);
-      acc[date].stats[record.status as keyof typeof acc[typeof date]['stats']]++;
-      acc[date].stats.total++;
-      return acc;
-    }, {} as Record<string, DailyAttendanceRecord>);
-
-    return Object.values(groupedByDate);
-  };
 
   const handleStatusChange = async (technicianId: string, status: AttendanceRecord["status"], date: string) => {
     try {
@@ -152,8 +137,9 @@ const AttendanceHistory = () => {
                     {yearGroup.months.map((monthGroup) => (
                       <MonthGroup
                         key={monthGroup.month}
-                        {...monthGroup}
-                        weeks={[]} // Add empty weeks array to satisfy type
+                        month={monthGroup.month}
+                        weeks={monthGroup.weeks}
+                        records={monthGroup.records}
                         technicians={technicians}
                         editingDate={editingDate}
                         isSubmitting={isSubmitting}
@@ -171,6 +157,29 @@ const AttendanceHistory = () => {
       </div>
     </Layout>
   );
+};
+
+// Helper function to transform attendance records
+const transformAttendanceRecords = (records: AttendanceRecord[]): DailyAttendanceRecord[] => {
+  const groupedByDate = records.reduce((acc, record) => {
+    const date = record.date;
+    if (!acc[date]) {
+      acc[date] = {
+        id: date,
+        date,
+        records: [],
+        submittedBy: record.supervisor_id,
+        submittedAt: record.submitted_at || '',
+        stats: { present: 0, absent: 0, excused: 0, total: 0 }
+      };
+    }
+    acc[date].records.push(record);
+    acc[date].stats[record.status as keyof typeof acc[typeof date]['stats']]++;
+    acc[date].stats.total++;
+    return acc;
+  }, {} as Record<string, DailyAttendanceRecord>);
+
+  return Object.values(groupedByDate);
 };
 
 export default AttendanceHistory;

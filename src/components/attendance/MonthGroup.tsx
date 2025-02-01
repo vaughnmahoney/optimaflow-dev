@@ -8,10 +8,12 @@ import {
 import { Folder } from "lucide-react";
 import { WeekGroup } from "./WeekGroup";
 import type { Technician } from "@/types/attendance";
+import type { WeekGroup as WeekGroupType } from "@/types/attendanceTypes";
 
 interface MonthGroupProps {
   month: string;
-  weeks: any[];
+  weeks: WeekGroupType[];
+  records: any[];
   technicians: Technician[];
   editingDate: string | null;
   isSubmitting: boolean;
@@ -43,7 +45,7 @@ export const MonthGroup: React.FC<MonthGroupProps> = ({
           <div className="pl-8 space-y-4">
             {weeks.map((weekGroup) => (
               <WeekGroup
-                key={weekGroup.weekNumber}
+                key={`${weekGroup.weekNumber}-${weekGroup.startDate}`}
                 {...weekGroup}
                 technicians={technicians}
                 editingDate={editingDate}
