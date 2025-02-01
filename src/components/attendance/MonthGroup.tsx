@@ -7,13 +7,13 @@ import {
 } from "@/components/ui/accordion";
 import { Folder } from "lucide-react";
 import { WeekGroup } from "./WeekGroup";
-import type { Technician } from "@/types/attendance";
+import type { Technician, DailyAttendanceRecord } from "@/types/attendance";
 import type { WeekGroup as WeekGroupType } from "@/types/attendanceTypes";
 
 interface MonthGroupProps {
   month: string;
   weeks: WeekGroupType[];
-  records: any[];
+  records: DailyAttendanceRecord[];
   technicians: Technician[];
   editingDate: string | null;
   isSubmitting: boolean;
@@ -25,6 +25,7 @@ interface MonthGroupProps {
 export const MonthGroup: React.FC<MonthGroupProps> = ({
   month,
   weeks,
+  records,
   technicians,
   editingDate,
   isSubmitting,
@@ -47,6 +48,7 @@ export const MonthGroup: React.FC<MonthGroupProps> = ({
               <WeekGroup
                 key={`${weekGroup.weekNumber}-${weekGroup.startDate}`}
                 {...weekGroup}
+                records={records}
                 technicians={technicians}
                 editingDate={editingDate}
                 isSubmitting={isSubmitting}

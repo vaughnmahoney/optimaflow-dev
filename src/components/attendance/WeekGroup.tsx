@@ -8,13 +8,13 @@ import {
 } from "@/components/ui/accordion";
 import { Folder } from "lucide-react";
 import { DailyAttendanceCard } from "./DailyAttendanceCard";
-import type { Technician } from "@/types/attendance";
+import type { Technician, DailyAttendanceRecord } from "@/types/attendance";
 
 interface WeekGroupProps {
   weekNumber: number;
   startDate: string;
   endDate: string;
-  records: any[];
+  records: DailyAttendanceRecord[];
   technicians: Technician[];
   editingDate: string | null;
   isSubmitting: boolean;
@@ -35,6 +35,12 @@ export const WeekGroup: React.FC<WeekGroupProps> = ({
   onStatusChange,
   getTechnicianName,
 }) => {
+  // Filter records that fall within this week's date range
+  const weekRecords = records.filter(record => {
+    const recordDate = record.date;
+    return recordDate >= startDate && recordDate <= endDate;
+  });
+
   return (
     <AccordionItem value={weekNumber.toString()}>
       <AccordionTrigger className="hover:no-underline">
@@ -48,7 +54,7 @@ export const WeekGroup: React.FC<WeekGroupProps> = ({
       </AccordionTrigger>
       <AccordionContent>
         <div className="space-y-4">
-          {records.map((record) => (
+          {weekRecords.map((record) => (
             <DailyAttendanceCard
               key={record.id}
               record={record}
