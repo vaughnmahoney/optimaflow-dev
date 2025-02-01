@@ -7,6 +7,7 @@ import { AttendanceRadioCard } from "./AttendanceRadioCard";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { PencilIcon, CheckIcon, XIcon } from "lucide-react";
 
 export const AttendanceForm = () => {
   const {
@@ -16,6 +17,8 @@ export const AttendanceForm = () => {
 
   const { toast } = useToast();
   const [hasSubmittedToday, setHasSubmittedToday] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [todayRecords, setTodayRecords] = useState<any[]>([]);
 
   const {
     attendanceStates,
@@ -27,7 +30,6 @@ export const AttendanceForm = () => {
 
   useEffect(() => {
     if (technicians) {
-      initializeStates();
       checkTodaySubmission();
     }
   }, [technicians]);
@@ -40,6 +42,17 @@ export const AttendanceForm = () => {
       .eq("date", today);
 
     setHasSubmittedToday(existingRecords && existingRecords.length > 0);
+    if (existingRecords && existingRecords.length > 0) {
+      setTodayRecords(existingRecords);
+      // Initialize states with existing records
+      const states = existingRecords.map((record: any) => ({
+        technicianId: record.technician_id,
+        status: record.status,
+      }));
+      initializeStates(states);
+    } else {
+      initializeStates();
+    }
   };
 
   const handleSubmit = async () => {
@@ -59,6 +72,16 @@ export const AttendanceForm = () => {
 
     await submitDailyAttendance();
     await checkTodaySubmission();
+    setIsEditing(false);
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    checkTodaySubmission(); // Reset to original values
   };
 
   if (isLoadingTechnicians || !technicians) {
@@ -76,15 +99,29 @@ export const AttendanceForm = () => {
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="bg-white rounded-lg shadow-sm border p-6">
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold">
-            Attendance for {format(new Date(), "EEEE, MMMM d, yyyy")}
-          </h3>
-          <p className="text-sm text-gray-500">
-            {hasSubmittedToday 
-              ? "Today's attendance has been submitted. You can edit it from the history page."
-              : "Mark attendance for your team using the radio buttons below"}
-          </p>
+        <div className="mb-6 flex justify-between items-center">
+          <div>
+            <h3 className="text-lg font-semibold">
+              Attendance for {format(new Date(), "EEEE, MMMM d, yyyy")}
+            </h3>
+            <p className="text-sm text-gray-500">
+              {hasSubmittedToday && !isEditing
+                ? "Today's attendance has been submitted. Click edit to make changes."
+                : isEditing
+                ? "Edit mode: Make your changes and click save to update the attendance records."
+                : "Mark attendance for your team using the radio buttons below"}
+            </p>
+          </div>
+          {hasSubmittedToday && !isEditing && (
+            <Button
+              variant="outline"
+              onClick={handleEdit}
+              className="gap-2"
+            >
+              <PencilIcon className="h-4 w-4" />
+              Edit
+            </Button>
+          )}
         </div>
 
         <div className="space-y-4">
@@ -99,19 +136,41 @@ export const AttendanceForm = () => {
                 technician={tech}
                 currentStatus={state?.status || null}
                 onStatusChange={(status) => updateStatus(tech.id, status)}
-                isSubmitting={state?.isSubmitting || false}
+                isSubmitting={isSubmitting}
               />
             );
           })}
         </div>
 
-        <div className="mt-8 flex justify-end">
+        <div className="mt-8 flex justify-end gap-4">
+          {isEditing && (
+            <Button 
+              variant="outline"
+              onClick={handleCancelEdit}
+              disabled={isSubmitting}
+              className="gap-2"
+            >
+              <XIcon className="h-4 w-4" />
+              Cancel
+            </Button>
+          )}
           <Button 
             onClick={handleSubmit}
-            disabled={isSubmitting || hasSubmittedToday}
-            className="w-full sm:w-auto"
+            disabled={(!isEditing && hasSubmittedToday) || isSubmitting}
+            className="gap-2"
           >
-            {isSubmitting ? "Submitting..." : hasSubmittedToday ? "Already Submitted" : "Submit Daily Attendance"}
+            {isSubmitting ? (
+              "Submitting..."
+            ) : isEditing ? (
+              <>
+                <CheckIcon className="h-4 w-4" />
+                Save Changes
+              </>
+            ) : hasSubmittedToday ? (
+              "Already Submitted"
+            ) : (
+              "Submit Daily Attendance"
+            )}
           </Button>
         </div>
       </div>

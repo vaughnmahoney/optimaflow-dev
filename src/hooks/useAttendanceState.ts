@@ -19,10 +19,10 @@ export const useAttendanceState = (technicians: Technician[]) => {
   const queryClient = useQueryClient();
 
   // Initialize states for all technicians
-  const initializeStates = () => {
+  const initializeStates = (existingStates?: { technicianId: string; status: AttendanceStatus }[]) => {
     const initialStates = technicians.map((tech) => ({
       technicianId: tech.id,
-      status: null,
+      status: existingStates?.find(state => state.technicianId === tech.id)?.status || null,
       isSubmitting: false,
     }));
     setAttendanceStates(initialStates);
@@ -69,17 +69,6 @@ export const useAttendanceState = (technicians: Technician[]) => {
     try {
       setIsSubmitting(true);
 
-      // Check if attendance already submitted for today
-      const hasSubmitted = await checkTodayAttendance();
-      if (hasSubmitted) {
-        toast({
-          title: "Already Submitted",
-          description: "Attendance for today has already been submitted. You can edit it from the history page.",
-          variant: "destructive",
-        });
-        return;
-      }
-
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         throw new Error("No active session");
@@ -94,11 +83,15 @@ export const useAttendanceState = (technicians: Technician[]) => {
         date: today,
         status: state.status,
         submitted_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       }));
 
       const { error } = await supabase
         .from("attendance_records")
-        .upsert(records);
+        .upsert(records, { 
+          onConflict: 'technician_id,date',
+          ignoreDuplicates: false 
+        });
 
       if (error) throw error;
 
@@ -107,7 +100,7 @@ export const useAttendanceState = (technicians: Technician[]) => {
 
       toast({
         title: "Success",
-        description: "Daily attendance has been submitted successfully.",
+        description: "Attendance records have been saved successfully.",
       });
 
     } catch (error) {
