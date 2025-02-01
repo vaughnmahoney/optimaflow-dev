@@ -153,6 +153,7 @@ const AttendanceHistory = () => {
                       <MonthGroup
                         key={monthGroup.month}
                         {...monthGroup}
+                        weeks={[]} // Add empty weeks array to satisfy type
                         technicians={technicians}
                         editingDate={editingDate}
                         isSubmitting={isSubmitting}

@@ -1,5 +1,13 @@
-import type { AttendanceState } from "@/hooks/useAttendanceState";
-import type { DailyAttendanceRecord } from "@/types/attendance";
+import { supabase } from "@/integrations/supabase/client";
+import type { DailyAttendanceRecord, AttendanceRecord } from "@/types/attendance";
+
+export type AttendanceStatus = AttendanceRecord["status"];
+
+export interface AttendanceState {
+  technicianId: string;
+  status: AttendanceStatus | null;
+  isSubmitting: boolean;
+}
 
 interface MonthGroup {
   month: string;
