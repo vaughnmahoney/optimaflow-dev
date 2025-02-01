@@ -25,6 +25,7 @@ export const useAttendanceHistory = () => {
       console.log('Fetched technicians:', data);
       return data;
     },
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 
   const { data: attendanceRecords = [], isLoading } = useQuery({
@@ -59,6 +60,8 @@ export const useAttendanceHistory = () => {
       
       return data as AttendanceRecord[];
     },
+    refetchOnWindowFocus: false,
+    staleTime: 0, // Always fetch fresh data
   });
 
   const getTechnicianName = (technician_id: string) => {

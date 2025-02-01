@@ -43,8 +43,10 @@ export const useAttendanceState = (technicians: Technician[]) => {
       await submitAttendanceRecords(records);
       console.log('Successfully submitted attendance records');
       
+      // Ensure the attendance query is invalidated and refetched
       await queryClient.invalidateQueries({ queryKey: ["attendance"] });
-      console.log('Invalidated attendance queries');
+      await queryClient.refetchQueries({ queryKey: ["attendance"] });
+      console.log('Invalidated and refetched attendance queries');
 
       toast({
         title: "Success",
