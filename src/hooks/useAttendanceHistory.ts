@@ -41,7 +41,15 @@ export const useAttendanceHistory = () => {
         throw error;
       }
       
-      console.log('Fetched attendance records:', data);
+      // Add detailed logging
+      console.log('Raw attendance records:', data);
+      console.log('Number of records fetched:', data?.length || 0);
+      if (data && data.length > 0) {
+        console.log('Most recent record:', data[0]);
+        console.log('Date of most recent record:', data[0].date);
+        console.log('Today\'s date:', new Date().toISOString().split('T')[0]);
+      }
+      
       return data as AttendanceRecord[];
     },
   });
