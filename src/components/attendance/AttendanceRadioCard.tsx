@@ -17,16 +17,16 @@ export const AttendanceRadioCard = ({
   isSubmitting,
 }: AttendanceRadioCardProps) => {
   const statusOptions: { value: AttendanceRecord["status"]; label: string; className: string }[] = [
-    { value: "present", label: "Present", className: "text-green-700 border-green-200" },
-    { value: "absent", label: "Absent", className: "text-red-700 border-red-200" },
-    { value: "excused", label: "Excused", className: "text-yellow-700 border-yellow-200" },
+    { value: "present", label: "Present", className: "bg-green-100 text-green-700" },
+    { value: "absent", label: "Absent", className: "bg-red-100 text-red-700" },
+    { value: "excused", label: "Excused", className: "bg-gray-100 text-gray-700" },
   ];
 
   return (
-    <div className="p-4 rounded-lg border bg-white shadow-sm animate-fade-in">
+    <div className="p-6 rounded-xl border bg-white shadow-sm animate-fade-in">
       <div className="space-y-4">
         <div>
-          <h4 className="font-medium">{technician.name}</h4>
+          <h4 className="text-lg font-semibold text-gray-900">{technician.name}</h4>
           <p className="text-sm text-gray-500">{technician.email}</p>
         </div>
         
@@ -37,23 +37,23 @@ export const AttendanceRadioCard = ({
           disabled={isSubmitting}
         >
           {statusOptions.map((option) => (
-            <div key={option.value} className="flex items-center space-x-2">
-              <RadioGroupItem
-                value={option.value}
-                id={`${technician.id}-${option.value}`}
-                className={cn(
-                  "peer h-4 w-4 rounded-full border border-primary text-primary ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-                  currentStatus === option.value && option.className
-                )}
-              />
+            <div key={option.value} className="flex items-center">
               <Label
                 htmlFor={`${technician.id}-${option.value}`}
                 className={cn(
-                  "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
-                  currentStatus === option.value && option.className
+                  "px-6 py-2 rounded-full cursor-pointer transition-colors",
+                  currentStatus === option.value ? option.className : "bg-gray-50 text-gray-500 hover:bg-gray-100",
+                  isSubmitting && "opacity-50 cursor-not-allowed"
                 )}
               >
-                {option.label}
+                <div className="flex items-center gap-2">
+                  <RadioGroupItem
+                    value={option.value}
+                    id={`${technician.id}-${option.value}`}
+                    className="sr-only"
+                  />
+                  {option.label}
+                </div>
               </Label>
             </div>
           ))}
