@@ -5,6 +5,7 @@ import { useAttendance } from "@/hooks/useAttendance";
 import { useAttendanceState } from "@/hooks/useAttendanceState";
 import { AttendanceRadioCard } from "./AttendanceRadioCard";
 import { format } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
 
 export const AttendanceForm = () => {
   const {
@@ -12,10 +13,14 @@ export const AttendanceForm = () => {
     isLoadingTechnicians,
   } = useAttendance();
 
+  const { toast } = useToast();
+
   const {
     attendanceStates,
     updateStatus,
     initializeStates,
+    submitDailyAttendance,
+    isSubmitting,
   } = useAttendanceState(technicians || []);
 
   useEffect(() => {
@@ -23,6 +28,28 @@ export const AttendanceForm = () => {
       initializeStates();
     }
   }, [technicians]);
+
+  const handleSubmit = async () => {
+    // Check if all technicians have a status set
+    const unsetTechnicians = technicians?.filter(
+      tech => !attendanceStates.find(state => state.technicianId === tech.id)?.status
+    );
+
+    if (unsetTechnicians?.length) {
+      toast({
+        title: "Missing Attendance",
+        description: "Please mark attendance for all technicians before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    await submitDailyAttendance();
+    toast({
+      title: "Success",
+      description: "Daily attendance has been submitted successfully.",
+    });
+  };
 
   if (isLoadingTechnicians || !technicians) {
     return (
@@ -64,6 +91,16 @@ export const AttendanceForm = () => {
               />
             );
           })}
+        </div>
+
+        <div className="mt-8 flex justify-end">
+          <Button 
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="w-full sm:w-auto"
+          >
+            {isSubmitting ? "Submitting..." : "Submit Daily Attendance"}
+          </Button>
         </div>
       </div>
     </div>

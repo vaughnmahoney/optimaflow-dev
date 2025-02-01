@@ -14,6 +14,7 @@ interface AttendanceState {
 
 export const useAttendanceState = (technicians: Technician[]) => {
   const [attendanceStates, setAttendanceStates] = useState<AttendanceState[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -42,15 +43,20 @@ export const useAttendanceState = (technicians: Technician[]) => {
       return;
     }
 
+    // Update local state with new status
+    setAttendanceStates((prev) =>
+      prev.map((state) =>
+        state.technicianId === technicianId
+          ? { ...state, status: newStatus }
+          : state
+      )
+    );
+  };
+
+  // Submit all attendance records for the day
+  const submitDailyAttendance = async () => {
     try {
-      // Update local state to show loading
-      setAttendanceStates((prev) =>
-        prev.map((state) =>
-          state.technicianId === technicianId
-            ? { ...state, isSubmitting: true }
-            : state
-        )
-      );
+      setIsSubmitting(true);
 
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -59,51 +65,34 @@ export const useAttendanceState = (technicians: Technician[]) => {
 
       const today = new Date().toISOString().split("T")[0];
       
-      // Update attendance record
+      // Create attendance records for all technicians
+      const records = attendanceStates.map((state) => ({
+        technician_id: state.technicianId,
+        supervisor_id: session.user.id,
+        date: today,
+        status: state.status,
+        submitted_at: new Date().toISOString(),
+      }));
+
       const { error } = await supabase
         .from("attendance_records")
-        .upsert({
-          technician_id: technicianId,
-          supervisor_id: session.user.id,
-          date: today,
-          status: newStatus,
-          submitted_at: new Date().toISOString(),
-        });
+        .upsert(records);
 
       if (error) throw error;
-
-      // Update local state with new status
-      setAttendanceStates((prev) =>
-        prev.map((state) =>
-          state.technicianId === technicianId
-            ? { ...state, status: newStatus, isSubmitting: false }
-            : state
-        )
-      );
 
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ["attendance"] });
 
-      toast({
-        title: "Success",
-        description: "Attendance status updated successfully",
-      });
     } catch (error) {
-      console.error("Error updating attendance:", error);
+      console.error("Error submitting attendance:", error);
       toast({
         title: "Error",
-        description: "Failed to update attendance status. Please try again.",
+        description: "Failed to submit attendance records. Please try again.",
         variant: "destructive",
       });
-
-      // Reset submitting state on error
-      setAttendanceStates((prev) =>
-        prev.map((state) =>
-          state.technicianId === technicianId
-            ? { ...state, isSubmitting: false }
-            : state
-        )
-      );
+      throw error;
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -111,5 +100,7 @@ export const useAttendanceState = (technicians: Technician[]) => {
     attendanceStates,
     updateStatus,
     initializeStates,
+    submitDailyAttendance,
+    isSubmitting,
   };
 };
