@@ -1,31 +1,9 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { DailyAttendanceRecord } from "@/types/attendance";
+import type { AttendanceState, WeekGroup, MonthGroup, YearGroup } from "@/types/attendanceTypes";
+import { getWeekNumber, getWeekStart, getWeekEnd } from "./dateUtils";
 
-export type AttendanceStatus = "present" | "absent" | "excused";
-
-export interface AttendanceState {
-  technicianId: string;
-  status: AttendanceStatus | null;
-  isSubmitting: boolean;
-}
-
-interface WeekGroup {
-  weekNumber: number;
-  startDate: string;
-  endDate: string;
-  records: DailyAttendanceRecord[];
-}
-
-interface MonthGroup {
-  month: string;
-  weeks: WeekGroup[];
-  records: DailyAttendanceRecord[];
-}
-
-interface YearGroup {
-  year: string;
-  months: MonthGroup[];
-}
+export type { AttendanceState, AttendanceStatus } from "@/types/attendanceTypes";
 
 export const createAttendanceRecords = (
   attendanceStates: AttendanceState[],
@@ -109,26 +87,4 @@ export const groupAttendanceRecords = (records: DailyAttendanceRecord[]): YearGr
         }),
     }))
     .sort((a, b) => parseInt(b.year) - parseInt(a.year));
-};
-
-const getWeekNumber = (date: Date): number => {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
-};
-
-const getWeekStart = (date: Date): Date => {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  return new Date(d.setDate(diff));
-};
-
-const getWeekEnd = (date: Date): Date => {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? 0 : 7);
-  return new Date(d.setDate(diff));
 };
