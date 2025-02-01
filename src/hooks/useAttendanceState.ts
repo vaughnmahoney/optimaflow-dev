@@ -77,20 +77,31 @@ export const useAttendanceState = (technicians: Technician[]) => {
       const today = new Date().toISOString().split("T")[0];
       
       // Create attendance records for all technicians
-      const records = attendanceStates.map((state) => ({
-        technician_id: state.technicianId,
-        supervisor_id: session.user.id,
-        date: today,
-        status: state.status,
-        submitted_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }));
+      const records = attendanceStates
+        .filter(state => state.status !== null) // Only include records with a status set
+        .map((state) => ({
+          technician_id: state.technicianId,
+          supervisor_id: session.user.id,
+          date: today,
+          status: state.status,
+          updated_at: new Date().toISOString(),
+        }));
 
+      if (records.length === 0) {
+        toast({
+          title: "No changes to submit",
+          description: "Please mark attendance for at least one technician.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Use upsert with the unique constraint on technician_id and date
       const { error } = await supabase
         .from("attendance_records")
-        .upsert(records, { 
+        .upsert(records, {
           onConflict: 'technician_id,date',
-          ignoreDuplicates: false 
+          ignoreDuplicates: false,
         });
 
       if (error) throw error;
@@ -103,11 +114,11 @@ export const useAttendanceState = (technicians: Technician[]) => {
         description: "Attendance records have been saved successfully.",
       });
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error submitting attendance:", error);
       toast({
         title: "Error",
-        description: "Failed to submit attendance records. Please try again.",
+        description: error.message || "Failed to submit attendance records. Please try again.",
         variant: "destructive",
       });
       throw error;
