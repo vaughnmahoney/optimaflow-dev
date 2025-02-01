@@ -53,10 +53,32 @@ export const useAttendanceState = (technicians: Technician[]) => {
     );
   };
 
+  // Check if attendance has already been submitted for today
+  const checkTodayAttendance = async () => {
+    const today = new Date().toISOString().split('T')[0];
+    const { data: existingRecords } = await supabase
+      .from("attendance_records")
+      .select("*")
+      .eq("date", today);
+
+    return existingRecords && existingRecords.length > 0;
+  };
+
   // Submit all attendance records for the day
   const submitDailyAttendance = async () => {
     try {
       setIsSubmitting(true);
+
+      // Check if attendance already submitted for today
+      const hasSubmitted = await checkTodayAttendance();
+      if (hasSubmitted) {
+        toast({
+          title: "Already Submitted",
+          description: "Attendance for today has already been submitted. You can edit it from the history page.",
+          variant: "destructive",
+        });
+        return;
+      }
 
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -82,6 +104,11 @@ export const useAttendanceState = (technicians: Technician[]) => {
 
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ["attendance"] });
+
+      toast({
+        title: "Success",
+        description: "Daily attendance has been submitted successfully.",
+      });
 
     } catch (error) {
       console.error("Error submitting attendance:", error);

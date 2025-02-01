@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useAttendance } from "@/hooks/useAttendance";
@@ -6,6 +6,7 @@ import { useAttendanceState } from "@/hooks/useAttendanceState";
 import { AttendanceRadioCard } from "./AttendanceRadioCard";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export const AttendanceForm = () => {
   const {
@@ -14,6 +15,7 @@ export const AttendanceForm = () => {
   } = useAttendance();
 
   const { toast } = useToast();
+  const [hasSubmittedToday, setHasSubmittedToday] = useState(false);
 
   const {
     attendanceStates,
@@ -26,8 +28,19 @@ export const AttendanceForm = () => {
   useEffect(() => {
     if (technicians) {
       initializeStates();
+      checkTodaySubmission();
     }
   }, [technicians]);
+
+  const checkTodaySubmission = async () => {
+    const today = new Date().toISOString().split('T')[0];
+    const { data: existingRecords } = await supabase
+      .from("attendance_records")
+      .select("*")
+      .eq("date", today);
+
+    setHasSubmittedToday(existingRecords && existingRecords.length > 0);
+  };
 
   const handleSubmit = async () => {
     // Check if all technicians have a status set
@@ -45,10 +58,7 @@ export const AttendanceForm = () => {
     }
 
     await submitDailyAttendance();
-    toast({
-      title: "Success",
-      description: "Daily attendance has been submitted successfully.",
-    });
+    await checkTodaySubmission();
   };
 
   if (isLoadingTechnicians || !technicians) {
@@ -71,7 +81,9 @@ export const AttendanceForm = () => {
             Attendance for {format(new Date(), "EEEE, MMMM d, yyyy")}
           </h3>
           <p className="text-sm text-gray-500">
-            Mark attendance for your team using the radio buttons below
+            {hasSubmittedToday 
+              ? "Today's attendance has been submitted. You can edit it from the history page."
+              : "Mark attendance for your team using the radio buttons below"}
           </p>
         </div>
 
@@ -96,10 +108,10 @@ export const AttendanceForm = () => {
         <div className="mt-8 flex justify-end">
           <Button 
             onClick={handleSubmit}
-            disabled={isSubmitting}
+            disabled={isSubmitting || hasSubmittedToday}
             className="w-full sm:w-auto"
           >
-            {isSubmitting ? "Submitting..." : "Submit Daily Attendance"}
+            {isSubmitting ? "Submitting..." : hasSubmittedToday ? "Already Submitted" : "Submit Daily Attendance"}
           </Button>
         </div>
       </div>
