@@ -1,19 +1,14 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Layout } from "@/components/Layout";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Folder } from "lucide-react";
-import type { Technician, AttendanceRecord, DailyAttendanceRecord } from "@/types/attendance";
-import { groupAttendanceRecords } from "@/utils/attendanceUtils";
 import { useState } from "react";
+import { Layout } from "@/components/Layout";
+import { Card, CardContent } from "@/components/ui/card";
+import { Accordion } from "@/components/ui/accordion";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { MonthGroup } from "@/components/attendance/MonthGroup";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAttendanceHistory } from "@/hooks/useAttendanceHistory";
+import { transformAttendanceRecords } from "@/utils/attendanceTransformUtils";
+import { groupAttendanceRecords } from "@/utils/attendanceUtils";
+import { YearGroup } from "@/components/attendance/YearGroup";
 
 const AttendanceHistory = () => {
   const { toast } = useToast();
@@ -21,52 +16,9 @@ const AttendanceHistory = () => {
   const [editingDate, setEditingDate] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Fetch technicians
-  const { data: technicians = [] } = useQuery({
-    queryKey: ['technicians'],
-    queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("Not authenticated");
+  const { technicians, attendanceRecords, isLoading, getTechnicianName } = useAttendanceHistory();
 
-      const { data, error } = await supabase
-        .from('technicians')
-        .select('*')
-        .eq('supervisor_id', session.user.id);
-      if (error) throw error;
-      console.log('Fetched technicians:', data);
-      return data;
-    },
-  });
-
-  // Fetch attendance records with detailed error handling
-  const { data: attendanceRecords = [], isLoading } = useQuery({
-    queryKey: ['attendance'],
-    queryFn: async () => {
-      console.log('Starting attendance records fetch...');
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        console.error('No active session found');
-        throw new Error("Not authenticated");
-      }
-      console.log('Session found, user ID:', session.user.id);
-
-      const { data, error } = await supabase
-        .from('attendance_records')
-        .select('*')
-        .eq('supervisor_id', session.user.id)
-        .order('date', { ascending: false });
-      
-      if (error) {
-        console.error('Error fetching attendance records:', error);
-        throw error;
-      }
-      
-      console.log('Fetched attendance records:', data);
-      return data as AttendanceRecord[];
-    },
-  });
-
-  const handleStatusChange = async (technicianId: string, status: AttendanceRecord["status"], date: string) => {
+  const handleStatusChange = async (technicianId: string, status: "present" | "absent" | "excused", date: string) => {
     try {
       setIsSubmitting(true);
       const { error } = await supabase
@@ -102,10 +54,6 @@ const AttendanceHistory = () => {
   const groupedRecords = groupAttendanceRecords(dailyRecords);
   console.log('Final grouped records:', groupedRecords);
 
-  const getTechnicianName = (technician_id: string) => {
-    return technicians.find((tech) => tech.id === technician_id)?.name || "Unknown Technician";
-  };
-
   if (isLoading) {
     return (
       <Layout>
@@ -137,74 +85,22 @@ const AttendanceHistory = () => {
         ) : (
           <Accordion type="single" collapsible className="space-y-4">
             {groupedRecords.map((yearGroup) => (
-              <AccordionItem
+              <YearGroup
                 key={yearGroup.year}
-                value={yearGroup.year}
-                className="border rounded-lg p-4"
-              >
-                <AccordionTrigger className="hover:no-underline">
-                  <div className="flex items-center gap-2">
-                    <Folder className="h-5 w-5 text-primary" />
-                    <span className="font-semibold">{yearGroup.year}</span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="pl-6 space-y-4">
-                    {yearGroup.months.map((monthGroup) => (
-                      <MonthGroup
-                        key={monthGroup.month}
-                        month={monthGroup.month}
-                        weeks={monthGroup.weeks}
-                        records={monthGroup.records}
-                        technicians={technicians}
-                        editingDate={editingDate}
-                        isSubmitting={isSubmitting}
-                        onEdit={setEditingDate}
-                        onStatusChange={handleStatusChange}
-                        getTechnicianName={getTechnicianName}
-                      />
-                    ))}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
+                {...yearGroup}
+                technicians={technicians}
+                editingDate={editingDate}
+                isSubmitting={isSubmitting}
+                onEdit={setEditingDate}
+                onStatusChange={handleStatusChange}
+                getTechnicianName={getTechnicianName}
+              />
             ))}
           </Accordion>
         )}
       </div>
     </Layout>
   );
-};
-
-const transformAttendanceRecords = (records: AttendanceRecord[]): DailyAttendanceRecord[] => {
-  console.log('Starting records transformation with:', records);
-  if (!Array.isArray(records)) {
-    console.error('Records is not an array:', records);
-    return [];
-  }
-
-  const groupedByDate = records.reduce((acc, record) => {
-    console.log('Processing record:', record);
-    const date = record.date;
-    if (!acc[date]) {
-      acc[date] = {
-        id: date,
-        date,
-        records: [],
-        submittedBy: record.supervisor_id,
-        submittedAt: record.submitted_at || '',
-        stats: { present: 0, absent: 0, excused: 0, total: 0 }
-      };
-    }
-    acc[date].records.push(record);
-    acc[date].stats[record.status as keyof typeof acc[typeof date]['stats']]++;
-    acc[date].stats.total++;
-    return acc;
-  }, {} as Record<string, DailyAttendanceRecord>);
-
-  console.log('Grouped by date:', groupedByDate);
-  const result = Object.values(groupedByDate);
-  console.log('Final transformed records:', result);
-  return result;
 };
 
 export default AttendanceHistory;
