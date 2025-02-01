@@ -30,10 +30,14 @@ export const useAttendanceHistory = () => {
       }
       console.log('Session found, user ID:', session.user.id);
 
+      const today = new Date().toISOString().split('T')[0];
+      console.log('Fetching records including today:', today);
+
       const { data, error } = await supabase
         .from('attendance_records')
         .select('*')
         .eq('supervisor_id', session.user.id)
+        .gte('date', today) // Include today and future dates
         .order('date', { ascending: false });
       
       if (error) {
@@ -47,7 +51,9 @@ export const useAttendanceHistory = () => {
   });
 
   const getTechnicianName = (technician_id: string) => {
-    return technicians.find((tech) => tech.id === technician_id)?.name || "Unknown Technician";
+    const technician = technicians.find((tech) => tech.id === technician_id);
+    console.log('Getting name for technician:', technician_id, 'Found:', technician?.name);
+    return technician?.name || "Unknown Technician";
   };
 
   return {

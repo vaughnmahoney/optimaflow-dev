@@ -27,7 +27,9 @@ export const transformAttendanceRecords = (records: AttendanceRecord[]): DailyAt
   }, {} as Record<string, DailyAttendanceRecord>);
 
   console.log('Grouped by date:', groupedByDate);
-  const result = Object.values(groupedByDate);
+  const result = Object.values(groupedByDate).sort((a, b) => 
+    new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
   console.log('Final transformed records:', result);
   return result;
 };
