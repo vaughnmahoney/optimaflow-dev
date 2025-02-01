@@ -1,12 +1,14 @@
-import { type AttendanceRecord, type Technician } from "@/types/attendance";
-import { supabase } from "@/integrations/supabase/client";
+import type { AttendanceState } from "@/hooks/useAttendanceState";
+import type { DailyAttendanceRecord } from "@/types/attendance";
 
-export type AttendanceStatus = AttendanceRecord["status"];
+interface MonthGroup {
+  month: string;
+  records: DailyAttendanceRecord[];
+}
 
-export interface AttendanceState {
-  technicianId: string;
-  status: AttendanceStatus | null;
-  isSubmitting: boolean;
+interface YearGroup {
+  year: string;
+  months: MonthGroup[];
 }
 
 export const createAttendanceRecords = (
@@ -34,4 +36,38 @@ export const submitAttendanceRecords = async (records: any[]) => {
     });
 
   if (error) throw error;
+};
+
+export const groupAttendanceRecords = (records: DailyAttendanceRecord[]): YearGroup[] => {
+  const groupedByYear = records.reduce((years, record) => {
+    const date = new Date(record.date);
+    const year = date.getFullYear().toString();
+    const month = date.toLocaleString('default', { month: 'long' });
+
+    if (!years[year]) {
+      years[year] = {
+        year,
+        months: {},
+      };
+    }
+
+    if (!years[year].months[month]) {
+      years[year].months[month] = {
+        month,
+        records: [],
+      };
+    }
+
+    years[year].months[month].records.push(record);
+    return years;
+  }, {} as Record<string, { year: string; months: Record<string, MonthGroup> }>);
+
+  return Object.values(groupedByYear).map(yearGroup => ({
+    year: yearGroup.year,
+    months: Object.values(yearGroup.months).sort((a, b) => {
+      const monthA = new Date(Date.parse(`${a.month} 1, 2000`));
+      const monthB = new Date(Date.parse(`${b.month} 1, 2000`));
+      return monthB.getTime() - monthA.getTime();
+    }),
+  })).sort((a, b) => parseInt(b.year) - parseInt(a.year));
 };
