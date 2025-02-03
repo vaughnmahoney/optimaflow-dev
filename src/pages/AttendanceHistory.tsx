@@ -24,28 +24,44 @@ const AttendanceHistory = () => {
       setIsSubmitting(true);
       console.log(`Updating attendance for technician ${technicianId} on ${date} to ${status}`);
       
-      const { error } = await supabase
-        .from("attendance_records")
-        .update({ status })
-        .eq("technician_id", technicianId)
-        .eq("date", date);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("No active session");
+      }
 
-      if (error) throw error;
+      const { data, error } = await supabase
+        .from("attendance_records")
+        .update({ 
+          status,
+          updated_at: new Date().toISOString()
+        })
+        .eq("technician_id", technicianId)
+        .eq("date", date)
+        .eq("supervisor_id", session.user.id)
+        .select();
+
+      if (error) {
+        console.error("Error updating attendance:", error);
+        throw error;
+      }
+
+      console.log("Update successful:", data);
 
       toast({
         title: "Success",
         description: "Attendance record updated successfully",
       });
 
+      // Invalidate specific queries
       await queryClient.invalidateQueries({ queryKey: ["attendance"] });
       await queryClient.refetchQueries({ queryKey: ["attendance"] });
       
       setEditingDate(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating attendance:", error);
       toast({
         title: "Error",
-        description: "Failed to update attendance record",
+        description: error.message || "Failed to update attendance record",
         variant: "destructive",
       });
     } finally {
@@ -61,11 +77,11 @@ const AttendanceHistory = () => {
         title: "Success",
         description: "Attendance records refreshed",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error refreshing attendance:", error);
       toast({
         title: "Error",
-        description: "Failed to refresh attendance records",
+        description: error.message || "Failed to refresh attendance records",
         variant: "destructive",
       });
     }
