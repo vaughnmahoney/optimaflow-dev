@@ -25,11 +25,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setLoading(false);
       
-      // Redirect logic
-      if (session) {
-        const destination = location.pathname === '/login' ? '/supervisor' : location.pathname;
-        console.log("Redirecting to:", destination);
-        navigate(destination, { replace: true });
+      // Only redirect if we're on the login page and have a session
+      if (session && location.pathname === '/login') {
+        console.log("Redirecting to /supervisor from initial session check");
+        navigate('/supervisor', { replace: true });
       }
     });
 
@@ -41,8 +40,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setLoading(false);
 
+      // Only redirect if we're on the login page and have a session
       if (session && location.pathname === '/login') {
-        console.log("Auth change redirect to /supervisor");
+        console.log("Redirecting to /supervisor from auth state change");
         navigate('/supervisor', { replace: true });
       }
     });

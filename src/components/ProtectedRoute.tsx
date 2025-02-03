@@ -12,7 +12,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
       console.log("No session, redirecting to login");
       navigate("/login", { replace: true });
     }
-  }, [session, loading, navigate]);
+  }, [session, loading]);
 
   if (loading) {
     return (
