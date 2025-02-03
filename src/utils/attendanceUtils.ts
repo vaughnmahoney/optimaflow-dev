@@ -60,7 +60,7 @@ export const groupAttendanceRecords = (records: DailyAttendanceRecord[]): YearGr
       };
     }
 
-    // Add record to month
+    // Add record to month's records array
     years[year].months[month].records.push(record);
 
     // Find or create week
@@ -74,12 +74,12 @@ export const groupAttendanceRecords = (records: DailyAttendanceRecord[]): YearGr
       };
       years[year].months[month].weeks.push(week);
     }
+    
+    // Add record to week's records array
     week.records.push(record);
 
     return years;
   }, {} as Record<string, { year: string; months: Record<string, MonthGroup> }>);
-
-  console.log('Grouped by year:', groupedByYear);
 
   // Transform the nested objects into arrays and sort them
   const result = Object.entries(groupedByYear).map(([year, yearGroup]) => ({
@@ -87,8 +87,7 @@ export const groupAttendanceRecords = (records: DailyAttendanceRecord[]): YearGr
     months: Object.values(yearGroup.months)
       .map(month => ({
         ...month,
-        weeks: month.weeks
-          .sort((a, b) => b.weekNumber - a.weekNumber)
+        weeks: month.weeks.sort((a, b) => b.weekNumber - a.weekNumber),
       }))
       .sort((a, b) => {
         const monthA = new Date(Date.parse(`${a.month} 1, ${year}`));
@@ -98,6 +97,6 @@ export const groupAttendanceRecords = (records: DailyAttendanceRecord[]): YearGr
   }))
   .sort((a, b) => parseInt(b.year) - parseInt(a.year));
 
-  console.log('Final result after grouping:', result);
+  console.log('Final grouped records:', result);
   return result;
 };

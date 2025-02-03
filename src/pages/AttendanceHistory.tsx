@@ -37,7 +37,6 @@ const AttendanceHistory = () => {
         description: "Attendance record updated successfully",
       });
 
-      // Force immediate refetch
       await queryClient.invalidateQueries({ queryKey: ["attendance"] });
       await queryClient.refetchQueries({ queryKey: ["attendance"] });
       
@@ -72,12 +71,12 @@ const AttendanceHistory = () => {
     }
   };
 
-  console.log('Before transformation - attendanceRecords:', attendanceRecords);
+  console.log('Raw attendance records:', attendanceRecords);
   const dailyRecords = transformAttendanceRecords(attendanceRecords);
-  console.log('After transformation - dailyRecords:', dailyRecords);
+  console.log('Transformed daily records:', dailyRecords);
   
   const groupedRecords = groupAttendanceRecords(dailyRecords);
-  console.log('Final grouped records:', groupedRecords);
+  console.log('Grouped records by year/month:', groupedRecords);
 
   if (isLoading) {
     return (
