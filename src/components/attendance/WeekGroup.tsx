@@ -35,10 +35,15 @@ export const WeekGroup: React.FC<WeekGroupProps> = ({
   onStatusChange,
   getTechnicianName,
 }) => {
+  console.log(`WeekGroup ${weekNumber} - Start: ${startDate}, End: ${endDate}`);
+  console.log('All records:', records);
+  
   // Filter records that fall within this week's date range
   const weekRecords = records.filter(record => {
     const recordDate = record.date;
-    return recordDate >= startDate && recordDate <= endDate;
+    const isInRange = recordDate >= startDate && recordDate <= endDate;
+    console.log(`Record date: ${recordDate}, In range: ${isInRange}`);
+    return isInRange;
   });
 
   console.log('Week records:', weekRecords, 'for week:', weekNumber, 'from:', startDate, 'to:', endDate);
@@ -57,18 +62,21 @@ export const WeekGroup: React.FC<WeekGroupProps> = ({
       <AccordionContent>
         <div className="space-y-4">
           {weekRecords.length > 0 ? (
-            weekRecords.map((record) => (
-              <DailyAttendanceCard
-                key={record.date}
-                record={record}
-                technicians={technicians}
-                editingDate={editingDate}
-                isSubmitting={isSubmitting}
-                onEdit={onEdit}
-                onStatusChange={onStatusChange}
-                getTechnicianName={getTechnicianName}
-              />
-            ))
+            weekRecords.map((record) => {
+              console.log('Rendering record for date:', record.date);
+              return (
+                <DailyAttendanceCard
+                  key={record.date}
+                  record={record}
+                  technicians={technicians}
+                  editingDate={editingDate}
+                  isSubmitting={isSubmitting}
+                  onEdit={onEdit}
+                  onStatusChange={onStatusChange}
+                  getTechnicianName={getTechnicianName}
+                />
+              );
+            })
           ) : (
             <div className="text-center py-4 text-gray-500">
               No attendance records for this week

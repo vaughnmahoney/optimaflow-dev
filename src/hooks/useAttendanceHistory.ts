@@ -57,7 +57,10 @@ export const useAttendanceHistory = () => {
 
         const { data, error } = await supabase
           .from('attendance_records')
-          .select('*')
+          .select(`
+            *,
+            technician:technicians(name)
+          `)
           .eq('supervisor_id', session.user.id)
           .order('date', { ascending: false });
         

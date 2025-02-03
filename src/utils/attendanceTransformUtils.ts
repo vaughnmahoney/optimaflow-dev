@@ -7,7 +7,7 @@ export const transformAttendanceRecords = (records: AttendanceRecord[]): DailyAt
   }
 
   try {
-    console.log('Starting attendance records transformation');
+    console.log('Starting records transformation with:', records);
     
     // Group records by date
     const groupedByDate = records.reduce((acc, record) => {
@@ -41,14 +41,14 @@ export const transformAttendanceRecords = (records: AttendanceRecord[]): DailyAt
       return acc;
     }, {} as Record<string, DailyAttendanceRecord>);
 
-    console.log('Records grouped by date:', groupedByDate);
+    console.log('Grouped by date:', groupedByDate);
     
     // Convert to array and sort by date (most recent first)
     const result = Object.values(groupedByDate).sort((a, b) => 
       new Date(b.date).getTime() - new Date(a.date).getTime()
     );
     
-    console.log('Transformation complete. Records:', result);
+    console.log('Final transformed records:', result);
     return result;
   } catch (error) {
     console.error('Error transforming attendance records:', error);
