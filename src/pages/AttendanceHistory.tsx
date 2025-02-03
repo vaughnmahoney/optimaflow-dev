@@ -21,6 +21,8 @@ const AttendanceHistory = () => {
   const handleStatusChange = async (technicianId: string, status: "present" | "absent" | "excused", date: string) => {
     try {
       setIsSubmitting(true);
+      console.log(`Updating attendance for technician ${technicianId} on ${date} to ${status}`);
+      
       const { error } = await supabase
         .from("attendance_records")
         .update({ status })
@@ -34,7 +36,11 @@ const AttendanceHistory = () => {
         description: "Attendance record updated successfully",
       });
 
-      queryClient.invalidateQueries({ queryKey: ["attendance"] });
+      // Force immediate refetch
+      await queryClient.invalidateQueries({ queryKey: ["attendance"] });
+      await queryClient.refetchQueries({ queryKey: ["attendance"] });
+      
+      setEditingDate(null);
     } catch (error) {
       console.error("Error updating attendance:", error);
       toast({
@@ -58,7 +64,10 @@ const AttendanceHistory = () => {
     return (
       <Layout>
         <div className="flex items-center justify-center h-full">
-          <p>Loading attendance history...</p>
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-2">Loading attendance history...</p>
+          </div>
         </div>
       </Layout>
     );
