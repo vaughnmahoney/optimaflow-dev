@@ -1,65 +1,92 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import type { AttendanceRecord, Technician } from "@/types/attendance";
 
 export const useAttendanceHistory = () => {
+  const { toast } = useToast();
+
   const { data: technicians = [] } = useQuery({
     queryKey: ['technicians'],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        console.error('No active session found');
-        throw new Error("Not authenticated");
-      }
-      console.log('Session found, fetching technicians for supervisor:', session.user.id);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          console.error('No active session found');
+          throw new Error("Not authenticated");
+        }
+        console.log('Session found, fetching technicians for supervisor:', session.user.id);
 
-      const { data, error } = await supabase
-        .from('technicians')
-        .select('*')
-        .eq('supervisor_id', session.user.id);
+        const { data, error } = await supabase
+          .from('technicians')
+          .select('*')
+          .eq('supervisor_id', session.user.id);
 
-      if (error) {
-        console.error('Error fetching technicians:', error);
+        if (error) {
+          console.error('Error fetching technicians:', error);
+          throw error;
+        }
+        console.log('Fetched technicians:', data);
+        return data;
+      } catch (error) {
+        console.error('Failed to fetch technicians:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load technicians. Please try refreshing the page.",
+          variant: "destructive",
+        });
         throw error;
       }
-      console.log('Fetched technicians:', data);
-      return data;
     },
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 
-  const { data: attendanceRecords = [], isLoading } = useQuery({
+  const { data: attendanceRecords = [], isLoading, error: attendanceError } = useQuery({
     queryKey: ['attendance'],
     queryFn: async () => {
-      console.log('Starting attendance records fetch...');
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        console.error('No active session found');
-        throw new Error("Not authenticated");
-      }
-      console.log('Session found, user ID:', session.user.id);
+      try {
+        console.log('Starting attendance records fetch...');
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          console.error('No active session found');
+          throw new Error("Not authenticated");
+        }
+        console.log('Session found, user ID:', session.user.id);
 
-      const { data, error } = await supabase
-        .from('attendance_records')
-        .select('*')
-        .eq('supervisor_id', session.user.id)
-        .order('date', { ascending: false });
-      
-      if (error) {
-        console.error('Error fetching attendance records:', error);
+        const { data, error } = await supabase
+          .from('attendance_records')
+          .select('*')
+          .eq('supervisor_id', session.user.id)
+          .order('date', { ascending: false });
+        
+        if (error) {
+          console.error('Error fetching attendance records:', error);
+          throw error;
+        }
+        
+        console.log('Raw attendance records:', data);
+        console.log('Number of records fetched:', data?.length || 0);
+        if (data && data.length > 0) {
+          console.log('Most recent record:', data[0]);
+          console.log('Date of most recent record:', data[0].date);
+          console.log('Today\'s date:', new Date().toISOString().split('T')[0]);
+        }
+        
+        return data as AttendanceRecord[];
+      } catch (error) {
+        console.error('Failed to fetch attendance records:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load attendance records. Please try refreshing the page.",
+          variant: "destructive",
+        });
         throw error;
       }
-      
-      console.log('Raw attendance records:', data);
-      console.log('Number of records fetched:', data?.length || 0);
-      if (data && data.length > 0) {
-        console.log('Most recent record:', data[0]);
-        console.log('Date of most recent record:', data[0].date);
-        console.log('Today\'s date:', new Date().toISOString().split('T')[0]);
-      }
-      
-      return data as AttendanceRecord[];
     },
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     refetchOnWindowFocus: false,
     staleTime: 0, // Always fetch fresh data
   });
@@ -74,6 +101,7 @@ export const useAttendanceHistory = () => {
     technicians,
     attendanceRecords,
     isLoading,
+    error: attendanceError,
     getTechnicianName,
   };
 };

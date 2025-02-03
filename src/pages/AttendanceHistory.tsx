@@ -9,14 +9,15 @@ import { useAttendanceHistory } from "@/hooks/useAttendanceHistory";
 import { transformAttendanceRecords } from "@/utils/attendanceTransformUtils";
 import { groupAttendanceRecords } from "@/utils/attendanceUtils";
 import { YearGroup } from "@/components/attendance/YearGroup";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 
 const AttendanceHistory = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [editingDate, setEditingDate] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const { technicians, attendanceRecords, isLoading, getTechnicianName } = useAttendanceHistory();
+  const { technicians, attendanceRecords, isLoading, error, getTechnicianName } = useAttendanceHistory();
 
   const handleStatusChange = async (technicianId: string, status: "present" | "absent" | "excused", date: string) => {
     try {
@@ -53,6 +54,24 @@ const AttendanceHistory = () => {
     }
   };
 
+  const handleRefresh = async () => {
+    try {
+      await queryClient.invalidateQueries({ queryKey: ["attendance"] });
+      await queryClient.refetchQueries({ queryKey: ["attendance"] });
+      toast({
+        title: "Success",
+        description: "Attendance records refreshed",
+      });
+    } catch (error) {
+      console.error("Error refreshing attendance:", error);
+      toast({
+        title: "Error",
+        description: "Failed to refresh attendance records",
+        variant: "destructive",
+      });
+    }
+  };
+
   console.log('Before transformation - attendanceRecords:', attendanceRecords);
   const dailyRecords = transformAttendanceRecords(attendanceRecords);
   console.log('After transformation - dailyRecords:', dailyRecords);
@@ -73,14 +92,46 @@ const AttendanceHistory = () => {
     );
   }
 
+  if (error) {
+    return (
+      <Layout>
+        <div className="space-y-8 animate-fade-in">
+          <div>
+            <h2 className="text-2xl font-bold text-primary">Attendance History</h2>
+            <p className="mt-2 text-sm text-gray-600">
+              View and edit past attendance records
+            </p>
+          </div>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center space-y-4">
+                <p className="text-red-500">Failed to load attendance records</p>
+                <Button onClick={handleRefresh} variant="outline" className="gap-2">
+                  <RefreshCw className="h-4 w-4" />
+                  Try Again
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <div className="space-y-8 animate-fade-in">
-        <div>
-          <h2 className="text-2xl font-bold text-primary">Attendance History</h2>
-          <p className="mt-2 text-sm text-gray-600">
-            View and edit past attendance records
-          </p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold text-primary">Attendance History</h2>
+            <p className="mt-2 text-sm text-gray-600">
+              View and edit past attendance records
+            </p>
+          </div>
+          <Button onClick={handleRefresh} variant="outline" className="gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </Button>
         </div>
 
         {groupedRecords.length === 0 ? (
