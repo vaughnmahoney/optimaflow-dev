@@ -1,13 +1,14 @@
 import type { AttendanceRecord, DailyAttendanceRecord } from "@/types/attendance";
 
 export const transformAttendanceRecords = (records: AttendanceRecord[]): DailyAttendanceRecord[] => {
-  console.log('Starting records transformation with:', records);
-  if (!Array.isArray(records)) {
-    console.error('Records is not an array:', records);
+  if (!Array.isArray(records) || records.length === 0) {
+    console.log('No records to transform');
     return [];
   }
 
   try {
+    console.log('Starting attendance records transformation');
+    
     // Group records by date
     const groupedByDate = records.reduce((acc, record) => {
       if (!record.date) {
@@ -33,21 +34,24 @@ export const transformAttendanceRecords = (records: AttendanceRecord[]): DailyAt
       
       // Update stats
       if (record.status) {
-        acc[date].stats[record.status as keyof typeof acc[typeof date]['stats']]++;
-        acc[date].stats.total++;
+        const status = record.status as keyof typeof acc[typeof date]['stats'];
+        if (status in acc[date].stats) {
+          acc[date].stats[status]++;
+          acc[date].stats.total++;
+        }
       }
       
       return acc;
     }, {} as Record<string, DailyAttendanceRecord>);
 
-    console.log('Grouped by date:', groupedByDate);
+    console.log('Records grouped by date:', groupedByDate);
     
     // Convert to array and sort by date (most recent first)
     const result = Object.values(groupedByDate).sort((a, b) => 
       new Date(b.date).getTime() - new Date(a.date).getTime()
     );
     
-    console.log('Final transformed records:', result);
+    console.log('Transformation complete. Records:', result);
     return result;
   } catch (error) {
     console.error('Error transforming attendance records:', error);
