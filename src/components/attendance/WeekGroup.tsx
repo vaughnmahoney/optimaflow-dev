@@ -41,6 +41,8 @@ export const WeekGroup: React.FC<WeekGroupProps> = ({
     return recordDate >= startDate && recordDate <= endDate;
   });
 
+  console.log('Week records:', weekRecords, 'for week:', weekNumber, 'from:', startDate, 'to:', endDate);
+
   return (
     <AccordionItem value={weekNumber.toString()}>
       <AccordionTrigger className="hover:no-underline">
@@ -54,18 +56,24 @@ export const WeekGroup: React.FC<WeekGroupProps> = ({
       </AccordionTrigger>
       <AccordionContent>
         <div className="space-y-4">
-          {weekRecords.map((record) => (
-            <DailyAttendanceCard
-              key={record.id}
-              record={record}
-              technicians={technicians}
-              editingDate={editingDate}
-              isSubmitting={isSubmitting}
-              onEdit={onEdit}
-              onStatusChange={onStatusChange}
-              getTechnicianName={getTechnicianName}
-            />
-          ))}
+          {weekRecords.length > 0 ? (
+            weekRecords.map((record) => (
+              <DailyAttendanceCard
+                key={record.date}
+                record={record}
+                technicians={technicians}
+                editingDate={editingDate}
+                isSubmitting={isSubmitting}
+                onEdit={onEdit}
+                onStatusChange={onStatusChange}
+                getTechnicianName={getTechnicianName}
+              />
+            ))
+          ) : (
+            <div className="text-center py-4 text-gray-500">
+              No attendance records for this week
+            </div>
+          )}
         </div>
       </AccordionContent>
     </AccordionItem>

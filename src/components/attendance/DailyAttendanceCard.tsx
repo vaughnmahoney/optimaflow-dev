@@ -2,7 +2,7 @@ import React from 'react';
 import { format, parseISO } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PencilIcon, CheckIcon, XIcon } from "lucide-react";
+import { PencilIcon } from "lucide-react";
 import { AttendanceList } from "./AttendanceList";
 import { AttendanceStats } from "./AttendanceStats";
 import type { DailyAttendanceRecord, Technician } from "@/types/attendance";
@@ -26,13 +26,18 @@ export const DailyAttendanceCard: React.FC<DailyAttendanceCardProps> = ({
   onStatusChange,
   getTechnicianName,
 }) => {
-  if (!record || !record.records) return null;
+  console.log('Rendering DailyAttendanceCard for date:', record.date, 'with records:', record.records);
+
+  if (!record || !record.records) {
+    console.log('No record or records array found');
+    return null;
+  }
 
   const isToday = record.date === new Date().toISOString().split('T')[0];
   const isEditing = editingDate === record.date;
 
   return (
-    <Card key={record.id}>
+    <Card>
       {isEditing ? (
         <AttendanceList
           technicians={technicians}
