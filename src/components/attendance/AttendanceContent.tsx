@@ -3,10 +3,10 @@ import { Accordion } from "@/components/ui/accordion";
 import { YearGroup } from "./YearGroup";
 import { transformAttendanceRecords } from "@/utils/attendanceTransformUtils";
 import { groupAttendanceRecords } from "@/utils/attendanceUtils";
-import type { Technician, DailyAttendanceRecord } from "@/types/attendance";
+import type { Technician, AttendanceRecord, DailyAttendanceRecord } from "@/types/attendance";
 
 interface AttendanceContentProps {
-  records: DailyAttendanceRecord[];
+  records: AttendanceRecord[];
   technicians: Technician[];
   editingDate: string | null;
   isSubmitting: boolean;

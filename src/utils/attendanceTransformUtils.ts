@@ -34,11 +34,8 @@ export const transformAttendanceRecords = (records: AttendanceRecord[]): DailyAt
       
       // Update stats
       if (record.status) {
-        const status = record.status as keyof typeof acc[typeof date]['stats'];
-        if (status in acc[date].stats) {
-          acc[date].stats[status]++;
-          acc[date].stats.total++;
-        }
+        acc[date].stats[record.status as keyof typeof acc[typeof date]['stats']]++;
+        acc[date].stats.total++;
       }
       
       return acc;
