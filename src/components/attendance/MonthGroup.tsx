@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   Accordion,
@@ -33,6 +34,7 @@ export const MonthGroup: React.FC<MonthGroupProps> = ({
   onStatusChange,
   getTechnicianName,
 }) => {
+  console.log(`Rendering MonthGroup for ${month} with weeks:`, weeks);
   return (
     <Accordion type="single" collapsible className="border-l-2 border-gray-200">
       <AccordionItem value={month}>
@@ -44,19 +46,24 @@ export const MonthGroup: React.FC<MonthGroupProps> = ({
         </AccordionTrigger>
         <AccordionContent>
           <div className="pl-8 space-y-4">
-            {weeks.map((weekGroup) => (
-              <WeekGroup
-                key={`${weekGroup.weekNumber}-${weekGroup.startDate}`}
-                {...weekGroup}
-                records={records}
-                technicians={technicians}
-                editingDate={editingDate}
-                isSubmitting={isSubmitting}
-                onEdit={onEdit}
-                onStatusChange={onStatusChange}
-                getTechnicianName={getTechnicianName}
-              />
-            ))}
+            {weeks.map((weekGroup) => {
+              console.log(`Rendering week ${weekGroup.weekNumber} for ${month}:`, weekGroup);
+              return (
+                <WeekGroup
+                  key={`${weekGroup.weekNumber}-${weekGroup.startDate}`}
+                  weekNumber={weekGroup.weekNumber}
+                  startDate={weekGroup.startDate}
+                  endDate={weekGroup.endDate}
+                  records={weekGroup.records || records} // Use week-specific records if available
+                  technicians={technicians}
+                  editingDate={editingDate}
+                  isSubmitting={isSubmitting}
+                  onEdit={onEdit}
+                  onStatusChange={onStatusChange}
+                  getTechnicianName={getTechnicianName}
+                />
+              );
+            })}
           </div>
         </AccordionContent>
       </AccordionItem>

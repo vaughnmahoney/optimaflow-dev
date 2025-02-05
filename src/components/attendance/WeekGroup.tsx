@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { format, parseISO, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import {
   Accordion,
   AccordionContent,
@@ -37,24 +37,7 @@ export const WeekGroup: React.FC<WeekGroupProps> = ({
   getTechnicianName,
 }) => {
   console.log(`WeekGroup ${weekNumber} - Start: ${startDate}, End: ${endDate}`);
-  console.log('All records:', records);
-  
-  // Filter records that fall within this week's date range using date-fns
-  const weekRecords = records.filter(record => {
-    const recordDate = startOfDay(parseISO(record.date));
-    const weekStart = startOfDay(parseISO(startDate));
-    const weekEnd = endOfDay(parseISO(endDate));
-    
-    const isInRange = isWithinInterval(recordDate, { 
-      start: weekStart, 
-      end: weekEnd 
-    });
-    
-    console.log(`Record date: ${record.date}, Start: ${startDate}, End: ${endDate}, In range: ${isInRange}`);
-    return isInRange;
-  });
-
-  console.log('Week records:', weekRecords, 'for week:', weekNumber, 'from:', startDate, 'to:', endDate);
+  console.log('Records for this week:', records);
 
   return (
     <AccordionItem value={weekNumber.toString()}>
@@ -69,7 +52,7 @@ export const WeekGroup: React.FC<WeekGroupProps> = ({
       </AccordionTrigger>
       <AccordionContent>
         <div className="space-y-4">
-          {weekRecords.map((record) => {
+          {records.map((record) => {
             console.log('Rendering record for date:', record.date);
             return (
               <DailyAttendanceCard
@@ -84,7 +67,7 @@ export const WeekGroup: React.FC<WeekGroupProps> = ({
               />
             );
           })}
-          {weekRecords.length === 0 && (
+          {records.length === 0 && (
             <div className="text-center py-4 text-gray-500">
               No attendance records for this week
             </div>
