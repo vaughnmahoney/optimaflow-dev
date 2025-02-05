@@ -30,22 +30,28 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
   const [open, setOpen] = useState(false);
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     const fetchGroups = async () => {
       try {
+        setError(null);
         const { data, error } = await supabase
           .from("groups")
           .select("id, name")
           .order("name");
 
         if (error) throw error;
+        
+        // Ensure data is an array even if empty
         setGroups(data || []);
       } catch (error: any) {
+        const errorMessage = error?.message || "Failed to load groups";
+        setError(errorMessage);
         toast({
           title: "Error",
-          description: "Failed to load groups. Please try again.",
+          description: errorMessage,
           variant: "destructive",
         });
       } finally {
@@ -70,6 +76,8 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
         >
           {loading
             ? "Loading groups..."
+            : error
+            ? "Error loading groups"
             : selectedGroup?.name || "Select a group..."}
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -77,7 +85,9 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
       <PopoverContent className="w-full p-0">
         <Command>
           <CommandInput placeholder="Search groups..." />
-          <CommandEmpty>No groups found.</CommandEmpty>
+          <CommandEmpty>
+            {error ? "Failed to load groups" : "No groups found."}
+          </CommandEmpty>
           <CommandGroup>
             {groups.map((group) => (
               <CommandItem
