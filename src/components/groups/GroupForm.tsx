@@ -15,9 +15,9 @@ export const GroupForm = ({ onSuccess }: GroupFormProps) => {
     description: "",
   });
 
-  const handleAddGroup = (e: React.FormEvent) => {
+  const handleAddGroup = async (e: React.FormEvent) => {
     e.preventDefault();
-    addGroupMutation.mutate(
+    await addGroupMutation.mutateAsync(
       {
         name: newGroup.name,
         description: newGroup.description || null,
