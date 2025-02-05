@@ -10,6 +10,7 @@ import { GroupList } from "@/components/groups/GroupList";
 import { useGroupMutations } from "@/hooks/useGroupMutations";
 import { useToast } from "@/hooks/use-toast";
 import { Group } from "@/types/groups";
+import { useQuery } from "@tanstack/react-query";
 
 const Supervisor = () => {
   const navigate = useNavigate();
@@ -17,11 +18,21 @@ const Supervisor = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState<Group | null>(null);
-  const [groups, setGroups] = useState<Group[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { updateGroupMutation, removeGroupMutation } = useGroupMutations();
   const { toast } = useToast();
+
+  const { data: groups, isLoading: loading, error } = useQuery({
+    queryKey: ['groups'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('groups')
+        .select('*')
+        .order('name');
+      
+      if (error) throw error;
+      return data as Group[];
+    }
+  });
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -34,36 +45,6 @@ const Supervisor = () => {
     checkAuth();
   }, [navigate]);
 
-  useEffect(() => {
-    const fetchGroups = async () => {
-      try {
-        setError(null);
-        console.log("Fetching groups...");
-        
-        const { data, error } = await supabase
-          .from("groups")
-          .select("id, name, description")
-          .order("name");
-
-        if (error) {
-          console.error("Supabase error:", error);
-          throw error;
-        }
-
-        console.log("Groups data received:", data);
-        setGroups(data || []);
-      } catch (error: any) {
-        const errorMessage = error?.message || "Failed to load groups";
-        console.error("Error in fetchGroups:", errorMessage);
-        setError(errorMessage);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchGroups();
-  }, []);
-
   const handleEdit = (group: Group) => {
     setEditingGroup(group);
     setIsEditDialogOpen(true);
@@ -72,11 +53,6 @@ const Supervisor = () => {
   const handleRemove = async (groupId: string) => {
     try {
       await removeGroupMutation.mutateAsync(groupId);
-      setGroups(groups.filter(g => g.id !== groupId));
-      toast({
-        title: "Group removed",
-        description: "The group has been removed successfully.",
-      });
     } catch (error) {
       console.error("Error removing group:", error);
       toast({
@@ -87,24 +63,13 @@ const Supervisor = () => {
     }
   };
 
-  const handleUpdate = async (updatedGroup: Group) => {
-    try {
-      await updateGroupMutation.mutateAsync(updatedGroup);
-      setGroups(groups.map(g => g.id === updatedGroup.id ? updatedGroup : g));
-      setIsEditDialogOpen(false);
-      setEditingGroup(null);
-      toast({
-        title: "Group updated",
-        description: "The group has been updated successfully.",
-      });
-    } catch (error) {
-      console.error("Error updating group:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update group. Please try again.",
-        variant: "destructive",
-      });
-    }
+  const handleAddSuccess = (newGroup?: Group) => {
+    setIsAddDialogOpen(false);
+  };
+
+  const handleUpdateSuccess = (updatedGroup?: Group) => {
+    setIsEditDialogOpen(false);
+    setEditingGroup(null);
   };
 
   return (
@@ -124,20 +89,20 @@ const Supervisor = () => {
         </div>
 
         <GroupList
-          groups={groups}
+          groups={groups || []}
           selectedGroupId={selectedGroupId}
           onSelectGroup={setSelectedGroupId}
           onEditGroup={handleEdit}
           onRemoveGroup={handleRemove}
           loading={loading}
-          error={error}
+          error={error?.message}
         />
 
         <GroupDialog
           open={isAddDialogOpen}
           onOpenChange={setIsAddDialogOpen}
           title="Add New Group"
-          onSuccess={() => setIsAddDialogOpen(false)}
+          onSuccess={handleAddSuccess}
         />
 
         <GroupDialog
@@ -145,7 +110,7 @@ const Supervisor = () => {
           onOpenChange={setIsEditDialogOpen}
           title="Edit Group"
           initialData={editingGroup || undefined}
-          onSuccess={handleUpdate}
+          onSuccess={handleUpdateSuccess}
         />
 
         {selectedGroupId && <AttendanceForm groupId={selectedGroupId} />}
