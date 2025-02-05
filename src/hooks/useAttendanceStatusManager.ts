@@ -1,11 +1,11 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import type { AttendanceState, AttendanceStatus } from "@/types/attendanceTypes";
 
 export const useAttendanceStatusManager = () => {
   const [attendanceStates, setAttendanceStates] = useState<AttendanceState[]>([]);
 
-  const updateStatus = (technicianId: string, newStatus: AttendanceStatus) => {
+  const updateStatus = useCallback((technicianId: string, newStatus: AttendanceStatus) => {
     setAttendanceStates((prev) =>
       prev.map((state) =>
         state.technicianId === technicianId
@@ -13,9 +13,9 @@ export const useAttendanceStatusManager = () => {
           : state
       )
     );
-  };
+  }, []);
 
-  const initializeStates = (
+  const initializeStates = useCallback((
     technicianIds: string[],
     existingStates?: { technicianId: string; status: AttendanceStatus }[]
   ) => {
@@ -25,7 +25,7 @@ export const useAttendanceStatusManager = () => {
       isSubmitting: false,
     }));
     setAttendanceStates(initialStates);
-  };
+  }, []);
 
   return {
     attendanceStates,
@@ -33,3 +33,4 @@ export const useAttendanceStatusManager = () => {
     initializeStates,
   };
 };
+

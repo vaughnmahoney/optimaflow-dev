@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,7 +11,7 @@ export const useAttendanceSubmission = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const submitDailyAttendance = async (attendanceStates: AttendanceState[]) => {
+  const submitDailyAttendance = useCallback(async (attendanceStates: AttendanceState[]) => {
     try {
       setIsSubmitting(true);
       console.log('Starting attendance submission...');
@@ -62,10 +62,11 @@ export const useAttendanceSubmission = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [toast, queryClient]);
 
   return {
     isSubmitting,
     submitDailyAttendance,
   };
 };
+
