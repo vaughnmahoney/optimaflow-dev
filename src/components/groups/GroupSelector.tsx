@@ -43,7 +43,8 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
           .order("name");
 
         if (error) throw error;
-        setGroups(data || []);
+        // Ensure data is always an array
+        setGroups(Array.isArray(data) ? data : []);
       } catch (error: any) {
         const errorMessage = error?.message || "Failed to load groups";
         setError(errorMessage);
@@ -52,6 +53,7 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
           description: errorMessage,
           variant: "destructive",
         });
+        console.error("Error fetching groups:", error);
       } finally {
         setLoading(false);
       }
@@ -84,7 +86,7 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
-        <Command shouldFilter={false}>
+        <Command>
           <CommandInput placeholder="Search groups..." />
           <CommandEmpty>
             {error ? "Failed to load groups" : "No groups found."}
