@@ -1,18 +1,11 @@
 import { useState, useEffect } from "react";
-import { Check, ChevronDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -27,7 +20,6 @@ interface GroupSelectorProps {
 }
 
 export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorProps) {
-  const [open, setOpen] = useState(false);
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,56 +60,38 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
     fetchGroups();
   }, [toast]);
 
-  const selectedGroup = groups.find((group) => group.id === selectedGroupId);
-
   if (loading) {
     return (
-      <Button variant="outline" className="w-full" disabled>
-        Loading groups...
-      </Button>
+      <Select disabled>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Loading groups..." />
+        </SelectTrigger>
+      </Select>
+    );
+  }
+
+  if (error) {
+    return (
+      <Select disabled>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Error loading groups" />
+        </SelectTrigger>
+      </Select>
     );
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-full justify-between"
-        >
-          {error ? "Error loading groups" : selectedGroup?.name || "Select a group..."}
-          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-full p-0" align="start">
-        <Command>
-          <CommandInput placeholder="Search groups..." />
-          <CommandEmpty>
-            {error ? "Failed to load groups" : "No groups found."}
-          </CommandEmpty>
-          <CommandGroup>
-            {groups.map((group) => (
-              <CommandItem
-                key={group.id}
-                value={group.id}
-                onSelect={() => {
-                  onGroupSelect(group.id);
-                  setOpen(false);
-                }}
-              >
-                <Check
-                  className={`mr-2 h-4 w-4 ${
-                    selectedGroupId === group.id ? "opacity-100" : "opacity-0"
-                  }`}
-                />
-                {group.name}
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </Command>
-      </PopoverContent>
-    </Popover>
+    <Select value={selectedGroupId} onValueChange={onGroupSelect}>
+      <SelectTrigger className="w-full">
+        <SelectValue placeholder="Select a group..." />
+      </SelectTrigger>
+      <SelectContent>
+        {groups.map((group) => (
+          <SelectItem key={group.id} value={group.id}>
+            {group.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }
