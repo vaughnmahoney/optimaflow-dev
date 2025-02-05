@@ -1,6 +1,13 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreVertical } from "lucide-react";
 import type { Technician } from "@/types/attendance";
 
 interface TechnicianTableProps {
@@ -67,7 +74,7 @@ export const TechnicianTable = ({
                 {editingTechnician?.id === tech.id ? (
                   <Input
                     type="email"
-                    value={editingTechnician.email}
+                    value={editingTechnician.email || ""}
                     onChange={(e) =>
                       setEditingTechnician({
                         ...editingTechnician,
@@ -99,7 +106,7 @@ export const TechnicianTable = ({
               </td>
               <td className="py-3 px-4">
                 {editingTechnician?.id === tech.id ? (
-                  <div className="space-x-2">
+                  <div className="flex gap-2">
                     <Button
                       variant="outline"
                       size="sm"
@@ -118,23 +125,52 @@ export const TechnicianTable = ({
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setEditingTechnician(tech)}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onRemove(tech.id)}
-                      disabled={isRemoving}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      Remove
-                    </Button>
+                  <div className="flex items-center">
+                    {/* Desktop view buttons */}
+                    <div className="hidden md:flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingTechnician(tech)}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onRemove(tech.id)}
+                        disabled={isRemoving}
+                        className="text-red-600 hover:text-red-800"
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                    
+                    {/* Mobile view dropdown */}
+                    <div className="md:hidden">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem 
+                            onClick={() => setEditingTechnician(tech)}
+                            className="cursor-pointer"
+                          >
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => onRemove(tech.id)}
+                            className="cursor-pointer text-red-600 focus:text-red-600"
+                            disabled={isRemoving}
+                          >
+                            Remove
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
                 )}
               </td>
