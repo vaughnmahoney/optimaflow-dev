@@ -1,12 +1,9 @@
-
-import React, { useState } from 'react';
-import { format, parseISO } from 'date-fns';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { PencilIcon, SearchIcon } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { useState } from 'react';
+import { Card, CardContent } from "@/components/ui/card";
 import { AttendanceList } from "./AttendanceList";
 import { AttendanceStats } from "./AttendanceStats";
+import { DailyAttendanceHeader } from "./DailyAttendanceHeader";
+import { DailyAttendanceList } from "./DailyAttendanceList";
 import type { DailyAttendanceRecord, Technician } from "@/types/attendance";
 
 interface DailyAttendanceCardProps {
@@ -19,7 +16,7 @@ interface DailyAttendanceCardProps {
   getTechnicianName: (technicianId: string) => string;
 }
 
-export const DailyAttendanceCard: React.FC<DailyAttendanceCardProps> = ({
+export const DailyAttendanceCard = ({
   record,
   technicians,
   editingDate,
@@ -27,13 +24,10 @@ export const DailyAttendanceCard: React.FC<DailyAttendanceCardProps> = ({
   onEdit,
   onStatusChange,
   getTechnicianName,
-}) => {
+}: DailyAttendanceCardProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   
-  console.log('Rendering DailyAttendanceCard for date:', record.date, 'with records:', record.records);
-
   if (!record || !record.records || record.records.length === 0) {
-    console.log('No valid records found for date:', record.date);
     return null;
   }
 
@@ -45,9 +39,9 @@ export const DailyAttendanceCard: React.FC<DailyAttendanceCardProps> = ({
     return technicianName.includes(searchQuery.toLowerCase());
   });
 
-  return (
-    <Card>
-      {isEditing ? (
+  if (isEditing) {
+    return (
+      <Card>
         <AttendanceList
           technicians={technicians}
           todayAttendance={record.records}
@@ -55,76 +49,29 @@ export const DailyAttendanceCard: React.FC<DailyAttendanceCardProps> = ({
             onStatusChange(techId, status, record.date)
           }
           isSubmitting={isSubmitting}
-          date={parseISO(record.date)}
+          date={new Date(record.date)}
           isEditable={true}
         />
-      ) : (
-        <>
-          <CardHeader className="pb-3">
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle className="text-lg">
-                  {format(parseISO(record.date), "EEEE, MMMM d, yyyy")}
-                </CardTitle>
-                {isToday && (
-                  <span className="text-sm text-primary font-medium">Today</span>
-                )}
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onEdit(record.date)}
-                className="gap-2"
-              >
-                <PencilIcon className="h-4 w-4" />
-                Edit
-              </Button>
-            </div>
-            <div className="mt-4 relative">
-              <Input
-                type="text"
-                placeholder="Search by technician name..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-              <SearchIcon className="h-4 w-4 absolute left-3 top-3 text-gray-400" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <AttendanceStats stats={record.stats} />
-            <div className="space-y-2 mt-4">
-              {filteredRecords.map((attendance) => (
-                <div
-                  key={attendance.id}
-                  className="flex justify-between items-center p-2 bg-gray-50 rounded"
-                >
-                  <span className="font-medium">
-                    {getTechnicianName(attendance.technician_id)}
-                  </span>
-                  <span
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      attendance.status === "present"
-                        ? "bg-green-100 text-green-800"
-                        : attendance.status === "absent"
-                        ? "bg-red-100 text-red-800"
-                        : "bg-gray-100 text-gray-800"
-                    }`}
-                  >
-                    {attendance.status.charAt(0).toUpperCase() +
-                      attendance.status.slice(1)}
-                  </span>
-                </div>
-              ))}
-              {filteredRecords.length === 0 && (
-                <div className="text-center py-4 text-gray-500">
-                  No technicians found matching your search
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </>
-      )}
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <DailyAttendanceHeader
+        date={record.date}
+        isToday={isToday}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        onEdit={() => onEdit(record.date)}
+      />
+      <CardContent>
+        <AttendanceStats stats={record.stats} />
+        <DailyAttendanceList
+          records={filteredRecords}
+          getTechnicianName={getTechnicianName}
+        />
+      </CardContent>
     </Card>
   );
 };

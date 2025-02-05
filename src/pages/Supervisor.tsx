@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Layout } from "@/components/Layout";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { AttendanceForm } from "@/components/attendance/AttendanceForm";
+import { AttendanceFormContainer } from "@/components/attendance/AttendanceFormContainer";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { GroupDialog } from "@/components/groups/GroupDialog";
@@ -113,7 +113,7 @@ const Supervisor = () => {
           onSuccess={handleUpdateSuccess}
         />
 
-        {selectedGroupId && <AttendanceForm groupId={selectedGroupId} />}
+        {selectedGroupId && <AttendanceFormContainer groupId={selectedGroupId} />}
         
         {!selectedGroupId && (
           <div className="text-center text-gray-500 mt-8">
