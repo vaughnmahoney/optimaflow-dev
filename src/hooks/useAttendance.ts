@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { Technician } from "@/types/attendance";
 
-export const useAttendance = (groupId?: string) => {
+export const useAttendance = (groupId?: string | null) => {
   const { toast } = useToast();
 
   const { data: technicians, isLoading: isLoadingTechnicians } = useQuery({
@@ -14,7 +14,11 @@ export const useAttendance = (groupId?: string) => {
           .from('technicians')
           .select('*');
         
-        if (groupId) {
+        if (groupId === null) {
+          // Fetch technicians with no group
+          query = query.is('group_id', null);
+        } else if (groupId) {
+          // Fetch technicians for a specific group
           query = query.eq('group_id', groupId);
         }
 
@@ -36,7 +40,7 @@ export const useAttendance = (groupId?: string) => {
         throw error;
       }
     },
-    enabled: !!groupId,
+    enabled: groupId !== undefined,
   });
 
   return {
