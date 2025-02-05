@@ -1,3 +1,4 @@
+
 export type Role = "admin" | "supervisor";
 
 export interface User {
@@ -10,7 +11,7 @@ export interface User {
 export interface Technician {
   id: string;
   name: string;
-  email: string;
+  email: string | null;
   phone: string | null;
   supervisor_id: string;
   created_at: string | null;

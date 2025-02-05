@@ -14,11 +14,18 @@ export const TechnicianForm = () => {
 
   const handleAddTechnician = (e: React.FormEvent) => {
     e.preventDefault();
-    addTechnicianMutation.mutate(newTechnician, {
-      onSuccess: () => {
-        setNewTechnician({ name: "", email: "", phone: "" });
+    addTechnicianMutation.mutate(
+      {
+        name: newTechnician.name,
+        email: newTechnician.email || null,
+        phone: newTechnician.phone || null,
       },
-    });
+      {
+        onSuccess: () => {
+          setNewTechnician({ name: "", email: "", phone: "" });
+        },
+      }
+    );
   };
 
   return (
@@ -42,7 +49,7 @@ export const TechnicianForm = () => {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Email
+              Email (optional)
             </label>
             <Input
               type="email"
@@ -50,14 +57,13 @@ export const TechnicianForm = () => {
               onChange={(e) =>
                 setNewTechnician({ ...newTechnician, email: e.target.value })
               }
-              required
               className="mt-1"
               placeholder="john@example.com"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Phone
+              Phone (optional)
             </label>
             <Input
               type="tel"
@@ -65,7 +71,6 @@ export const TechnicianForm = () => {
               onChange={(e) =>
                 setNewTechnician({ ...newTechnician, phone: e.target.value })
               }
-              required
               className="mt-1"
               placeholder="(555) 555-5555"
             />
