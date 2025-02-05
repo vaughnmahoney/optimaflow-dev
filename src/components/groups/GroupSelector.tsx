@@ -42,8 +42,7 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
         const { data, error } = await supabase
           .from("groups")
           .select("id, name")
-          .order("name")
-          .returns<Group[]>();
+          .order("name");
 
         if (error) {
           console.error("Supabase error:", error);
@@ -99,9 +98,10 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
             {error ? "Failed to load groups" : "No groups found."}
           </CommandEmpty>
           <CommandGroup>
-            {(groups || []).map((group) => (
+            {groups.map((group) => (
               <CommandItem
                 key={group.id}
+                value={group.id}
                 onSelect={() => {
                   onGroupSelect(group.id);
                   setOpen(false);
