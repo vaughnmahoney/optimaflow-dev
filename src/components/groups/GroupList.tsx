@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 
 interface GroupListProps {
   groups: Group[];
-  selectedGroupId?: string;
-  onSelectGroup: (groupId: string) => void;
+  selectedGroupId?: string | null;
+  onSelectGroup: (groupId: string | null) => void;
   onEditGroup: (group: Group) => void;
   onRemoveGroup: (groupId: string) => void;
   loading?: boolean;
@@ -60,7 +60,7 @@ export const GroupList = ({
         className={`group relative cursor-pointer transition-all hover:shadow-lg ${
           selectedGroupId === null ? 'ring-2 ring-primary' : ''
         }`}
-        onClick={() => onSelectGroup('')}
+        onClick={() => onSelectGroup(null)}
       >
         <CardHeader>
           <CardTitle>Unassigned Technicians</CardTitle>
