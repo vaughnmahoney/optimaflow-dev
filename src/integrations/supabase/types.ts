@@ -50,10 +50,35 @@ export type Database = {
           },
         ]
       }
+      groups: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       technicians: {
         Row: {
           created_at: string | null
           email: string | null
+          group_id: string | null
           id: string
           name: string
           phone: string | null
@@ -63,6 +88,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           email?: string | null
+          group_id?: string | null
           id?: string
           name: string
           phone?: string | null
@@ -72,13 +98,22 @@ export type Database = {
         Update: {
           created_at?: string | null
           email?: string | null
+          group_id?: string | null
           id?: string
           name?: string
           phone?: string | null
           supervisor_id?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "technicians_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

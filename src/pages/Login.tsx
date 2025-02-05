@@ -2,118 +2,85 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/components/AuthProvider";
+
+const SUPERVISOR_PASSWORD = "demo123"; // This should be moved to an environment variable
 
 const Login = () => {
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isSignUp, setIsSignUp] = useState(false);
-  const { session } = useAuth();
 
-  const handleAuth = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    setIsLoading(true);
+
     try {
-      if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
+      if (password === SUPERVISOR_PASSWORD) {
+        // Use a shared supervisor account for authentication
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: "supervisor@example.com",
+          password: SUPERVISOR_PASSWORD,
         });
 
         if (error) throw error;
 
         toast({
-          title: "Sign up successful",
-          description: "Please check your email to verify your account.",
+          title: "Welcome back!",
+          description: "Successfully logged in.",
         });
+
+        navigate("/supervisor");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (error) throw error;
-
         toast({
-          title: "Logged in successfully",
-          description: `Welcome back, ${email}!`,
+          title: "Invalid password",
+          description: "Please check your password and try again.",
+          variant: "destructive",
         });
       }
-    } catch (error) {
-      console.error('Auth error:', error);
+    } catch (error: any) {
       toast({
-        title: "Authentication Error",
-        description: error instanceof Error ? error.message : "Failed to authenticate",
+        title: "Error",
+        description: error.message || "An error occurred during login.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="w-full max-w-md space-y-8 animate-fade-in">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-primary">
-            {isSignUp ? "Create Account" : "Welcome Back"}
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            {isSignUp 
-              ? "Sign up to start managing attendance" 
-              : "Sign in to manage attendance"}
-          </p>
-        </div>
-        <form onSubmit={handleAuth} className="mt-8 space-y-6">
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
-              </label>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center">
+            Supervisor Login
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
               <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="mt-1"
-                placeholder="you@example.com"
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <Input
-                id="password"
                 type="password"
+                placeholder="Enter supervisor password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required
-                className="mt-1"
-                placeholder="••••••••"
-                minLength={6}
+                className="w-full"
               />
             </div>
-          </div>
-          <Button type="submit" className="w-full">
-            {isSignUp ? "Sign Up" : "Sign In"}
-          </Button>
-        </form>
-        <div className="text-center">
-          <button
-            type="button"
-            onClick={() => setIsSignUp(!isSignUp)}
-            className="text-sm text-primary hover:underline"
-          >
-            {isSignUp 
-              ? "Already have an account? Sign in" 
-              : "Don't have an account? Sign up"}
-          </button>
-        </div>
-      </div>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isLoading}
+            >
+              {isLoading ? "Logging in..." : "Login"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 };

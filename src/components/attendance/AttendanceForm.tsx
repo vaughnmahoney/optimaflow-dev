@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAttendance } from "@/hooks/useAttendance";
@@ -10,8 +9,12 @@ import { AttendanceFormHeader } from "./AttendanceFormHeader";
 import { TechnicianList } from "./TechnicianList";
 import { AttendanceFormActions } from "./AttendanceFormActions";
 
-export const AttendanceForm = () => {
-  const { technicians, isLoadingTechnicians } = useAttendance();
+interface AttendanceFormProps {
+  groupId: string;
+}
+
+export const AttendanceForm = ({ groupId }: AttendanceFormProps) => {
+  const { technicians, isLoadingTechnicians } = useAttendance(groupId);
   const { toast } = useToast();
   const [hasSubmittedToday, setHasSubmittedToday] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
