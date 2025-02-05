@@ -29,8 +29,8 @@ export const DailyAttendanceCard: React.FC<DailyAttendanceCardProps> = ({
 }) => {
   console.log('Rendering DailyAttendanceCard for date:', record.date, 'with records:', record.records);
 
-  if (!record || !record.records) {
-    console.log('No record or records array found');
+  if (!record || !record.records || record.records.length === 0) {
+    console.log('No valid records found for date:', record.date);
     return null;
   }
 

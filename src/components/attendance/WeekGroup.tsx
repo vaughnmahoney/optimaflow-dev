@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { format, parseISO, isWithinInterval } from 'date-fns';
+import { format, parseISO, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import {
   Accordion,
   AccordionContent,
@@ -41,11 +41,15 @@ export const WeekGroup: React.FC<WeekGroupProps> = ({
   
   // Filter records that fall within this week's date range using date-fns
   const weekRecords = records.filter(record => {
-    const recordDate = parseISO(record.date);
-    const weekStart = parseISO(startDate);
-    const weekEnd = parseISO(endDate);
+    const recordDate = startOfDay(parseISO(record.date));
+    const weekStart = startOfDay(parseISO(startDate));
+    const weekEnd = endOfDay(parseISO(endDate));
     
-    const isInRange = isWithinInterval(recordDate, { start: weekStart, end: weekEnd });
+    const isInRange = isWithinInterval(recordDate, { 
+      start: weekStart, 
+      end: weekEnd 
+    });
+    
     console.log(`Record date: ${record.date}, Start: ${startDate}, End: ${endDate}, In range: ${isInRange}`);
     return isInRange;
   });
@@ -65,23 +69,22 @@ export const WeekGroup: React.FC<WeekGroupProps> = ({
       </AccordionTrigger>
       <AccordionContent>
         <div className="space-y-4">
-          {weekRecords.length > 0 ? (
-            weekRecords.map((record) => {
-              console.log('Rendering record for date:', record.date);
-              return (
-                <DailyAttendanceCard
-                  key={record.date}
-                  record={record}
-                  technicians={technicians}
-                  editingDate={editingDate}
-                  isSubmitting={isSubmitting}
-                  onEdit={onEdit}
-                  onStatusChange={onStatusChange}
-                  getTechnicianName={getTechnicianName}
-                />
-              );
-            })
-          ) : (
+          {weekRecords.map((record) => {
+            console.log('Rendering record for date:', record.date);
+            return (
+              <DailyAttendanceCard
+                key={record.date}
+                record={record}
+                technicians={technicians}
+                editingDate={editingDate}
+                isSubmitting={isSubmitting}
+                onEdit={onEdit}
+                onStatusChange={onStatusChange}
+                getTechnicianName={getTechnicianName}
+              />
+            );
+          })}
+          {weekRecords.length === 0 && (
             <div className="text-center py-4 text-gray-500">
               No attendance records for this week
             </div>
