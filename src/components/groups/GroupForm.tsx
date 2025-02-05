@@ -1,24 +1,38 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useGroupMutations } from "@/hooks/useGroupMutations";
+import { Group } from "@/types/groups";
 
 interface GroupFormProps {
-  onSuccess?: () => void;
+  initialData?: Group;
+  onSuccess?: (group?: Group) => void;
 }
 
-export const GroupForm = ({ onSuccess }: GroupFormProps) => {
-  const { addGroupMutation } = useGroupMutations();
+export const GroupForm = ({ initialData, onSuccess }: GroupFormProps) => {
+  const { addGroupMutation, updateGroupMutation } = useGroupMutations();
   const [newGroup, setNewGroup] = useState({
     name: "",
     description: "",
   });
 
-  const handleAddGroup = async (e: React.FormEvent) => {
+  useEffect(() => {
+    if (initialData) {
+      setNewGroup({
+        name: initialData.name,
+        description: initialData.description || "",
+      });
+    }
+  }, [initialData]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await addGroupMutation.mutateAsync(
+    const mutation = initialData ? updateGroupMutation : addGroupMutation;
+    
+    await mutation.mutateAsync(
       {
+        id: initialData?.id,
         name: newGroup.name,
         description: newGroup.description || null,
       },
@@ -32,7 +46,7 @@ export const GroupForm = ({ onSuccess }: GroupFormProps) => {
   };
 
   return (
-    <form onSubmit={handleAddGroup} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">
@@ -64,9 +78,9 @@ export const GroupForm = ({ onSuccess }: GroupFormProps) => {
       </div>
       <Button 
         type="submit"
-        disabled={addGroupMutation.isPending}
+        disabled={addGroupMutation.isPending || updateGroupMutation.isPending}
       >
-        {addGroupMutation.isPending ? "Adding..." : "Add Group"}
+        {initialData ? "Update Group" : "Add Group"}
       </Button>
     </form>
   );
