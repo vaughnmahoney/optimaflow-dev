@@ -4,10 +4,21 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { AttendanceForm } from "@/components/attendance/AttendanceForm";
 import { GroupSelector } from "@/components/groups/GroupSelector";
+import { GroupForm } from "@/components/groups/GroupForm";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const Supervisor = () => {
   const navigate = useNavigate();
   const [selectedGroupId, setSelectedGroupId] = useState<string>();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -30,11 +41,26 @@ const Supervisor = () => {
           </p>
         </div>
         
-        <div className="max-w-md">
-          <GroupSelector
-            selectedGroupId={selectedGroupId}
-            onGroupSelect={setSelectedGroupId}
-          />
+        <div className="flex gap-4 items-start">
+          <div className="flex-1 max-w-md">
+            <GroupSelector
+              selectedGroupId={selectedGroupId}
+              onGroupSelect={setSelectedGroupId}
+            />
+          </div>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="icon">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Group</DialogTitle>
+              </DialogHeader>
+              <GroupForm onSuccess={() => setIsDialogOpen(false)} />
+            </DialogContent>
+          </Dialog>
         </div>
 
         {selectedGroupId && <AttendanceForm groupId={selectedGroupId} />}
