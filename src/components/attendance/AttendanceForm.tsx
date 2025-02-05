@@ -157,6 +157,7 @@ export const AttendanceForm = () => {
                 currentStatus={state?.status || null}
                 onStatusChange={(status) => updateStatus(tech.id, status)}
                 isSubmitting={isSubmitting}
+                isDisabled={hasSubmittedToday && !isEditing}
               />
             );
           })}
@@ -202,3 +203,4 @@ export const AttendanceForm = () => {
     </div>
   );
 };
+

@@ -1,3 +1,4 @@
+
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { type AttendanceRecord, type Technician } from "@/types/attendance";
@@ -8,6 +9,7 @@ interface AttendanceRadioCardProps {
   currentStatus: AttendanceRecord["status"] | null;
   onStatusChange: (status: AttendanceRecord["status"]) => void;
   isSubmitting: boolean;
+  isDisabled?: boolean;
 }
 
 export const AttendanceRadioCard = ({
@@ -15,6 +17,7 @@ export const AttendanceRadioCard = ({
   currentStatus,
   onStatusChange,
   isSubmitting,
+  isDisabled = false,
 }: AttendanceRadioCardProps) => {
   const statusOptions: { value: AttendanceRecord["status"]; label: string; className: string }[] = [
     { value: "present", label: "Present", className: "bg-green-100 text-green-700" },
@@ -34,7 +37,7 @@ export const AttendanceRadioCard = ({
           value={currentStatus || undefined}
           onValueChange={(value) => onStatusChange(value as AttendanceRecord["status"])}
           className="flex gap-4"
-          disabled={isSubmitting}
+          disabled={isSubmitting || isDisabled}
         >
           {statusOptions.map((option) => (
             <div key={option.value} className="flex items-center">
@@ -43,7 +46,7 @@ export const AttendanceRadioCard = ({
                 className={cn(
                   "px-6 py-2 rounded-full cursor-pointer transition-colors",
                   currentStatus === option.value ? option.className : "bg-gray-50 text-gray-500 hover:bg-gray-100",
-                  isSubmitting && "opacity-50 cursor-not-allowed"
+                  (isSubmitting || isDisabled) && "opacity-50 cursor-not-allowed"
                 )}
               >
                 <div className="flex items-center gap-2">
