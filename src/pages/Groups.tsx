@@ -6,10 +6,15 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Group } from "@/types/groups";
 import { useToast } from "@/hooks/use-toast";
+import { useGroupMutations } from "@/hooks/useGroupMutations";
+import { GroupDialog } from "@/components/groups/GroupDialog";
 
 const Groups = () => {
   const [selectedGroupId, setSelectedGroupId] = useState<string>();
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingGroup, setEditingGroup] = useState<Group | null>(null);
   const { toast } = useToast();
+  const { updateGroupMutation, removeGroupMutation } = useGroupMutations();
 
   const { data: groups, isLoading, error } = useQuery({
     queryKey: ['groups'],
@@ -25,17 +30,21 @@ const Groups = () => {
   });
 
   const handleEditGroup = (group: Group) => {
-    toast({
-      title: "Edit group",
-      description: "This feature is not implemented yet.",
-    });
+    setEditingGroup(group);
+    setIsEditDialogOpen(true);
   };
 
-  const handleRemoveGroup = (groupId: string) => {
-    toast({
-      title: "Remove group",
-      description: "This feature is not implemented yet.",
-    });
+  const handleRemoveGroup = async (groupId: string) => {
+    try {
+      await removeGroupMutation.mutateAsync(groupId);
+    } catch (error) {
+      console.error("Error removing group:", error);
+    }
+  };
+
+  const handleUpdateSuccess = (updatedGroup?: Group) => {
+    setIsEditDialogOpen(false);
+    setEditingGroup(null);
   };
 
   return (
@@ -49,6 +58,7 @@ const Groups = () => {
         </div>
         
         <GroupForm />
+
         <GroupList 
           groups={groups || []}
           selectedGroupId={selectedGroupId}
@@ -57,6 +67,14 @@ const Groups = () => {
           onRemoveGroup={handleRemoveGroup}
           loading={isLoading}
           error={error?.message}
+        />
+
+        <GroupDialog
+          open={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
+          title="Edit Group"
+          initialData={editingGroup || undefined}
+          onSuccess={handleUpdateSuccess}
         />
       </div>
     </Layout>
