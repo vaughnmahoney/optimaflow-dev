@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { AttendanceForm } from "@/components/attendance/AttendanceForm";
 import { GroupForm } from "@/components/groups/GroupForm";
+import { GroupTable } from "@/components/groups/GroupTable";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import {
@@ -13,13 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import { useGroupMutations } from "@/hooks/useGroupMutations";
 
 interface Group {
   id: string;
@@ -34,6 +29,8 @@ const Supervisor = () => {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editingGroup, setEditingGroup] = useState<Group | null>(null);
+  const { updateGroupMutation, removeGroupMutation } = useGroupMutations();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -76,6 +73,32 @@ const Supervisor = () => {
     fetchGroups();
   }, []);
 
+  const handleUpdateGroup = async (group: Group) => {
+    await updateGroupMutation.mutateAsync(group, {
+      onSuccess: () => {
+        setEditingGroup(null);
+        // Refresh groups list
+        const updatedGroups = groups.map((g) =>
+          g.id === group.id ? group : g
+        );
+        setGroups(updatedGroups);
+      },
+    });
+  };
+
+  const handleRemoveGroup = async (groupId: string) => {
+    await removeGroupMutation.mutateAsync(groupId, {
+      onSuccess: () => {
+        // Remove group from local state
+        setGroups(groups.filter((g) => g.id !== groupId));
+        // If the removed group was selected, clear selection
+        if (selectedGroupId === groupId) {
+          setSelectedGroupId(undefined);
+        }
+      },
+    });
+  };
+
   return (
     <Layout>
       <div className="space-y-8 animate-fade-in">
@@ -83,7 +106,7 @@ const Supervisor = () => {
           <div>
             <h2 className="text-2xl font-bold text-primary">Supervisor Dashboard</h2>
             <p className="mt-2 text-sm text-gray-600">
-              Select a group and mark attendance for your team
+              Manage groups and mark attendance for your team
             </p>
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -97,54 +120,41 @@ const Supervisor = () => {
               <DialogHeader>
                 <DialogTitle>Add New Group</DialogTitle>
               </DialogHeader>
-              <GroupForm onSuccess={() => setIsDialogOpen(false)} />
+              <GroupForm onSuccess={() => {
+                setIsDialogOpen(false);
+                // Refresh groups list after adding
+                const fetchGroups = async () => {
+                  const { data } = await supabase
+                    .from("groups")
+                    .select("id, name, description")
+                    .order("name");
+                  if (data) setGroups(data);
+                };
+                fetchGroups();
+              }} />
             </DialogContent>
           </Dialog>
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[...Array(5)].map((_, index) => (
-              <Card key={index} className="animate-pulse">
-                <CardHeader>
-                  <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                </CardHeader>
-              </Card>
-            ))}
+          <div className="animate-pulse space-y-4">
+            <div className="h-10 bg-gray-200 rounded w-3/4"></div>
+            <div className="h-40 bg-gray-200 rounded"></div>
           </div>
         ) : error ? (
           <div className="text-center text-red-500 mt-8">
             {error}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {groups.map((group) => (
-              <Card 
-                key={group.id}
-                className={`cursor-pointer transition-all hover:shadow-lg ${
-                  selectedGroupId === group.id ? 'ring-2 ring-primary' : ''
-                }`}
-                onClick={() => setSelectedGroupId(group.id)}
-              >
-                <CardHeader>
-                  <CardTitle>{group.name}</CardTitle>
-                  {group.description && (
-                    <CardDescription>{group.description}</CardDescription>
-                  )}
-                </CardHeader>
-                <CardContent>
-                  <Button 
-                    variant={selectedGroupId === group.id ? "default" : "outline"}
-                    className="w-full"
-                    onClick={() => setSelectedGroupId(group.id)}
-                  >
-                    {selectedGroupId === group.id ? 'Selected' : 'Select Group'}
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <GroupTable
+            groups={groups}
+            editingGroup={editingGroup}
+            setEditingGroup={setEditingGroup}
+            onUpdate={handleUpdateGroup}
+            onRemove={handleRemoveGroup}
+            isUpdating={updateGroupMutation.isPending}
+            isRemoving={removeGroupMutation.isPending}
+          />
         )}
 
         {selectedGroupId && <AttendanceForm groupId={selectedGroupId} />}
