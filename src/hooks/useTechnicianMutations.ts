@@ -1,4 +1,3 @@
-
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -74,18 +73,27 @@ export const useTechnicianMutations = () => {
 
   const removeTechnicianMutation = useMutation({
     mutationFn: async (technicianId: string) => {
-      const { error } = await supabase
+      // First, delete all attendance records for this technician
+      const { error: attendanceError } = await supabase
+        .from("attendance_records")
+        .delete()
+        .eq("technician_id", technicianId);
+
+      if (attendanceError) throw attendanceError;
+
+      // Then delete the technician
+      const { error: techError } = await supabase
         .from("technicians")
         .delete()
         .eq("id", technicianId);
-      
-      if (error) throw error;
+
+      if (techError) throw techError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["technicians"] });
       toast({
         title: "Technician removed",
-        description: "The technician has been removed successfully.",
+        description: "The technician and their attendance records have been removed successfully.",
       });
     },
     onError: (error) => {
