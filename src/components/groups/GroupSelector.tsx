@@ -93,7 +93,7 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
             {groups.map((group) => (
               <CommandItem
                 key={group.id}
-                value={group.id}
+                value={group.name}
                 onSelect={() => {
                   onGroupSelect(group.id);
                   setOpen(false);
