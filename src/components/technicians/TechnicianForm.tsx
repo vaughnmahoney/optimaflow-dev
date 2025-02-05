@@ -1,8 +1,8 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTechnicianMutations } from "@/hooks/useTechnicianMutations";
+import { GroupSelector } from "@/components/groups/GroupSelector";
 
 export const TechnicianForm = () => {
   const { addTechnicianMutation } = useTechnicianMutations();
@@ -10,6 +10,7 @@ export const TechnicianForm = () => {
     name: "",
     email: "",
     phone: "",
+    group_id: "",
   });
 
   const handleAddTechnician = (e: React.FormEvent) => {
@@ -19,10 +20,11 @@ export const TechnicianForm = () => {
         name: newTechnician.name,
         email: newTechnician.email || null,
         phone: newTechnician.phone || null,
+        group_id: newTechnician.group_id || null,
       },
       {
         onSuccess: () => {
-          setNewTechnician({ name: "", email: "", phone: "" });
+          setNewTechnician({ name: "", email: "", phone: "", group_id: "" });
         },
       }
     );
@@ -75,6 +77,17 @@ export const TechnicianForm = () => {
               placeholder="(555) 555-5555"
             />
           </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Group
+          </label>
+          <GroupSelector
+            onGroupSelect={(groupId) =>
+              setNewTechnician({ ...newTechnician, group_id: groupId })
+            }
+            selectedGroupId={newTechnician.group_id}
+          />
         </div>
         <Button 
           type="submit"
