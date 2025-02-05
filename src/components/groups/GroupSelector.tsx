@@ -31,7 +31,6 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [inputValue, setInputValue] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -62,9 +61,6 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
   }, [toast]);
 
   const selectedGroup = groups.find((group) => group.id === selectedGroupId);
-  const filteredGroups = groups.filter((group) => 
-    group.name.toLowerCase().includes(inputValue.toLowerCase())
-  );
 
   if (loading) {
     return (
@@ -88,24 +84,18 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
-        <Command>
-          <CommandInput 
-            placeholder="Search groups..." 
-            value={inputValue}
-            onValueChange={setInputValue}
-          />
+        <Command shouldFilter={false}>
+          <CommandInput placeholder="Search groups..." />
           <CommandEmpty>
             {error ? "Failed to load groups" : "No groups found."}
           </CommandEmpty>
           <CommandGroup>
-            {filteredGroups.map((group) => (
+            {groups.map((group) => (
               <CommandItem
                 key={group.id}
-                value={group.name}
                 onSelect={() => {
                   onGroupSelect(group.id);
                   setOpen(false);
-                  setInputValue("");
                 }}
               >
                 <Check
