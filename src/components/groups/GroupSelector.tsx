@@ -31,6 +31,7 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [inputValue, setInputValue] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -84,8 +85,12 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
-        <Command>
-          <CommandInput placeholder="Search groups..." />
+        <Command value={inputValue}>
+          <CommandInput 
+            placeholder="Search groups..." 
+            value={inputValue}
+            onValueChange={setInputValue}
+          />
           <CommandEmpty>
             {error ? "Failed to load groups" : "No groups found."}
           </CommandEmpty>
