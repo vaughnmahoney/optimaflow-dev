@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isWithinInterval } from 'date-fns';
 import {
   Accordion,
   AccordionContent,
@@ -38,11 +39,14 @@ export const WeekGroup: React.FC<WeekGroupProps> = ({
   console.log(`WeekGroup ${weekNumber} - Start: ${startDate}, End: ${endDate}`);
   console.log('All records:', records);
   
-  // Filter records that fall within this week's date range
+  // Filter records that fall within this week's date range using date-fns
   const weekRecords = records.filter(record => {
-    const recordDate = record.date;
-    const isInRange = recordDate >= startDate && recordDate <= endDate;
-    console.log(`Record date: ${recordDate}, In range: ${isInRange}`);
+    const recordDate = parseISO(record.date);
+    const weekStart = parseISO(startDate);
+    const weekEnd = parseISO(endDate);
+    
+    const isInRange = isWithinInterval(recordDate, { start: weekStart, end: weekEnd });
+    console.log(`Record date: ${record.date}, Start: ${startDate}, End: ${endDate}, In range: ${isInRange}`);
     return isInRange;
   });
 
