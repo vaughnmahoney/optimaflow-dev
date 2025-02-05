@@ -28,21 +28,37 @@ export const GroupForm = ({ initialData, onSuccess }: GroupFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const mutation = initialData ? updateGroupMutation : addGroupMutation;
     
-    await mutation.mutateAsync(
-      {
-        id: initialData?.id,
-        name: newGroup.name,
-        description: newGroup.description || null,
-      },
-      {
-        onSuccess: () => {
-          setNewGroup({ name: "", description: "" });
-          onSuccess?.();
+    if (initialData) {
+      // Update existing group
+      await updateGroupMutation.mutateAsync(
+        {
+          id: initialData.id,
+          name: newGroup.name,
+          description: newGroup.description || null,
         },
-      }
-    );
+        {
+          onSuccess: (updatedGroup) => {
+            setNewGroup({ name: "", description: "" });
+            onSuccess?.(updatedGroup);
+          },
+        }
+      );
+    } else {
+      // Create new group
+      await addGroupMutation.mutateAsync(
+        {
+          name: newGroup.name,
+          description: newGroup.description || null,
+        },
+        {
+          onSuccess: (newGroup) => {
+            setNewGroup({ name: "", description: "" });
+            onSuccess?.(newGroup);
+          },
+        }
+      );
+    }
   };
 
   return (

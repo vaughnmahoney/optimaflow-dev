@@ -1,12 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
-interface Group {
-  id: string;
-  name: string;
-  description: string | null;
-}
+import { Group } from "@/types/groups";
 
 export const useGroupMutations = () => {
   const { toast } = useToast();
