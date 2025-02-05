@@ -21,7 +21,7 @@ const Supervisor = () => {
   const { updateGroupMutation, removeGroupMutation } = useGroupMutations();
   const { toast } = useToast();
 
-  const { data: groups, isLoading: loading, error } = useQuery({
+  const { data: groups, isLoading, error } = useQuery({
     queryKey: ['groups'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -53,11 +53,15 @@ const Supervisor = () => {
   const handleRemove = async (groupId: string) => {
     try {
       await removeGroupMutation.mutateAsync(groupId);
+      toast({
+        title: "Group deleted",
+        description: "The group has been successfully deleted.",
+      });
     } catch (error) {
       console.error("Error removing group:", error);
       toast({
         title: "Error",
-        description: "Failed to remove group. Please try again.",
+        description: "Failed to delete group. Please try again.",
         variant: "destructive",
       });
     }
@@ -65,11 +69,19 @@ const Supervisor = () => {
 
   const handleAddSuccess = (newGroup?: Group) => {
     setIsAddDialogOpen(false);
+    toast({
+      title: "Group created",
+      description: "The new group has been successfully created.",
+    });
   };
 
   const handleUpdateSuccess = (updatedGroup?: Group) => {
     setIsEditDialogOpen(false);
     setEditingGroup(null);
+    toast({
+      title: "Group updated",
+      description: "The group has been successfully updated.",
+    });
   };
 
   return (
@@ -94,8 +106,9 @@ const Supervisor = () => {
           onSelectGroup={setSelectedGroupId}
           onEditGroup={handleEdit}
           onRemoveGroup={handleRemove}
-          loading={loading}
+          loading={isLoading}
           error={error?.message}
+          deletingGroupId={removeGroupMutation.isPending ? removeGroupMutation.variables : undefined}
         />
 
         <GroupDialog

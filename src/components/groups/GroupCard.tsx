@@ -1,11 +1,23 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Edit2, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Edit2, Trash2, Loader2 } from "lucide-react";
 import { Group } from "@/types/groups";
 
 interface GroupCardProps {
   group: Group;
   isSelected: boolean;
+  isDeleting?: boolean;
   onSelect: (groupId: string) => void;
   onEdit: (group: Group) => void;
   onRemove: (groupId: string) => void;
@@ -14,6 +26,7 @@ interface GroupCardProps {
 export const GroupCard = ({
   group,
   isSelected,
+  isDeleting,
   onSelect,
   onEdit,
   onRemove,
@@ -37,17 +50,40 @@ export const GroupCard = ({
         >
           <Edit2 className="h-4 w-4" />
         </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 hover:text-red-500"
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemove(group.id);
-          }}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 hover:text-red-500"
+              onClick={(e) => e.stopPropagation()}
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Trash2 className="h-4 w-4" />
+              )}
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Group</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete "{group.name}"? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-red-500 hover:bg-red-600"
+                onClick={() => onRemove(group.id)}
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
       <CardHeader>
         <CardTitle>{group.name}</CardTitle>
