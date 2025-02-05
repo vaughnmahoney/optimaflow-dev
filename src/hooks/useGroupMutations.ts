@@ -18,8 +18,12 @@ export const useGroupMutations = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["groups"] });
+    onSuccess: (newGroup) => {
+      // Optimistically update the cache
+      queryClient.setQueryData<Group[]>(["groups"], (oldGroups = []) => {
+        return [...oldGroups, newGroup].sort((a, b) => a.name.localeCompare(b.name));
+      });
+      
       toast({
         title: "Group added",
         description: "The group has been added successfully.",
@@ -50,8 +54,14 @@ export const useGroupMutations = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["groups"] });
+    onSuccess: (updatedGroup) => {
+      // Optimistically update the cache
+      queryClient.setQueryData<Group[]>(["groups"], (oldGroups = []) => {
+        return oldGroups
+          .map(g => g.id === updatedGroup.id ? updatedGroup : g)
+          .sort((a, b) => a.name.localeCompare(b.name));
+      });
+      
       toast({
         title: "Group updated",
         description: "The group has been updated successfully.",
@@ -75,9 +85,14 @@ export const useGroupMutations = () => {
         .eq("id", groupId);
       
       if (error) throw error;
+      return groupId;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["groups"] });
+    onSuccess: (groupId) => {
+      // Optimistically update the cache
+      queryClient.setQueryData<Group[]>(["groups"], (oldGroups = []) => {
+        return oldGroups.filter(g => g.id !== groupId);
+      });
+      
       toast({
         title: "Group removed",
         description: "The group has been removed successfully.",

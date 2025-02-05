@@ -47,6 +47,10 @@ const Groups = () => {
     setEditingGroup(null);
   };
 
+  const handleAddSuccess = (newGroup?: Group) => {
+    console.log("New group added:", newGroup);
+  };
+
   return (
     <Layout>
       <div className="space-y-8 animate-fade-in">
@@ -57,7 +61,7 @@ const Groups = () => {
           </p>
         </div>
         
-        <GroupForm />
+        <GroupForm onSuccess={handleAddSuccess} />
 
         <GroupList 
           groups={groups || []}
