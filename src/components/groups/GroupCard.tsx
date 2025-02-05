@@ -43,28 +43,34 @@ export const GroupCard = ({
         .select('*', { count: 'exact', head: true })
         .eq('group_id', group.id);
 
-      // Get attendance stats for the last 30 days
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      
-      const { data: attendanceData } = await supabase
-        .from('attendance_records')
-        .select('status, technician_id')
-        .gte('date', thirtyDaysAgo.toISOString())
-        .in('technician_id', 
-          supabase
-            .from('technicians')
-            .select('id')
-            .eq('group_id', group.id)
-        );
+      // Get technicians IDs first
+      const { data: technicians } = await supabase
+        .from('technicians')
+        .select('id')
+        .eq('group_id', group.id);
 
-      const totalRecords = attendanceData?.length || 0;
-      const presentRecords = attendanceData?.filter(record => record.status === 'present').length || 0;
-      const attendanceRate = totalRecords ? ((presentRecords / totalRecords) * 100).toFixed(1) : '0';
+      const technicianIds = technicians?.map(t => t.id) || [];
+
+      // Get attendance stats for the last 30 days if there are technicians
+      let attendanceRate = '0';
+      if (technicianIds.length > 0) {
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        
+        const { data: attendanceData } = await supabase
+          .from('attendance_records')
+          .select('status, technician_id')
+          .gte('date', thirtyDaysAgo.toISOString())
+          .in('technician_id', technicianIds);
+
+        const totalRecords = attendanceData?.length || 0;
+        const presentRecords = attendanceData?.filter(record => record.status === 'present').length || 0;
+        attendanceRate = totalRecords ? ((presentRecords / totalRecords) * 100).toFixed(1) : '0';
+      }
 
       return {
         techniciansCount: techCount || 0,
-        attendanceRate: attendanceRate,
+        attendanceRate,
       };
     },
   });
