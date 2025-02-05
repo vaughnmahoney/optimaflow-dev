@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PencilIcon } from "lucide-react";
+import { PencilIcon, SearchIcon } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { AttendanceList } from "./AttendanceList";
 import { AttendanceStats } from "./AttendanceStats";
 import type { DailyAttendanceRecord, Technician } from "@/types/attendance";
@@ -27,6 +28,8 @@ export const DailyAttendanceCard: React.FC<DailyAttendanceCardProps> = ({
   onStatusChange,
   getTechnicianName,
 }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  
   console.log('Rendering DailyAttendanceCard for date:', record.date, 'with records:', record.records);
 
   if (!record || !record.records || record.records.length === 0) {
@@ -36,6 +39,11 @@ export const DailyAttendanceCard: React.FC<DailyAttendanceCardProps> = ({
 
   const isToday = record.date === new Date().toISOString().split('T')[0];
   const isEditing = editingDate === record.date;
+
+  const filteredRecords = record.records.filter(attendance => {
+    const technicianName = getTechnicianName(attendance.technician_id).toLowerCase();
+    return technicianName.includes(searchQuery.toLowerCase());
+  });
 
   return (
     <Card>
@@ -72,11 +80,21 @@ export const DailyAttendanceCard: React.FC<DailyAttendanceCardProps> = ({
                 Edit
               </Button>
             </div>
+            <div className="mt-4 relative">
+              <Input
+                type="text"
+                placeholder="Search by technician name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+              <SearchIcon className="h-4 w-4 absolute left-3 top-3 text-gray-400" />
+            </div>
           </CardHeader>
           <CardContent>
             <AttendanceStats stats={record.stats} />
             <div className="space-y-2 mt-4">
-              {record.records.map((attendance) => (
+              {filteredRecords.map((attendance) => (
                 <div
                   key={attendance.id}
                   className="flex justify-between items-center p-2 bg-gray-50 rounded"
@@ -98,6 +116,11 @@ export const DailyAttendanceCard: React.FC<DailyAttendanceCardProps> = ({
                   </span>
                 </div>
               ))}
+              {filteredRecords.length === 0 && (
+                <div className="text-center py-4 text-gray-500">
+                  No technicians found matching your search
+                </div>
+              )}
             </div>
           </CardContent>
         </>
