@@ -62,6 +62,9 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
   }, [toast]);
 
   const selectedGroup = groups.find((group) => group.id === selectedGroupId);
+  const filteredGroups = groups.filter((group) => 
+    group.name.toLowerCase().includes(inputValue.toLowerCase())
+  );
 
   if (loading) {
     return (
@@ -85,7 +88,7 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
-        <Command value={inputValue}>
+        <Command>
           <CommandInput 
             placeholder="Search groups..." 
             value={inputValue}
@@ -95,13 +98,14 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
             {error ? "Failed to load groups" : "No groups found."}
           </CommandEmpty>
           <CommandGroup>
-            {groups.map((group) => (
+            {filteredGroups.map((group) => (
               <CommandItem
                 key={group.id}
                 value={group.name}
                 onSelect={() => {
                   onGroupSelect(group.id);
                   setOpen(false);
+                  setInputValue("");
                 }}
               >
                 <Check
