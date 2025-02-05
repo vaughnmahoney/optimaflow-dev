@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ const Admin = () => {
     email: "",
     phone: "",
   });
+  const [editingTechnician, setEditingTechnician] = useState<Technician | null>(null);
 
   // Fetch technicians
   const { data: technicians, isLoading } = useQuery({
@@ -63,6 +65,41 @@ const Admin = () => {
     },
   });
 
+  // Update technician mutation
+  const updateTechnicianMutation = useMutation({
+    mutationFn: async (technician: Technician) => {
+      const { data, error } = await supabase
+        .from("technicians")
+        .update({
+          name: technician.name,
+          email: technician.email,
+          phone: technician.phone,
+        })
+        .eq("id", technician.id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["technicians"] });
+      setEditingTechnician(null);
+      toast({
+        title: "Technician updated",
+        description: "The technician has been updated successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update technician. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Error updating technician:", error);
+    },
+  });
+
   // Remove technician mutation
   const removeTechnicianMutation = useMutation({
     mutationFn: async (technicianId: string) => {
@@ -93,6 +130,21 @@ const Admin = () => {
   const handleAddTechnician = (e: React.FormEvent) => {
     e.preventDefault();
     addTechnicianMutation.mutate(newTechnician);
+  };
+
+  const handleEditTechnician = (technician: Technician) => {
+    setEditingTechnician(technician);
+  };
+
+  const handleUpdateTechnician = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingTechnician) {
+      updateTechnicianMutation.mutate(editingTechnician);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingTechnician(null);
   };
 
   if (isLoading) {
@@ -186,19 +238,96 @@ const Admin = () => {
               <tbody>
                 {technicians?.map((tech) => (
                   <tr key={tech.id} className="border-b">
-                    <td className="py-3 px-4">{tech.name}</td>
-                    <td className="py-3 px-4">{tech.email}</td>
-                    <td className="py-3 px-4">{tech.phone}</td>
                     <td className="py-3 px-4">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeTechnicianMutation.mutate(tech.id)}
-                        disabled={removeTechnicianMutation.isPending}
-                        className="text-red-600 hover:text-red-800"
-                      >
-                        Remove
-                      </Button>
+                      {editingTechnician?.id === tech.id ? (
+                        <Input
+                          value={editingTechnician.name}
+                          onChange={(e) =>
+                            setEditingTechnician({
+                              ...editingTechnician,
+                              name: e.target.value,
+                            })
+                          }
+                          className="w-full"
+                        />
+                      ) : (
+                        tech.name
+                      )}
+                    </td>
+                    <td className="py-3 px-4">
+                      {editingTechnician?.id === tech.id ? (
+                        <Input
+                          type="email"
+                          value={editingTechnician.email}
+                          onChange={(e) =>
+                            setEditingTechnician({
+                              ...editingTechnician,
+                              email: e.target.value,
+                            })
+                          }
+                          className="w-full"
+                        />
+                      ) : (
+                        tech.email
+                      )}
+                    </td>
+                    <td className="py-3 px-4">
+                      {editingTechnician?.id === tech.id ? (
+                        <Input
+                          type="tel"
+                          value={editingTechnician.phone || ""}
+                          onChange={(e) =>
+                            setEditingTechnician({
+                              ...editingTechnician,
+                              phone: e.target.value,
+                            })
+                          }
+                          className="w-full"
+                        />
+                      ) : (
+                        tech.phone
+                      )}
+                    </td>
+                    <td className="py-3 px-4">
+                      {editingTechnician?.id === tech.id ? (
+                        <div className="space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleUpdateTechnician}
+                            disabled={updateTechnicianMutation.isPending}
+                          >
+                            Save
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleCancelEdit}
+                            disabled={updateTechnicianMutation.isPending}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditTechnician(tech)}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeTechnicianMutation.mutate(tech.id)}
+                            disabled={removeTechnicianMutation.isPending}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}
