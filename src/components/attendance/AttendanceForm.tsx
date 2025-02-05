@@ -1,26 +1,20 @@
 
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
 import { useAttendance } from "@/hooks/useAttendance";
 import { useAttendanceState } from "@/hooks/useAttendanceState";
-import { AttendanceRadioCard } from "./AttendanceRadioCard";
-import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { PencilIcon, CheckIcon, XIcon, SearchIcon } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { TechnicianSearch } from "./TechnicianSearch";
+import { AttendanceFormHeader } from "./AttendanceFormHeader";
+import { TechnicianList } from "./TechnicianList";
+import { AttendanceFormActions } from "./AttendanceFormActions";
 
 export const AttendanceForm = () => {
-  const {
-    technicians,
-    isLoadingTechnicians,
-  } = useAttendance();
-
+  const { technicians, isLoadingTechnicians } = useAttendance();
   const { toast } = useToast();
   const [hasSubmittedToday, setHasSubmittedToday] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [todayRecords, setTodayRecords] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
   const {
@@ -46,8 +40,6 @@ export const AttendanceForm = () => {
 
     setHasSubmittedToday(existingRecords && existingRecords.length > 0);
     if (existingRecords && existingRecords.length > 0) {
-      setTodayRecords(existingRecords);
-      // Initialize states with existing records
       const states = existingRecords.map((record: any) => ({
         technicianId: record.technician_id,
         status: record.status,
@@ -59,7 +51,6 @@ export const AttendanceForm = () => {
   };
 
   const handleSubmit = async () => {
-    // Check if all technicians have a status set
     const unsetTechnicians = technicians?.filter(
       tech => !attendanceStates.find(state => state.technicianId === tech.id)?.status
     );
@@ -84,7 +75,7 @@ export const AttendanceForm = () => {
 
   const handleCancelEdit = () => {
     setIsEditing(false);
-    checkTodaySubmission(); // Reset to original values
+    checkTodaySubmission();
   };
 
   const filteredTechnicians = technicians?.filter(tech => 
@@ -107,100 +98,35 @@ export const AttendanceForm = () => {
     <div className="space-y-8 animate-fade-in">
       <div className="bg-white rounded-lg shadow-sm border p-6">
         <div className="mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <div>
-              <h3 className="text-lg font-semibold">
-                Attendance for {format(new Date(), "EEEE, MMMM d, yyyy")}
-              </h3>
-              <p className="text-sm text-gray-500">
-                {hasSubmittedToday && !isEditing
-                  ? "Today's attendance has been submitted. Click edit to make changes."
-                  : isEditing
-                  ? "Edit mode: Make your changes and click save to update the attendance records."
-                  : "Mark attendance for your team using the radio buttons below"}
-              </p>
-            </div>
-            {hasSubmittedToday && !isEditing && (
-              <Button
-                variant="outline"
-                onClick={handleEdit}
-                className="gap-2"
-              >
-                <PencilIcon className="h-4 w-4" />
-                Edit
-              </Button>
-            )}
-          </div>
+          <AttendanceFormHeader
+            hasSubmittedToday={hasSubmittedToday}
+            isEditing={isEditing}
+            onEdit={handleEdit}
+          />
           
-          <div className="relative mb-6">
-            <Input
-              type="text"
-              placeholder="Search technicians by name..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-            <SearchIcon className="h-4 w-4 absolute left-3 top-3 text-gray-400" />
-          </div>
+          <TechnicianSearch
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+          />
         </div>
 
-        <div className="space-y-4">
-          {filteredTechnicians.map((tech) => {
-            const state = attendanceStates.find(
-              (state) => state.technicianId === tech.id
-            );
+        <TechnicianList
+          technicians={filteredTechnicians}
+          attendanceStates={attendanceStates}
+          updateStatus={updateStatus}
+          isSubmitting={isSubmitting}
+          hasSubmittedToday={hasSubmittedToday}
+          isEditing={isEditing}
+        />
 
-            return (
-              <AttendanceRadioCard
-                key={tech.id}
-                technician={tech}
-                currentStatus={state?.status || null}
-                onStatusChange={(status) => updateStatus(tech.id, status)}
-                isSubmitting={isSubmitting}
-                isDisabled={hasSubmittedToday && !isEditing}
-              />
-            );
-          })}
-          {filteredTechnicians.length === 0 && (
-            <div className="text-center py-4 text-gray-500">
-              No technicians found matching your search
-            </div>
-          )}
-        </div>
-
-        <div className="mt-8 flex justify-end gap-4">
-          {isEditing && (
-            <Button 
-              variant="outline"
-              onClick={handleCancelEdit}
-              disabled={isSubmitting}
-              className="gap-2"
-            >
-              <XIcon className="h-4 w-4" />
-              Cancel
-            </Button>
-          )}
-          <Button 
-            onClick={handleSubmit}
-            disabled={(!isEditing && hasSubmittedToday) || isSubmitting}
-            className="gap-2"
-          >
-            {isSubmitting ? (
-              "Submitting..."
-            ) : isEditing ? (
-              <>
-                <CheckIcon className="h-4 w-4" />
-                Save Changes
-              </>
-            ) : hasSubmittedToday ? (
-              "Already Submitted"
-            ) : (
-              "Submit Daily Attendance"
-            )}
-          </Button>
-        </div>
+        <AttendanceFormActions
+          isEditing={isEditing}
+          hasSubmittedToday={hasSubmittedToday}
+          isSubmitting={isSubmitting}
+          onSubmit={handleSubmit}
+          onCancelEdit={handleCancelEdit}
+        />
       </div>
     </div>
   );
 };
-
