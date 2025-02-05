@@ -48,13 +48,15 @@ export const MonthGroup: React.FC<MonthGroupProps> = ({
           <div className="pl-8 space-y-4">
             {weeks.map((weekGroup) => {
               console.log(`Rendering week ${weekGroup.weekNumber} for ${month}:`, weekGroup);
+              // Ensure we only pass records belonging to this specific week
+              const weekRecords = weekGroup.records || [];
               return (
                 <WeekGroup
                   key={`${weekGroup.weekNumber}-${weekGroup.startDate}`}
                   weekNumber={weekGroup.weekNumber}
                   startDate={weekGroup.startDate}
                   endDate={weekGroup.endDate}
-                  records={weekGroup.records} // Pass only week-specific records
+                  records={weekRecords}
                   technicians={technicians}
                   editingDate={editingDate}
                   isSubmitting={isSubmitting}
