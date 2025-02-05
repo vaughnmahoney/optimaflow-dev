@@ -3,36 +3,18 @@ import { Layout } from "@/components/Layout";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { AttendanceForm } from "@/components/attendance/AttendanceForm";
-import { GroupForm } from "@/components/groups/GroupForm";
 import { Button } from "@/components/ui/button";
-import { Plus, Edit2, Trash2 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import { Plus } from "lucide-react";
+import { GroupDialog } from "@/components/groups/GroupDialog";
+import { GroupList } from "@/components/groups/GroupList";
 import { useGroupMutations } from "@/hooks/useGroupMutations";
 import { useToast } from "@/hooks/use-toast";
-
-interface Group {
-  id: string;
-  name: string;
-  description: string | null;
-}
+import { Group } from "@/types/groups";
 
 const Supervisor = () => {
   const navigate = useNavigate();
   const [selectedGroupId, setSelectedGroupId] = useState<string>();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState<Group | null>(null);
   const [groups, setGroups] = useState<Group[]>([]);
@@ -105,10 +87,10 @@ const Supervisor = () => {
     }
   };
 
-  const handleUpdate = async (group: Group) => {
+  const handleUpdate = async (updatedGroup: Group) => {
     try {
-      await updateGroupMutation.mutateAsync(group);
-      setGroups(groups.map(g => g.id === group.id ? group : g));
+      await updateGroupMutation.mutateAsync(updatedGroup);
+      setGroups(groups.map(g => g.id === updatedGroup.id ? updatedGroup : g));
       setIsEditDialogOpen(false);
       setEditingGroup(null);
       toast({
@@ -135,105 +117,36 @@ const Supervisor = () => {
               Select a group and mark attendance for your team
             </p>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline">
-                <Plus className="h-4 w-4 mr-2" />
-                Add New Group
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add New Group</DialogTitle>
-              </DialogHeader>
-              <GroupForm onSuccess={() => setIsDialogOpen(false)} />
-            </DialogContent>
-          </Dialog>
+          <Button variant="outline" onClick={() => setIsAddDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add New Group
+          </Button>
         </div>
 
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[...Array(5)].map((_, index) => (
-              <Card key={index} className="animate-pulse">
-                <CardHeader>
-                  <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
-        ) : error ? (
-          <div className="text-center text-red-500 mt-8">
-            {error}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {groups.map((group) => (
-              <Card 
-                key={group.id}
-                className={`group relative cursor-pointer transition-all hover:shadow-lg ${
-                  selectedGroupId === group.id ? 'ring-2 ring-primary' : ''
-                }`}
-                onClick={() => setSelectedGroupId(group.id)}
-              >
-                <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEdit(group);
-                    }}
-                  >
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 hover:text-red-500"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRemove(group.id);
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-                <CardHeader>
-                  <CardTitle>{group.name}</CardTitle>
-                  {group.description && (
-                    <CardDescription>{group.description}</CardDescription>
-                  )}
-                </CardHeader>
-                <CardContent>
-                  <Button 
-                    variant={selectedGroupId === group.id ? "default" : "outline"}
-                    className="w-full"
-                  >
-                    {selectedGroupId === group.id ? 'Selected' : 'Select Group'}
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+        <GroupList
+          groups={groups}
+          selectedGroupId={selectedGroupId}
+          onSelectGroup={setSelectedGroupId}
+          onEditGroup={handleEdit}
+          onRemoveGroup={handleRemove}
+          loading={loading}
+          error={error}
+        />
 
-        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Edit Group</DialogTitle>
-            </DialogHeader>
-            {editingGroup && (
-              <GroupForm 
-                initialData={editingGroup}
-                onSuccess={(updatedGroup) => {
-                  handleUpdate(updatedGroup);
-                }}
-              />
-            )}
-          </DialogContent>
-        </Dialog>
+        <GroupDialog
+          open={isAddDialogOpen}
+          onOpenChange={setIsAddDialogOpen}
+          title="Add New Group"
+          onSuccess={() => setIsAddDialogOpen(false)}
+        />
+
+        <GroupDialog
+          open={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
+          title="Edit Group"
+          initialData={editingGroup || undefined}
+          onSuccess={handleUpdate}
+        />
 
         {selectedGroupId && <AttendanceForm groupId={selectedGroupId} />}
         

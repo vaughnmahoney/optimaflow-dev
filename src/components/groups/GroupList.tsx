@@ -1,62 +1,57 @@
-import { useState } from "react";
-import { GroupTable } from "./GroupTable";
-import { GroupSearch } from "./GroupSearch";
-import { useGroupMutations } from "@/hooks/useGroupMutations";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { Group } from "@/types/groups";
+import { GroupCard } from "./GroupCard";
 
-interface Group {
-  id: string;
-  name: string;
-  description: string | null;
+interface GroupListProps {
+  groups: Group[];
+  selectedGroupId?: string;
+  onSelectGroup: (groupId: string) => void;
+  onEditGroup: (group: Group) => void;
+  onRemoveGroup: (groupId: string) => void;
+  loading?: boolean;
+  error?: string | null;
 }
 
-export const GroupList = () => {
-  const [editingGroup, setEditingGroup] = useState<Group | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const { updateGroupMutation, removeGroupMutation } = useGroupMutations();
+export const GroupList = ({
+  groups,
+  selectedGroupId,
+  onSelectGroup,
+  onEditGroup,
+  onRemoveGroup,
+  loading,
+  error,
+}: GroupListProps) => {
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {[...Array(5)].map((_, index) => (
+          <div key={index} className="animate-pulse">
+            <div className="h-[200px] bg-gray-200 rounded-lg"></div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
-  const { data: groups = [], isLoading } = useQuery({
-    queryKey: ["groups"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("groups")
-        .select("*")
-        .order("name");
-      
-      if (error) throw error;
-      return data || [];
-    },
-  });
-
-  const filteredGroups = groups.filter(group => 
-    group.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  if (isLoading) {
-    return <div className="p-6">Loading...</div>;
+  if (error) {
+    return (
+      <div className="text-center text-red-500 mt-8">
+        {error}
+      </div>
+    );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border p-6">
-      <h3 className="text-lg font-semibold mb-4">Group List</h3>
-      <GroupSearch
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-      />
-      <GroupTable
-        groups={filteredGroups}
-        editingGroup={editingGroup}
-        setEditingGroup={setEditingGroup}
-        onUpdate={(group) => {
-          updateGroupMutation.mutate(group, {
-            onSuccess: () => setEditingGroup(null),
-          });
-        }}
-        onRemove={(id) => removeGroupMutation.mutate(id)}
-        isUpdating={updateGroupMutation.isPending}
-        isRemoving={removeGroupMutation.isPending}
-      />
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {groups.map((group) => (
+        <GroupCard
+          key={group.id}
+          group={group}
+          isSelected={selectedGroupId === group.id}
+          onSelect={onSelectGroup}
+          onEdit={onEditGroup}
+          onRemove={onRemoveGroup}
+        />
+      ))}
     </div>
   );
 };
