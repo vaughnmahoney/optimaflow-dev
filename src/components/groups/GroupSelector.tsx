@@ -37,23 +37,30 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
     const fetchGroups = async () => {
       try {
         setError(null);
+        console.log("Fetching groups...");
+        
         const { data, error } = await supabase
           .from("groups")
           .select("id, name")
-          .order("name");
+          .order("name")
+          .returns<Group[]>();
 
-        if (error) throw error;
-        // Ensure data is always an array
-        setGroups(Array.isArray(data) ? data : []);
+        if (error) {
+          console.error("Supabase error:", error);
+          throw error;
+        }
+
+        console.log("Groups data received:", data);
+        setGroups(data || []);
       } catch (error: any) {
         const errorMessage = error?.message || "Failed to load groups";
+        console.error("Error in fetchGroups:", errorMessage);
         setError(errorMessage);
         toast({
           title: "Error",
           description: errorMessage,
           variant: "destructive",
         });
-        console.error("Error fetching groups:", error);
       } finally {
         setLoading(false);
       }
@@ -92,7 +99,7 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
             {error ? "Failed to load groups" : "No groups found."}
           </CommandEmpty>
           <CommandGroup>
-            {groups.map((group) => (
+            {(groups || []).map((group) => (
               <CommandItem
                 key={group.id}
                 onSelect={() => {
