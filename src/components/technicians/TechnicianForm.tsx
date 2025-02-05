@@ -12,22 +12,31 @@ export const TechnicianForm = () => {
     phone: "",
     group_id: "",
   });
+  const [emailError, setEmailError] = useState<string | null>(null);
 
-  const handleAddTechnician = (e: React.FormEvent) => {
+  const handleAddTechnician = async (e: React.FormEvent) => {
     e.preventDefault();
-    addTechnicianMutation.mutate(
-      {
-        name: newTechnician.name,
-        email: newTechnician.email || null,
-        phone: newTechnician.phone || null,
-        group_id: newTechnician.group_id || null,
-      },
-      {
-        onSuccess: () => {
-          setNewTechnician({ name: "", email: "", phone: "", group_id: "" });
+    setEmailError(null);
+
+    try {
+      await addTechnicianMutation.mutateAsync(
+        {
+          name: newTechnician.name,
+          email: newTechnician.email || null,
+          phone: newTechnician.phone || null,
+          group_id: newTechnician.group_id || null,
         },
+        {
+          onSuccess: () => {
+            setNewTechnician({ name: "", email: "", phone: "", group_id: "" });
+          },
+        }
+      );
+    } catch (error: any) {
+      if (error?.message?.includes("technicians_email_key")) {
+        setEmailError("This email is already in use by another technician");
       }
-    );
+    }
   };
 
   return (
@@ -56,12 +65,16 @@ export const TechnicianForm = () => {
             <Input
               type="email"
               value={newTechnician.email}
-              onChange={(e) =>
-                setNewTechnician({ ...newTechnician, email: e.target.value })
-              }
-              className="mt-1"
+              onChange={(e) => {
+                setEmailError(null);
+                setNewTechnician({ ...newTechnician, email: e.target.value });
+              }}
+              className={`mt-1 ${emailError ? 'border-red-500' : ''}`}
               placeholder="john@example.com"
             />
+            {emailError && (
+              <p className="mt-1 text-sm text-red-500">{emailError}</p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">
