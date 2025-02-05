@@ -43,8 +43,6 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
           .order("name");
 
         if (error) throw error;
-        
-        // Ensure data is an array even if empty
         setGroups(data || []);
       } catch (error: any) {
         const errorMessage = error?.message || "Failed to load groups";
@@ -64,6 +62,14 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
 
   const selectedGroup = groups.find((group) => group.id === selectedGroupId);
 
+  if (loading) {
+    return (
+      <Button variant="outline" className="w-full" disabled>
+        Loading groups...
+      </Button>
+    );
+  }
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -72,17 +78,12 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
           role="combobox"
           aria-expanded={open}
           className="w-full justify-between"
-          disabled={loading}
         >
-          {loading
-            ? "Loading groups..."
-            : error
-            ? "Error loading groups"
-            : selectedGroup?.name || "Select a group..."}
+          {error ? "Error loading groups" : selectedGroup?.name || "Select a group..."}
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0">
+      <PopoverContent className="w-full p-0" align="start">
         <Command>
           <CommandInput placeholder="Search groups..." />
           <CommandEmpty>
@@ -92,6 +93,7 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
             {groups.map((group) => (
               <CommandItem
                 key={group.id}
+                value={group.id}
                 onSelect={() => {
                   onGroupSelect(group.id);
                   setOpen(false);
