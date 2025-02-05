@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AttendanceForm } from "@/components/attendance/AttendanceForm";
 import { GroupForm } from "@/components/groups/GroupForm";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Edit2, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -20,6 +20,8 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
+import { useGroupMutations } from "@/hooks/useGroupMutations";
+import { useToast } from "@/hooks/use-toast";
 
 interface Group {
   id: string;
@@ -31,9 +33,13 @@ const Supervisor = () => {
   const navigate = useNavigate();
   const [selectedGroupId, setSelectedGroupId] = useState<string>();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingGroup, setEditingGroup] = useState<Group | null>(null);
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { updateGroupMutation, removeGroupMutation } = useGroupMutations();
+  const { toast } = useToast();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -75,6 +81,49 @@ const Supervisor = () => {
 
     fetchGroups();
   }, []);
+
+  const handleEdit = (group: Group) => {
+    setEditingGroup(group);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleRemove = async (groupId: string) => {
+    try {
+      await removeGroupMutation.mutateAsync(groupId);
+      setGroups(groups.filter(g => g.id !== groupId));
+      toast({
+        title: "Group removed",
+        description: "The group has been removed successfully.",
+      });
+    } catch (error) {
+      console.error("Error removing group:", error);
+      toast({
+        title: "Error",
+        description: "Failed to remove group. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdate = async (group: Group) => {
+    try {
+      await updateGroupMutation.mutateAsync(group);
+      setGroups(groups.map(g => g.id === group.id ? group : g));
+      setIsEditDialogOpen(false);
+      setEditingGroup(null);
+      toast({
+        title: "Group updated",
+        description: "The group has been updated successfully.",
+      });
+    } catch (error) {
+      console.error("Error updating group:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update group. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <Layout>
@@ -122,11 +171,35 @@ const Supervisor = () => {
             {groups.map((group) => (
               <Card 
                 key={group.id}
-                className={`cursor-pointer transition-all hover:shadow-lg ${
+                className={`group relative cursor-pointer transition-all hover:shadow-lg ${
                   selectedGroupId === group.id ? 'ring-2 ring-primary' : ''
                 }`}
                 onClick={() => setSelectedGroupId(group.id)}
               >
+                <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEdit(group);
+                    }}
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 hover:text-red-500"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemove(group.id);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
                 <CardHeader>
                   <CardTitle>{group.name}</CardTitle>
                   {group.description && (
@@ -137,7 +210,6 @@ const Supervisor = () => {
                   <Button 
                     variant={selectedGroupId === group.id ? "default" : "outline"}
                     className="w-full"
-                    onClick={() => setSelectedGroupId(group.id)}
                   >
                     {selectedGroupId === group.id ? 'Selected' : 'Select Group'}
                   </Button>
@@ -146,6 +218,22 @@ const Supervisor = () => {
             ))}
           </div>
         )}
+
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Group</DialogTitle>
+            </DialogHeader>
+            {editingGroup && (
+              <GroupForm 
+                initialData={editingGroup}
+                onSuccess={(updatedGroup) => {
+                  handleUpdate(updatedGroup);
+                }}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
 
         {selectedGroupId && <AttendanceForm groupId={selectedGroupId} />}
         
