@@ -30,12 +30,18 @@ export const TechnicianGroupCell = ({
     enabled: !!tech.group_id,
   });
 
+  const handleGroupSelect = (groupId: string) => {
+    if (groupId !== tech.group_id) {
+      onGroupChange(groupId);
+    }
+  };
+
   return (
     <div className="w-[200px]">
       {isEditing ? (
         <GroupSelector
-          selectedGroupId={tech.group_id || undefined}
-          onGroupSelect={onGroupChange}
+          selectedGroupId={tech.group_id}
+          onGroupSelect={handleGroupSelect}
         />
       ) : (
         <span className="text-gray-700">

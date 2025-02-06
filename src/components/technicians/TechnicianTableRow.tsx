@@ -103,7 +103,7 @@ export const TechnicianTableRow = ({
       </td>
       <td className="py-3 px-4">
         <TechnicianGroupCell
-          tech={tech}
+          tech={isEditing ? editingTechnician || tech : tech}
           isEditing={isEditing}
           onGroupChange={handleGroupChange}
         />
