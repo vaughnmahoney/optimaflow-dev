@@ -33,7 +33,7 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
         
         const { data, error } = await supabase
           .from("groups")
-          .select("id, name")
+          .select("id, name, description")
           .order("name");
 
         if (error) {
