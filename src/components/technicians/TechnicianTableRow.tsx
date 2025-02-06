@@ -1,4 +1,5 @@
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import type { Technician } from "@/types/attendance";
 import { TechnicianGroupCell } from "./TechnicianGroupCell";
 import { TechnicianActions } from "./TechnicianActions";
@@ -14,6 +15,8 @@ interface TechnicianTableRowProps {
   onCancel: () => void;
   editingTechnician: Technician | null;
   setEditingTechnician: (tech: Technician | null) => void;
+  isSelected: boolean;
+  onSelect: (checked: boolean) => void;
 }
 
 export const TechnicianTableRow = ({
@@ -27,6 +30,8 @@ export const TechnicianTableRow = ({
   onCancel,
   editingTechnician,
   setEditingTechnician,
+  isSelected,
+  onSelect,
 }: TechnicianTableRowProps) => {
   const handleGroupChange = (groupId: string) => {
     if (editingTechnician) {
@@ -39,6 +44,13 @@ export const TechnicianTableRow = ({
 
   return (
     <tr className="border-b">
+      <td className="py-3 px-4">
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={onSelect}
+          aria-label={`Select ${tech.name}`}
+        />
+      </td>
       <td className="py-3 px-4">
         {isEditing ? (
           <Input
