@@ -88,15 +88,32 @@ export const useGroupMutations = () => {
     mutationFn: async (groupId: string) => {
       console.log("Starting group removal for ID:", groupId);
       
-      // First, update all technicians in this group to be unassigned
-      const { data: unassignedGroup } = await supabase
+      // First, get the group to check if it's the Unassigned group
+      const { data: group, error: groupError } = await supabase
+        .from("groups")
+        .select("name")
+        .eq("id", groupId)
+        .single();
+
+      if (groupError) {
+        console.error("Error fetching group:", groupError);
+        throw groupError;
+      }
+
+      if (group.name === "Unassigned") {
+        throw new Error("Cannot delete the Unassigned group");
+      }
+
+      // Get the Unassigned group
+      const { data: unassignedGroup, error: unassignedError } = await supabase
         .from("groups")
         .select("id")
         .eq("name", "Unassigned")
         .single();
 
-      if (!unassignedGroup) {
-        throw new Error("Could not find Unassigned group");
+      if (unassignedError) {
+        console.error("Error finding Unassigned group:", unassignedError);
+        throw unassignedError;
       }
 
       console.log("Found Unassigned group:", unassignedGroup);
@@ -142,9 +159,13 @@ export const useGroupMutations = () => {
       });
     },
     onError: (error: any) => {
+      const errorMessage = error?.message === "Cannot delete the Unassigned group" 
+        ? "The Unassigned group cannot be deleted."
+        : error?.message || "Failed to remove group. Please try again.";
+      
       toast({
         title: "Error",
-        description: error?.message || "Failed to remove group. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
       console.error("Error removing group:", error);
