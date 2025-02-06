@@ -1,16 +1,18 @@
+
 import { useEffect, useState } from "react";
 import { Layout } from "@/components/Layout";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { AttendanceFormContainer } from "@/components/attendance/AttendanceFormContainer";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, RotateCcw } from "lucide-react";
 import { GroupDialog } from "@/components/groups/GroupDialog";
 import { GroupList } from "@/components/groups/GroupList";
 import { useGroupMutations } from "@/hooks/useGroupMutations";
 import { useToast } from "@/hooks/use-toast";
 import { Group } from "@/types/groups";
 import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const Supervisor = () => {
   const navigate = useNavigate();
@@ -20,6 +22,7 @@ const Supervisor = () => {
   const [editingGroup, setEditingGroup] = useState<Group | null>(null);
   const { updateGroupMutation, removeGroupMutation } = useGroupMutations();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: groups, isLoading, error } = useQuery({
     queryKey: ['groups'],
@@ -33,6 +36,52 @@ const Supervisor = () => {
       return data as Group[];
     }
   });
+
+  // Query to check if all groups have submitted attendance for today
+  const { data: todaySubmissions } = useQuery({
+    queryKey: ['today-submissions'],
+    queryFn: async () => {
+      const today = new Date().toISOString().split('T')[0];
+      const { data, error } = await supabase
+        .from('group_attendance_review')
+        .select('*')
+        .eq('date', today);
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  const undoAllSubmissionsMutation = useMutation({
+    mutationFn: async () => {
+      const today = new Date().toISOString().split('T')[0];
+      const { error } = await supabase
+        .from('group_attendance_review')
+        .update({ is_submitted: false })
+        .eq('date', today);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['group-review'] });
+      queryClient.invalidateQueries({ queryKey: ['today-submissions'] });
+      toast({
+        title: "Success",
+        description: "All submissions have been reset for today",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to reset submissions. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleUndoAllSubmissions = () => {
+    undoAllSubmissionsMutation.mutate();
+  };
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -84,6 +133,11 @@ const Supervisor = () => {
     });
   };
 
+  // Check if all groups have submitted attendance for today
+  const allGroupsSubmitted = groups && todaySubmissions && 
+    groups.length > 0 && 
+    todaySubmissions.every(submission => submission.is_submitted);
+
   return (
     <Layout>
       <div className="space-y-8 animate-fade-in">
@@ -94,10 +148,22 @@ const Supervisor = () => {
               Select a group and mark attendance for your team
             </p>
           </div>
-          <Button variant="outline" onClick={() => setIsAddDialogOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add New Group
-          </Button>
+          <div className="flex gap-4">
+            {allGroupsSubmitted && (
+              <Button 
+                variant="outline" 
+                onClick={handleUndoAllSubmissions}
+                disabled={undoAllSubmissionsMutation.isPending}
+              >
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Undo All Submissions
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => setIsAddDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add New Group
+            </Button>
+          </div>
         </div>
 
         <GroupList
@@ -139,3 +205,4 @@ const Supervisor = () => {
 };
 
 export default Supervisor;
+
