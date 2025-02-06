@@ -13,11 +13,11 @@ export const useSupervisorData = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('groups')
-        .select('*')
+        .select('*, technicians(id)')
         .order('name');
       
       if (error) throw error;
-      return data as Group[];
+      return data as (Group & { technicians: { id: string }[] })[];
     }
   });
 
@@ -62,9 +62,33 @@ export const useSupervisorData = () => {
     },
   });
 
+  const submitToHistoryMutation = useMutation({
+    mutationFn: async () => {
+      const today = new Date().toISOString().split('T')[0];
+      // Here we would typically call a backend function to handle the submission
+      // For now, we'll just mark it as completed in the database
+      const { error } = await supabase.rpc('submit_attendance_to_history', {
+        submission_date: today
+      });
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['group-review'] });
+      queryClient.invalidateQueries({ queryKey: ['today-submissions'] });
+    }
+  });
+
+  // Only consider groups with technicians for submission requirement
   const allGroupsSubmitted = groups && todaySubmissions && 
     groups.length > 0 && 
-    todaySubmissions.every(submission => submission.is_submitted);
+    groups.every(group => {
+      // Skip empty groups
+      if (!group.technicians?.length) return true;
+      // Find submission for this group
+      const submission = todaySubmissions.find(s => s.group_id === group.id);
+      return submission?.is_submitted;
+    });
 
   return {
     groups,
@@ -73,5 +97,6 @@ export const useSupervisorData = () => {
     todaySubmissions,
     allGroupsSubmitted,
     undoAllSubmissionsMutation,
+    submitToHistoryMutation,
   };
 };
