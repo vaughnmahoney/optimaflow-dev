@@ -16,9 +16,10 @@ import { Group } from "@/types/groups";
 interface GroupSelectorProps {
   onGroupSelect: (groupId: string) => void;
   selectedGroupId?: string;
+  disabled?: boolean;
 }
 
-export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorProps) {
+export function GroupSelector({ onGroupSelect, selectedGroupId, disabled }: GroupSelectorProps) {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -90,7 +91,11 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
 
   return (
     <>
-      <Select value={selectedGroupId} onValueChange={onGroupSelect}>
+      <Select 
+        value={selectedGroupId} 
+        onValueChange={onGroupSelect}
+        disabled={disabled}
+      >
         <SelectTrigger className="w-full">
           <SelectValue placeholder="Select a group..." />
         </SelectTrigger>
@@ -100,19 +105,21 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
               {group.name}
             </SelectItem>
           ))}
-          <div className="p-2 border-t">
-            <Button
-              variant="ghost"
-              className="w-full justify-start"
-              onClick={(e) => {
-                e.preventDefault();
-                setIsDialogOpen(true);
-              }}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add New Group
-            </Button>
-          </div>
+          {!disabled && (
+            <div className="p-2 border-t">
+              <Button
+                variant="ghost"
+                className="w-full justify-start"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsDialogOpen(true);
+                }}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add New Group
+              </Button>
+            </div>
+          )}
         </SelectContent>
       </Select>
 
