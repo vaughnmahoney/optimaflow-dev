@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+
+import { useState } from "react";
 import {
   Select,
   SelectContent,
@@ -9,9 +10,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { GroupDialog } from "./GroupDialog";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Group } from "@/types/groups";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface GroupSelectorProps {
   onGroupSelect: (groupId: string) => void;
@@ -20,56 +22,34 @@ interface GroupSelectorProps {
 }
 
 export function GroupSelector({ onGroupSelect, selectedGroupId, disabled }: GroupSelectorProps) {
-  const [groups, setGroups] = useState<Group[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchGroups = async () => {
-      try {
-        setError(null);
-        console.log("Fetching groups...");
-        
-        const { data, error } = await supabase
-          .from("groups")
-          .select("id, name, description")
-          .order("name");
+  const { data: groups, isLoading, error } = useQuery({
+    queryKey: ['groups'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("groups")
+        .select("id, name, description")
+        .order("name");
 
-        if (error) {
-          console.error("Supabase error:", error);
-          throw error;
-        }
-
-        console.log("Groups data received:", data);
-        setGroups(data || []);
-      } catch (error: any) {
-        const errorMessage = error?.message || "Failed to load groups";
-        console.error("Error in fetchGroups:", errorMessage);
-        setError(errorMessage);
-        toast({
-          title: "Error",
-          description: errorMessage,
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
       }
-    };
-
-    fetchGroups();
-  }, [toast]);
+      
+      return data as Group[];
+    }
+  });
 
   const handleAddGroupSuccess = (newGroup?: Group) => {
     if (newGroup) {
-      setGroups((prev) => [...prev, newGroup].sort((a, b) => a.name.localeCompare(b.name)));
       onGroupSelect(newGroup.id);
     }
     setIsDialogOpen(false);
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Select disabled>
         <SelectTrigger className="w-full">
@@ -100,7 +80,7 @@ export function GroupSelector({ onGroupSelect, selectedGroupId, disabled }: Grou
           <SelectValue placeholder="Select a group..." />
         </SelectTrigger>
         <SelectContent>
-          {groups.map((group) => (
+          {(groups || []).map((group) => (
             <SelectItem key={group.id} value={group.id}>
               {group.name}
             </SelectItem>
