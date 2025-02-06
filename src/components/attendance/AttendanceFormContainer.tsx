@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AttendanceForm } from "./AttendanceForm";
 import { useGroupReview } from "@/hooks/useGroupReview";
+import { useQuery } from "@tanstack/react-query";
 
 interface AttendanceFormContainerProps {
   groupId: string;
@@ -14,7 +15,6 @@ interface AttendanceFormContainerProps {
 export const AttendanceFormContainer = ({ groupId }: AttendanceFormContainerProps) => {
   const { technicians, isLoadingTechnicians } = useAttendance(groupId);
   const { toast } = useToast();
-  const [hasSubmittedToday, setHasSubmittedToday] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const { updateSubmissionStatus } = useGroupReview(groupId);
@@ -27,11 +27,30 @@ export const AttendanceFormContainer = ({ groupId }: AttendanceFormContainerProp
     isSubmitting,
   } = useAttendanceState(technicians || []);
 
+  // Query to check if this group has submitted attendance for today
+  const { data: submissionStatus } = useQuery({
+    queryKey: ['group-review', groupId],
+    queryFn: async () => {
+      const today = new Date().toISOString().split('T')[0];
+      const { data, error } = await supabase
+        .from('group_attendance_review')
+        .select('*')
+        .eq('group_id', groupId)
+        .eq('date', today)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  const hasSubmittedToday = submissionStatus?.is_submitted || false;
+
   useEffect(() => {
     if (technicians) {
       checkTodaySubmission();
     }
-  }, [technicians]);
+  }, [technicians, submissionStatus]);
 
   const checkTodaySubmission = async () => {
     const today = new Date().toISOString().split('T')[0];
@@ -40,7 +59,6 @@ export const AttendanceFormContainer = ({ groupId }: AttendanceFormContainerProp
       .select("*")
       .eq("date", today);
 
-    setHasSubmittedToday(existingRecords && existingRecords.length > 0);
     if (existingRecords && existingRecords.length > 0) {
       const states = existingRecords.map((record: any) => ({
         technicianId: record.technician_id,
@@ -69,7 +87,6 @@ export const AttendanceFormContainer = ({ groupId }: AttendanceFormContainerProp
     try {
       await submitDailyAttendance();
       await updateSubmissionStatus.mutateAsync(true);
-      await checkTodaySubmission();
       setIsEditing(false);
     } catch (error) {
       console.error('Error submitting attendance:', error);
