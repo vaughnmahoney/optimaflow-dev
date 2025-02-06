@@ -6,13 +6,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import { GroupDialog } from "./GroupDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
-interface Group {
-  id: string;
-  name: string;
-}
+import { Group } from "@/types/groups";
 
 interface GroupSelectorProps {
   onGroupSelect: (groupId: string) => void;
@@ -23,6 +22,7 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -60,6 +60,14 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
     fetchGroups();
   }, [toast]);
 
+  const handleAddGroupSuccess = (newGroup?: Group) => {
+    if (newGroup) {
+      setGroups((prev) => [...prev, newGroup].sort((a, b) => a.name.localeCompare(b.name)));
+      onGroupSelect(newGroup.id);
+    }
+    setIsDialogOpen(false);
+  };
+
   if (loading) {
     return (
       <Select disabled>
@@ -81,17 +89,39 @@ export function GroupSelector({ onGroupSelect, selectedGroupId }: GroupSelectorP
   }
 
   return (
-    <Select value={selectedGroupId} onValueChange={onGroupSelect}>
-      <SelectTrigger className="w-full">
-        <SelectValue placeholder="Select a group..." />
-      </SelectTrigger>
-      <SelectContent>
-        {groups.map((group) => (
-          <SelectItem key={group.id} value={group.id}>
-            {group.name}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <>
+      <Select value={selectedGroupId} onValueChange={onGroupSelect}>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Select a group..." />
+        </SelectTrigger>
+        <SelectContent>
+          {groups.map((group) => (
+            <SelectItem key={group.id} value={group.id}>
+              {group.name}
+            </SelectItem>
+          ))}
+          <div className="p-2 border-t">
+            <Button
+              variant="ghost"
+              className="w-full justify-start"
+              onClick={(e) => {
+                e.preventDefault();
+                setIsDialogOpen(true);
+              }}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add New Group
+            </Button>
+          </div>
+        </SelectContent>
+      </Select>
+
+      <GroupDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        title="Add New Group"
+        onSuccess={handleAddGroupSuccess}
+      />
+    </>
   );
 }

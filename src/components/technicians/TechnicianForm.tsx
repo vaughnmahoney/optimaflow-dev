@@ -18,13 +18,17 @@ export const TechnicianForm = () => {
     e.preventDefault();
     setEmailError(null);
 
+    if (!newTechnician.group_id) {
+      return;
+    }
+
     try {
       await addTechnicianMutation.mutateAsync(
         {
           name: newTechnician.name,
           email: newTechnician.email || null,
           phone: newTechnician.phone || null,
-          group_id: newTechnician.group_id || null,
+          group_id: newTechnician.group_id,
         },
         {
           onSuccess: () => {
@@ -93,7 +97,7 @@ export const TechnicianForm = () => {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Group
+            Group <span className="text-red-500">*</span>
           </label>
           <GroupSelector
             onGroupSelect={(groupId) =>
@@ -104,7 +108,7 @@ export const TechnicianForm = () => {
         </div>
         <Button 
           type="submit"
-          disabled={addTechnicianMutation.isPending}
+          disabled={addTechnicianMutation.isPending || !newTechnician.group_id}
         >
           {addTechnicianMutation.isPending ? "Adding..." : "Add Technician"}
         </Button>
