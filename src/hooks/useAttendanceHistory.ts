@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { AttendanceRecord, Technician } from "@/types/attendance";
-import { transformAttendanceRecords } from "@/utils/attendanceTransformUtils";
 
 export const useAttendanceHistory = () => {
   const { toast } = useToast();
@@ -72,14 +71,7 @@ export const useAttendanceHistory = () => {
         }
         
         console.log('Raw attendance records:', data);
-        console.log('Number of records fetched:', data?.length || 0);
-        if (data && data.length > 0) {
-          console.log('Most recent record:', data[0]);
-          console.log('Date of most recent record:', data[0].date);
-          console.log('Today\'s date:', new Date().toISOString().split('T')[0]);
-        }
-        
-        return transformAttendanceRecords(data as AttendanceRecord[]);
+        return data as AttendanceRecord[];
       } catch (error) {
         console.error('Failed to fetch attendance records:', error);
         toast({
