@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -9,6 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
 import type { Technician } from "@/types/attendance";
+import { GroupSelector } from "@/components/groups/GroupSelector";
 
 interface TechnicianTableProps {
   technicians: Technician[];
@@ -40,6 +40,16 @@ export const TechnicianTable = ({
     setEditingTechnician(null);
   };
 
+  const handleGroupChange = (technicianId: string, groupId: string) => {
+    const technician = technicians.find(t => t.id === technicianId);
+    if (technician) {
+      onUpdate({
+        ...technician,
+        group_id: groupId
+      });
+    }
+  };
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -48,6 +58,7 @@ export const TechnicianTable = ({
             <th className="text-left py-3 px-4">Name</th>
             <th className="text-left py-3 px-4">Email</th>
             <th className="text-left py-3 px-4">Phone</th>
+            <th className="text-left py-3 px-4">Group</th>
             <th className="text-left py-3 px-4">Actions</th>
           </tr>
         </thead>
@@ -103,6 +114,14 @@ export const TechnicianTable = ({
                 ) : (
                   tech.phone
                 )}
+              </td>
+              <td className="py-3 px-4">
+                <div className="w-[200px]">
+                  <GroupSelector
+                    selectedGroupId={tech.group_id || undefined}
+                    onGroupSelect={(groupId) => handleGroupChange(tech.id, groupId)}
+                  />
+                </div>
               </td>
               <td className="py-3 px-4">
                 {editingTechnician?.id === tech.id ? (
@@ -178,7 +197,7 @@ export const TechnicianTable = ({
           ))}
           {(!technicians || technicians.length === 0) && (
             <tr>
-              <td colSpan={4} className="py-4 text-center text-gray-500">
+              <td colSpan={5} className="py-4 text-center text-gray-500">
                 No technicians added yet
               </td>
             </tr>
