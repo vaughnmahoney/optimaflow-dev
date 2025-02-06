@@ -88,10 +88,26 @@ export const useGroupMutations = () => {
     mutationFn: async (groupId: string) => {
       console.log("Removing group:", groupId);
       
-      // First, update all technicians in this group to have no group
+      // First, get the Unassigned group ID
+      const { data: unassignedGroup, error: unassignedError } = await supabase
+        .from("groups")
+        .select("id")
+        .eq("name", "Unassigned")
+        .single();
+      
+      if (unassignedError) {
+        console.error("Error finding Unassigned group:", unassignedError);
+        throw unassignedError;
+      }
+
+      if (!unassignedGroup) {
+        throw new Error("Unassigned group not found");
+      }
+
+      // Update all technicians in this group to be in the Unassigned group
       const { error: techUpdateError } = await supabase
         .from("technicians")
-        .update({ group_id: null })
+        .update({ group_id: unassignedGroup.id })
         .eq("group_id", groupId);
       
       if (techUpdateError) {
@@ -122,7 +138,7 @@ export const useGroupMutations = () => {
       
       toast({
         title: "Group removed",
-        description: "The group has been removed successfully.",
+        description: "The group has been removed successfully and all technicians have been moved to the Unassigned group.",
       });
     },
     onError: (error: any) => {
