@@ -7,6 +7,8 @@ export const useAttendanceCounts = (groups: Group[], date: string) => {
   return useQuery({
     queryKey: ['attendance-counts', date],
     queryFn: async () => {
+      console.log('Fetching attendance counts for date:', date);
+      
       const { data: counts, error } = await supabase
         .from('group_attendance_counts')
         .select('group_id, total_count, completed_count')
@@ -17,9 +19,11 @@ export const useAttendanceCounts = (groups: Group[], date: string) => {
         throw error;
       }
 
+      console.log('Received counts:', counts);
+      
       const groupCounts: Record<string, { completed: number; total: number }> = {};
       
-      // Initialize counts for all groups
+      // Initialize counts for all groups with zeros
       groups.forEach(group => {
         groupCounts[group.id] = { completed: 0, total: 0 };
       });
@@ -34,6 +38,7 @@ export const useAttendanceCounts = (groups: Group[], date: string) => {
         }
       });
 
+      console.log('Final group counts:', groupCounts);
       return groupCounts;
     },
   });
