@@ -86,7 +86,7 @@ export const useGroupMutations = () => {
 
   const removeGroupMutation = useMutation({
     mutationFn: async (groupId: string) => {
-      console.log("Removing group:", groupId);
+      console.log("Starting group removal process for group ID:", groupId);
       
       // First, get the Unassigned group ID
       const { data: unassignedGroup, error: unassignedError } = await supabase
@@ -101,33 +101,58 @@ export const useGroupMutations = () => {
       }
 
       if (!unassignedGroup) {
+        console.error("Unassigned group not found");
         throw new Error("Unassigned group not found");
       }
 
-      // Update all technicians in this group to be in the Unassigned group
-      const { error: techUpdateError } = await supabase
+      console.log("Found Unassigned group:", unassignedGroup);
+
+      // Get all technicians in the group we're trying to delete
+      const { data: technicians, error: techFetchError } = await supabase
         .from("technicians")
-        .update({ group_id: unassignedGroup.id })
+        .select("id")
         .eq("group_id", groupId);
-      
-      if (techUpdateError) {
-        console.error("Error updating technicians:", techUpdateError);
-        throw techUpdateError;
+
+      if (techFetchError) {
+        console.error("Error fetching technicians:", techFetchError);
+        throw techFetchError;
       }
 
-      // Then delete the group
-      const { error } = await supabase
+      console.log("Found technicians in group:", technicians?.length || 0);
+
+      // If there are technicians, move them to Unassigned
+      if (technicians && technicians.length > 0) {
+        const { error: techUpdateError } = await supabase
+          .from("technicians")
+          .update({ group_id: unassignedGroup.id })
+          .eq("group_id", groupId);
+        
+        if (techUpdateError) {
+          console.error("Error updating technicians:", techUpdateError);
+          throw techUpdateError;
+        }
+        console.log("Successfully moved technicians to Unassigned group");
+      }
+
+      // Now try to delete the group
+      const { error: deleteError, data: deleteResult } = await supabase
         .from("groups")
         .delete()
-        .eq("id", groupId);
+        .eq("id", groupId)
+        .select()
+        .single();
       
-      if (error) {
-        console.error("Error in removeGroupMutation:", error);
-        throw error;
+      if (deleteError) {
+        console.error("Error deleting group:", deleteError);
+        throw deleteError;
       }
+
+      console.log("Group deletion result:", deleteResult);
       return groupId;
     },
     onSuccess: (groupId) => {
+      console.log("Group removal succeeded, updating UI for group:", groupId);
+      
       // Immediately remove the group from the cache
       queryClient.setQueryData<Group[]>(["groups"], (oldGroups = []) => {
         return oldGroups.filter(g => g.id !== groupId);
@@ -138,16 +163,16 @@ export const useGroupMutations = () => {
       
       toast({
         title: "Group removed",
-        description: "The group has been removed successfully and all technicians have been moved to the Unassigned group.",
+        description: "The group has been removed successfully.",
       });
     },
     onError: (error: any) => {
+      console.error("Full error details:", error);
       toast({
         title: "Error",
         description: error?.message || "Failed to remove group. Please try again.",
         variant: "destructive",
       });
-      console.error("Error removing group:", error);
     },
   });
 
