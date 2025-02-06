@@ -1,3 +1,4 @@
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -86,6 +87,19 @@ export const useGroupMutations = () => {
   const removeGroupMutation = useMutation({
     mutationFn: async (groupId: string) => {
       console.log("Removing group:", groupId);
+      
+      // First, update all technicians in this group to have no group
+      const { error: techUpdateError } = await supabase
+        .from("technicians")
+        .update({ group_id: null })
+        .eq("group_id", groupId);
+      
+      if (techUpdateError) {
+        console.error("Error updating technicians:", techUpdateError);
+        throw techUpdateError;
+      }
+
+      // Then delete the group
       const { error } = await supabase
         .from("groups")
         .delete()
