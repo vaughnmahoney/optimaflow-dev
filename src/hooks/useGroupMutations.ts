@@ -9,13 +9,17 @@ export const useGroupMutations = () => {
 
   const addGroupMutation = useMutation({
     mutationFn: async (groupData: Omit<Group, "id">) => {
+      console.log("Adding group:", groupData);
       const { data, error } = await supabase
         .from("groups")
         .insert([groupData])
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error in addGroupMutation:", error);
+        throw error;
+      }
       return data;
     },
     onSuccess: (newGroup) => {
@@ -28,10 +32,10 @@ export const useGroupMutations = () => {
         description: "The group has been added successfully.",
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({
         title: "Error",
-        description: "Failed to add group. Please try again.",
+        description: error?.message || "Failed to add group. Please try again.",
         variant: "destructive",
       });
       console.error("Error adding group:", error);
@@ -40,6 +44,7 @@ export const useGroupMutations = () => {
 
   const updateGroupMutation = useMutation({
     mutationFn: async (group: Group) => {
+      console.log("Updating group:", group);
       const { data, error } = await supabase
         .from("groups")
         .update({
@@ -50,7 +55,10 @@ export const useGroupMutations = () => {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error in updateGroupMutation:", error);
+        throw error;
+      }
       return data;
     },
     onSuccess: (updatedGroup) => {
@@ -65,10 +73,10 @@ export const useGroupMutations = () => {
         description: "The group has been updated successfully.",
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({
         title: "Error",
-        description: "Failed to update group. Please try again.",
+        description: error?.message || "Failed to update group. Please try again.",
         variant: "destructive",
       });
       console.error("Error updating group:", error);
@@ -77,12 +85,16 @@ export const useGroupMutations = () => {
 
   const removeGroupMutation = useMutation({
     mutationFn: async (groupId: string) => {
+      console.log("Removing group:", groupId);
       const { error } = await supabase
         .from("groups")
         .delete()
         .eq("id", groupId);
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error in removeGroupMutation:", error);
+        throw error;
+      }
       return groupId;
     },
     onSuccess: (groupId) => {
@@ -99,10 +111,10 @@ export const useGroupMutations = () => {
         description: "The group has been removed successfully.",
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({
         title: "Error",
-        description: "Failed to remove group. Please try again.",
+        description: error?.message || "Failed to remove group. Please try again.",
         variant: "destructive",
       });
       console.error("Error removing group:", error);
