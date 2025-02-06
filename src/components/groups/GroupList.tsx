@@ -70,14 +70,6 @@ export const GroupList = ({
     },
   });
 
-  // If the selected group is being deleted or has been deleted, clear the selection
-  if (selectedGroupId && (
-    deletingGroupId === selectedGroupId || 
-    !groups.some(g => g.id === selectedGroupId)
-  )) {
-    onSelectGroup(null);
-  }
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
