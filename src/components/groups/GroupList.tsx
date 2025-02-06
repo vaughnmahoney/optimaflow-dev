@@ -2,8 +2,6 @@
 import { Group } from "@/types/groups";
 import { GroupCard } from "./GroupCard";
 import { Loader2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { useAttendanceCounts } from "@/hooks/useAttendanceCounts";
 
 interface GroupListProps {
@@ -61,25 +59,6 @@ export const GroupList = ({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <Card 
-        className={`group relative cursor-pointer transition-all hover:shadow-lg ${
-          selectedGroupId === null ? 'ring-2 ring-primary' : ''
-        }`}
-        onClick={() => onSelectGroup(null)}
-      >
-        <CardHeader>
-          <CardTitle>Unassigned Technicians</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Button 
-            variant={selectedGroupId === null ? "default" : "outline"}
-            className="w-full"
-          >
-            {selectedGroupId === null ? 'Selected' : 'Select Unassigned'}
-          </Button>
-        </CardContent>
-      </Card>
-
       {groups.map((group) => (
         <GroupCard
           key={group.id}
