@@ -45,15 +45,13 @@ export function GroupSelector({ onGroupSelect, selectedGroupId, disabled }: Grou
 
   const handleAddGroupSuccess = async (newGroup?: Group) => {
     if (newGroup) {
-      // First update the cache with the new group
-      queryClient.setQueryData<Group[]>(['groups'], (oldGroups = []) => {
-        return [...oldGroups, newGroup].sort((a, b) => a.name.localeCompare(b.name));
-      });
-      
-      // Then close the dialog
+      // Close the dialog first
       setIsDialogOpen(false);
       
-      // Finally update the selection
+      // Invalidate and refetch groups
+      await queryClient.invalidateQueries({ queryKey: ['groups'] });
+      
+      // Update the selection
       onGroupSelect(newGroup.id);
       
       toast({
