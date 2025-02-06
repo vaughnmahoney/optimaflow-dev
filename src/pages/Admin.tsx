@@ -11,12 +11,18 @@ const Admin = () => {
   const { data: technicians, isLoading } = useQuery({
     queryKey: ["technicians"],
     queryFn: async () => {
+      console.log("Fetching technicians...");
       const { data, error } = await supabase
         .from("technicians")
         .select("*")
         .order("name");
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching technicians:", error);
+        throw error;
+      }
+
+      console.log("Fetched technicians:", data);
       return data as Technician[];
     },
   });
