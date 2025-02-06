@@ -9,6 +9,8 @@ import {
 import { MoreVertical } from "lucide-react";
 import type { Technician } from "@/types/attendance";
 import { GroupSelector } from "@/components/groups/GroupSelector";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface TechnicianTableRowProps {
   tech: Technician;
@@ -43,6 +45,21 @@ export const TechnicianTableRow = ({
       });
     }
   };
+
+  // Fetch group details
+  const { data: group } = useQuery({
+    queryKey: ['group', tech.group_id],
+    queryFn: async () => {
+      if (!tech.group_id) return null;
+      const { data } = await supabase
+        .from('groups')
+        .select('name')
+        .eq('id', tech.group_id)
+        .single();
+      return data;
+    },
+    enabled: !!tech.group_id,
+  });
 
   return (
     <tr className="border-b">
@@ -104,11 +121,9 @@ export const TechnicianTableRow = ({
               onGroupSelect={handleGroupChange}
             />
           ) : (
-            <GroupSelector
-              selectedGroupId={tech.group_id || undefined}
-              onGroupSelect={() => {}}
-              disabled={true}
-            />
+            <span className="text-gray-700">
+              {group?.name || 'No group assigned'}
+            </span>
           )}
         </div>
       </td>
