@@ -1,8 +1,10 @@
+
 import { Layout } from "@/components/Layout";
 import { useAttendanceHistory } from "@/hooks/useAttendanceHistory";
 import { useAttendanceUpdate } from "@/hooks/useAttendanceUpdate";
 import { AttendanceHeader } from "@/components/attendance/AttendanceHeader";
 import { AttendanceContent } from "@/components/attendance/AttendanceContent";
+import { CurrentWeekCard } from "@/components/attendance/CurrentWeekCard";
 
 const AttendanceHistory = () => {
   const { technicians, attendanceRecords, isLoading, error, getTechnicianName } = useAttendanceHistory();
@@ -38,6 +40,15 @@ const AttendanceHistory = () => {
     <Layout>
       <div className="space-y-8 animate-fade-in">
         <AttendanceHeader />
+        <CurrentWeekCard
+          records={attendanceRecords}
+          technicians={technicians}
+          editingDate={editingDate}
+          isSubmitting={isSubmitting}
+          onEdit={setEditingDate}
+          onStatusChange={handleStatusChange}
+          getTechnicianName={getTechnicianName}
+        />
         <AttendanceContent
           records={attendanceRecords}
           technicians={technicians}
