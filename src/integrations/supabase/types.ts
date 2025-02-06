@@ -90,6 +90,7 @@ export type Database = {
           group_id: string
           id: string
           is_reviewed: boolean | null
+          is_submitted: boolean | null
           reviewed_at: string | null
           reviewed_by: string
           updated_at: string | null
@@ -100,6 +101,7 @@ export type Database = {
           group_id: string
           id?: string
           is_reviewed?: boolean | null
+          is_submitted?: boolean | null
           reviewed_at?: string | null
           reviewed_by: string
           updated_at?: string | null
@@ -110,6 +112,7 @@ export type Database = {
           group_id?: string
           id?: string
           is_reviewed?: boolean | null
+          is_submitted?: boolean | null
           reviewed_at?: string | null
           reviewed_by?: string
           updated_at?: string | null

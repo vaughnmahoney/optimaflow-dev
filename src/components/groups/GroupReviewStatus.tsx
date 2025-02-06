@@ -21,7 +21,7 @@ export const GroupReviewStatus = ({
     reviewStatus,
     isLoading,
     isUpdating,
-    updateReviewStatus,
+    updateSubmissionStatus,
   } = useGroupReview(groupId);
 
   const isComplete = completedCount === totalCount;
@@ -38,7 +38,17 @@ export const GroupReviewStatus = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {isComplete ? (
-            <CheckCircle className="h-4 w-4 text-green-500" />
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-0 h-auto hover:bg-transparent"
+              onClick={() => updateSubmissionStatus.mutate(!reviewStatus?.is_submitted)}
+              disabled={isUpdating}
+            >
+              <CheckCircle 
+                className={`h-4 w-4 ${reviewStatus?.is_submitted ? 'text-green-500' : 'text-gray-400'}`}
+              />
+            </Button>
           ) : (
             <CircleX className="h-4 w-4 text-red-500" />
           )}
@@ -46,22 +56,6 @@ export const GroupReviewStatus = ({
             {completedCount} of {totalCount} marked
           </span>
         </div>
-        {isComplete && (
-          <Button
-            variant={reviewStatus?.is_reviewed ? "outline" : "default"}
-            size="sm"
-            onClick={() => updateReviewStatus.mutate(!reviewStatus?.is_reviewed)}
-            disabled={isUpdating}
-          >
-            {isUpdating ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : reviewStatus?.is_reviewed ? (
-              "Unmark as Reviewed"
-            ) : (
-              "Mark as Reviewed"
-            )}
-          </Button>
-        )}
       </div>
       <Progress value={progressPercentage} className="h-2" />
     </div>

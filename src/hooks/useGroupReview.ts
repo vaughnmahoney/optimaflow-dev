@@ -34,8 +34,8 @@ export const useGroupReview = (groupId: string) => {
     retry: false,
   });
 
-  const updateReviewStatus = useMutation({
-    mutationFn: async (isReviewed: boolean) => {
+  const updateSubmissionStatus = useMutation({
+    mutationFn: async (isSubmitted: boolean) => {
       setIsUpdating(true);
       
       try {
@@ -44,7 +44,6 @@ export const useGroupReview = (groupId: string) => {
 
         const today = new Date().toISOString().split('T')[0];
         
-        // Use upsert with on_conflict parameter
         const { data, error } = await supabase
           .from('group_attendance_review')
           .upsert(
@@ -52,8 +51,8 @@ export const useGroupReview = (groupId: string) => {
               group_id: groupId,
               date: today,
               reviewed_by: session.user.id,
-              is_reviewed: isReviewed,
-              reviewed_at: isReviewed ? new Date().toISOString() : null,
+              is_submitted: isSubmitted,
+              reviewed_at: isSubmitted ? new Date().toISOString() : null,
             },
             {
               onConflict: 'group_id,date',
@@ -76,14 +75,14 @@ export const useGroupReview = (groupId: string) => {
       queryClient.invalidateQueries({ queryKey: ['group-review'] });
       toast({
         title: "Success",
-        description: "Group review status updated successfully",
+        description: "Group submission status updated successfully",
       });
     },
     onError: (error: any) => {
-      console.error('Error updating review status:', error);
+      console.error('Error updating submission status:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to update group review status",
+        description: error.message || "Failed to update group submission status",
         variant: "destructive",
       });
     },
@@ -93,6 +92,6 @@ export const useGroupReview = (groupId: string) => {
     reviewStatus,
     isLoading,
     isUpdating,
-    updateReviewStatus,
+    updateSubmissionStatus,
   };
 };

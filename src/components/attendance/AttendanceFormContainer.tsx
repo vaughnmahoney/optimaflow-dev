@@ -1,9 +1,11 @@
+
 import { useEffect, useState } from "react";
 import { useAttendance } from "@/hooks/useAttendance";
 import { useAttendanceState } from "@/hooks/useAttendanceState";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AttendanceForm } from "./AttendanceForm";
+import { useGroupReview } from "@/hooks/useGroupReview";
 
 interface AttendanceFormContainerProps {
   groupId: string;
@@ -15,6 +17,7 @@ export const AttendanceFormContainer = ({ groupId }: AttendanceFormContainerProp
   const [hasSubmittedToday, setHasSubmittedToday] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const { updateSubmissionStatus } = useGroupReview(groupId);
 
   const {
     attendanceStates,
@@ -63,9 +66,14 @@ export const AttendanceFormContainer = ({ groupId }: AttendanceFormContainerProp
       return;
     }
 
-    await submitDailyAttendance();
-    await checkTodaySubmission();
-    setIsEditing(false);
+    try {
+      await submitDailyAttendance();
+      await updateSubmissionStatus.mutateAsync(true);
+      await checkTodaySubmission();
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error submitting attendance:', error);
+    }
   };
 
   const handleEdit = () => {
