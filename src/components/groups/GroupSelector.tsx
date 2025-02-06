@@ -12,7 +12,7 @@ import { Plus } from "lucide-react";
 import { GroupDialog } from "./GroupDialog";
 import { useToast } from "@/hooks/use-toast";
 import { Group } from "@/types/groups";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 interface GroupSelectorProps {
@@ -24,6 +24,7 @@ interface GroupSelectorProps {
 export function GroupSelector({ onGroupSelect, selectedGroupId, disabled }: GroupSelectorProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: groups, isLoading, error } = useQuery({
     queryKey: ['groups'],
@@ -43,10 +44,15 @@ export function GroupSelector({ onGroupSelect, selectedGroupId, disabled }: Grou
   });
 
   const handleAddGroupSuccess = (newGroup?: Group) => {
-    if (newGroup) {
-      onGroupSelect(newGroup.id);
-    }
     setIsDialogOpen(false);
+    if (newGroup) {
+      // Wait for the next tick to update the selection
+      setTimeout(() => {
+        onGroupSelect(newGroup.id);
+        // Manually invalidate the groups query to ensure fresh data
+        queryClient.invalidateQueries({ queryKey: ['groups'] });
+      }, 0);
+    }
   };
 
   if (isLoading) {
@@ -92,6 +98,7 @@ export function GroupSelector({ onGroupSelect, selectedGroupId, disabled }: Grou
                 className="w-full justify-start"
                 onClick={(e) => {
                   e.preventDefault();
+                  e.stopPropagation(); // Prevent event bubbling
                   setIsDialogOpen(true);
                 }}
               >
@@ -107,6 +114,7 @@ export function GroupSelector({ onGroupSelect, selectedGroupId, disabled }: Grou
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         title="Add New Group"
+        description="Create a new group for organizing technicians."
         onSuccess={handleAddGroupSuccess}
       />
     </>
