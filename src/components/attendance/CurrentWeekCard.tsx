@@ -3,14 +3,9 @@ import React from 'react';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { format } from 'date-fns';
 import { getWeekStart, getWeekEnd } from "@/utils/dateUtils";
-import type { Technician, AttendanceRecord, DailyAttendanceRecord } from "@/types/attendance";
+import type { Technician, AttendanceRecord } from "@/types/attendance";
 import { DailyAttendanceCard } from "./DailyAttendanceCard";
-import { 
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
 import { transformAttendanceRecords } from "@/utils/attendanceTransformUtils";
 
 interface CurrentWeekCardProps {
@@ -32,6 +27,7 @@ export const CurrentWeekCard: React.FC<CurrentWeekCardProps> = ({
   onStatusChange,
   getTechnicianName,
 }) => {
+  const [selectedDate, setSelectedDate] = React.useState<string | null>(null);
   const today = new Date();
   const weekStart = getWeekStart(today);
   const weekEnd = getWeekEnd(today);
@@ -44,6 +40,22 @@ export const CurrentWeekCard: React.FC<CurrentWeekCardProps> = ({
 
   const dailyRecords = transformAttendanceRecords(currentWeekRecords);
 
+  // Generate array of dates for the current week
+  const weekDates = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(weekStart);
+    date.setDate(date.getDate() + i);
+    return date;
+  });
+
+  const handleDateClick = (date: Date) => {
+    const dateString = format(date, 'yyyy-MM-dd');
+    setSelectedDate(selectedDate === dateString ? null : dateString);
+  };
+
+  const getRecord = (date: string) => {
+    return dailyRecords.find(record => record.date === date);
+  };
+
   return (
     <Card className="mb-8">
       <CardHeader className="pb-3">
@@ -53,38 +65,64 @@ export const CurrentWeekCard: React.FC<CurrentWeekCardProps> = ({
         </p>
       </CardHeader>
       <CardContent>
-        {dailyRecords.length > 0 ? (
-          <div className="space-y-4">
-            {dailyRecords.map((record) => (
-              <Accordion type="single" collapsible key={record.date}>
-                <AccordionItem value={record.date}>
-                  <AccordionTrigger className="hover:no-underline">
-                    <div className="flex items-center gap-2">
-                      <span>
-                        {format(new Date(record.date), "EEEE, MMMM d, yyyy")}
-                      </span>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <DailyAttendanceCard
-                      record={record}
-                      technicians={technicians}
-                      editingDate={editingDate}
-                      isSubmitting={isSubmitting}
-                      onEdit={onEdit}
-                      onStatusChange={onStatusChange}
-                      getTechnicianName={getTechnicianName}
-                    />
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            ))}
+        <div className="space-y-6">
+          <div className="flex gap-2 justify-between">
+            {weekDates.map((date) => {
+              const dateString = format(date, 'yyyy-MM-dd');
+              const isSelected = selectedDate === dateString;
+              const record = getRecord(dateString);
+              const isToday = format(date, 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd');
+              
+              return (
+                <Button
+                  key={dateString}
+                  variant={isSelected ? "default" : "outline"}
+                  className={`flex-1 ${isToday ? 'ring-2 ring-primary' : ''} ${record ? 'bg-secondary/10' : ''}`}
+                  onClick={() => handleDateClick(date)}
+                >
+                  <div className="flex flex-col items-center">
+                    <span className="text-xs font-medium">
+                      {format(date, 'EEE')}
+                    </span>
+                    <span className="text-sm">
+                      {format(date, 'd')}
+                    </span>
+                  </div>
+                </Button>
+              );
+            })}
           </div>
-        ) : (
-          <div className="text-center py-6 text-muted-foreground">
-            No attendance records for this week
-          </div>
-        )}
+
+          {selectedDate && (
+            <div className="animate-fade-in">
+              {dailyRecords.map((record) => (
+                record.date === selectedDate && (
+                  <DailyAttendanceCard
+                    key={record.date}
+                    record={record}
+                    technicians={technicians}
+                    editingDate={editingDate}
+                    isSubmitting={isSubmitting}
+                    onEdit={onEdit}
+                    onStatusChange={onStatusChange}
+                    getTechnicianName={getTechnicianName}
+                  />
+                )
+              ))}
+              {!getRecord(selectedDate) && (
+                <div className="text-center py-6 text-muted-foreground">
+                  No attendance records for {format(new Date(selectedDate), "EEEE, MMMM d, yyyy")}
+                </div>
+              )}
+            </div>
+          )}
+
+          {!selectedDate && (
+            <div className="text-center py-6 text-muted-foreground">
+              Select a day to view attendance records
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
