@@ -43,16 +43,30 @@ export function GroupSelector({ onGroupSelect, selectedGroupId, disabled }: Grou
     }
   });
 
-  const handleAddGroupSuccess = (newGroup?: Group) => {
-    setIsDialogOpen(false);
+  const handleAddGroupSuccess = async (newGroup?: Group) => {
     if (newGroup) {
-      // Wait for the next tick to update the selection
-      setTimeout(() => {
-        onGroupSelect(newGroup.id);
-        // Manually invalidate the groups query to ensure fresh data
-        queryClient.invalidateQueries({ queryKey: ['groups'] });
-      }, 0);
+      // First update the cache with the new group
+      queryClient.setQueryData<Group[]>(['groups'], (oldGroups = []) => {
+        return [...oldGroups, newGroup].sort((a, b) => a.name.localeCompare(b.name));
+      });
+      
+      // Then close the dialog
+      setIsDialogOpen(false);
+      
+      // Finally update the selection
+      onGroupSelect(newGroup.id);
+      
+      toast({
+        title: "Group created",
+        description: "New group has been created successfully.",
+      });
     }
+  };
+
+  const handleAddNewGroup = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDialogOpen(true);
   };
 
   if (isLoading) {
@@ -96,11 +110,7 @@ export function GroupSelector({ onGroupSelect, selectedGroupId, disabled }: Grou
               <Button
                 variant="ghost"
                 className="w-full justify-start"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation(); // Prevent event bubbling
-                  setIsDialogOpen(true);
-                }}
+                onClick={handleAddNewGroup}
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Add New Group
