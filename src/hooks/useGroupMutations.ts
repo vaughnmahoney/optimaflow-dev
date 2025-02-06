@@ -19,7 +19,6 @@ export const useGroupMutations = () => {
       return data;
     },
     onSuccess: (newGroup) => {
-      // Optimistically update the cache
       queryClient.setQueryData<Group[]>(["groups"], (oldGroups = []) => {
         return [...oldGroups, newGroup].sort((a, b) => a.name.localeCompare(b.name));
       });
@@ -55,7 +54,6 @@ export const useGroupMutations = () => {
       return data;
     },
     onSuccess: (updatedGroup) => {
-      // Optimistically update the cache
       queryClient.setQueryData<Group[]>(["groups"], (oldGroups = []) => {
         return oldGroups
           .map(g => g.id === updatedGroup.id ? updatedGroup : g)
@@ -88,10 +86,13 @@ export const useGroupMutations = () => {
       return groupId;
     },
     onSuccess: (groupId) => {
-      // Optimistically update the cache
+      // Immediately remove the group from the cache
       queryClient.setQueryData<Group[]>(["groups"], (oldGroups = []) => {
         return oldGroups.filter(g => g.id !== groupId);
       });
+      
+      // Invalidate related queries that might be affected
+      queryClient.invalidateQueries({ queryKey: ["technicians"] });
       
       toast({
         title: "Group removed",
