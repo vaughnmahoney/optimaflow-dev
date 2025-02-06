@@ -134,11 +134,12 @@ export const useGroupMutations = () => {
         console.log("Successfully moved technicians to Unassigned group");
       }
 
-      // Now try to delete the group - removed .single() since we don't need the deleted data
+      // Now delete the group
       const { error: deleteError } = await supabase
         .from("groups")
         .delete()
-        .eq("id", groupId);
+        .eq("id", groupId)
+        .throwOnError(); // Add this line to ensure errors are thrown
       
       if (deleteError) {
         console.error("Error deleting group:", deleteError);
