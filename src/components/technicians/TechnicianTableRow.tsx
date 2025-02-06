@@ -35,10 +35,13 @@ export const TechnicianTableRow = ({
 }: TechnicianTableRowProps) => {
   const handleGroupChange = (groupId: string) => {
     if (editingTechnician) {
-      setEditingTechnician({
+      const updatedTechnician = {
         ...editingTechnician,
         group_id: groupId
-      });
+      };
+      setEditingTechnician(updatedTechnician);
+      // Immediately update the technician when group changes
+      onUpdate(updatedTechnician);
     }
   };
 
