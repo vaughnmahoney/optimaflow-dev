@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { format } from 'date-fns';
 import { getWeekStart, getWeekEnd } from "@/utils/dateUtils";
-import type { Technician, DailyAttendanceRecord } from "@/types/attendance";
+import type { Technician, AttendanceRecord, DailyAttendanceRecord } from "@/types/attendance";
 import { DailyAttendanceCard } from "./DailyAttendanceCard";
 import { 
   Accordion,
@@ -11,9 +11,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { transformAttendanceRecords } from "@/utils/attendanceTransformUtils";
 
 interface CurrentWeekCardProps {
-  records: DailyAttendanceRecord[];
+  records: AttendanceRecord[];
   technicians: Technician[];
   editingDate: string | null;
   isSubmitting: boolean;
@@ -41,6 +42,8 @@ export const CurrentWeekCard: React.FC<CurrentWeekCardProps> = ({
     return recordDate >= weekStart && recordDate <= weekEnd;
   });
 
+  const dailyRecords = transformAttendanceRecords(currentWeekRecords);
+
   return (
     <Card className="mb-8">
       <CardHeader className="pb-3">
@@ -50,9 +53,9 @@ export const CurrentWeekCard: React.FC<CurrentWeekCardProps> = ({
         </p>
       </CardHeader>
       <CardContent>
-        {currentWeekRecords.length > 0 ? (
+        {dailyRecords.length > 0 ? (
           <div className="space-y-4">
-            {currentWeekRecords.map((record) => (
+            {dailyRecords.map((record) => (
               <Accordion type="single" collapsible key={record.date}>
                 <AccordionItem value={record.date}>
                   <AccordionTrigger className="hover:no-underline">
