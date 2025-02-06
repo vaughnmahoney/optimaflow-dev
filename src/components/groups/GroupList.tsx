@@ -1,8 +1,11 @@
+
 import { Group } from "@/types/groups";
 import { GroupCard } from "./GroupCard";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface GroupListProps {
   groups: Group[];
@@ -25,6 +28,36 @@ export const GroupList = ({
   error,
   deletingGroupId,
 }: GroupListProps) => {
+  const today = new Date().toISOString().split('T')[0];
+
+  const { data: attendanceCounts } = useQuery({
+    queryKey: ['attendance-counts', today],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('attendance_records')
+        .select('technician_id, group_id')
+        .eq('date', today);
+
+      if (error) throw error;
+
+      const counts: Record<string, { completed: number; total: number }> = {};
+      
+      // Initialize counts for each group
+      groups.forEach(group => {
+        counts[group.id] = { completed: 0, total: 0 };
+      });
+
+      // Count completed records
+      data.forEach(record => {
+        if (record.group_id && counts[record.group_id]) {
+          counts[record.group_id].completed++;
+        }
+      });
+
+      return counts;
+    },
+  });
+
   // If the selected group is being deleted or has been deleted, clear the selection
   if (selectedGroupId && (
     deletingGroupId === selectedGroupId || 
@@ -92,6 +125,8 @@ export const GroupList = ({
           onSelect={onSelectGroup}
           onEdit={onEditGroup}
           onRemove={onRemoveGroup}
+          completedCount={attendanceCounts?.[group.id]?.completed || 0}
+          totalCount={attendanceCounts?.[group.id]?.total || 0}
         />
       ))}
     </div>

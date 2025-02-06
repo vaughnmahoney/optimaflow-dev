@@ -1,8 +1,10 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Group } from "@/types/groups";
 import { GroupStats } from "./GroupStats";
 import { GroupActions } from "./GroupActions";
+import { GroupReviewStatus } from "./GroupReviewStatus";
 
 interface GroupCardProps {
   group: Group;
@@ -11,6 +13,8 @@ interface GroupCardProps {
   onSelect: (groupId: string) => void;
   onEdit: (group: Group) => void;
   onRemove: (groupId: string) => void;
+  completedCount?: number;
+  totalCount?: number;
 }
 
 export const GroupCard = ({
@@ -20,6 +24,8 @@ export const GroupCard = ({
   onSelect,
   onEdit,
   onRemove,
+  completedCount = 0,
+  totalCount = 0,
 }: GroupCardProps) => {
   return (
     <Card 
@@ -42,6 +48,12 @@ export const GroupCard = ({
       </CardHeader>
       <CardContent className="space-y-4">
         <GroupStats groupId={group.id} />
+        <GroupReviewStatus
+          groupId={group.id}
+          completedCount={completedCount}
+          totalCount={totalCount}
+          className="pt-2"
+        />
         <Button 
           variant={isSelected ? "default" : "outline"}
           className="w-full"
