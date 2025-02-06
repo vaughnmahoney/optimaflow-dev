@@ -1,5 +1,5 @@
 
-import { CheckCircle, CircleX, Loader2 } from "lucide-react";
+import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useGroupReview } from "@/hooks/useGroupReview";
 import { Progress } from "@/components/ui/progress";
@@ -30,32 +30,25 @@ export const GroupReviewStatus = ({
     : 0;
 
   if (isLoading) {
-    return <Loader2 className="h-4 w-4 animate-spin" />;
+    return null;
   }
 
   return (
     <div className={`space-y-2 ${className}`}>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          {isComplete ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="p-0 h-auto hover:bg-transparent"
-              onClick={() => updateSubmissionStatus.mutate(!reviewStatus?.is_submitted)}
-              disabled={isUpdating}
-            >
-              <CheckCircle 
-                className={`h-4 w-4 ${reviewStatus?.is_submitted ? 'text-green-500' : 'text-gray-400'}`}
-              />
-            </Button>
-          ) : (
-            <CircleX className="h-4 w-4 text-red-500" />
-          )}
-          <span className="text-sm text-gray-600">
-            {completedCount} of {totalCount} marked
-          </span>
-        </div>
+      <div className="flex items-center justify-end">
+        {isComplete && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="p-0 h-auto hover:bg-transparent"
+            onClick={() => updateSubmissionStatus.mutate(!reviewStatus?.is_submitted)}
+            disabled={isUpdating}
+          >
+            <Check 
+              className={`h-5 w-5 ${reviewStatus?.is_submitted ? 'text-green-500' : 'text-gray-400'}`}
+            />
+          </Button>
+        )}
       </div>
       <Progress value={progressPercentage} className="h-2" />
     </div>
