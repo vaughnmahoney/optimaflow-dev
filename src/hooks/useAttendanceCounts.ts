@@ -7,35 +7,34 @@ export const useAttendanceCounts = (groups: Group[], date: string) => {
   return useQuery({
     queryKey: ['attendance-counts', date],
     queryFn: async () => {
-      const { data: technicians } = await supabase
-        .from('technicians')
-        .select('id, group_id');
-
-      const { data: attendanceRecords } = await supabase
-        .from('attendance_records')
-        .select('technician_id')
+      const { data: counts, error } = await supabase
+        .from('group_attendance_counts')
+        .select('group_id, total_count, completed_count')
         .eq('date', date);
 
-      const counts: Record<string, { completed: number; total: number }> = {};
+      if (error) {
+        console.error('Error fetching attendance counts:', error);
+        throw error;
+      }
+
+      const groupCounts: Record<string, { completed: number; total: number }> = {};
       
+      // Initialize counts for all groups
       groups.forEach(group => {
-        counts[group.id] = { completed: 0, total: 0 };
+        groupCounts[group.id] = { completed: 0, total: 0 };
       });
 
-      technicians?.forEach(tech => {
-        if (tech.group_id && counts[tech.group_id]) {
-          counts[tech.group_id].total++;
+      // Update counts from the database
+      counts?.forEach(count => {
+        if (count.group_id && groupCounts[count.group_id]) {
+          groupCounts[count.group_id] = {
+            completed: count.completed_count || 0,
+            total: count.total_count || 0,
+          };
         }
       });
 
-      attendanceRecords?.forEach(record => {
-        const tech = technicians?.find(t => t.id === record.technician_id);
-        if (tech?.group_id && counts[tech.group_id]) {
-          counts[tech.group_id].completed++;
-        }
-      });
-
-      return counts;
+      return groupCounts;
     },
   });
 };
