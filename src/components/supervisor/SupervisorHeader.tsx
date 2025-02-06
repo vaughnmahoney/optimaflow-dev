@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Plus, RotateCcw, Save } from "lucide-react";
+import { Plus, RotateCcw } from "lucide-react";
 
 interface SupervisorHeaderProps {
   allGroupsSubmitted: boolean;
@@ -13,7 +13,6 @@ interface SupervisorHeaderProps {
 export const SupervisorHeader = ({
   allGroupsSubmitted,
   onUndoAllSubmissions,
-  onSubmitToHistory,
   isUndoing,
   onAddGroup,
 }: SupervisorHeaderProps) => {
@@ -27,22 +26,14 @@ export const SupervisorHeader = ({
       </div>
       <div className="flex gap-4">
         {allGroupsSubmitted && (
-          <>
-            <Button 
-              variant="outline" 
-              onClick={onUndoAllSubmissions}
-              disabled={isUndoing}
-            >
-              <RotateCcw className="h-4 w-4 mr-2" />
-              Undo All Submissions
-            </Button>
-            <Button 
-              onClick={onSubmitToHistory}
-            >
-              <Save className="h-4 w-4 mr-2" />
-              Submit to History
-            </Button>
-          </>
+          <Button 
+            variant="outline" 
+            onClick={onUndoAllSubmissions}
+            disabled={isUndoing}
+          >
+            <RotateCcw className="h-4 w-4 mr-2" />
+            Undo All Submissions
+          </Button>
         )}
         <Button variant="outline" onClick={onAddGroup}>
           <Plus className="h-4 w-4 mr-2" />
