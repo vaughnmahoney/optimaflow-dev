@@ -4,8 +4,7 @@ import { GroupCard } from "./GroupCard";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useAttendanceCounts } from "@/hooks/useAttendanceCounts";
 
 interface GroupListProps {
   groups: Group[];
@@ -29,41 +28,7 @@ export const GroupList = ({
   deletingGroupId,
 }: GroupListProps) => {
   const today = new Date().toISOString().split('T')[0];
-
-  const { data: attendanceCounts } = useQuery({
-    queryKey: ['attendance-counts', today],
-    queryFn: async () => {
-      const { data: technicians } = await supabase
-        .from('technicians')
-        .select('id, group_id');
-
-      const { data: attendanceRecords } = await supabase
-        .from('attendance_records')
-        .select('technician_id')
-        .eq('date', today);
-
-      const counts: Record<string, { completed: number; total: number }> = {};
-      
-      groups.forEach(group => {
-        counts[group.id] = { completed: 0, total: 0 };
-      });
-
-      technicians?.forEach(tech => {
-        if (tech.group_id && counts[tech.group_id]) {
-          counts[tech.group_id].total++;
-        }
-      });
-
-      attendanceRecords?.forEach(record => {
-        const tech = technicians?.find(t => t.id === record.technician_id);
-        if (tech?.group_id && counts[tech.group_id]) {
-          counts[tech.group_id].completed++;
-        }
-      });
-
-      return counts;
-    },
-  });
+  const { data: attendanceCounts } = useAttendanceCounts(groups, today);
 
   if (loading) {
     return (
