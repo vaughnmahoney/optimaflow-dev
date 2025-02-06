@@ -18,11 +18,13 @@ export const TechnicianGroupCell = ({
     queryKey: ['group', tech.group_id],
     queryFn: async () => {
       if (!tech.group_id) return null;
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('groups')
         .select('name')
         .eq('id', tech.group_id)
-        .single();
+        .maybeSingle();
+      
+      if (error) throw error;
       return data;
     },
     enabled: !!tech.group_id,

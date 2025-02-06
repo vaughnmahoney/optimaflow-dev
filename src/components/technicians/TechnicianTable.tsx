@@ -38,8 +38,10 @@ export const TechnicianTable = ({
   };
 
   const handleSelectTechnician = (techId: string, checked: boolean) => {
-    setSelectedTechnicians(prev => 
-      checked ? [...prev, techId] : prev.filter(id => id !== techId)
+    setSelectedTechnicians(
+      checked 
+        ? [...selectedTechnicians, techId]
+        : selectedTechnicians.filter(id => id !== techId)
     );
   };
 
