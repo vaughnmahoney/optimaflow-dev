@@ -1,5 +1,7 @@
+
 import { Users, CheckCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface GroupStatsProps {
@@ -7,9 +9,10 @@ interface GroupStatsProps {
 }
 
 export const GroupStats = ({ groupId }: GroupStatsProps) => {
-  const { data: stats } = useQuery({
+  const { data: stats, refetch } = useQuery({
     queryKey: ['group-stats', groupId],
     queryFn: async () => {
+      console.log('Fetching stats for group:', groupId);
       // Get technicians count
       const { count: techCount } = await supabase
         .from('technicians')
@@ -47,6 +50,29 @@ export const GroupStats = ({ groupId }: GroupStatsProps) => {
       };
     },
   });
+
+  // Subscribe to attendance_records changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('attendance-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'attendance_records',
+        },
+        () => {
+          console.log('Attendance record changed, refetching stats');
+          refetch();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refetch]);
 
   return (
     <div className="grid grid-cols-2 gap-4">
