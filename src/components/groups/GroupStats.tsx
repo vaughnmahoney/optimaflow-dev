@@ -13,23 +13,16 @@ export const GroupStats = ({ groupId }: GroupStatsProps) => {
     queryKey: ['group-stats', groupId],
     queryFn: async () => {
       console.log('Fetching stats for group:', groupId);
-      // Get technicians count
-      const { count: techCount } = await supabase
+      // Get technicians count and IDs in one query
+      const { data: technicians, count: techCount } = await supabase
         .from('technicians')
-        .select('*', { count: 'exact', head: true })
+        .select('id', { count: 'exact' })
         .eq('group_id', groupId);
-
-      // Get technicians IDs first
-      const { data: technicians } = await supabase
-        .from('technicians')
-        .select('id')
-        .eq('group_id', groupId);
-
-      const technicianIds = technicians?.map(t => t.id) || [];
 
       // Get attendance stats for the last 30 days if there are technicians
       let attendanceRate = '0';
-      if (technicianIds.length > 0) {
+      if (technicians?.length) {
+        const technicianIds = technicians.map(t => t.id);
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
         
@@ -51,28 +44,46 @@ export const GroupStats = ({ groupId }: GroupStatsProps) => {
     },
   });
 
-  // Subscribe to attendance_records changes
+  // Subscribe to attendance_records changes for this group's technicians
   useEffect(() => {
-    const channel = supabase
-      .channel('attendance-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'attendance_records',
-        },
-        () => {
-          console.log('Attendance record changed, refetching stats');
-          refetch();
-        }
-      )
-      .subscribe();
+    const fetchTechnicianIds = async () => {
+      const { data: technicians } = await supabase
+        .from('technicians')
+        .select('id')
+        .eq('group_id', groupId);
+      
+      if (!technicians?.length) return;
 
-    return () => {
-      supabase.removeChannel(channel);
+      const technicianIds = technicians.map(t => t.id);
+      console.log('Setting up realtime subscription for technicians:', technicianIds);
+
+      const channel = supabase
+        .channel(`attendance-updates-${groupId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'attendance_records',
+            filter: `technician_id=in.(${technicianIds.join(',')})`,
+          },
+          (payload) => {
+            console.log('Attendance record changed for group:', groupId, payload);
+            refetch();
+          }
+        )
+        .subscribe((status) => {
+          console.log(`Realtime subscription status for group ${groupId}:`, status);
+        });
+
+      return () => {
+        console.log('Cleaning up realtime subscription for group:', groupId);
+        supabase.removeChannel(channel);
+      };
     };
-  }, [refetch]);
+
+    fetchTechnicianIds();
+  }, [groupId, refetch]);
 
   return (
     <div className="grid grid-cols-2 gap-4">
