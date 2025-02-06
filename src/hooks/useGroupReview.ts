@@ -12,28 +12,35 @@ export const useGroupReview = (groupId: string) => {
   const { data: reviewStatus, isLoading } = useQuery({
     queryKey: ['group-review', groupId],
     queryFn: async () => {
-      const today = new Date().toISOString().split('T')[0];
-      const { data, error } = await supabase
-        .from('group_attendance_review')
-        .select('*')
-        .eq('group_id', groupId)
-        .eq('date', today)
-        .maybeSingle();
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const { data, error } = await supabase
+          .from('group_attendance_review')
+          .select('*')
+          .eq('group_id', groupId)
+          .eq('date', today)
+          .maybeSingle();
 
-      if (error) throw error;
-      return data;
+        if (error) throw error;
+        return data;
+      } catch (error: any) {
+        console.error('Error fetching review status:', error);
+        throw error;
+      }
     },
   });
 
   const updateReviewStatus = useMutation({
     mutationFn: async (isReviewed: boolean) => {
       setIsUpdating(true);
-      const today = new Date().toISOString().split('T')[0];
       
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) throw new Error("No active session");
 
+        const today = new Date().toISOString().split('T')[0];
+        
+        // Use upsert instead of insert to handle existing records
         const { data, error } = await supabase
           .from('group_attendance_review')
           .upsert({
@@ -60,6 +67,7 @@ export const useGroupReview = (groupId: string) => {
       });
     },
     onError: (error: any) => {
+      console.error('Error updating review status:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to update group review status",

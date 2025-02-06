@@ -33,12 +33,16 @@ export const GroupList = ({
   const { data: attendanceCounts } = useQuery({
     queryKey: ['attendance-counts', today],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('attendance_records')
-        .select('technician_id, group_id')
-        .eq('date', today);
+      // First get all technicians and their groups
+      const { data: technicians } = await supabase
+        .from('technicians')
+        .select('id, group_id');
 
-      if (error) throw error;
+      // Then get attendance records for today
+      const { data: attendanceRecords } = await supabase
+        .from('attendance_records')
+        .select('technician_id')
+        .eq('date', today);
 
       const counts: Record<string, { completed: number; total: number }> = {};
       
@@ -47,10 +51,18 @@ export const GroupList = ({
         counts[group.id] = { completed: 0, total: 0 };
       });
 
+      // Count technicians per group
+      technicians?.forEach(tech => {
+        if (tech.group_id && counts[tech.group_id]) {
+          counts[tech.group_id].total++;
+        }
+      });
+
       // Count completed records
-      data.forEach(record => {
-        if (record.group_id && counts[record.group_id]) {
-          counts[record.group_id].completed++;
+      attendanceRecords?.forEach(record => {
+        const tech = technicians?.find(t => t.id === record.technician_id);
+        if (tech?.group_id && counts[tech.group_id]) {
+          counts[tech.group_id].completed++;
         }
       });
 
