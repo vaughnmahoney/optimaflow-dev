@@ -65,11 +65,11 @@ export const useSupervisorData = () => {
   const submitToHistoryMutation = useMutation({
     mutationFn: async () => {
       const today = new Date().toISOString().split('T')[0];
-      // Here we would typically call a backend function to handle the submission
-      // For now, we'll just mark it as completed in the database
-      const { error } = await supabase.rpc('submit_attendance_to_history', {
-        submission_date: today
-      });
+      // Use proper typing for the RPC function name
+      const { error } = await supabase.rpc(
+        'submit_attendance_to_history' as 'submit_attendance_to_history',
+        { submission_date: today }
+      );
       
       if (error) throw error;
     },

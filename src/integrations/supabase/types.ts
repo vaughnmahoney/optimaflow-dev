@@ -213,6 +213,12 @@ export type Database = {
       }
     }
     Functions: {
+      submit_attendance_to_history: {
+        Args: {
+          submission_date: string
+        }
+        Returns: undefined
+      }
       system_user: {
         Args: Record<PropertyKey, never>
         Returns: string
