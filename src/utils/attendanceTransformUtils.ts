@@ -1,3 +1,4 @@
+
 import type { AttendanceRecord, DailyAttendanceRecord } from "@/types/attendance";
 
 export const transformAttendanceRecords = (records: AttendanceRecord[]): DailyAttendanceRecord[] => {

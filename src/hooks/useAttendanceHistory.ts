@@ -1,7 +1,9 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { AttendanceRecord, Technician } from "@/types/attendance";
+import { transformAttendanceRecords } from "@/utils/attendanceTransformUtils";
 
 export const useAttendanceHistory = () => {
   const { toast } = useToast();
@@ -77,7 +79,7 @@ export const useAttendanceHistory = () => {
           console.log('Today\'s date:', new Date().toISOString().split('T')[0]);
         }
         
-        return data as AttendanceRecord[];
+        return transformAttendanceRecords(data as AttendanceRecord[]);
       } catch (error) {
         console.error('Failed to fetch attendance records:', error);
         toast({
