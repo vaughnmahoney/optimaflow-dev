@@ -1,3 +1,4 @@
+
 import { useLocation } from "react-router-dom";
 import { Calendar, History, UserPlus } from "lucide-react";
 import {
@@ -41,9 +42,10 @@ export function SidebarNavigation() {
                 asChild
                 isActive={location.pathname === item.url}
                 tooltip={item.title}
+                className="group transition-colors"
               >
                 <a href={item.url} className="w-full">
-                  <item.icon />
+                  <item.icon className="group-hover:text-blue-600 transition-colors" />
                   <span>{item.title}</span>
                 </a>
               </SidebarMenuButton>
