@@ -44,15 +44,12 @@ export const useGroupMutations = () => {
   });
 
   const updateGroupMutation = useMutation({
-    mutationFn: async (group: Group) => {
-      console.log("Updating group:", group);
+    mutationFn: async ({ id, name, description }: Group) => {
+      console.log("Updating group:", { id, name, description });
       const { data, error } = await supabase
         .from("groups")
-        .update({
-          name: group.name,
-          description: group.description,
-        })
-        .eq("id", group.id)
+        .update({ name, description })
+        .eq("id", id)
         .select()
         .single();
       
@@ -60,14 +57,16 @@ export const useGroupMutations = () => {
         console.error("Error in updateGroupMutation:", error);
         throw error;
       }
+      
+      if (!data) {
+        throw new Error("No data returned from update operation");
+      }
+      
       return data;
     },
     onSuccess: (updatedGroup) => {
-      queryClient.setQueryData<Group[]>(["groups"], (oldGroups = []) => {
-        return oldGroups
-          .map(g => g.id === updatedGroup.id ? updatedGroup : g)
-          .sort((a, b) => a.name.localeCompare(b.name));
-      });
+      // Invalidate and refetch
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
       
       toast({
         title: "Group updated",
