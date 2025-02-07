@@ -29,9 +29,9 @@ export const GroupCard = ({
 }: GroupCardProps) => {
   return (
     <Card 
-      className={`group relative cursor-pointer transition-all hover:shadow-lg ${
-        isSelected ? 'ring-2 ring-primary' : ''
-      }`}
+      className={`group relative cursor-pointer transition-all duration-300 hover:shadow-lg ${
+        isSelected ? 'ring-2 ring-primary shadow-md' : ''
+      } bg-white rounded-xl border border-gray-200`}
       onClick={() => onSelect(group.id)}
     >
       <GroupActions
@@ -40,10 +40,10 @@ export const GroupCard = ({
         onEdit={onEdit}
         onRemove={onRemove}
       />
-      <CardHeader>
-        <CardTitle>{group.name}</CardTitle>
+      <CardHeader className="space-y-1">
+        <CardTitle className="text-xl font-semibold text-gray-900">{group.name}</CardTitle>
         {group.description && (
-          <CardDescription>{group.description}</CardDescription>
+          <CardDescription className="text-sm text-gray-500">{group.description}</CardDescription>
         )}
       </CardHeader>
       <CardContent className="space-y-4">
@@ -56,7 +56,9 @@ export const GroupCard = ({
         />
         <Button 
           variant={isSelected ? "default" : "outline"}
-          className="w-full"
+          className={`w-full transition-colors duration-200 ${
+            isSelected ? 'bg-primary text-white' : 'text-gray-700 hover:bg-gray-50'
+          }`}
         >
           {isSelected ? 'Selected' : 'Select Group'}
         </Button>
