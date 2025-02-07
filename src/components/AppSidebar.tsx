@@ -4,6 +4,7 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
+  SidebarRail,
 } from "@/components/ui/sidebar";
 import { SidebarLogo } from "@/components/sidebar/SidebarLogo";
 import { SidebarNavigation } from "@/components/sidebar/SidebarNavigation";
@@ -11,7 +12,11 @@ import { SidebarLogout } from "@/components/sidebar/SidebarLogout";
 
 export function AppSidebar() {
   return (
-    <Sidebar className="border-r border-gray-200 bg-white shadow-sm">
+    <Sidebar
+      className="border-r border-gray-200 bg-white shadow-sm"
+      collapsible="icon"
+    >
+      <SidebarRail />
       <SidebarHeader className="p-6">
         <SidebarLogo />
       </SidebarHeader>
