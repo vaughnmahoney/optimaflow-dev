@@ -1,4 +1,3 @@
-
 import {
   Sidebar,
   SidebarContent,
@@ -11,16 +10,16 @@ import { SidebarLogout } from "@/components/sidebar/SidebarLogout";
 
 export function AppSidebar() {
   return (
-    <Sidebar className="bg-[#1A1F2C] border-r border-white/10">
-      <SidebarHeader className="p-4 border-b border-white/10">
+    <Sidebar>
+      <SidebarHeader className="p-4">
         <SidebarLogo />
       </SidebarHeader>
 
-      <SidebarContent className="px-2">
+      <SidebarContent>
         <SidebarNavigation />
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t border-white/10">
+      <SidebarFooter className="p-4">
         <SidebarLogout />
       </SidebarFooter>
     </Sidebar>
