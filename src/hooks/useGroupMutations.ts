@@ -46,15 +46,13 @@ export const useGroupMutations = () => {
   const updateGroupMutation = useMutation({
     mutationFn: async ({ id, name, description }: Group) => {
       console.log("Starting group update:", { id, name, description });
-      const session = await supabase.auth.getSession();
-      console.log("Current session:", session);
-
+      
       // First, check if the group exists and get its current data
       const { data: existingGroup, error: fetchError } = await supabase
         .from("groups")
         .select()
         .eq("id", id)
-        .single();
+        .maybeSingle();
 
       if (fetchError) {
         console.error("Error fetching existing group:", fetchError);
@@ -63,6 +61,11 @@ export const useGroupMutations = () => {
 
       if (!existingGroup) {
         throw new Error("Group not found");
+      }
+
+      // Check if trying to rename Unassigned group
+      if (existingGroup.name === "Unassigned" && name !== "Unassigned") {
+        throw new Error("Cannot rename the Unassigned group");
       }
 
       // Perform the update
@@ -75,7 +78,7 @@ export const useGroupMutations = () => {
         })
         .eq("id", id)
         .select()
-        .single();
+        .maybeSingle();
       
       if (error) {
         console.error("Error in updateGroupMutation:", error);
@@ -107,9 +110,13 @@ export const useGroupMutations = () => {
       });
     },
     onError: (error: any) => {
+      const errorMessage = error?.message === "Cannot rename the Unassigned group"
+        ? "The Unassigned group cannot be renamed."
+        : error?.message || "Failed to update group. Please try again.";
+
       toast({
         title: "Error",
-        description: error?.message || "Failed to update group. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
       console.error("Error updating group:", error);
@@ -120,32 +127,20 @@ export const useGroupMutations = () => {
     mutationFn: async (groupId: string) => {
       console.log("Starting group removal for ID:", groupId);
       
-      // First, get the group to check if it's the Unassigned group
-      const { data: group, error: groupError } = await supabase
-        .from("groups")
-        .select("name")
-        .eq("id", groupId)
-        .single();
-
-      if (groupError) {
-        console.error("Error fetching group:", groupError);
-        throw groupError;
-      }
-
-      if (group.name === "Unassigned") {
-        throw new Error("Cannot delete the Unassigned group");
-      }
-
-      // Get the Unassigned group
+      // Get the Unassigned group first (we'll need it for moving technicians)
       const { data: unassignedGroup, error: unassignedError } = await supabase
         .from("groups")
         .select("id")
         .eq("name", "Unassigned")
-        .single();
+        .maybeSingle();
 
       if (unassignedError) {
         console.error("Error finding Unassigned group:", unassignedError);
         throw unassignedError;
+      }
+
+      if (!unassignedGroup) {
+        throw new Error("Unassigned group not found");
       }
 
       console.log("Found Unassigned group:", unassignedGroup);
@@ -171,6 +166,9 @@ export const useGroupMutations = () => {
 
       if (deleteError) {
         console.error("Error deleting group:", deleteError);
+        if (deleteError.message.includes("Cannot delete the Unassigned group")) {
+          throw new Error("Cannot delete the Unassigned group");
+        }
         throw deleteError;
       }
 
