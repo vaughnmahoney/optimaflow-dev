@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -26,6 +27,11 @@ export const GroupActions = ({
   onEdit,
   onRemove,
 }: GroupActionsProps) => {
+  // Don't render anything for the Unassigned group
+  if (group.name === "Unassigned") {
+    return null;
+  }
+
   return (
     <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
       <Button
