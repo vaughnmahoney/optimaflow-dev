@@ -49,9 +49,30 @@ export const useGroupMutations = () => {
       const session = await supabase.auth.getSession();
       console.log("Current session:", session);
 
+      // First, check if the group exists and get its current data
+      const { data: existingGroup, error: fetchError } = await supabase
+        .from("groups")
+        .select()
+        .eq("id", id)
+        .single();
+
+      if (fetchError) {
+        console.error("Error fetching existing group:", fetchError);
+        throw fetchError;
+      }
+
+      if (!existingGroup) {
+        throw new Error("Group not found");
+      }
+
+      // Perform the update
       const { data, error } = await supabase
         .from("groups")
-        .update({ name, description })
+        .update({ 
+          name, 
+          description,
+          updated_at: new Date().toISOString()
+        })
         .eq("id", id)
         .select()
         .single();
@@ -69,14 +90,15 @@ export const useGroupMutations = () => {
       return data;
     },
     onSuccess: (updatedGroup) => {
-      // Update the cache immediately
+      // Immediately update the cache
       queryClient.setQueryData<Group[]>(["groups"], (oldGroups = []) => {
-        return oldGroups.map(group => 
+        const updated = oldGroups?.map(group => 
           group.id === updatedGroup.id ? updatedGroup : group
-        ).sort((a, b) => a.name.localeCompare(b.name));
+        ) || [];
+        return updated.sort((a, b) => a.name.localeCompare(b.name));
       });
       
-      // Also invalidate to ensure consistency
+      // Force a refetch to ensure consistency
       queryClient.invalidateQueries({ queryKey: ["groups"] });
       
       toast({
