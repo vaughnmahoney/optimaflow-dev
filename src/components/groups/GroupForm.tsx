@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,8 +32,7 @@ export const GroupForm = ({ initialData, onSuccess }: GroupFormProps) => {
     
     if (initialData) {
       // Update existing group
-      await updateGroupMutation.mutateAsync(
-        {
+      await updateGroupMutation.mutateAsync({
           id: initialData.id,
           name: newGroup.name,
           description: newGroup.description || null,
