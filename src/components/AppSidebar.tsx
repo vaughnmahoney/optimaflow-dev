@@ -16,7 +16,7 @@ export function AppSidebar() {
       className="border-r border-gray-200 bg-white shadow-sm transition-all duration-300"
       collapsible="icon"
     >
-      <SidebarRail className="border-r border-gray-100 bg-gray-50/50 hover:bg-gray-100/50 transition-colors" />
+      <SidebarRail className="border-r border-gray-100 bg-gray-50/50 hover:bg-gray-100/50 transition-colors flex flex-col items-center" />
       <SidebarHeader className="p-6">
         <SidebarLogo />
       </SidebarHeader>

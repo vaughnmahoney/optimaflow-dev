@@ -42,10 +42,13 @@ export function SidebarNavigation() {
                 asChild
                 isActive={location.pathname === item.url}
                 tooltip={item.title}
-                className="group transition-colors"
+                className="group transition-colors flex items-center justify-center"
               >
-                <a href={item.url} className="w-full">
-                  <item.icon className="group-hover:text-blue-600 transition-colors" />
+                <a href={item.url} className="w-full flex items-center gap-3">
+                  <item.icon 
+                    className="group-hover:text-blue-600 transition-colors w-5 h-5" 
+                    strokeWidth={1.75}
+                  />
                   <span>{item.title}</span>
                 </a>
               </SidebarMenuButton>
