@@ -45,7 +45,10 @@ export const useGroupMutations = () => {
 
   const updateGroupMutation = useMutation({
     mutationFn: async ({ id, name, description }: Group) => {
-      console.log("Updating group:", { id, name, description });
+      console.log("Starting group update:", { id, name, description });
+      const session = await supabase.auth.getSession();
+      console.log("Current session:", session);
+
       const { data, error } = await supabase
         .from("groups")
         .update({ name, description })
@@ -62,10 +65,18 @@ export const useGroupMutations = () => {
         throw new Error("No data returned from update operation");
       }
       
+      console.log("Update successful:", data);
       return data;
     },
     onSuccess: (updatedGroup) => {
-      // Invalidate and refetch
+      // Update the cache immediately
+      queryClient.setQueryData<Group[]>(["groups"], (oldGroups = []) => {
+        return oldGroups.map(group => 
+          group.id === updatedGroup.id ? updatedGroup : group
+        ).sort((a, b) => a.name.localeCompare(b.name));
+      });
+      
+      // Also invalidate to ensure consistency
       queryClient.invalidateQueries({ queryKey: ["groups"] });
       
       toast({
