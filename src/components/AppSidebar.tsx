@@ -4,7 +4,6 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-  SidebarRail,
 } from "@/components/ui/sidebar";
 import { SidebarLogo } from "@/components/sidebar/SidebarLogo";
 import { SidebarNavigation } from "@/components/sidebar/SidebarNavigation";
@@ -16,8 +15,7 @@ export function AppSidebar() {
       className="border-r border-gray-200 bg-white shadow-sm transition-all duration-300"
       collapsible="icon"
     >
-      <SidebarRail className="border-r border-gray-100 bg-gray-50/50 hover:bg-gray-100/50 transition-colors flex flex-col items-center" />
-      <SidebarHeader className="p-6">
+      <SidebarHeader className="px-4 py-6">
         <SidebarLogo />
       </SidebarHeader>
 
@@ -25,7 +23,7 @@ export function AppSidebar() {
         <SidebarNavigation />
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t border-gray-100">
+      <SidebarFooter className="mt-auto p-4 border-t border-gray-100">
         <SidebarLogout />
       </SidebarFooter>
     </Sidebar>

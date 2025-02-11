@@ -1,5 +1,5 @@
+
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
 export function SidebarLogo() {
@@ -36,14 +36,14 @@ export function SidebarLogo() {
         <img
           src={logoUrl}
           alt="Company Logo"
-          className="h-16 w-16 object-contain rounded"
+          className="h-12 w-12 object-contain rounded"
         />
       ) : (
-        <div className="h-16 w-16 bg-gray-100 rounded flex items-center justify-center text-gray-400">
+        <div className="h-12 w-12 bg-gray-100 rounded flex items-center justify-center text-gray-400">
           Logo
         </div>
       )}
-      <div className="relative">
+      <div className="relative w-full">
         <input
           type="file"
           accept="image/*"
@@ -51,9 +51,9 @@ export function SidebarLogo() {
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           aria-label="Upload logo"
         />
-        <Button variant="outline" size="sm" className="w-full">
+        <button className="w-full text-sm text-gray-600 hover:text-gray-900 transition-colors">
           Upload Logo
-        </Button>
+        </button>
       </div>
     </div>
   );
