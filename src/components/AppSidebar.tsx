@@ -17,11 +17,13 @@ export function AppSidebar() {
       className="border-r border-gray-200 bg-white shadow-sm transition-all duration-300"
       collapsible="icon"
     >
-      <SidebarHeader className="flex items-center gap-2 px-4 py-6">
+      <SidebarHeader className="flex items-center justify-between px-4 py-6">
+        <div className="flex items-center">
+          <SidebarLogo />
+        </div>
         <SidebarTrigger className="h-6 w-6 text-gray-500 hover:text-gray-900 transition-colors">
           <Menu className="h-6 w-6" />
         </SidebarTrigger>
-        <SidebarLogo />
       </SidebarHeader>
 
       <SidebarContent className="px-2">

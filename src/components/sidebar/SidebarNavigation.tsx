@@ -43,17 +43,20 @@ export function SidebarNavigation() {
               >
                 <a 
                   href={item.url} 
-                  className={`flex items-center gap-3 px-3 py-2 rounded-md w-full transition-colors
+                  className={`flex items-center justify-center gap-3 px-3 py-2 rounded-md w-full transition-colors
+                    data-[collapsed=true]:justify-center
                     ${location.pathname === item.url 
                       ? 'bg-gray-100 text-gray-900' 
                       : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                     }`}
                 >
                   <item.icon 
-                    className="w-5 h-5"
+                    className="w-5 h-5 flex-shrink-0"
                     strokeWidth={1.75}
                   />
-                  <span className="font-medium">{item.title}</span>
+                  <span className="font-medium truncate">
+                    {item.title}
+                  </span>
                 </a>
               </SidebarMenuButton>
             </SidebarMenuItem>
