@@ -31,16 +31,16 @@ export function SidebarLogo() {
   };
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex items-center justify-center">
       <div className="relative cursor-pointer group">
         {logoUrl ? (
           <img
             src={logoUrl}
             alt="Company Logo"
-            className="h-12 w-12 object-contain rounded transition-opacity group-hover:opacity-80"
+            className="h-16 w-16 object-contain rounded transition-opacity group-hover:opacity-80"
           />
         ) : (
-          <div className="h-12 w-12 bg-gray-100 rounded flex items-center justify-center text-gray-400 transition-colors group-hover:bg-gray-200">
+          <div className="h-16 w-16 bg-gray-100 rounded flex items-center justify-center text-gray-400 transition-colors group-hover:bg-gray-200">
             Logo
           </div>
         )}
