@@ -45,7 +45,7 @@ export function SidebarNavigation() {
                 >
                   <a 
                     href={item.url} 
-                    className={`group relative flex items-center justify-center gap-3 px-3 py-2 rounded-md w-full transition-all duration-200
+                    className={`group relative flex items-center justify-center gap-3 px-2 py-2 rounded-md w-full transition-all duration-200
                       data-[collapsed=true]:justify-center
                       ${isActive 
                         ? 'bg-purple-50 text-purple-900' 
