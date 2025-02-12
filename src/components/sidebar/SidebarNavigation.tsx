@@ -45,14 +45,14 @@ export function SidebarNavigation() {
                 >
                   <a 
                     href={item.url} 
-                    className={`group relative flex items-center justify-start gap-3 px-4 py-2 rounded-md w-full transition-all duration-200
+                    className={`group relative flex items-center justify-center gap-3 px-2 py-2 rounded-md w-full transition-all duration-200
                       data-[collapsed=true]:justify-center
                       ${isActive 
                         ? 'bg-purple-50 text-purple-900' 
                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                       }`}
                   >
-                    <div className="relative ml-1">
+                    <div className="relative">
                       <item.icon 
                         className={`w-5 h-5 flex-shrink-0 transition-all duration-200
                           ${isActive ? 'stroke-purple-600' : 'stroke-current'}
