@@ -20,6 +20,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Eye, Flag, CheckCircle } from "lucide-react";
+import { ImageViewDialog } from "./ImageViewDialog";
+import { useState } from "react";
 
 interface WorkOrder {
   id: string;
@@ -54,6 +56,8 @@ export const WorkOrderList = ({
   searchQuery,
   statusFilter
 }: WorkOrderListProps) => {
+  const [selectedWorkOrderId, setSelectedWorkOrderId] = useState<string | null>(null);
+
   if (isLoading) {
     return <LoadingSkeleton />;
   }
@@ -123,7 +127,12 @@ export const WorkOrderList = ({
                   <TableCell>
                     <div className="flex items-center gap-2">
                       {workOrder.has_images && (
-                        <Button variant="ghost" size="icon" title="View Photos">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          title="View Photos"
+                          onClick={() => setSelectedWorkOrderId(workOrder.id)}
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
                       )}
@@ -153,6 +162,11 @@ export const WorkOrderList = ({
           </TableBody>
         </Table>
       </div>
+
+      <ImageViewDialog 
+        workOrderId={selectedWorkOrderId} 
+        onClose={() => setSelectedWorkOrderId(null)} 
+      />
     </div>
   );
 };
