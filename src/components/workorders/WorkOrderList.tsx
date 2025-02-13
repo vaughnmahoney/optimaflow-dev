@@ -165,7 +165,8 @@ export const WorkOrderList = ({
 
       <ImageViewDialog 
         workOrderId={selectedWorkOrderId} 
-        onClose={() => setSelectedWorkOrderId(null)} 
+        onClose={() => setSelectedWorkOrderId(null)}
+        onStatusUpdate={onStatusUpdate}
       />
     </div>
   );
