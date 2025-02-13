@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Loader } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useState } from "react";
 
 interface ImageViewerProps {
   images: any[];
@@ -20,6 +21,8 @@ export const ImageViewer = ({
   onNext,
   onImageSelect,
 }: ImageViewerProps) => {
+  const [isImageLoading, setIsImageLoading] = useState(true);
+
   if (isLoading) {
     return (
       <div className="h-full flex items-center justify-center">
@@ -41,10 +44,19 @@ export const ImageViewer = ({
   return (
     <div className="relative h-full flex flex-col space-y-4">
       <div className="relative flex-1 flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden">
+        {isImageLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
+            <Loader className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        )}
         <img
           src={currentImage?.image_url}
           alt={`Service image ${currentImageIndex + 1}`}
-          className="max-h-[calc(90vh-12rem)] max-w-full object-contain animate-fade-in"
+          className={`max-h-[calc(90vh-12rem)] max-w-full object-contain transition-opacity duration-300 ${
+            isImageLoading ? 'opacity-0' : 'opacity-100'
+          }`}
+          onLoad={() => setIsImageLoading(false)}
+          onError={() => setIsImageLoading(false)}
         />
         
         <Button
