@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface ImageViewerProps {
@@ -22,13 +22,8 @@ export const ImageViewer = ({
 }: ImageViewerProps) => {
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <Skeleton className="h-[400px] w-full rounded-lg" />
-        <div className="flex gap-2">
-          {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-20 w-20 rounded-lg" />
-          ))}
-        </div>
+      <div className="h-full flex items-center justify-center">
+        <Loader className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
