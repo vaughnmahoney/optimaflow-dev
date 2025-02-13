@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -103,6 +102,23 @@ export const ImageViewDialog = ({
     enabled: !!workOrderId,
   });
 
+  // Handle status updates and cache invalidation
+  const handleStatusUpdate = async (status: string) => {
+    if (!workOrderId) return;
+    
+    // Call the parent's onStatusUpdate
+    await onStatusUpdate(workOrderId, status);
+    
+    // Immediately update the cache with the new status
+    queryClient.setQueryData(["workOrder", workOrderId], (oldData: any) => {
+      if (!oldData) return oldData;
+      return {
+        ...oldData,
+        qc_status: status
+      };
+    });
+  };
+
   const handlePreviousWorkOrder = () => {
     if (currentWorkOrderIndex > 0) {
       const previousWorkOrder = workOrders[currentWorkOrderIndex - 1];
@@ -197,7 +213,7 @@ export const ImageViewDialog = ({
             <WorkOrderDetailsSidebar
               workOrder={workOrder}
               onClose={onClose}
-              onStatusUpdate={(status) => workOrderId && onStatusUpdate(workOrderId, status)}
+              onStatusUpdate={handleStatusUpdate}
               onDownloadAll={handleDownloadAll}
             />
 
