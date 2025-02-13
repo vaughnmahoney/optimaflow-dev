@@ -281,6 +281,13 @@ export type Database = {
             foreignKeyName: "invoices_work_order_id_fkey"
             columns: ["work_order_id"]
             isOneToOne: false
+            referencedRelation: "qc_dashboard_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
             referencedRelation: "work_orders"
             referencedColumns: ["id"]
           },
@@ -446,49 +453,112 @@ export type Database = {
           },
         ]
       }
-      work_orders: {
+      work_order_images: {
         Row: {
           created_at: string | null
+          id: string
+          image_url: string
+          uploaded_at: string | null
+          work_order_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          image_url: string
+          uploaded_at?: string | null
+          work_order_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          image_url?: string
+          uploaded_at?: string | null
+          work_order_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_order_images_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "qc_dashboard_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_order_images_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "work_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      work_orders: {
+        Row: {
+          billing_status: string | null
+          created_at: string | null
           customer_id: string
+          end_time: string | null
           external_id: string | null
           flag_reason: string | null
           id: string
+          location: Json | null
           notes: string | null
+          priority: string | null
+          qc_notes: string | null
+          qc_status: string | null
           service_date: string
           service_details: Json | null
           service_type_id: string | null
+          start_time: string | null
           status: string
           technician_id: string
+          time_on_site: unknown | null
           timestamps: Json | null
           updated_at: string | null
         }
         Insert: {
+          billing_status?: string | null
           created_at?: string | null
           customer_id: string
+          end_time?: string | null
           external_id?: string | null
           flag_reason?: string | null
           id?: string
+          location?: Json | null
           notes?: string | null
+          priority?: string | null
+          qc_notes?: string | null
+          qc_status?: string | null
           service_date: string
           service_details?: Json | null
           service_type_id?: string | null
+          start_time?: string | null
           status?: string
           technician_id: string
+          time_on_site?: unknown | null
           timestamps?: Json | null
           updated_at?: string | null
         }
         Update: {
+          billing_status?: string | null
           created_at?: string | null
           customer_id?: string
+          end_time?: string | null
           external_id?: string | null
           flag_reason?: string | null
           id?: string
+          location?: Json | null
           notes?: string | null
+          priority?: string | null
+          qc_notes?: string | null
+          qc_status?: string | null
           service_date?: string
           service_details?: Json | null
           service_type_id?: string | null
+          start_time?: string | null
           status?: string
           technician_id?: string
+          time_on_site?: unknown | null
           timestamps?: Json | null
           updated_at?: string | null
         }
@@ -534,6 +604,26 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      qc_dashboard_view: {
+        Row: {
+          billing_status: string | null
+          customer_name: string | null
+          end_time: string | null
+          has_images: boolean | null
+          id: string | null
+          location: Json | null
+          order_id: string | null
+          priority: string | null
+          qc_notes: string | null
+          qc_status: string | null
+          service_date: string | null
+          service_notes: string | null
+          start_time: string | null
+          technician_name: string | null
+          time_on_site: unknown | null
+        }
+        Relationships: []
       }
     }
     Functions: {
