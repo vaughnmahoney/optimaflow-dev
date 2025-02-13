@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Eye, Flag, CheckCircle } from "lucide-react";
 import { ImageViewDialog } from "./ImageViewDialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface WorkOrder {
   id: string;
@@ -57,6 +57,17 @@ export const WorkOrderList = ({
   statusFilter
 }: WorkOrderListProps) => {
   const [selectedWorkOrderId, setSelectedWorkOrderId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleOpenWorkOrder = (event: CustomEvent<string>) => {
+      setSelectedWorkOrderId(event.detail);
+    };
+
+    window.addEventListener('openWorkOrder', handleOpenWorkOrder as EventListener);
+    return () => {
+      window.removeEventListener('openWorkOrder', handleOpenWorkOrder as EventListener);
+    };
+  }, []);
 
   if (isLoading) {
     return <LoadingSkeleton />;
@@ -167,6 +178,7 @@ export const WorkOrderList = ({
         workOrderId={selectedWorkOrderId} 
         onClose={() => setSelectedWorkOrderId(null)}
         onStatusUpdate={onStatusUpdate}
+        workOrders={workOrders}
       />
     </div>
   );

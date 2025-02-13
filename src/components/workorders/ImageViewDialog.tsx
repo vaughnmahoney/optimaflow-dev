@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "../ui/skeleton";
 import { Button } from "../ui/button";
-import { ChevronLeft, ChevronRight, Download, X, CheckCircle, Flag } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, X, CheckCircle, Flag, ArrowLeft, ArrowRight } from "lucide-react";
 import { format } from "date-fns";
 import { Badge } from "../ui/badge";
 
@@ -17,6 +17,7 @@ interface ImageViewDialogProps {
   workOrderId: string | null;
   onClose: () => void;
   onStatusUpdate: (workOrderId: string, newStatus: string) => void;
+  workOrders: { id: string }[];
 }
 
 interface WorkOrderLocation {
@@ -24,9 +25,41 @@ interface WorkOrderLocation {
   address: string;
 }
 
-export const ImageViewDialog = ({ workOrderId, onClose, onStatusUpdate }: ImageViewDialogProps) => {
+export const ImageViewDialog = ({ workOrderId, onClose, onStatusUpdate, workOrders }: ImageViewDialogProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const currentWorkOrderIndex = workOrders.findIndex(wo => wo.id === workOrderId);
+
+  const handlePreviousWorkOrder = () => {
+    if (currentWorkOrderIndex > 0) {
+      const previousWorkOrder = workOrders[currentWorkOrderIndex - 1];
+      setCurrentImageIndex(0); // Reset image index when changing work orders
+      setIsFullscreen(false); // Exit fullscreen when changing work orders
+      if (previousWorkOrder) {
+        onClose();
+        setTimeout(() => {
+          const event = new CustomEvent('openWorkOrder', { detail: previousWorkOrder.id });
+          window.dispatchEvent(event);
+        }, 100);
+      }
+    }
+  };
+
+  const handleNextWorkOrder = () => {
+    if (currentWorkOrderIndex < workOrders.length - 1) {
+      const nextWorkOrder = workOrders[currentWorkOrderIndex + 1];
+      setCurrentImageIndex(0); // Reset image index when changing work orders
+      setIsFullscreen(false); // Exit fullscreen when changing work orders
+      if (nextWorkOrder) {
+        onClose();
+        setTimeout(() => {
+          const event = new CustomEvent('openWorkOrder', { detail: nextWorkOrder.id });
+          window.dispatchEvent(event);
+        }, 100);
+      }
+    }
+  };
 
   const { data: workOrder } = useQuery({
     queryKey: ["workOrder", workOrderId],
@@ -215,6 +248,27 @@ export const ImageViewDialog = ({ workOrderId, onClose, onStatusUpdate }: ImageV
               >
                 <Download className="mr-2 h-4 w-4" />
                 Download All Photos
+              </Button>
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                onClick={handlePreviousWorkOrder}
+                disabled={currentWorkOrderIndex <= 0}
+                className="flex-1"
+                variant="outline"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Previous Order
+              </Button>
+              <Button
+                onClick={handleNextWorkOrder}
+                disabled={currentWorkOrderIndex >= workOrders.length - 1}
+                className="flex-1"
+                variant="outline"
+              >
+                Next Order
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
           </div>
