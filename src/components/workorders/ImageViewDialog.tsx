@@ -5,7 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "../ui/skeleton";
@@ -63,6 +63,28 @@ export const ImageViewDialog = ({ workOrderId, onClose }: ImageViewDialogProps) 
     enabled: !!workOrderId,
   });
 
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (!isFullscreen) return;
+      
+      switch (e.key) {
+        case "ArrowLeft":
+          handlePrevious();
+          break;
+        case "ArrowRight":
+          handleNext();
+          break;
+        case "Escape":
+          setIsFullscreen(false);
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [isFullscreen]);
+
   const handlePrevious = () => {
     setCurrentImageIndex((prev) => 
       prev === 0 ? (images?.length ?? 1) - 1 : prev - 1
@@ -83,7 +105,7 @@ export const ImageViewDialog = ({ workOrderId, onClose }: ImageViewDialogProps) 
   };
 
   const currentImage = images?.[currentImageIndex];
-  const location = workOrder?.location as WorkOrderLocation | null;
+  const location = workOrder?.location as unknown as WorkOrderLocation;
 
   return (
     <Dialog 
@@ -93,7 +115,7 @@ export const ImageViewDialog = ({ workOrderId, onClose }: ImageViewDialogProps) 
         onClose();
       }}
     >
-      <DialogContent className={`${isFullscreen ? 'max-w-[95vw] h-[95vh]' : 'max-w-6xl'} p-0`}>
+      <DialogContent className={`${isFullscreen ? 'max-w-[90vw] max-h-[90vh]' : 'max-w-6xl'} p-0`}>
         <div className="flex h-full">
           {/* Order Details Sidebar */}
           <div className="w-80 border-r bg-gray-50/50 p-6 space-y-6">
@@ -167,33 +189,57 @@ export const ImageViewDialog = ({ workOrderId, onClose }: ImageViewDialogProps) 
                   No images available
                 </div>
               ) : isFullscreen ? (
-                <div className="relative h-full">
-                  <img
-                    src={currentImage?.image_url}
-                    alt={`Service image ${currentImageIndex + 1}`}
-                    className="h-full w-full object-contain"
-                  />
-                  
-                  {/* Navigation Arrows */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white"
-                    onClick={handlePrevious}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white"
-                    onClick={handleNext}
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
+                <div className="relative h-full flex flex-col space-y-4">
+                  {/* Main Image */}
+                  <div className="relative flex-1 flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden">
+                    <img
+                      src={currentImage?.image_url}
+                      alt={`Service image ${currentImageIndex + 1}`}
+                      className="max-h-[calc(90vh-12rem)] max-w-full object-contain animate-fade-in"
+                    />
+                    
+                    {/* Navigation Arrows */}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg"
+                      onClick={handlePrevious}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg"
+                      onClick={handleNext}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
 
-                  {/* Image Info */}
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/90 px-4 py-2 rounded-full text-sm">
+                  {/* Thumbnail Strip */}
+                  <div className="flex justify-center space-x-2 h-20 overflow-x-auto">
+                    {images.map((image, index) => (
+                      <button
+                        key={image.id}
+                        onClick={() => setCurrentImageIndex(index)}
+                        className={`h-full aspect-square rounded-lg overflow-hidden transition-all ${
+                          index === currentImageIndex 
+                            ? 'ring-2 ring-primary ring-offset-2' 
+                            : 'opacity-60 hover:opacity-100'
+                        }`}
+                      >
+                        <img
+                          src={image.image_url}
+                          alt={`Thumbnail ${index + 1}`}
+                          className="h-full w-full object-cover"
+                        />
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Image Counter */}
+                  <div className="absolute top-4 right-4 bg-white/90 px-4 py-2 rounded-full text-sm shadow-lg">
                     Image {currentImageIndex + 1} of {images.length}
                   </div>
                 </div>
@@ -206,7 +252,7 @@ export const ImageViewDialog = ({ workOrderId, onClose }: ImageViewDialogProps) 
                         setCurrentImageIndex(index);
                         setIsFullscreen(true);
                       }}
-                      className="relative aspect-square group rounded-lg overflow-hidden"
+                      className="relative aspect-square group rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all"
                     >
                       <img
                         src={image.image_url}
