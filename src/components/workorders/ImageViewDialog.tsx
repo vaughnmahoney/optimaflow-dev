@@ -1,3 +1,4 @@
+
 import {
   Dialog,
   DialogContent,
@@ -34,7 +35,6 @@ export const ImageViewDialog = ({ workOrderId, onClose, onStatusUpdate, workOrde
     if (currentWorkOrderIndex > 0) {
       const previousWorkOrder = workOrders[currentWorkOrderIndex - 1];
       setCurrentImageIndex(0); // Reset image index when changing work orders
-      setIsFullscreen(false); // Exit fullscreen when changing work orders
       if (previousWorkOrder) {
         onClose();
         setTimeout(() => {
@@ -49,7 +49,6 @@ export const ImageViewDialog = ({ workOrderId, onClose, onStatusUpdate, workOrde
     if (currentWorkOrderIndex < workOrders.length - 1) {
       const nextWorkOrder = workOrders[currentWorkOrderIndex + 1];
       setCurrentImageIndex(0); // Reset image index when changing work orders
-      setIsFullscreen(false); // Exit fullscreen when changing work orders
       if (nextWorkOrder) {
         onClose();
         setTimeout(() => {
@@ -158,6 +157,7 @@ export const ImageViewDialog = ({ workOrderId, onClose, onStatusUpdate, workOrde
       <DialogContent className="max-w-6xl p-0">
         <div className="flex flex-col h-full">
           <div className="flex flex-1 min-h-0">
+            {/* Order Details Sidebar */}
             <div className="w-80 border-r bg-gray-50/50 p-6 space-y-6">
               <div className="flex justify-between items-center">
                 <DialogTitle>Service Details</DialogTitle>
@@ -252,6 +252,7 @@ export const ImageViewDialog = ({ workOrderId, onClose, onStatusUpdate, workOrde
               </div>
             </div>
 
+            {/* Image Viewer Section */}
             <div className="flex-1 p-6">
               {isLoading ? (
                 <div className="space-y-4">
@@ -268,6 +269,7 @@ export const ImageViewDialog = ({ workOrderId, onClose, onStatusUpdate, workOrde
                 </div>
               ) : (
                 <div className="space-y-4">
+                  {/* Main Image */}
                   <div className="relative h-[400px] bg-gray-50 rounded-lg overflow-hidden">
                     <img
                       src={currentImage?.image_url}
@@ -299,6 +301,7 @@ export const ImageViewDialog = ({ workOrderId, onClose, onStatusUpdate, workOrde
                     </div>
                   </div>
 
+                  {/* Thumbnails */}
                   <div className="flex gap-2 overflow-x-auto pb-2">
                     {images.map((image, index) => (
                       <button
@@ -323,6 +326,7 @@ export const ImageViewDialog = ({ workOrderId, onClose, onStatusUpdate, workOrde
             </div>
           </div>
 
+          {/* Navigation Footer */}
           <div className="border-t bg-gray-50/50 p-4 flex items-center justify-between">
             <Button
               onClick={handlePreviousWorkOrder}
