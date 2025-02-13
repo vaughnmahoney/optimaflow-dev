@@ -495,19 +495,25 @@ export type Database = {
       work_orders: {
         Row: {
           billing_status: string | null
+          completion_notes: string | null
           created_at: string | null
           customer_id: string
+          description: string | null
           end_time: string | null
           external_id: string | null
           flag_reason: string | null
           id: string
           location: Json | null
           notes: string | null
+          optimoroute_id: string | null
+          optimoroute_order_number: string | null
+          optimoroute_status: string | null
           priority: string | null
           qc_notes: string | null
           qc_status: string | null
           service_date: string
           service_details: Json | null
+          service_name: string | null
           service_type_id: string | null
           start_time: string | null
           status: string
@@ -518,19 +524,25 @@ export type Database = {
         }
         Insert: {
           billing_status?: string | null
+          completion_notes?: string | null
           created_at?: string | null
           customer_id: string
+          description?: string | null
           end_time?: string | null
           external_id?: string | null
           flag_reason?: string | null
           id?: string
           location?: Json | null
           notes?: string | null
+          optimoroute_id?: string | null
+          optimoroute_order_number?: string | null
+          optimoroute_status?: string | null
           priority?: string | null
           qc_notes?: string | null
           qc_status?: string | null
           service_date: string
           service_details?: Json | null
+          service_name?: string | null
           service_type_id?: string | null
           start_time?: string | null
           status?: string
@@ -541,19 +553,25 @@ export type Database = {
         }
         Update: {
           billing_status?: string | null
+          completion_notes?: string | null
           created_at?: string | null
           customer_id?: string
+          description?: string | null
           end_time?: string | null
           external_id?: string | null
           flag_reason?: string | null
           id?: string
           location?: Json | null
           notes?: string | null
+          optimoroute_id?: string | null
+          optimoroute_order_number?: string | null
+          optimoroute_status?: string | null
           priority?: string | null
           qc_notes?: string | null
           qc_status?: string | null
           service_date?: string
           service_details?: Json | null
+          service_name?: string | null
           service_type_id?: string | null
           start_time?: string | null
           status?: string
