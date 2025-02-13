@@ -28,6 +28,7 @@ interface WorkOrderLocation {
 
 export const ImageViewDialog = ({ workOrderId, onClose, onStatusUpdate, workOrders }: ImageViewDialogProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const currentWorkOrderIndex = workOrders.findIndex(wo => wo.id === workOrderId);
 
@@ -35,6 +36,7 @@ export const ImageViewDialog = ({ workOrderId, onClose, onStatusUpdate, workOrde
     if (currentWorkOrderIndex > 0) {
       const previousWorkOrder = workOrders[currentWorkOrderIndex - 1];
       setCurrentImageIndex(0); // Reset image index when changing work orders
+      setIsFullscreen(false); // Exit fullscreen when changing work orders
       if (previousWorkOrder) {
         onClose();
         setTimeout(() => {
@@ -49,6 +51,7 @@ export const ImageViewDialog = ({ workOrderId, onClose, onStatusUpdate, workOrde
     if (currentWorkOrderIndex < workOrders.length - 1) {
       const nextWorkOrder = workOrders[currentWorkOrderIndex + 1];
       setCurrentImageIndex(0); // Reset image index when changing work orders
+      setIsFullscreen(false); // Exit fullscreen when changing work orders
       if (nextWorkOrder) {
         onClose();
         setTimeout(() => {
@@ -104,9 +107,12 @@ export const ImageViewDialog = ({ workOrderId, onClose, onStatusUpdate, workOrde
   // Handle keyboard navigation
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
+      if (!isFullscreen) return;
+      
       switch (e.key) {
         case "ArrowLeft":
           if (currentImageIndex === 0) {
+            // If at the first image, go to previous work order
             handlePreviousWorkOrder();
           } else {
             setCurrentImageIndex((prev) => prev - 1);
@@ -114,20 +120,25 @@ export const ImageViewDialog = ({ workOrderId, onClose, onStatusUpdate, workOrde
           break;
         case "ArrowRight":
           if (currentImageIndex === (images?.length ?? 1) - 1) {
+            // If at the last image, go to next work order
             handleNextWorkOrder();
           } else {
             setCurrentImageIndex((prev) => prev + 1);
           }
+          break;
+        case "Escape":
+          setIsFullscreen(false);
           break;
       }
     };
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [currentImageIndex, images?.length]);
+  }, [isFullscreen, currentImageIndex, images?.length]);
 
   const handlePrevious = () => {
     if (currentImageIndex === 0) {
+      // If at the first image, go to previous work order
       handlePreviousWorkOrder();
     } else {
       setCurrentImageIndex((prev) => prev - 1);
@@ -136,6 +147,7 @@ export const ImageViewDialog = ({ workOrderId, onClose, onStatusUpdate, workOrde
 
   const handleNext = () => {
     if (currentImageIndex === (images?.length ?? 1) - 1) {
+      // If at the last image, go to next work order
       handleNextWorkOrder();
     } else {
       setCurrentImageIndex((prev) => prev + 1);
@@ -143,6 +155,9 @@ export const ImageViewDialog = ({ workOrderId, onClose, onStatusUpdate, workOrde
   };
 
   const handleDownloadAll = async () => {
+    // In a real implementation, we would:
+    // 1. Create a zip file of all images
+    // 2. Trigger the download
     console.log("Downloading all images");
   };
 
@@ -152,12 +167,14 @@ export const ImageViewDialog = ({ workOrderId, onClose, onStatusUpdate, workOrde
   return (
     <Dialog 
       open={!!workOrderId} 
-      onOpenChange={onClose}
+      onOpenChange={() => {
+        setIsFullscreen(false);
+        onClose();
+      }}
     >
-      <DialogContent className="max-w-6xl p-0">
+      <DialogContent className={`${isFullscreen ? 'max-w-[90vw] max-h-[90vh]' : 'max-w-6xl'} p-0`}>
         <div className="flex flex-col h-full">
           <div className="flex flex-1 min-h-0">
-            {/* Order Details Sidebar */}
             <div className="w-80 border-r bg-gray-50/50 p-6 space-y-6">
               <div className="flex justify-between items-center">
                 <DialogTitle>Service Details</DialogTitle>
@@ -252,81 +269,94 @@ export const ImageViewDialog = ({ workOrderId, onClose, onStatusUpdate, workOrde
               </div>
             </div>
 
-            {/* Image Viewer Section */}
             <div className="flex-1 p-6">
-              {isLoading ? (
-                <div className="space-y-4">
-                  <Skeleton className="h-[400px] w-full rounded-lg" />
-                  <div className="flex gap-2">
-                    {[...Array(4)].map((_, i) => (
-                      <Skeleton key={i} className="h-20 w-20 rounded-lg" />
+              <div className="space-y-6">
+                {isLoading ? (
+                  <div className="grid grid-cols-3 gap-4">
+                    {[...Array(6)].map((_, i) => (
+                      <Skeleton key={i} className="aspect-square rounded-lg" />
                     ))}
                   </div>
-                </div>
-              ) : !images?.length ? (
-                <div className="flex h-[400px] items-center justify-center text-muted-foreground">
-                  No images available
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {/* Main Image */}
-                  <div className="relative h-[400px] bg-gray-50 rounded-lg overflow-hidden">
-                    <img
-                      src={currentImage?.image_url}
-                      alt={`Service image ${currentImageIndex + 1}`}
-                      className="h-full w-full object-contain"
-                    />
-                    
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg"
-                      onClick={handlePrevious}
-                      disabled={currentImageIndex === 0 && currentWorkOrderIndex === 0}
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg"
-                      onClick={handleNext}
-                      disabled={currentImageIndex === images.length - 1 && currentWorkOrderIndex === workOrders.length - 1}
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
+                ) : !images?.length ? (
+                  <div className="flex h-[400px] items-center justify-center text-muted-foreground">
+                    No images available
+                  </div>
+                ) : isFullscreen ? (
+                  <div className="relative h-full flex flex-col space-y-4">
+                    <div className="relative flex-1 flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden">
+                      <img
+                        src={currentImage?.image_url}
+                        alt={`Service image ${currentImageIndex + 1}`}
+                        className="max-h-[calc(90vh-12rem)] max-w-full object-contain animate-fade-in"
+                      />
+                      
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg"
+                        onClick={handlePrevious}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg"
+                        onClick={handleNext}
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+
+                    <div className="flex justify-center space-x-2 h-20 overflow-x-auto">
+                      {images.map((image, index) => (
+                        <button
+                          key={image.id}
+                          onClick={() => setCurrentImageIndex(index)}
+                          className={`h-full aspect-square rounded-lg overflow-hidden transition-all ${
+                            index === currentImageIndex 
+                              ? 'ring-2 ring-primary ring-offset-2' 
+                              : 'opacity-60 hover:opacity-100'
+                          }`}
+                        >
+                          <img
+                            src={image.image_url}
+                            alt={`Thumbnail ${index + 1}`}
+                            className="h-full w-full object-cover"
+                          />
+                        </button>
+                      ))}
+                    </div>
 
                     <div className="absolute top-4 right-4 bg-white/90 px-4 py-2 rounded-full text-sm shadow-lg">
                       Image {currentImageIndex + 1} of {images.length}
                     </div>
                   </div>
-
-                  {/* Thumbnails */}
-                  <div className="flex gap-2 overflow-x-auto pb-2">
+                ) : (
+                  <div className="grid grid-cols-3 gap-4">
                     {images.map((image, index) => (
                       <button
                         key={image.id}
-                        onClick={() => setCurrentImageIndex(index)}
-                        className={`flex-shrink-0 h-20 w-20 rounded-lg overflow-hidden transition-all ${
-                          index === currentImageIndex 
-                            ? 'ring-2 ring-primary ring-offset-2' 
-                            : 'opacity-60 hover:opacity-100'
-                        }`}
+                        onClick={() => {
+                          setCurrentImageIndex(index);
+                          setIsFullscreen(true);
+                        }}
+                        className="relative aspect-square group rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all"
                       >
                         <img
                           src={image.image_url}
-                          alt={`Thumbnail ${index + 1}`}
-                          className="h-full w-full object-cover"
+                          alt={`Service image ${index + 1}`}
+                          className="h-full w-full object-cover transition-transform group-hover:scale-105"
                         />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity" />
                       </button>
                     ))}
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Navigation Footer */}
           <div className="border-t bg-gray-50/50 p-4 flex items-center justify-between">
             <Button
               onClick={handlePreviousWorkOrder}
