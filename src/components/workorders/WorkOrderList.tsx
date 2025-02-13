@@ -66,14 +66,14 @@ export const WorkOrderList = ({
           className="max-w-sm"
         />
         <Select
-          value={statusFilter || ""}
-          onValueChange={(value) => onStatusFilterChange(value || null)}
+          value={statusFilter || "all"}
+          onValueChange={(value) => onStatusFilterChange(value === "all" ? null : value)}
         >
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Statuses</SelectItem>
+            <SelectItem value="all">All Statuses</SelectItem>
             <SelectItem value="pending_review">Pending Review</SelectItem>
             <SelectItem value="approved">Approved</SelectItem>
             <SelectItem value="flagged">Flagged</SelectItem>
