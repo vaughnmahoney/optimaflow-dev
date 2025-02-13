@@ -621,7 +621,7 @@ export type Database = {
           service_notes: string | null
           start_time: string | null
           technician_name: string | null
-          time_on_site: unknown | null
+          time_on_site: string | null
         }
         Relationships: []
       }
