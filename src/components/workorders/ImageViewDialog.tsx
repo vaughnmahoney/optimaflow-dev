@@ -1,3 +1,4 @@
+
 import {
   Dialog,
   DialogContent,
@@ -110,10 +111,20 @@ export const ImageViewDialog = ({ workOrderId, onClose, onStatusUpdate, workOrde
       
       switch (e.key) {
         case "ArrowLeft":
-          handlePrevious();
+          if (currentImageIndex === 0) {
+            // If at the first image, go to previous work order
+            handlePreviousWorkOrder();
+          } else {
+            setCurrentImageIndex((prev) => prev - 1);
+          }
           break;
         case "ArrowRight":
-          handleNext();
+          if (currentImageIndex === (images?.length ?? 1) - 1) {
+            // If at the last image, go to next work order
+            handleNextWorkOrder();
+          } else {
+            setCurrentImageIndex((prev) => prev + 1);
+          }
           break;
         case "Escape":
           setIsFullscreen(false);
@@ -123,18 +134,24 @@ export const ImageViewDialog = ({ workOrderId, onClose, onStatusUpdate, workOrde
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [isFullscreen]);
+  }, [isFullscreen, currentImageIndex, images?.length]);
 
   const handlePrevious = () => {
-    setCurrentImageIndex((prev) => 
-      prev === 0 ? (images?.length ?? 1) - 1 : prev - 1
-    );
+    if (currentImageIndex === 0) {
+      // If at the first image, go to previous work order
+      handlePreviousWorkOrder();
+    } else {
+      setCurrentImageIndex((prev) => prev - 1);
+    }
   };
 
   const handleNext = () => {
-    setCurrentImageIndex((prev) => 
-      prev === (images?.length ?? 1) - 1 ? 0 : prev + 1
-    );
+    if (currentImageIndex === (images?.length ?? 1) - 1) {
+      // If at the last image, go to next work order
+      handleNextWorkOrder();
+    } else {
+      setCurrentImageIndex((prev) => prev + 1);
+    }
   };
 
   const handleDownloadAll = async () => {
