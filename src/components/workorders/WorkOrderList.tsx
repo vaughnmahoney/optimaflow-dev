@@ -40,6 +40,7 @@ interface WorkOrderListProps {
   isLoading: boolean;
   onSearchChange: (value: string) => void;
   onStatusFilterChange: (value: string | null) => void;
+  onStatusUpdate: (workOrderId: string, newStatus: string) => void;
   searchQuery: string;
   statusFilter: string | null;
 }
@@ -49,6 +50,7 @@ export const WorkOrderList = ({
   isLoading,
   onSearchChange,
   onStatusFilterChange,
+  onStatusUpdate,
   searchQuery,
   statusFilter
 }: WorkOrderListProps) => {
@@ -130,6 +132,7 @@ export const WorkOrderList = ({
                         size="icon"
                         title="Approve"
                         className="text-green-600"
+                        onClick={() => onStatusUpdate(workOrder.id, "approved")}
                       >
                         <CheckCircle className="h-4 w-4" />
                       </Button>
@@ -138,6 +141,7 @@ export const WorkOrderList = ({
                         size="icon"
                         title="Flag for Review"
                         className="text-red-600"
+                        onClick={() => onStatusUpdate(workOrder.id, "flagged")}
                       >
                         <Flag className="h-4 w-4" />
                       </Button>

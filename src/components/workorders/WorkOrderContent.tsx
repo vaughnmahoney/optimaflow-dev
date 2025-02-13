@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { WorkOrderList } from "./WorkOrderList";
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export const WorkOrderContent = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -30,6 +31,21 @@ export const WorkOrderContent = () => {
 
     return () => clearInterval(interval);
   }, [refetch]);
+
+  const handleStatusChange = async (workOrderId: string, newStatus: string) => {
+    const { error } = await supabase
+      .from("work_orders")
+      .update({ qc_status: newStatus })
+      .eq("id", workOrderId);
+
+    if (error) {
+      toast.error("Failed to update status");
+      return;
+    }
+
+    toast.success("Status updated successfully");
+    refetch();
+  };
 
   const filteredWorkOrders = useCallback(() => {
     if (!workOrders) return [];
@@ -59,6 +75,7 @@ export const WorkOrderContent = () => {
       onStatusFilterChange={setStatusFilter}
       searchQuery={searchQuery}
       statusFilter={statusFilter}
+      onStatusUpdate={handleStatusChange}
     />
   );
 };
