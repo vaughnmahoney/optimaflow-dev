@@ -83,6 +83,74 @@ export type Database = {
         }
         Relationships: []
       }
+      billing_history: {
+        Row: {
+          action: string
+          change_details: Json | null
+          created_at: string | null
+          details: Json | null
+          id: string
+          invoice_id: string
+          performed_by: string
+        }
+        Insert: {
+          action: string
+          change_details?: Json | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          invoice_id: string
+          performed_by: string
+        }
+        Update: {
+          action?: string
+          change_details?: Json | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          invoice_id?: string
+          performed_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_history_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customers: {
+        Row: {
+          billing_address: Json | null
+          contact_info: Json | null
+          created_at: string | null
+          id: string
+          name: string
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          billing_address?: Json | null
+          contact_info?: Json | null
+          created_at?: string | null
+          id?: string
+          name: string
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          billing_address?: Json | null
+          contact_info?: Json | null
+          created_at?: string | null
+          id?: string
+          name?: string
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       group_attendance_review: {
         Row: {
           created_at: string | null
@@ -151,6 +219,192 @@ export type Database = {
         }
         Relationships: []
       }
+      invoices: {
+        Row: {
+          amount: number
+          billing_date: string
+          created_at: string | null
+          customer_id: string
+          due_date: string
+          id: string
+          notes: string | null
+          quickbooks_id: string | null
+          status: string
+          store_id: string | null
+          updated_at: string | null
+          work_order_id: string
+        }
+        Insert: {
+          amount: number
+          billing_date: string
+          created_at?: string | null
+          customer_id: string
+          due_date: string
+          id?: string
+          notes?: string | null
+          quickbooks_id?: string | null
+          status?: string
+          store_id?: string | null
+          updated_at?: string | null
+          work_order_id: string
+        }
+        Update: {
+          amount?: number
+          billing_date?: string
+          created_at?: string | null
+          customer_id?: string
+          due_date?: string
+          id?: string
+          notes?: string | null
+          quickbooks_id?: string | null
+          status?: string
+          store_id?: string | null
+          updated_at?: string | null
+          work_order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "work_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pricing_rules: {
+        Row: {
+          base_rate: number
+          conditions: Json | null
+          created_at: string | null
+          customer_id: string | null
+          id: string
+          region: string | null
+          service_type: string
+          store_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          base_rate: number
+          conditions?: Json | null
+          created_at?: string | null
+          customer_id?: string | null
+          id?: string
+          region?: string | null
+          service_type: string
+          store_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          base_rate?: number
+          conditions?: Json | null
+          created_at?: string | null
+          customer_id?: string | null
+          id?: string
+          region?: string | null
+          service_type?: string
+          store_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pricing_rules_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pricing_rules_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_types: {
+        Row: {
+          created_at: string | null
+          default_rate: number | null
+          description: string | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          default_rate?: number | null
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          default_rate?: number | null
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      stores: {
+        Row: {
+          address: Json | null
+          contact_info: Json | null
+          created_at: string | null
+          customer_id: string
+          id: string
+          name: string
+          store_number: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: Json | null
+          contact_info?: Json | null
+          created_at?: string | null
+          customer_id: string
+          id?: string
+          name: string
+          store_number?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: Json | null
+          contact_info?: Json | null
+          created_at?: string | null
+          customer_id?: string
+          id?: string
+          name?: string
+          store_number?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stores_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       technicians: {
         Row: {
           created_at: string | null
@@ -188,6 +442,76 @@ export type Database = {
             columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      work_orders: {
+        Row: {
+          created_at: string | null
+          customer_id: string
+          external_id: string | null
+          flag_reason: string | null
+          id: string
+          notes: string | null
+          service_date: string
+          service_details: Json | null
+          service_type_id: string | null
+          status: string
+          technician_id: string
+          timestamps: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          customer_id: string
+          external_id?: string | null
+          flag_reason?: string | null
+          id?: string
+          notes?: string | null
+          service_date: string
+          service_details?: Json | null
+          service_type_id?: string | null
+          status?: string
+          technician_id: string
+          timestamps?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          customer_id?: string
+          external_id?: string | null
+          flag_reason?: string | null
+          id?: string
+          notes?: string | null
+          service_date?: string
+          service_details?: Json | null
+          service_type_id?: string | null
+          status?: string
+          technician_id?: string
+          timestamps?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_orders_service_type_id_fkey"
+            columns: ["service_type_id"]
+            isOneToOne: false
+            referencedRelation: "service_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_orders_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians"
             referencedColumns: ["id"]
           },
         ]
