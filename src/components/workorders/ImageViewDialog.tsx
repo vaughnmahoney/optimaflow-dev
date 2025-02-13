@@ -1,4 +1,3 @@
-
 import {
   Dialog,
   DialogContent,
@@ -10,12 +9,14 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "../ui/skeleton";
 import { Button } from "../ui/button";
-import { ChevronLeft, ChevronRight, Download, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, X, CheckCircle, Flag } from "lucide-react";
 import { format } from "date-fns";
+import { Badge } from "../ui/badge";
 
 interface ImageViewDialogProps {
   workOrderId: string | null;
   onClose: () => void;
+  onStatusUpdate: (workOrderId: string, newStatus: string) => void;
 }
 
 interface WorkOrderLocation {
@@ -23,7 +24,7 @@ interface WorkOrderLocation {
   address: string;
 }
 
-export const ImageViewDialog = ({ workOrderId, onClose }: ImageViewDialogProps) => {
+export const ImageViewDialog = ({ workOrderId, onClose, onStatusUpdate }: ImageViewDialogProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -62,6 +63,12 @@ export const ImageViewDialog = ({ workOrderId, onClose }: ImageViewDialogProps) 
     },
     enabled: !!workOrderId,
   });
+
+  const handleStatusUpdate = (newStatus: string) => {
+    if (workOrderId) {
+      onStatusUpdate(workOrderId, newStatus);
+    }
+  };
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -161,8 +168,45 @@ export const ImageViewDialog = ({ workOrderId, onClose }: ImageViewDialogProps) 
               </div>
 
               <div>
+                <label className="text-sm font-medium text-gray-500">Status</label>
+                <div className="mt-1">
+                  <Badge 
+                    variant={
+                      workOrder?.qc_status === 'approved' 
+                        ? 'success' 
+                        : workOrder?.qc_status === 'flagged' 
+                        ? 'destructive' 
+                        : 'warning'
+                    }
+                  >
+                    {workOrder?.qc_status?.toUpperCase() || 'PENDING'}
+                  </Badge>
+                </div>
+              </div>
+
+              <div>
                 <label className="text-sm font-medium text-gray-500">Service Notes</label>
                 <p className="text-sm whitespace-pre-wrap">{workOrder?.notes || 'No notes'}</p>
+              </div>
+
+              <div className="flex gap-2">
+                <Button 
+                  className="flex-1 bg-green-500 hover:bg-green-600"
+                  onClick={() => handleStatusUpdate('approved')}
+                  disabled={workOrder?.qc_status === 'approved'}
+                >
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Approve
+                </Button>
+                <Button 
+                  variant="destructive"
+                  className="flex-1"
+                  onClick={() => handleStatusUpdate('flagged')}
+                  disabled={workOrder?.qc_status === 'flagged'}
+                >
+                  <Flag className="mr-2 h-4 w-4" />
+                  Flag
+                </Button>
               </div>
 
               <Button 
