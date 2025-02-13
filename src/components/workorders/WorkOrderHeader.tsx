@@ -1,35 +1,26 @@
 
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Settings2 } from "lucide-react";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { RefreshCw } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const WorkOrderHeader = () => {
+  const queryClient = useQueryClient();
+
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ["workOrders"] });
+  };
+
   return (
-    <div className="flex justify-between items-center">
+    <div className="flex items-center justify-between">
       <div>
-        <h2 className="text-2xl font-bold text-primary">QC Dashboard</h2>
-        <p className="mt-2 text-sm text-gray-600">
-          Review and approve completed work orders
+        <h1 className="text-2xl font-semibold tracking-tight">Work Orders</h1>
+        <p className="text-sm text-muted-foreground">
+          Manage and review work orders
         </p>
       </div>
-      <div className="flex items-center gap-4">
-        <HoverCard>
-          <HoverCardTrigger asChild>
-            <Button variant="outline" size="icon">
-              <RefreshCw className="h-4 w-4" />
-            </Button>
-          </HoverCardTrigger>
-          <HoverCardContent>
-            <p className="text-sm">
-              Auto-refreshes every 15 minutes. Click to refresh now.
-            </p>
-          </HoverCardContent>
-        </HoverCard>
-        <Button variant="outline" className="flex items-center gap-2">
-          <Settings2 className="h-4 w-4" />
-          Customize Columns
-        </Button>
-      </div>
+      <Button onClick={handleRefresh} variant="outline" size="icon">
+        <RefreshCw className="h-4 w-4" />
+      </Button>
     </div>
   );
 };
