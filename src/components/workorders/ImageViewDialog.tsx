@@ -18,6 +18,11 @@ interface ImageViewDialogProps {
   onClose: () => void;
 }
 
+interface WorkOrderLocation {
+  store_name: string;
+  address: string;
+}
+
 export const ImageViewDialog = ({ workOrderId, onClose }: ImageViewDialogProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -78,6 +83,7 @@ export const ImageViewDialog = ({ workOrderId, onClose }: ImageViewDialogProps) 
   };
 
   const currentImage = images?.[currentImageIndex];
+  const location = workOrder?.location as WorkOrderLocation | null;
 
   return (
     <Dialog 
@@ -126,15 +132,15 @@ export const ImageViewDialog = ({ workOrderId, onClose }: ImageViewDialogProps) 
               <div>
                 <label className="text-sm font-medium text-gray-500">Location</label>
                 <p className="text-sm whitespace-pre-wrap">
-                  {workOrder?.location 
-                    ? `${workOrder.location.store_name}\n${workOrder.location.address}`
+                  {location 
+                    ? `${location.store_name}\n${location.address}`
                     : 'N/A'}
                 </p>
               </div>
 
               <div>
                 <label className="text-sm font-medium text-gray-500">Service Notes</label>
-                <p className="text-sm whitespace-pre-wrap">{workOrder?.service_notes || 'No notes'}</p>
+                <p className="text-sm whitespace-pre-wrap">{workOrder?.notes || 'No notes'}</p>
               </div>
 
               <Button 
