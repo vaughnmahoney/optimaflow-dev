@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { Flag, CheckCircle, Download, X } from "lucide-react";
+import { Flag, CheckCircle, Download, X, Clock, Calendar, Truck } from "lucide-react";
+import { format } from "date-fns";
 
 interface WorkOrderDetailsSidebarProps {
   workOrder: any;
@@ -28,6 +29,15 @@ export const WorkOrderDetailsSidebar = ({
         return 'bg-danger text-danger-foreground hover:bg-danger/90';
       default:
         return 'bg-primary text-primary-foreground hover:bg-primary/90';
+    }
+  };
+
+  const formatCompletionTime = (time: string | null) => {
+    if (!time) return 'Not available';
+    try {
+      return format(new Date(time), 'MMM d, yyyy h:mm a');
+    } catch {
+      return time;
     }
   };
 
@@ -68,6 +78,47 @@ export const WorkOrderDetailsSidebar = ({
             <label className="text-sm font-medium text-muted-foreground">Service Notes</label>
             <p className="mt-1 text-sm">{workOrder.service_notes || 'No notes available'}</p>
           </div>
+
+          {workOrder.completion_data && (
+            <>
+              <div className="border-t pt-4 mt-4">
+                <h4 className="font-medium mb-3">Completion Details</h4>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-muted-foreground">Start Time</p>
+                      <p>{formatCompletionTime(workOrder.completion_data.startTime)}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-sm">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-muted-foreground">End Time</p>
+                      <p>{formatCompletionTime(workOrder.completion_data.endTime)}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-sm">
+                    <Truck className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-muted-foreground">Status</p>
+                      <p className="capitalize">{workOrder.completion_data.status?.toLowerCase() || 'Not available'}</p>
+                    </div>
+                  </div>
+
+                  {workOrder.completion_data.notes && (
+                    <div className="pt-2">
+                      <p className="text-sm font-medium text-muted-foreground mb-1">Completion Notes</p>
+                      <p className="text-sm">{workOrder.completion_data.notes}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
 
           <div className="pt-4 space-y-2">
             <Button 
