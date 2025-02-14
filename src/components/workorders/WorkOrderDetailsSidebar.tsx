@@ -31,11 +31,26 @@ export const WorkOrderDetailsSidebar = ({
     }
   };
 
+  const calculateTimeOnSite = (startTime: string, endTime: string): string => {
+    try {
+      const start = new Date(startTime);
+      const end = new Date(endTime);
+      const diff = end.getTime() - start.getTime();
+      const minutes = Math.floor(diff / 1000 / 60);
+      const hours = Math.floor(minutes / 60);
+      const remainingMinutes = minutes % 60;
+      return `${hours}h ${remainingMinutes}m`;
+    } catch {
+      return 'Not available';
+    }
+  };
+
   const formatDate = (date: string | null) => {
     if (!date) return 'Not available';
     try {
       return new Date(date).toLocaleDateString('en-US', {
-        month: 'short',
+        weekday: 'long',
+        month: 'long',
         day: 'numeric',
         year: 'numeric'
       });
@@ -44,10 +59,38 @@ export const WorkOrderDetailsSidebar = ({
     }
   };
 
+  const formatCompletionTime = (time: string | null) => {
+    if (!time) return null;
+    try {
+      return new Date(time).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+    } catch {
+      return null;
+    }
+  };
+
+  const getLocationDetails = () => {
+    if (!workOrder.location) return { name: 'Not available', address: 'Not available' };
+    
+    return {
+      name: workOrder.location.locationName || 'Not available',
+      address: workOrder.location.address || 'Not available'
+    };
+  };
+
+  const location = getLocationDetails();
+  const completionData = workOrder.completion_data?.data || {};
+  const timeOnSite = completionData.startTime && completionData.endTime
+    ? calculateTimeOnSite(completionData.startTime.localTime, completionData.endTime.localTime)
+    : null;
+
   return (
     <div className="w-[300px] border-r bg-muted/20">
       <div className="p-4 border-b flex items-center justify-between">
-        <h3 className="font-semibold">Work Order Details</h3>
+        <h3 className="font-semibold">Work Order #{workOrder.order_id || workOrder.optimoroute_order_number}</h3>
         <Button variant="ghost" size="icon" onClick={onClose}>
           <X className="h-4 w-4" />
         </Button>
@@ -67,61 +110,57 @@ export const WorkOrderDetailsSidebar = ({
             </Badge>
           </div>
 
-          <div>
-            <label className="text-sm font-medium text-muted-foreground">Customer</label>
-            <p className="mt-1">{workOrder.customer?.name || 'Not available'}</p>
-          </div>
+          <div className="space-y-4">
+            <div>
+              <h4 className="text-sm font-medium text-muted-foreground mb-2">Location Details</h4>
+              <div className="space-y-1">
+                <p className="text-sm"><span className="font-medium">Name:</span> {location.name}</p>
+                <p className="text-sm"><span className="font-medium">Address:</span> {location.address}</p>
+              </div>
+            </div>
 
-          <div>
-            <label className="text-sm font-medium text-muted-foreground">Technician</label>
-            <p className="mt-1">{workOrder.technician?.name || 'System Import'}</p>
-          </div>
-
-          <div>
-            <label className="text-sm font-medium text-muted-foreground">Service Notes</label>
-            <p className="mt-1 text-sm">{workOrder.service_notes || workOrder.description || 'No notes available'}</p>
-          </div>
-
-          {workOrder.completion_data && (
-            <>
-              <div className="border-t pt-4 mt-4">
-                <h4 className="font-medium mb-3">Completion Details</h4>
-                
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-muted-foreground">Service Date</p>
-                      <p>{formatDate(workOrder.service_date)}</p>
-                    </div>
+            <div>
+              <h4 className="text-sm font-medium text-muted-foreground mb-2">Service Details</h4>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-muted-foreground">Service Date</p>
+                    <p>{formatDate(workOrder.service_date)}</p>
                   </div>
+                </div>
 
+                {timeOnSite && (
                   <div className="flex items-center gap-2 text-sm">
                     <Clock className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="text-muted-foreground">Time on Site</p>
-                      <p>{workOrder.completion_data.timeOnSite || 'Not available'}</p>
+                      <p>{timeOnSite}</p>
                     </div>
                   </div>
+                )}
 
-                  <div className="flex items-center gap-2 text-sm">
-                    <Truck className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-muted-foreground">Status</p>
-                      <p className="capitalize">{workOrder.completion_data.status?.toLowerCase() || 'Pending'}</p>
-                    </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Truck className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-muted-foreground">Status</p>
+                    <p className="capitalize">
+                      {completionData.status?.toLowerCase() || 'Pending'}
+                    </p>
                   </div>
-
-                  {workOrder.completion_data.notes && (
-                    <div className="pt-2">
-                      <p className="text-sm font-medium text-muted-foreground mb-1">Completion Notes</p>
-                      <p className="text-sm">{workOrder.completion_data.notes}</p>
-                    </div>
-                  )}
                 </div>
               </div>
-            </>
-          )}
+            </div>
+
+            {(workOrder.service_notes || workOrder.description || completionData.form?.note) && (
+              <div>
+                <h4 className="text-sm font-medium text-muted-foreground mb-2">Notes</h4>
+                <p className="text-sm">
+                  {workOrder.service_notes || workOrder.description || completionData.form?.note}
+                </p>
+              </div>
+            )}
+          </div>
 
           <div className="pt-4 space-y-2">
             <Button 
