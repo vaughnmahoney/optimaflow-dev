@@ -27,41 +27,69 @@ serve(async (req) => {
       );
     }
 
-    const url = `https://api.optimoroute.com/v1/search_orders?key=${OPTIMOROUTE_API_KEY}`;
-    console.log('Making request to OptimoRoute API...');
-    
-    // Search OptimoRoute API
-    const optimoResponse = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        "orders": [
-          {
-            "orderNo": searchQuery
-          }
-        ],
-        "includeOrderData": true
-      })
-    });
+    // Get order details
+    console.log('Fetching order details...');
+    const orderResponse = await fetch(
+      `https://api.optimoroute.com/v1/search_orders?key=${OPTIMOROUTE_API_KEY}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          orders: [{ orderNo: searchQuery }],
+          includeOrderData: true
+        })
+      }
+    );
 
-    console.log('OptimoRoute API response status:', optimoResponse.status);
-    
-    const optimoData = await optimoResponse.json();
-    console.log('OptimoRoute API response:', optimoData);
+    const orderData = await orderResponse.json();
+    console.log('Order details response:', orderData);
 
-    if (!optimoResponse.ok) {
-      throw new Error(`OptimoRoute API error: ${optimoResponse.statusText}`);
+    if (!orderResponse.ok) {
+      throw new Error(`OptimoRoute API error (order details): ${orderResponse.statusText}`);
     }
+
+    // Get completion details
+    console.log('Fetching completion details...');
+    const completionResponse = await fetch(
+      `https://api.optimoroute.com/v1/get_completion_details?key=${OPTIMOROUTE_API_KEY}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          orders: [{ orderNo: searchQuery }]
+        })
+      }
+    );
+
+    const completionData = await completionResponse.json();
+    console.log('Completion details response:', completionData);
+
+    if (!completionResponse.ok) {
+      throw new Error(`OptimoRoute API error (completion details): ${completionResponse.statusText}`);
+    }
+
+    // Combine the data
+    const combinedData = {
+      ...orderData,
+      orders: orderData.orders.map(order => ({
+        ...order,
+        completionDetails: completionData.orders.find(c => c.orderNo === order.data.orderNo)
+      }))
+    };
+
+    console.log('Combined data:', combinedData);
 
     // Initialize Supabase client
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     let success = false;
-    // Update work orders table with the latest data from OptimoRoute
-    if (optimoData.orders && optimoData.orders.length > 0) {
-      const updates = optimoData.orders.map(async (order: any) => {
+    // Update work orders table with the combined data
+    if (combinedData.orders && combinedData.orders.length > 0) {
+      const updates = combinedData.orders.map(async (order: any) => {
         if (order.success && order.data) {
           console.log('Processing order:', order);
           
@@ -70,13 +98,15 @@ serve(async (req) => {
             optimoroute_order_number: order.data.orderNo,
             optimoroute_status: order.data.status,
             service_date: order.data.date,
-            description: order.data.description,
+            description: order.data.notes,
             location: order.data.location,
             time_on_site: order.data.duration ? `${order.data.duration} minutes` : null,
+            service_name: order.data.description || 'Imported Service',
+            // Include completion details if available
+            completion_data: order.completionDetails || null,
             // Set default values for required fields
-            technician_id: '00000000-0000-0000-0000-000000000000', // Replace with actual default
-            customer_id: '00000000-0000-0000-0000-000000000000',   // Replace with actual default
-            service_name: order.data.description || 'Imported Service'
+            technician_id: '00000000-0000-0000-0000-000000000000',
+            customer_id: '00000000-0000-0000-0000-000000000000'
           };
 
           const { error } = await supabase
@@ -97,7 +127,7 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success, data: optimoData }),
+      JSON.stringify({ success, data: combinedData }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
