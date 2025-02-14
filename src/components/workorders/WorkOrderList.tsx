@@ -14,6 +14,8 @@ import { useState, useEffect } from "react";
 import { WorkOrderListProps } from "./types";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export const WorkOrderList = ({ 
   workOrders, 
@@ -26,6 +28,7 @@ export const WorkOrderList = ({
 }: WorkOrderListProps) => {
   const [selectedWorkOrderId, setSelectedWorkOrderId] = useState<string | null>(null);
   const [optimoSearch, setOptimoSearch] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     const handleOpenWorkOrder = (event: CustomEvent<string>) => {
@@ -41,31 +44,26 @@ export const WorkOrderList = ({
   const handleOptimoSearch = async () => {
     if (!optimoSearch.trim()) return;
     
+    setIsSearching(true);
     try {
-      const response = await fetch(`https://api.optimoroute.com/v1/search_orders?key=${optimoSearch}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          orders: [{ orderNo: optimoSearch }],
-          includeOrderData: true
-        })
+      const { data, error } = await supabase.functions.invoke('search-optimoroute', {
+        body: { searchQuery: optimoSearch }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to search OptimoRoute');
-      }
+      if (error) throw error;
 
-      const data = await response.json();
-      if (data.success) {
-        // Clear the search input
+      if (data?.success) {
+        toast.success("Work order imported successfully");
         setOptimoSearch("");
-        // Trigger a refresh of the work orders
         onSearchChange("");
+      } else {
+        toast.error("No work order found with that number");
       }
     } catch (error) {
       console.error('OptimoRoute search error:', error);
+      toast.error("Failed to import work order");
+    } finally {
+      setIsSearching(false);
     }
   };
 
@@ -94,10 +92,10 @@ export const WorkOrderList = ({
           <Button 
             variant="secondary"
             onClick={handleOptimoSearch}
-            disabled={!optimoSearch.trim()}
+            disabled={!optimoSearch.trim() || isSearching}
           >
             <Search className="h-4 w-4 mr-2" />
-            Import
+            {isSearching ? 'Importing...' : 'Import'}
           </Button>
         </div>
 
