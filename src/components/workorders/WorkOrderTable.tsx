@@ -29,6 +29,17 @@ export const WorkOrderTable = ({
     return String(timeOnSite);
   };
 
+  const getLocationAddress = (location: any): string => {
+    if (!location) return 'N/A';
+    if (typeof location === 'object') {
+      // Handle different location object structures
+      if ('address' in location) return location.address;
+      if ('locationName' in location) return location.locationName;
+      return 'Invalid location format';
+    }
+    return 'N/A';
+  };
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -52,17 +63,15 @@ export const WorkOrderTable = ({
           ) : (
             workOrders.map((workOrder) => (
               <TableRow key={workOrder.id}>
-                <TableCell>{workOrder.optimoroute_order_number}</TableCell>
+                <TableCell>{workOrder.order_id || workOrder.optimoroute_order_number || 'N/A'}</TableCell>
                 <TableCell>
                   {workOrder.service_date ? format(new Date(workOrder.service_date), "MMM d, yyyy") : "N/A"}
                 </TableCell>
                 <TableCell className="max-w-xs truncate">
-                  {workOrder.location ? 
-                    (typeof workOrder.location === 'object' && workOrder.location?.address) || 'N/A'
-                    : 'N/A'}
+                  {getLocationAddress(workOrder.location)}
                 </TableCell>
                 <TableCell className="max-w-xs truncate">
-                  {workOrder.description || "No notes"}
+                  {workOrder.description || workOrder.service_notes || "No notes"}
                 </TableCell>
                 <TableCell>
                   <StatusBadge status={workOrder.qc_status || 'pending_review'} />

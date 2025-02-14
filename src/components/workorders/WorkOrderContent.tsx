@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { WorkOrderList } from "./WorkOrderList";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { WorkOrder } from "./types";
 
 export const WorkOrderContent = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -18,7 +19,7 @@ export const WorkOrderContent = () => {
         .order("service_date", { ascending: false });
 
       if (error) throw error;
-      return data;
+      return data as WorkOrder[];
     },
     refetchInterval: 15 * 60 * 1000, // Refetch every 15 minutes
   });
@@ -56,8 +57,8 @@ export const WorkOrderContent = () => {
     
     return workOrders.filter(order => {
       const matchesSearch = !searchQuery || 
-        order.technician_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        order.technician_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        order.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         order.order_id?.toLowerCase().includes(searchQuery.toLowerCase());
         
       const matchesStatus = !statusFilter || order.qc_status === statusFilter;
