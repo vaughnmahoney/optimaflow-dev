@@ -47,6 +47,37 @@ export const WorkOrderContent = () => {
     refetch();
   };
 
+  const handleSearch = useCallback(async (query: string) => {
+    setSearchQuery(query);
+    
+    if (query.trim() && query.length >= 3) {
+      try {
+        const response = await fetch('/functions/v1/search-optimoroute', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify({ searchQuery: query })
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to search OptimoRoute');
+        }
+
+        const data = await response.json();
+        if (data.success) {
+          // Refresh the work orders list to show the updated data
+          refetch();
+          toast.success("Work orders updated from OptimoRoute");
+        }
+      } catch (error) {
+        console.error('Search error:', error);
+        toast.error("Failed to search OptimoRoute orders");
+      }
+    }
+  }, [refetch]);
+
   const filteredWorkOrders = useCallback(() => {
     if (!workOrders) return [];
     
@@ -71,7 +102,7 @@ export const WorkOrderContent = () => {
     <WorkOrderList 
       workOrders={filteredWorkOrders()} 
       isLoading={isLoading}
-      onSearchChange={setSearchQuery}
+      onSearchChange={handleSearch}
       onStatusFilterChange={setStatusFilter}
       searchQuery={searchQuery}
       statusFilter={statusFilter}
