@@ -11,6 +11,37 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const formatOptimoRouteData = (combinedData: any) => {
+  return combinedData.orders.map((order: any) => {
+    const orderData = order.data;
+    const completionData = order.completionDetails;
+
+    return {
+      id: orderData.id?.toString(),
+      orderNo: orderData.orderNo,
+      date: orderData.date,
+      location: {
+        name: orderData.location?.locationName || '',
+        address: orderData.location?.address || '',
+        coordinates: {
+          lat: orderData.location?.latitude || 0,
+          lng: orderData.location?.longitude || 0
+        }
+      },
+      status: completionData?.status || 'pending',
+      completionTime: completionData?.completionTime,
+      notes: orderData.notes || '',
+      customFields: {
+        groundUnits: orderData.customField1,
+        deliveryDate: orderData.customField5,
+      },
+      photos: completionData?.photos?.map((photo: any) => photo.url) || [],
+      signatures: completionData?.signatures?.map((sig: any) => sig.url) || [],
+      driverNotes: completionData?.driverNotes
+    };
+  });
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -72,62 +103,66 @@ serve(async (req) => {
       throw new Error(`OptimoRoute API error (completion details): ${completionResponse.statusText}`);
     }
 
-    // Combine the data
+    // Combine and format the data
     const combinedData = {
       ...orderData,
-      orders: orderData.orders.map(order => ({
+      orders: orderData.orders.map((order: any) => ({
         ...order,
-        completionDetails: completionData.orders.find(c => c.orderNo === order.data.orderNo)
+        completionDetails: completionData.orders.find((c: any) => c.orderNo === order.data.orderNo)
       }))
     };
 
-    console.log('Combined data:', combinedData);
+    const formattedOrders = formatOptimoRouteData(combinedData);
+    console.log('Formatted orders:', formattedOrders);
 
     // Initialize Supabase client
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     let success = false;
-    // Update work orders table with the combined data
-    if (combinedData.orders && combinedData.orders.length > 0) {
-      const updates = combinedData.orders.map(async (order: any) => {
-        if (order.success && order.data) {
-          console.log('Processing order:', order);
-          
-          const workOrder = {
-            optimoroute_id: order.id?.toString(),
-            optimoroute_order_number: order.data.orderNo,
-            optimoroute_status: order.data.status,
-            service_date: order.data.date,
-            description: order.data.notes,
-            location: order.data.location,
-            time_on_site: order.data.duration ? `${order.data.duration} minutes` : null,
-            service_name: order.data.description || 'Imported Service',
-            // Include completion details if available
-            completion_data: order.completionDetails || null,
-            // Set default values for required fields
-            technician_id: '00000000-0000-0000-0000-000000000000',
-            customer_id: '00000000-0000-0000-0000-000000000000'
-          };
+    // Update work orders table with the formatted data
+    if (formattedOrders && formattedOrders.length > 0) {
+      const updates = formattedOrders.map(async (order: any) => {
+        const workOrder = {
+          optimoroute_id: order.id,
+          optimoroute_order_number: order.orderNo,
+          optimoroute_status: order.status,
+          service_date: order.date,
+          description: order.notes,
+          location: order.location,
+          service_name: 'Imported Service',
+          completion_data: {
+            status: order.status,
+            completionTime: order.completionTime,
+            photos: order.photos,
+            signatures: order.signatures,
+            driverNotes: order.driverNotes,
+            customFields: order.customFields
+          },
+          technician_id: '00000000-0000-0000-0000-000000000000',
+          customer_id: '00000000-0000-0000-0000-000000000000'
+        };
 
-          const { error } = await supabase
-            .from('work_orders')
-            .upsert(workOrder, {
-              onConflict: 'optimoroute_id'
-            });
+        const { error } = await supabase
+          .from('work_orders')
+          .upsert(workOrder, {
+            onConflict: 'optimoroute_id'
+          });
 
-          if (error) {
-            console.error('Error upserting work order:', error);
-            throw error;
-          }
-          success = true;
+        if (error) {
+          console.error('Error upserting work order:', error);
+          throw error;
         }
+        success = true;
       });
 
       await Promise.all(updates);
     }
 
     return new Response(
-      JSON.stringify({ success, data: combinedData }),
+      JSON.stringify({ 
+        success, 
+        data: formattedOrders[0] || null 
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
