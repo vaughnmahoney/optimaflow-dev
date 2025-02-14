@@ -55,8 +55,7 @@ export const WorkOrderContent = () => {
         const response = await fetch('/functions/v1/search-optimoroute', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY}`
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({ searchQuery: query })
         });
