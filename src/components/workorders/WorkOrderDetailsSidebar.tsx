@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { Flag, CheckCircle, Download, X, Calendar, Truck } from "lucide-react";
+import { Flag, CheckCircle, Download, X, Calendar, Truck, User, Clock } from "lucide-react";
 import { format } from "date-fns";
 
 interface WorkOrderDetailsSidebarProps {
@@ -32,24 +32,6 @@ export const WorkOrderDetailsSidebar = ({
     }
   };
 
-  const getLocationDetails = () => {
-    if (!workOrder.location) return { name: 'Not available', address: 'Not available' };
-    
-    const addressParts = [];
-    if (workOrder.location.address) addressParts.push(workOrder.location.address);
-    if (workOrder.location.city) addressParts.push(workOrder.location.city);
-    if (workOrder.location.state) addressParts.push(workOrder.location.state);
-    if (workOrder.location.zipCode) addressParts.push(workOrder.location.zipCode);
-    
-    return {
-      name: workOrder.location.locationName || 'Not available',
-      address: addressParts.join(', ') || 'Not available'
-    };
-  };
-
-  const location = getLocationDetails();
-  const completionData = workOrder.completion_data?.data || {};
-
   const formatDate = (date: string) => {
     try {
       return format(new Date(date), "EEEE, MMMM d, yyyy");
@@ -58,10 +40,41 @@ export const WorkOrderDetailsSidebar = ({
     }
   };
 
+  const formatTime = (timestamp: string) => {
+    try {
+      return new Date(timestamp).toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+    } catch {
+      return 'Not available';
+    }
+  };
+
+  const getNotes = () => {
+    const notes = [];
+    
+    if (workOrder.serviceNotes) {
+      notes.push(workOrder.serviceNotes);
+    }
+    if (workOrder.completion_response?.notes) {
+      notes.push(workOrder.completion_response.notes);
+    }
+    if (workOrder.completion_response?.proofOfDelivery?.notes) {
+      notes.push(workOrder.completion_response.proofOfDelivery.notes);
+    }
+    
+    return notes.filter(Boolean).join('\n\n');
+  };
+
   return (
     <div className="w-[300px] border-r bg-background">
       <div className="p-4 border-b flex items-center justify-between">
-        <h3 className="font-semibold">Work Order #{workOrder.order_id || workOrder.optimoroute_order_number}</h3>
+        <h3 className="font-semibold">Work Order #{workOrder.order_no}</h3>
         <Button variant="ghost" size="icon" onClick={onClose}>
           <X className="h-4 w-4" />
         </Button>
@@ -86,11 +99,11 @@ export const WorkOrderDetailsSidebar = ({
             <div className="space-y-1">
               <div>
                 <span className="text-sm">Name: </span>
-                <span className="text-sm">{location.name}</span>
+                <span className="text-sm">{workOrder.location || 'Not available'}</span>
               </div>
               <div>
                 <span className="text-sm">Address: </span>
-                <span className="text-sm">{location.address}</span>
+                <span className="text-sm">{workOrder.address || 'Not available'}</span>
               </div>
             </div>
           </div>
@@ -102,28 +115,56 @@ export const WorkOrderDetailsSidebar = ({
                 <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
                 <div>
                   <p className="text-sm text-muted-foreground">Service Date</p>
-                  <p className="text-sm">{formatDate(workOrder.service_date)}</p>
+                  <p className="text-sm">{formatDate(workOrder.lastServiceDate)}</p>
                 </div>
               </div>
+
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Driver</p>
+                  <p className="text-sm">{workOrder.driverName || 'Not assigned'}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Completion Time</p>
+                  <p className="text-sm">
+                    {workOrder.completion_response?.proofOfDelivery?.timestamp ? 
+                      formatTime(workOrder.completion_response.proofOfDelivery.timestamp) : 
+                      'Not available'}
+                  </p>
+                </div>
+              </div>
+
+              {workOrder.completion_response?.timeOnSite && (
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Time on Site</p>
+                    <p className="text-sm">{workOrder.completion_response.timeOnSite}</p>
+                  </div>
+                </div>
+              )}
 
               <div className="flex items-center gap-2">
                 <Truck className="h-4 w-4 text-muted-foreground shrink-0" />
                 <div>
                   <p className="text-sm text-muted-foreground">Status</p>
                   <p className="text-sm capitalize">
-                    {completionData.status?.toLowerCase() || 'Pending'}
+                    {workOrder.status?.toLowerCase() || 'Pending'}
                   </p>
                 </div>
               </div>
             </div>
           </div>
 
-          {(workOrder.service_notes || workOrder.description) && (
+          {getNotes() && (
             <div>
               <h4 className="text-sm font-medium text-muted-foreground mb-2">Notes</h4>
-              <p className="text-sm whitespace-pre-wrap">
-                {workOrder.service_notes || workOrder.description}
-              </p>
+              <p className="text-sm whitespace-pre-wrap">{getNotes()}</p>
             </div>
           )}
 
