@@ -495,6 +495,7 @@ export type Database = {
       work_orders: {
         Row: {
           billing_status: string | null
+          completion_data: Json | null
           completion_notes: string | null
           created_at: string | null
           customer_id: string
@@ -524,6 +525,7 @@ export type Database = {
         }
         Insert: {
           billing_status?: string | null
+          completion_data?: Json | null
           completion_notes?: string | null
           created_at?: string | null
           customer_id: string
@@ -553,6 +555,7 @@ export type Database = {
         }
         Update: {
           billing_status?: string | null
+          completion_data?: Json | null
           completion_notes?: string | null
           created_at?: string | null
           customer_id?: string
