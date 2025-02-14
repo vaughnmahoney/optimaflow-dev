@@ -55,15 +55,33 @@ export const WorkOrderDetailsSidebar = ({
     }
   };
 
+  const calculateTimeOnSite = (start: Date, end: Date): string => {
+    const diff = end.getTime() - start.getTime();
+    const minutes = Math.floor(diff / 1000 / 60);
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return `${hours}h ${remainingMinutes}m`;
+  };
+
+  const getTimeOnSite = () => {
+    if (workOrder.completion_data?.data?.startTime?.localTime && 
+        workOrder.completion_data?.data?.endTime?.localTime) {
+      return calculateTimeOnSite(
+        new Date(workOrder.completion_data.data.startTime.localTime),
+        new Date(workOrder.completion_data.data.endTime.localTime)
+      );
+    }
+    return workOrder.completion_response?.timeOnSite || 'Not available';
+  };
+
   const getNotes = () => {
     const notes = [];
     
-    if (workOrder.serviceNotes) {
-      notes.push(workOrder.serviceNotes);
-    }
-    if (workOrder.completion_response?.notes) {
-      notes.push(workOrder.completion_response.notes);
-    }
+    if (workOrder.service_notes) notes.push(workOrder.service_notes);
+    if (workOrder.serviceNotes) notes.push(workOrder.serviceNotes);
+    if (workOrder.description) notes.push(workOrder.description);
+    if (workOrder.completion_data?.data?.form?.note) notes.push(workOrder.completion_data.data.form.note);
+    if (workOrder.completion_response?.notes) notes.push(workOrder.completion_response.notes);
     if (workOrder.completion_response?.proofOfDelivery?.notes) {
       notes.push(workOrder.completion_response.proofOfDelivery.notes);
     }
@@ -99,11 +117,19 @@ export const WorkOrderDetailsSidebar = ({
             <div className="space-y-1">
               <div>
                 <span className="text-sm">Name: </span>
-                <span className="text-sm">{typeof workOrder.location === 'object' ? workOrder.location?.name : workOrder.location || 'Not available'}</span>
+                <span className="text-sm">
+                  {typeof workOrder.location === 'object' 
+                    ? workOrder.location?.name || workOrder.location?.locationName 
+                    : workOrder.location || 'Not available'}
+                </span>
               </div>
               <div>
                 <span className="text-sm">Address: </span>
-                <span className="text-sm">{typeof workOrder.location === 'object' ? workOrder.location?.address : workOrder.address || 'Not available'}</span>
+                <span className="text-sm">
+                  {typeof workOrder.location === 'object' 
+                    ? workOrder.location?.address 
+                    : workOrder.address || 'Not available'}
+                </span>
               </div>
             </div>
           </div>
@@ -115,7 +141,7 @@ export const WorkOrderDetailsSidebar = ({
                 <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
                 <div>
                   <p className="text-sm text-muted-foreground">Service Date</p>
-                  <p className="text-sm">{formatDate(workOrder.lastServiceDate)}</p>
+                  <p className="text-sm">{formatDate(workOrder.service_date || workOrder.lastServiceDate)}</p>
                 </div>
               </div>
 
@@ -123,7 +149,12 @@ export const WorkOrderDetailsSidebar = ({
                 <User className="h-4 w-4 text-muted-foreground shrink-0" />
                 <div>
                   <p className="text-sm text-muted-foreground">Driver</p>
-                  <p className="text-sm">{workOrder.driverName || 'Not assigned'}</p>
+                  <p className="text-sm">
+                    {workOrder.driver?.name || 
+                     workOrder.driverName || 
+                     workOrder.completion_data?.data?.assignedTo?.name || 
+                     'Not assigned'}
+                  </p>
                 </div>
               </div>
 
@@ -132,29 +163,31 @@ export const WorkOrderDetailsSidebar = ({
                 <div>
                   <p className="text-sm text-muted-foreground">Completion Time</p>
                   <p className="text-sm">
-                    {workOrder.completion_response?.proofOfDelivery?.timestamp ? 
-                      formatTime(workOrder.completion_response.proofOfDelivery.timestamp) : 
-                      'Not available'}
+                    {workOrder.completion_data?.data?.endTime?.localTime ? 
+                      formatTime(workOrder.completion_data.data.endTime.localTime) :
+                      workOrder.completion_response?.proofOfDelivery?.timestamp ?
+                        formatTime(workOrder.completion_response.proofOfDelivery.timestamp) :
+                        'Not available'}
                   </p>
                 </div>
               </div>
 
-              {workOrder.completion_response?.timeOnSite && (
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Time on Site</p>
-                    <p className="text-sm">{workOrder.completion_response.timeOnSite}</p>
-                  </div>
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Time on Site</p>
+                  <p className="text-sm">{getTimeOnSite()}</p>
                 </div>
-              )}
+              </div>
 
               <div className="flex items-center gap-2">
                 <Truck className="h-4 w-4 text-muted-foreground shrink-0" />
                 <div>
                   <p className="text-sm text-muted-foreground">Status</p>
                   <p className="text-sm capitalize">
-                    {workOrder.status?.toLowerCase() || 'Pending'}
+                    {workOrder.completion_data?.data?.status?.toLowerCase() || 
+                     workOrder.status?.toLowerCase() || 
+                     'Pending'}
                   </p>
                 </div>
               </div>
