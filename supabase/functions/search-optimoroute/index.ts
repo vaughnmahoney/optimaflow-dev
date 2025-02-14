@@ -34,7 +34,7 @@ serve(async (req) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPTIMOROUTE_API_KEY}`
+        'apikey': OPTIMOROUTE_API_KEY  // Changed from 'Authorization: Bearer' to 'apikey'
       },
       body: JSON.stringify({
         "orders": [
