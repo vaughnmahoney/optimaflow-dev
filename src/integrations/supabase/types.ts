@@ -627,7 +627,6 @@ export type Database = {
         Row: {
           billing_status: string | null
           customer_name: string | null
-          end_time: string | null
           has_images: boolean | null
           id: string | null
           location: Json | null
@@ -637,9 +636,8 @@ export type Database = {
           qc_status: string | null
           service_date: string | null
           service_notes: string | null
-          start_time: string | null
           technician_name: string | null
-          time_on_site: string | null
+          time_on_site: unknown | null
         }
         Relationships: []
       }
