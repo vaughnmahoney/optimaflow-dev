@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { Flag, CheckCircle, Download, X, Clock, Calendar, Truck } from "lucide-react";
-import { format } from "date-fns";
 
 interface WorkOrderDetailsSidebarProps {
   workOrder: any;
@@ -32,12 +31,16 @@ export const WorkOrderDetailsSidebar = ({
     }
   };
 
-  const formatCompletionTime = (time: string | null) => {
-    if (!time) return 'Not available';
+  const formatDate = (date: string | null) => {
+    if (!date) return 'Not available';
     try {
-      return format(new Date(time), 'MMM d, yyyy h:mm a');
+      return new Date(date).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
     } catch {
-      return time;
+      return 'Invalid date';
     }
   };
 
@@ -57,26 +60,26 @@ export const WorkOrderDetailsSidebar = ({
             <Badge 
               className={cn(
                 "mt-1.5 w-full justify-center",
-                getStatusColor(workOrder.qc_status)
+                getStatusColor(workOrder.qc_status || 'pending_review')
               )}
             >
-              {workOrder.qc_status?.toUpperCase().replace(/_/g, ' ')}
+              {(workOrder.qc_status || 'PENDING REVIEW').toUpperCase().replace(/_/g, ' ')}
             </Badge>
           </div>
 
           <div>
             <label className="text-sm font-medium text-muted-foreground">Customer</label>
-            <p className="mt-1">{workOrder.customer_name}</p>
+            <p className="mt-1">{workOrder.customer?.name || 'Not available'}</p>
           </div>
 
           <div>
             <label className="text-sm font-medium text-muted-foreground">Technician</label>
-            <p className="mt-1">{workOrder.technicians?.name}</p>
+            <p className="mt-1">{workOrder.technician?.name || 'System Import'}</p>
           </div>
 
           <div>
             <label className="text-sm font-medium text-muted-foreground">Service Notes</label>
-            <p className="mt-1 text-sm">{workOrder.service_notes || 'No notes available'}</p>
+            <p className="mt-1 text-sm">{workOrder.service_notes || workOrder.description || 'No notes available'}</p>
           </div>
 
           {workOrder.completion_data && (
@@ -88,16 +91,16 @@ export const WorkOrderDetailsSidebar = ({
                   <div className="flex items-center gap-2 text-sm">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                     <div>
-                      <p className="text-muted-foreground">Start Time</p>
-                      <p>{formatCompletionTime(workOrder.completion_data.startTime)}</p>
+                      <p className="text-muted-foreground">Service Date</p>
+                      <p>{formatDate(workOrder.service_date)}</p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 text-sm">
                     <Clock className="h-4 w-4 text-muted-foreground" />
                     <div>
-                      <p className="text-muted-foreground">End Time</p>
-                      <p>{formatCompletionTime(workOrder.completion_data.endTime)}</p>
+                      <p className="text-muted-foreground">Time on Site</p>
+                      <p>{workOrder.completion_data.timeOnSite || 'Not available'}</p>
                     </div>
                   </div>
 
@@ -105,7 +108,7 @@ export const WorkOrderDetailsSidebar = ({
                     <Truck className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="text-muted-foreground">Status</p>
-                      <p className="capitalize">{workOrder.completion_data.status?.toLowerCase() || 'Not available'}</p>
+                      <p className="capitalize">{workOrder.completion_data.status?.toLowerCase() || 'Pending'}</p>
                     </div>
                   </div>
 
@@ -126,7 +129,7 @@ export const WorkOrderDetailsSidebar = ({
               className="w-full justify-start" 
               onClick={() => onStatusUpdate('approved')}
             >
-              <CheckCircle className="mr-2 h-4 w-4 text-success" />
+              <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
               Mark as Approved
             </Button>
             <Button 
@@ -134,7 +137,7 @@ export const WorkOrderDetailsSidebar = ({
               className="w-full justify-start"
               onClick={() => onStatusUpdate('flagged')}
             >
-              <Flag className="mr-2 h-4 w-4 text-danger" />
+              <Flag className="mr-2 h-4 w-4 text-red-600" />
               Flag for Review
             </Button>
             <Button 
