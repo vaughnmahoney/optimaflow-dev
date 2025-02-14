@@ -27,14 +27,14 @@ serve(async (req) => {
       );
     }
 
+    const url = `https://api.optimoroute.com/v1/search_orders?key=${OPTIMOROUTE_API_KEY}`;
     console.log('Making request to OptimoRoute API...');
     
     // Search OptimoRoute API
-    const optimoResponse = await fetch('https://api.optimoroute.com/v1/search_orders', {
+    const optimoResponse = await fetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'apikey': OPTIMOROUTE_API_KEY  // Changed from 'Authorization: Bearer' to 'apikey'
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         "orders": [
