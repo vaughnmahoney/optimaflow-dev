@@ -23,12 +23,12 @@ export const useWorkOrderData = (workOrderId: string | null) => {
       // Map the database fields to match our WorkOrder type
       return data ? {
         ...data,
-        order_no: data.optimoroute_order_number || data.order_id || 'N/A',
+        order_no: data.optimoroute_order_number || data.external_id || 'N/A',
         location: data.location || {},
         completion_data: data.completion_data || {},
-        service_date: data.service_date || data.created_at,
+        service_date: data.service_date,
         driver: data.technicians ? { name: data.technicians.name } : undefined,
-        status: data.optimoroute_status || data.status
+        status: data.optimoroute_status || data.status || 'pending'
       } as WorkOrder : null;
     },
     enabled: !!workOrderId,
