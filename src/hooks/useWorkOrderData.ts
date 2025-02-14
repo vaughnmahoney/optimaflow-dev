@@ -1,6 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { WorkOrder } from "@/components/workorders/types/sidebar";
 
 export const useWorkOrderData = (workOrderId: string | null) => {
   const { data: workOrder, isLoading: isWorkOrderLoading } = useQuery({
@@ -18,7 +19,17 @@ export const useWorkOrderData = (workOrderId: string | null) => {
         .single();
 
       if (error) throw error;
-      return data;
+
+      // Map the database fields to match our WorkOrder type
+      return data ? {
+        ...data,
+        order_no: data.optimoroute_order_number || data.order_id || 'N/A',
+        location: data.location || {},
+        completion_data: data.completion_data || {},
+        service_date: data.service_date || data.created_at,
+        driver: data.technicians ? { name: data.technicians.name } : undefined,
+        status: data.optimoroute_status || data.status
+      } as WorkOrder : null;
     },
     enabled: !!workOrderId,
   });
