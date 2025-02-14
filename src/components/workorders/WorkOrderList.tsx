@@ -12,6 +12,8 @@ import { WorkOrderTable } from "./WorkOrderTable";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { useState, useEffect } from "react";
 import { WorkOrderListProps } from "./types";
+import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 
 export const WorkOrderList = ({ 
   workOrders, 
@@ -23,6 +25,7 @@ export const WorkOrderList = ({
   statusFilter
 }: WorkOrderListProps) => {
   const [selectedWorkOrderId, setSelectedWorkOrderId] = useState<string | null>(null);
+  const [optimoSearch, setOptimoSearch] = useState("");
 
   useEffect(() => {
     const handleOpenWorkOrder = (event: CustomEvent<string>) => {
@@ -35,6 +38,37 @@ export const WorkOrderList = ({
     };
   }, []);
 
+  const handleOptimoSearch = async () => {
+    if (!optimoSearch.trim()) return;
+    
+    try {
+      const response = await fetch(`https://api.optimoroute.com/v1/search_orders?key=${optimoSearch}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          orders: [{ orderNo: optimoSearch }],
+          includeOrderData: true
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to search OptimoRoute');
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        // Clear the search input
+        setOptimoSearch("");
+        // Trigger a refresh of the work orders
+        onSearchChange("");
+      }
+    } catch (error) {
+      console.error('OptimoRoute search error:', error);
+    }
+  };
+
   if (isLoading) {
     return <LoadingSkeleton />;
   }
@@ -42,12 +76,31 @@ export const WorkOrderList = ({
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4">
-        <Input
-          placeholder="Search orders..."
-          value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
-          className="max-w-sm"
-        />
+        <div className="flex-1 max-w-sm">
+          <Input
+            placeholder="Search local orders..."
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+          />
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Input
+            placeholder="Import OptimoRoute order #"
+            value={optimoSearch}
+            onChange={(e) => setOptimoSearch(e.target.value)}
+            className="w-64"
+          />
+          <Button 
+            variant="secondary"
+            onClick={handleOptimoSearch}
+            disabled={!optimoSearch.trim()}
+          >
+            <Search className="h-4 w-4 mr-2" />
+            Import
+          </Button>
+        </div>
+
         <Select
           value={statusFilter || "all"}
           onValueChange={(value) => onStatusFilterChange(value === "all" ? null : value)}

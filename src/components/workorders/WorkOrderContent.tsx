@@ -47,30 +47,9 @@ export const WorkOrderContent = () => {
     refetch();
   };
 
-  const handleSearch = useCallback(async (query: string) => {
+  const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
-    
-    if (query.trim() && query.length >= 3) {
-      try {
-        const { data, error } = await supabase.functions.invoke('search-optimoroute', {
-          body: { searchQuery: query }
-        });
-
-        if (error) {
-          throw error;
-        }
-
-        if (data?.success) {
-          // Refresh the work orders list to show the updated data
-          refetch();
-          toast.success("Work orders updated from OptimoRoute");
-        }
-      } catch (error) {
-        console.error('Search error:', error);
-        toast.error("Failed to search OptimoRoute orders");
-      }
-    }
-  }, [refetch]);
+  }, []);
 
   const filteredWorkOrders = useCallback(() => {
     if (!workOrders) return [];
