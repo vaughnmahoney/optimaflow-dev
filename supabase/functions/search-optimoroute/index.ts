@@ -132,6 +132,33 @@ serve(async (req) => {
     // Update work orders table with the formatted data
     if (formattedOrders && formattedOrders.length > 0) {
       const order = formattedOrders[0];
+      
+      // First, create or update the customer
+      const customerData = {
+        id: `or-${order.location.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
+        name: order.location.name || 'Unknown Location',
+        type: 'imported',
+        contact_info: null,
+        billing_address: {
+          address: order.location.address,
+          coordinates: order.location.coordinates
+        }
+      };
+
+      const { data: customer, error: customerError } = await supabase
+        .from('customers')
+        .upsert(customerData, {
+          onConflict: 'id'
+        })
+        .select()
+        .single();
+
+      if (customerError) {
+        console.error('Error upserting customer:', customerError);
+        throw customerError;
+      }
+
+      // Then create or update the work order with the valid customer_id
       const workOrder = {
         optimoroute_id: order.id,
         optimoroute_order_number: order.orderNo,
@@ -149,18 +176,18 @@ serve(async (req) => {
           customFields: order.customFields
         },
         technician_id: '00000000-0000-0000-0000-000000000000',
-        customer_id: '00000000-0000-0000-0000-000000000000'
+        customer_id: customerData.id
       };
 
-      const { error } = await supabase
+      const { error: workOrderError } = await supabase
         .from('work_orders')
         .upsert(workOrder, {
           onConflict: 'optimoroute_id'
         });
 
-      if (error) {
-        console.error('Error upserting work order:', error);
-        throw error;
+      if (workOrderError) {
+        console.error('Error upserting work order:', workOrderError);
+        throw workOrderError;
       }
       success = true;
     }
