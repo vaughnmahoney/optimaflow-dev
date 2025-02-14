@@ -22,6 +22,7 @@ import {
 import { Eye, Flag, CheckCircle } from "lucide-react";
 import { ImageViewDialog } from "./ImageViewDialog";
 import { useState, useEffect } from "react";
+import { Json } from "@/integrations/supabase/types";
 
 interface WorkOrder {
   id: string;
@@ -30,11 +31,12 @@ interface WorkOrder {
   customer_name: string;
   technician_name: string;
   service_notes: string | null;
-  time_on_site: string | null;
+  time_on_site: unknown | null;
   has_images: boolean;
   priority: string;
   billing_status: string;
   order_id: string | null;
+  location: Json | null;
 }
 
 interface WorkOrderListProps {
@@ -68,6 +70,13 @@ export const WorkOrderList = ({
       window.removeEventListener('openWorkOrder', handleOpenWorkOrder as EventListener);
     };
   }, []);
+
+  const formatTimeOnSite = (timeOnSite: unknown | null): string => {
+    if (!timeOnSite) return "N/A";
+    // Convert PostgreSQL interval to a readable string
+    // The timeOnSite comes as a string like "2 hours 30 mins" or similar
+    return String(timeOnSite);
+  };
 
   if (isLoading) {
     return <LoadingSkeleton />;
@@ -130,7 +139,7 @@ export const WorkOrderList = ({
                     {workOrder.service_notes || "No notes"}
                   </TableCell>
                   <TableCell>
-                    {workOrder.time_on_site || "N/A"}
+                    {formatTimeOnSite(workOrder.time_on_site)}
                   </TableCell>
                   <TableCell>
                     <StatusBadge status={workOrder.qc_status} />
