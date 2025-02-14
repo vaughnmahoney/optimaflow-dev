@@ -81,6 +81,16 @@ serve(async (req) => {
       throw new Error(`OptimoRoute API error (order details): ${orderResponse.statusText}`);
     }
 
+    if (!orderData.orders || orderData.orders.length === 0) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Order not found' 
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Get completion details
     console.log('Fetching completion details...');
     const completionResponse = await fetch(
@@ -121,41 +131,38 @@ serve(async (req) => {
     let success = false;
     // Update work orders table with the formatted data
     if (formattedOrders && formattedOrders.length > 0) {
-      const updates = formattedOrders.map(async (order: any) => {
-        const workOrder = {
-          optimoroute_id: order.id,
-          optimoroute_order_number: order.orderNo,
-          optimoroute_status: order.status,
-          service_date: order.date,
-          description: order.notes,
-          location: order.location,
-          service_name: 'Imported Service',
-          completion_data: {
-            status: order.status,
-            completionTime: order.completionTime,
-            photos: order.photos,
-            signatures: order.signatures,
-            driverNotes: order.driverNotes,
-            customFields: order.customFields
-          },
-          technician_id: '00000000-0000-0000-0000-000000000000',
-          customer_id: '00000000-0000-0000-0000-000000000000'
-        };
+      const order = formattedOrders[0];
+      const workOrder = {
+        optimoroute_id: order.id,
+        optimoroute_order_number: order.orderNo,
+        optimoroute_status: order.status,
+        service_date: order.date,
+        description: order.notes,
+        location: order.location,
+        service_name: 'Imported Service',
+        completion_data: {
+          status: order.status,
+          completionTime: order.completionTime,
+          photos: order.photos,
+          signatures: order.signatures,
+          driverNotes: order.driverNotes,
+          customFields: order.customFields
+        },
+        technician_id: '00000000-0000-0000-0000-000000000000',
+        customer_id: '00000000-0000-0000-0000-000000000000'
+      };
 
-        const { error } = await supabase
-          .from('work_orders')
-          .upsert(workOrder, {
-            onConflict: 'optimoroute_id'
-          });
+      const { error } = await supabase
+        .from('work_orders')
+        .upsert(workOrder, {
+          onConflict: 'optimoroute_id'
+        });
 
-        if (error) {
-          console.error('Error upserting work order:', error);
-          throw error;
-        }
-        success = true;
-      });
-
-      await Promise.all(updates);
+      if (error) {
+        console.error('Error upserting work order:', error);
+        throw error;
+      }
+      success = true;
     }
 
     return new Response(
