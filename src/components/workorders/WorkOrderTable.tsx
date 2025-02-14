@@ -81,6 +81,14 @@ export const WorkOrderTable = ({
                     <Button 
                       variant="ghost" 
                       size="icon"
+                      title="View Proof of Service"
+                      onClick={() => onImageView(workOrder.id)}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
                       title="Approve"
                       className="text-green-600"
                       onClick={() => onStatusUpdate(workOrder.id, "approved")}
