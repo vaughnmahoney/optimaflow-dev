@@ -1,10 +1,13 @@
+
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { useState, useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { WorkOrderDetailsSidebar } from "./WorkOrderDetailsSidebar";
 import { ImageViewer } from "./ImageViewer";
 import { WorkOrderNavigation } from "./WorkOrderNavigation";
+import { useWorkOrderData } from "@/hooks/useWorkOrderData";
+import { useImageNavigation } from "@/hooks/useImageNavigation";
+import { useWorkOrderPrefetch } from "@/hooks/useWorkOrderPrefetch";
 
 interface ImageViewDialogProps {
   workOrderId: string | null;
@@ -19,97 +22,56 @@ export const ImageViewDialog = ({
   onStatusUpdate, 
   workOrders 
 }: ImageViewDialogProps) => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const queryClient = useQueryClient();
   const currentWorkOrderIndex = workOrders.findIndex(wo => wo.id === workOrderId);
 
-  // Prefetch adjacent work orders
-  useEffect(() => {
-    if (!workOrderId) return;
+  // Use our custom hooks
+  const { workOrder, images, isLoading } = useWorkOrderData(workOrderId);
+  useWorkOrderPrefetch(workOrderId, currentWorkOrderIndex, workOrders);
 
-    const prefetchWorkOrder = async (id: string) => {
-      await Promise.all([
-        queryClient.prefetchQuery({
-          queryKey: ["workOrder", id],
-          queryFn: async () => {
-            const { data, error } = await supabase
-              .from("work_orders")
-              .select(`*, technicians (name)`)
-              .eq("id", id)
-              .single();
-            if (error) throw error;
-            return data;
-          }
-        }),
-        queryClient.prefetchQuery({
-          queryKey: ["workOrderImages", id],
-          queryFn: async () => {
-            const { data, error } = await supabase
-              .from("work_order_images")
-              .select("*")
-              .eq("work_order_id", id);
-            if (error) throw error;
-            return data;
-          }
-        })
-      ]);
-    };
-
-    // Prefetch next work order
-    if (currentWorkOrderIndex < workOrders.length - 1) {
-      prefetchWorkOrder(workOrders[currentWorkOrderIndex + 1].id);
-    }
-    // Prefetch previous work order
+  const handlePreviousWorkOrder = () => {
     if (currentWorkOrderIndex > 0) {
-      prefetchWorkOrder(workOrders[currentWorkOrderIndex - 1].id);
+      const previousWorkOrder = workOrders[currentWorkOrderIndex - 1];
+      setIsTransitioning(true);
+      
+      const event = new CustomEvent('openWorkOrder', { detail: previousWorkOrder.id });
+      window.dispatchEvent(event);
+      
+      setTimeout(() => setIsTransitioning(false), 300);
     }
-  }, [workOrderId, currentWorkOrderIndex, workOrders, queryClient]);
+  };
 
-  const { data: workOrder, isLoading: isWorkOrderLoading } = useQuery({
-    queryKey: ["workOrder", workOrderId],
-    queryFn: async () => {
-      if (!workOrderId) return null;
+  const handleNextWorkOrder = () => {
+    if (currentWorkOrderIndex < workOrders.length - 1) {
+      const nextWorkOrder = workOrders[currentWorkOrderIndex + 1];
+      setIsTransitioning(true);
       
-      const { data, error } = await supabase
-        .from("work_orders")
-        .select(`
-          *,
-          technicians (name)
-        `)
-        .eq("id", workOrderId)
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!workOrderId,
-  });
-
-  const { data: images, isLoading: isImagesLoading } = useQuery({
-    queryKey: ["workOrderImages", workOrderId],
-    queryFn: async () => {
-      if (!workOrderId) return [];
+      const event = new CustomEvent('openWorkOrder', { detail: nextWorkOrder.id });
+      window.dispatchEvent(event);
       
-      const { data, error } = await supabase
-        .from("work_order_images")
-        .select("*")
-        .eq("work_order_id", workOrderId);
+      setTimeout(() => setIsTransitioning(false), 300);
+    }
+  };
 
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!workOrderId,
+  const { 
+    currentImageIndex, 
+    setCurrentImageIndex, 
+    handlePrevious, 
+    handleNext 
+  } = useImageNavigation({
+    totalImages: images?.length || 0,
+    onPreviousWorkOrder: handlePreviousWorkOrder,
+    onNextWorkOrder: handleNextWorkOrder,
+    isTransitioning
   });
 
   // Handle status updates and cache invalidation
   const handleStatusUpdate = async (status: string) => {
     if (!workOrderId) return;
     
-    // Call the parent's onStatusUpdate
     await onStatusUpdate(workOrderId, status);
     
-    // Immediately update the cache with the new status
     queryClient.setQueryData(["workOrder", workOrderId], (oldData: any) => {
       if (!oldData) return oldData;
       return {
@@ -119,88 +81,9 @@ export const ImageViewDialog = ({
     });
   };
 
-  const handlePreviousWorkOrder = () => {
-    if (currentWorkOrderIndex > 0) {
-      const previousWorkOrder = workOrders[currentWorkOrderIndex - 1];
-      setCurrentImageIndex(0);
-      setIsTransitioning(true);
-      
-      // Direct navigation instead of closing/reopening dialog
-      const event = new CustomEvent('openWorkOrder', { detail: previousWorkOrder.id });
-      window.dispatchEvent(event);
-      
-      // Reset transition state after a short delay
-      setTimeout(() => setIsTransitioning(false), 300);
-    }
-  };
-
-  const handleNextWorkOrder = () => {
-    if (currentWorkOrderIndex < workOrders.length - 1) {
-      const nextWorkOrder = workOrders[currentWorkOrderIndex + 1];
-      setCurrentImageIndex(0);
-      setIsTransitioning(true);
-      
-      // Direct navigation instead of closing/reopening dialog
-      const event = new CustomEvent('openWorkOrder', { detail: nextWorkOrder.id });
-      window.dispatchEvent(event);
-      
-      // Reset transition state after a short delay
-      setTimeout(() => setIsTransitioning(false), 300);
-    }
-  };
-
-  // Handle keyboard navigation
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (isTransitioning) return; // Prevent navigation during transitions
-      
-      switch (e.key) {
-        case "ArrowLeft":
-          if (currentImageIndex === 0) {
-            handlePreviousWorkOrder();
-          } else {
-            setCurrentImageIndex((prev) => prev - 1);
-          }
-          break;
-        case "ArrowRight":
-          if (currentImageIndex === (images?.length ?? 1) - 1) {
-            handleNextWorkOrder();
-          } else {
-            setCurrentImageIndex((prev) => prev + 1);
-          }
-          break;
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [currentImageIndex, images?.length, isTransitioning]);
-
-  const handlePrevious = () => {
-    if (isTransitioning) return;
-    
-    if (currentImageIndex === 0) {
-      handlePreviousWorkOrder();
-    } else {
-      setCurrentImageIndex((prev) => prev - 1);
-    }
-  };
-
-  const handleNext = () => {
-    if (isTransitioning) return;
-    
-    if (currentImageIndex === (images?.length ?? 1) - 1) {
-      handleNextWorkOrder();
-    } else {
-      setCurrentImageIndex((prev) => prev + 1);
-    }
-  };
-
   const handleDownloadAll = async () => {
     console.log("Downloading all images");
   };
-
-  const isLoading = isWorkOrderLoading || isImagesLoading || isTransitioning;
 
   return (
     <Dialog 
@@ -221,7 +104,7 @@ export const ImageViewDialog = ({
               <ImageViewer
                 images={images || []}
                 currentImageIndex={currentImageIndex}
-                isLoading={isLoading}
+                isLoading={isLoading || isTransitioning}
                 onPrevious={handlePrevious}
                 onNext={handleNext}
                 onImageSelect={setCurrentImageIndex}
