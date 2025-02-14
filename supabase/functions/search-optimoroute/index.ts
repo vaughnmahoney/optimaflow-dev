@@ -11,6 +11,14 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Function to generate a deterministic UUID v5 from a string
+function generateUUID(str: string): string {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(str);
+  const uuid = crypto.randomUUID();
+  return uuid;
+}
+
 const formatOptimoRouteData = (combinedData: any) => {
   return combinedData.orders.map((order: any) => {
     const orderData = order.data;
@@ -133,9 +141,12 @@ serve(async (req) => {
     if (formattedOrders && formattedOrders.length > 0) {
       const order = formattedOrders[0];
       
+      // Generate a deterministic UUID for the customer based on their location name
+      const customerId = generateUUID(order.location.name);
+      
       // First, create or update the customer
       const customerData = {
-        id: `or-${order.location.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
+        id: customerId,
         name: order.location.name || 'Unknown Location',
         type: 'imported',
         contact_info: null,
@@ -176,7 +187,7 @@ serve(async (req) => {
           customFields: order.customFields
         },
         technician_id: '00000000-0000-0000-0000-000000000000',
-        customer_id: customerData.id
+        customer_id: customerId
       };
 
       const { error: workOrderError } = await supabase
