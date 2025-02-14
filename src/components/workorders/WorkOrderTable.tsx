@@ -34,11 +34,10 @@ export const WorkOrderTable = ({
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>Order #</TableHead>
             <TableHead>Service Date</TableHead>
-            <TableHead>Technician</TableHead>
-            <TableHead>Customer</TableHead>
-            <TableHead>Service Notes</TableHead>
-            <TableHead>Time on Site</TableHead>
+            <TableHead>Location</TableHead>
+            <TableHead>Notes</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
@@ -46,39 +45,30 @@ export const WorkOrderTable = ({
         <TableBody>
           {workOrders.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="text-center h-24 text-gray-500">
-                No work orders found
+              <TableCell colSpan={6} className="text-center h-24 text-gray-500">
+                No work orders found. Import orders from OptimoRoute to get started.
               </TableCell>
             </TableRow>
           ) : (
             workOrders.map((workOrder) => (
               <TableRow key={workOrder.id}>
+                <TableCell>{workOrder.optimoroute_order_number}</TableCell>
                 <TableCell>
-                  {format(new Date(workOrder.service_date), "MMM d, yyyy")}
+                  {workOrder.service_date ? format(new Date(workOrder.service_date), "MMM d, yyyy") : "N/A"}
                 </TableCell>
-                <TableCell>{workOrder.technician_name}</TableCell>
-                <TableCell>{workOrder.customer_name}</TableCell>
                 <TableCell className="max-w-xs truncate">
-                  {workOrder.service_notes || "No notes"}
+                  {workOrder.location ? 
+                    (typeof workOrder.location === 'object' && workOrder.location?.address) || 'N/A'
+                    : 'N/A'}
+                </TableCell>
+                <TableCell className="max-w-xs truncate">
+                  {workOrder.description || "No notes"}
                 </TableCell>
                 <TableCell>
-                  {formatTimeOnSite(workOrder.time_on_site)}
-                </TableCell>
-                <TableCell>
-                  <StatusBadge status={workOrder.qc_status} />
+                  <StatusBadge status={workOrder.qc_status || 'pending_review'} />
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    {workOrder.has_images && (
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        title="View Photos"
-                        onClick={() => onImageView(workOrder.id)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    )}
                     <Button 
                       variant="ghost" 
                       size="icon"

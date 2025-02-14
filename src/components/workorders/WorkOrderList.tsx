@@ -10,7 +10,7 @@ import {
 import { ImageViewDialog } from "./ImageViewDialog";
 import { WorkOrderTable } from "./WorkOrderTable";
 import { LoadingSkeleton } from "./LoadingSkeleton";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { WorkOrderListProps } from "./types";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
@@ -29,17 +29,6 @@ export const WorkOrderList = ({
   const [selectedWorkOrderId, setSelectedWorkOrderId] = useState<string | null>(null);
   const [optimoSearch, setOptimoSearch] = useState("");
   const [isSearching, setIsSearching] = useState(false);
-
-  useEffect(() => {
-    const handleOpenWorkOrder = (event: CustomEvent<string>) => {
-      setSelectedWorkOrderId(event.detail);
-    };
-
-    window.addEventListener('openWorkOrder', handleOpenWorkOrder as EventListener);
-    return () => {
-      window.removeEventListener('openWorkOrder', handleOpenWorkOrder as EventListener);
-    };
-  }, []);
 
   const handleOptimoSearch = async () => {
     if (!optimoSearch.trim()) return;
@@ -60,6 +49,7 @@ export const WorkOrderList = ({
       if (data?.success) {
         toast.success("Work order imported successfully");
         setOptimoSearch("");
+        // Refresh the work orders list by clearing the search
         onSearchChange("");
       } else {
         toast.error(data?.error || "No work order found with that number");
@@ -81,7 +71,7 @@ export const WorkOrderList = ({
       <div className="flex items-center gap-4">
         <div className="flex-1 max-w-sm">
           <Input
-            placeholder="Search local orders..."
+            placeholder="Search orders..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
           />
