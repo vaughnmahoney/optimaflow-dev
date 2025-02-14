@@ -99,11 +99,11 @@ export const WorkOrderDetailsSidebar = ({
             <div className="space-y-1">
               <div>
                 <span className="text-sm">Name: </span>
-                <span className="text-sm">{workOrder.location || 'Not available'}</span>
+                <span className="text-sm">{typeof workOrder.location === 'object' ? workOrder.location?.name : workOrder.location || 'Not available'}</span>
               </div>
               <div>
                 <span className="text-sm">Address: </span>
-                <span className="text-sm">{workOrder.address || 'Not available'}</span>
+                <span className="text-sm">{typeof workOrder.location === 'object' ? workOrder.location?.address : workOrder.address || 'Not available'}</span>
               </div>
             </div>
           </div>
