@@ -18,6 +18,7 @@ serve(async (req) => {
 
   try {
     const { searchQuery } = await req.json();
+    console.log('Received search query:', searchQuery);
 
     if (!searchQuery) {
       return new Response(
@@ -26,6 +27,8 @@ serve(async (req) => {
       );
     }
 
+    console.log('Making request to OptimoRoute API...');
+    
     // Search OptimoRoute API
     const optimoResponse = await fetch('https://api.optimoroute.com/v1/search_orders', {
       method: 'POST',
@@ -43,19 +46,25 @@ serve(async (req) => {
       })
     });
 
+    console.log('OptimoRoute API response status:', optimoResponse.status);
+    
+    const optimoData = await optimoResponse.json();
+    console.log('OptimoRoute API response:', optimoData);
+
     if (!optimoResponse.ok) {
       throw new Error(`OptimoRoute API error: ${optimoResponse.statusText}`);
     }
 
-    const optimoData = await optimoResponse.json();
-
     // Initialize Supabase client
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+    let success = false;
     // Update work orders table with the latest data from OptimoRoute
     if (optimoData.orders && optimoData.orders.length > 0) {
       const updates = optimoData.orders.map(async (order: any) => {
         if (order.success && order.data) {
+          console.log('Processing order:', order);
+          
           const workOrder = {
             optimoroute_id: order.id?.toString(),
             optimoroute_order_number: order.data.orderNo,
@@ -63,7 +72,11 @@ serve(async (req) => {
             service_date: order.data.date,
             description: order.data.description,
             location: order.data.location,
-            time_on_site: order.data.duration ? `${order.data.duration} minutes` : null
+            time_on_site: order.data.duration ? `${order.data.duration} minutes` : null,
+            // Set default values for required fields
+            technician_id: '00000000-0000-0000-0000-000000000000', // Replace with actual default
+            customer_id: '00000000-0000-0000-0000-000000000000',   // Replace with actual default
+            service_name: order.data.description || 'Imported Service'
           };
 
           const { error } = await supabase
@@ -74,7 +87,9 @@ serve(async (req) => {
 
           if (error) {
             console.error('Error upserting work order:', error);
+            throw error;
           }
+          success = true;
         }
       });
 
@@ -82,14 +97,18 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify(optimoData),
+      JSON.stringify({ success, data: optimoData }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('Error in search-optimoroute function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        success: false, 
+        error: error.message,
+        details: error.toString()
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

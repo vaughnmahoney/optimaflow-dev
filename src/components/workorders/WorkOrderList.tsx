@@ -50,18 +50,23 @@ export const WorkOrderList = ({
         body: { searchQuery: optimoSearch }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Function error:', error);
+        throw error;
+      }
+
+      console.log('Response from function:', data);
 
       if (data?.success) {
         toast.success("Work order imported successfully");
         setOptimoSearch("");
         onSearchChange("");
       } else {
-        toast.error("No work order found with that number");
+        toast.error(data?.error || "No work order found with that number");
       }
     } catch (error) {
       console.error('OptimoRoute search error:', error);
-      toast.error("Failed to import work order");
+      toast.error(`Failed to import work order: ${error.message}`);
     } finally {
       setIsSearching(false);
     }
