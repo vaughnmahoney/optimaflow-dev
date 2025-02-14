@@ -9,3 +9,7 @@ schemas = ["public", "storage", "graphql_public"]
 [functions]
 [functions.fetch-optimoroute]
 verify_jwt = false
+
+[functions.search-optimoroute]
+verify_jwt = false
+

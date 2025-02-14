@@ -52,20 +52,15 @@ export const WorkOrderContent = () => {
     
     if (query.trim() && query.length >= 3) {
       try {
-        const response = await fetch('/functions/v1/search-optimoroute', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ searchQuery: query })
+        const { data, error } = await supabase.functions.invoke('search-optimoroute', {
+          body: { searchQuery: query }
         });
 
-        if (!response.ok) {
-          throw new Error('Failed to search OptimoRoute');
+        if (error) {
+          throw error;
         }
 
-        const data = await response.json();
-        if (data.success) {
+        if (data?.success) {
           // Refresh the work orders list to show the updated data
           refetch();
           toast.success("Work orders updated from OptimoRoute");
