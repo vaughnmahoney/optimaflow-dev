@@ -457,23 +457,23 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
-          image_url: string
+          storage_path: string
           uploaded_at: string | null
-          work_order_id: string | null
+          work_order_id: string
         }
         Insert: {
           created_at?: string | null
           id?: string
-          image_url: string
+          storage_path: string
           uploaded_at?: string | null
-          work_order_id?: string | null
+          work_order_id: string
         }
         Update: {
           created_at?: string | null
           id?: string
-          image_url?: string
+          storage_path?: string
           uploaded_at?: string | null
-          work_order_id?: string | null
+          work_order_id?: string
         }
         Relationships: [
           {

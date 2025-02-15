@@ -45,7 +45,23 @@ export const useWorkOrderData = (workOrderId: string | null) => {
         .eq("work_order_id", workOrderId);
 
       if (error) throw error;
-      return data;
+
+      // Get the public URL for each image from storage
+      const imagesWithUrls = await Promise.all(
+        data.map(async (image) => {
+          const { data: { publicUrl } } = supabase
+            .storage
+            .from('work-order-images')
+            .getPublicUrl(image.storage_path);
+
+          return {
+            ...image,
+            image_url: publicUrl // Keep using image_url in the frontend for compatibility
+          };
+        })
+      );
+
+      return imagesWithUrls;
     },
     enabled: !!workOrderId,
   });

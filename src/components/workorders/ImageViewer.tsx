@@ -1,8 +1,8 @@
 
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Loader } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ChevronLeft, ChevronRight, Loader, AlertCircle } from "lucide-react";
 import { useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface ImageViewerProps {
   images: any[];
@@ -22,6 +22,7 @@ export const ImageViewer = ({
   onImageSelect,
 }: ImageViewerProps) => {
   const [isImageLoading, setIsImageLoading] = useState(true);
+  const [imageError, setImageError] = useState<string | null>(null);
 
   if (isLoading) {
     return (
@@ -41,6 +42,17 @@ export const ImageViewer = ({
 
   const currentImage = images[currentImageIndex];
 
+  if (!currentImage?.image_url) {
+    return (
+      <Alert variant="destructive" className="m-4">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          Error loading image. The image URL is not available.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
   return (
     <div className="relative h-full flex flex-col space-y-4">
       <div className="relative flex-1 flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden">
@@ -49,14 +61,26 @@ export const ImageViewer = ({
             <Loader className="h-8 w-8 animate-spin text-primary" />
           </div>
         )}
+        {imageError && (
+          <Alert variant="destructive" className="absolute top-4 left-4 right-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{imageError}</AlertDescription>
+          </Alert>
+        )}
         <img
-          src={currentImage?.image_url}
+          src={currentImage.image_url}
           alt={`Service image ${currentImageIndex + 1}`}
           className={`max-h-[calc(90vh-12rem)] max-w-full object-contain transition-opacity duration-300 ${
             isImageLoading ? 'opacity-0' : 'opacity-100'
           }`}
-          onLoad={() => setIsImageLoading(false)}
-          onError={() => setIsImageLoading(false)}
+          onLoad={() => {
+            setIsImageLoading(false);
+            setImageError(null);
+          }}
+          onError={() => {
+            setIsImageLoading(false);
+            setImageError("Failed to load image. Please try again later.");
+          }}
         />
         
         <Button
@@ -64,6 +88,7 @@ export const ImageViewer = ({
           size="icon"
           className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg"
           onClick={onPrevious}
+          disabled={currentImageIndex === 0}
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
@@ -72,6 +97,7 @@ export const ImageViewer = ({
           size="icon"
           className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg"
           onClick={onNext}
+          disabled={currentImageIndex === images.length - 1}
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
