@@ -58,21 +58,30 @@ export const useWorkOrderData = (workOrderId: string | null) => {
             return { ...image, image_url: null };
           }
 
-          const { data } = supabase
-            .storage
-            .from('work-order-images')
-            .getPublicUrl(image.storage_path);
+          try {
+            const { data: publicUrlData } = supabase.storage
+              .from('work-order-images')
+              .getPublicUrl(image.storage_path);
 
-          console.log(`Generated URL for image ${image.id}:`, data.publicUrl);
+            if (!publicUrlData?.publicUrl) {
+              console.warn(`Failed to generate public URL for image ${image.id}`);
+              return { ...image, image_url: null };
+            }
 
-          return {
-            ...image,
-            image_url: data.publicUrl
-          };
+            console.log(`Generated URL for image ${image.id}:`, publicUrlData.publicUrl);
+
+            return {
+              ...image,
+              image_url: publicUrlData.publicUrl
+            };
+          } catch (error) {
+            console.error(`Error generating public URL for image ${image.id}:`, error);
+            return { ...image, image_url: null };
+          }
         })
       );
 
-      return imagesWithUrls;
+      return imagesWithUrls.filter(image => image.image_url !== null);
     },
     enabled: !!workOrderId,
   });
