@@ -7,43 +7,57 @@ export const ServiceDetails = ({ workOrder }: ServiceDetailsProps) => {
   const formatDate = (date: string) => {
     try {
       return format(new Date(date), "EEEE, MMMM d, yyyy");
-    } catch {
+    } catch (error) {
+      console.error("Error formatting date:", error, date);
       return 'Not available';
     }
   };
 
   const formatTime = (timestamp: string) => {
     try {
-      return new Date(timestamp).toLocaleString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      });
-    } catch {
+      return format(new Date(timestamp), "MMM d, yyyy h:mm a");
+    } catch (error) {
+      console.error("Error formatting timestamp:", error, timestamp);
       return 'Not available';
     }
   };
 
-  const calculateTimeOnSite = (start: Date, end: Date): string => {
-    const diff = end.getTime() - start.getTime();
-    const minutes = Math.floor(diff / 1000 / 60);
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-    return `${hours}h ${remainingMinutes}m`;
+  const calculateTimeOnSite = (start: string, end: string): string => {
+    try {
+      const startDate = new Date(start);
+      const endDate = new Date(end);
+      const diff = endDate.getTime() - startDate.getTime();
+      const minutes = Math.floor(diff / 1000 / 60);
+      const hours = Math.floor(minutes / 60);
+      const remainingMinutes = minutes % 60;
+      return `${hours}h ${remainingMinutes}m`;
+    } catch (error) {
+      console.error("Error calculating time on site:", error);
+      return 'Not available';
+    }
   };
 
   const getTimeOnSite = () => {
     if (workOrder.completion_data?.data?.startTime?.localTime && 
         workOrder.completion_data?.data?.endTime?.localTime) {
       return calculateTimeOnSite(
-        new Date(workOrder.completion_data.data.startTime.localTime),
-        new Date(workOrder.completion_data.data.endTime.localTime)
+        workOrder.completion_data.data.startTime.localTime,
+        workOrder.completion_data.data.endTime.localTime
       );
     }
-    return workOrder.completion_response?.timeOnSite || 'Not available';
+    return 'Not available';
+  };
+
+  const getServiceDate = () => {
+    const date = workOrder.service_date || workOrder.lastServiceDate;
+    return date ? formatDate(date) : 'Not available';
+  };
+
+  const getCompletionTime = () => {
+    if (workOrder.completion_data?.data?.endTime?.localTime) {
+      return formatTime(workOrder.completion_data.data.endTime.localTime);
+    }
+    return 'Not available';
   };
 
   return (
@@ -54,7 +68,7 @@ export const ServiceDetails = ({ workOrder }: ServiceDetailsProps) => {
           <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
           <div>
             <p className="text-sm text-muted-foreground">Service Date</p>
-            <p className="text-sm">{formatDate(workOrder.service_date || workOrder.lastServiceDate)}</p>
+            <p className="text-sm">{getServiceDate()}</p>
           </div>
         </div>
 
@@ -75,13 +89,7 @@ export const ServiceDetails = ({ workOrder }: ServiceDetailsProps) => {
           <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
           <div>
             <p className="text-sm text-muted-foreground">Completion Time</p>
-            <p className="text-sm">
-              {workOrder.completion_data?.data?.endTime?.localTime ? 
-                formatTime(workOrder.completion_data.data.endTime.localTime) :
-                workOrder.completion_response?.proofOfDelivery?.timestamp ?
-                  formatTime(workOrder.completion_response.proofOfDelivery.timestamp) :
-                  'Not available'}
-            </p>
+            <p className="text-sm">{getCompletionTime()}</p>
           </div>
         </div>
 
@@ -98,9 +106,9 @@ export const ServiceDetails = ({ workOrder }: ServiceDetailsProps) => {
           <div>
             <p className="text-sm text-muted-foreground">Status</p>
             <p className="text-sm capitalize">
-              {workOrder.completion_data?.data?.status?.toLowerCase() || 
-               workOrder.status?.toLowerCase() || 
-               'Pending'}
+              {(workOrder.completion_data?.data?.status || 
+                workOrder.status || 
+                'pending').toLowerCase()}
             </p>
           </div>
         </div>
