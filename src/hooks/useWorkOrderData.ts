@@ -39,24 +39,35 @@ export const useWorkOrderData = (workOrderId: string | null) => {
     queryFn: async () => {
       if (!workOrderId) return [];
       
-      const { data, error } = await supabase
+      // First get the image records
+      const { data: imageRecords, error } = await supabase
         .from("work_order_images")
         .select("*")
         .eq("work_order_id", workOrderId);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching work order images:", error);
+        throw error;
+      }
 
-      // Get the public URL for each image from storage
+      // Then get the public URL for each image
       const imagesWithUrls = await Promise.all(
-        data.map(async (image) => {
-          const { data: { publicUrl } } = supabase
+        imageRecords.map(async (image) => {
+          if (!image.storage_path) {
+            console.warn(`Missing storage path for image ${image.id}`);
+            return { ...image, image_url: null };
+          }
+
+          const { data } = supabase
             .storage
             .from('work-order-images')
             .getPublicUrl(image.storage_path);
 
+          console.log(`Generated URL for image ${image.id}:`, data.publicUrl);
+
           return {
             ...image,
-            image_url: publicUrl
+            image_url: data.publicUrl
           };
         })
       );
