@@ -56,7 +56,7 @@ export const useWorkOrderData = (workOrderId: string | null) => {
 
           return {
             ...image,
-            image_url: publicUrl // Keep using image_url in the frontend for compatibility
+            image_url: publicUrl
           };
         })
       );
