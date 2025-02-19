@@ -6,25 +6,26 @@ export const transformResponse = (response: any) => {
   return {
     Order: {
       ID: order.id,
-      Number: order.orderNo || order.id,
-      Status: order.status,
-      Date: order.date,
+      Number: order.data?.orderNo || order.id,
+      Status: order.data?.status,
+      Date: order.data?.date,
     },
     Location: {
-      Name: order.location?.name,
-      Address: order.location?.address,
-      Coordinates: order.location?.coordinates,
+      Name: order.data?.location?.name,
+      Address: order.data?.location?.address,
+      Coordinates: order.data?.location?.coordinates,
     },
     ServiceDetails: {
-      Notes: order.notes,
-      Description: order.serviceDescription,
-      CustomFields: order.customFields,
+      Notes: order.data?.notes,
+      Description: order.data?.serviceDescription,
+      CustomFields: order.data?.customFields,
     },
     CompletionInfo: {
       Status: response.completion_data?.status,
       Images: response.completion_data?.photos?.length || 0,
       HasSignature: response.completion_data?.signatures?.length > 0,
       Notes: response.completion_data?.notes,
-    }
+    },
+    Schedule: order.scheduleInformation
   };
 };

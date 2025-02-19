@@ -12,9 +12,9 @@ Deno.serve(async (req) => {
 
   try {
     const { searchQuery } = await req.json()
-    console.log('Received search query:', searchQuery)
+    console.log('Searching for order:', searchQuery)
     
-    // 1. First get the order details
+    // 1. Search for orders with full data
     const searchResponse = await fetch(
       `${baseUrl}/search_orders?key=${optimoRouteApiKey}`,
       {
@@ -33,16 +33,14 @@ Deno.serve(async (req) => {
     const searchData = await searchResponse.json()
     console.log('Search response:', searchData)
     
-    // Check if we found any orders
     if (!searchData.orders || searchData.orders.length === 0) {
-      console.log('No orders found')
       return new Response(
         JSON.stringify({ error: 'Order not found', success: false }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // 2. Then get the completion details
+    // 2. Get completion details
     const completionResponse = await fetch(
       `${baseUrl}/get_completion_details?key=${optimoRouteApiKey}`,
       {
@@ -51,7 +49,7 @@ Deno.serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          orderId: searchQuery
+          orderId: searchData.orders[0].id
         })
       }
     )
@@ -59,22 +57,28 @@ Deno.serve(async (req) => {
     const completionData = await completionResponse.json()
     console.log('Completion data:', completionData)
 
-    // 3. Combine the data
-    const response = {
+    // 3. Format the response
+    const formattedResponse = {
       success: true,
-      orders: searchData.orders,
+      orders: [
+        {
+          data: searchData.orders[0].data,
+          id: searchData.orders[0].id,
+          scheduleInformation: searchData.orders[0].scheduleInformation
+        }
+      ],
       completion_data: completionData
     }
-    
-    console.log('Final response:', response)
-    
+
+    console.log('Sending formatted response:', formattedResponse)
+
     return new Response(
-      JSON.stringify(response),
+      JSON.stringify(formattedResponse),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
   } catch (error) {
-    console.error('Error in edge function:', error)
+    console.error('Error:', error)
     return new Response(
       JSON.stringify({ error: error.message, success: false }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
