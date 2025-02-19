@@ -2,6 +2,47 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { WorkOrder } from "@/components/workorders/types/sidebar";
+import { Database } from "@/integrations/supabase/types";
+
+// Define the expected shape of location data
+interface LocationData {
+  locationName?: string;
+  name?: string;
+  address?: string;
+  locationNo?: string;
+  latitude?: number;
+  longitude?: number;
+  notes?: string;
+}
+
+// Define the expected shape of completion data
+interface CompletionData {
+  data?: {
+    startTime?: {
+      localTime: string;
+      unixTimestamp: number;
+      utcTime: string;
+    };
+    endTime?: {
+      localTime: string;
+      unixTimestamp: number;
+      utcTime: string;
+    };
+    status?: string;
+    tracking_url?: string;
+    form?: {
+      note?: string;
+      images?: Array<{
+        type: string;
+        url: string;
+      }>;
+      signature?: {
+        type: string;
+        url: string;
+      };
+    };
+  };
+}
 
 export const useWorkOrderData = (workOrderId: string | null) => {
   const { data: workOrder, isLoading: isWorkOrderLoading } = useQuery({
@@ -22,44 +63,51 @@ export const useWorkOrderData = (workOrderId: string | null) => {
 
       if (!data) return null;
 
+      // Parse JSON fields
+      const locationData = data.location as LocationData || {};
+      const completionData = data.completion_data as CompletionData || {};
+      const customFields = data.service_details as Record<string, string> || {};
+
       // Map the database fields to match our WorkOrder type
       const mappedData: WorkOrder = {
-        ...data,
         id: data.id,
         order_no: data.optimoroute_order_number || data.external_id || 'N/A',
         location: {
-          ...data.location,
-          name: data.location?.locationName || data.location?.name,
-          locationNo: data.location?.locationNo,
-          notes: data.location?.notes,
-          latitude: data.location?.latitude,
-          longitude: data.location?.longitude
+          name: locationData.locationName || locationData.name,
+          locationNo: locationData.locationNo,
+          notes: locationData.notes,
+          latitude: locationData.latitude,
+          longitude: locationData.longitude,
+          address: locationData.address
         },
         completion_data: {
           data: {
-            ...data.completion_data?.data,
-            tracking_url: data.completion_data?.data?.tracking_url,
+            ...completionData.data,
+            tracking_url: completionData.data?.tracking_url,
             form: {
-              ...data.completion_data?.data?.form,
-              images: data.completion_data?.data?.form?.images || [],
-              signature: data.completion_data?.data?.form?.signature
+              note: completionData.data?.form?.note,
+              images: completionData.data?.form?.images || [],
+              signature: completionData.data?.form?.signature
             }
           }
         },
         service_date: data.service_date,
         driver: data.technicians ? {
           name: data.technicians.name,
-          externalId: data.driverExternalId,
-          serial: data.driverSerial
+          externalId: data.external_id,
+          serial: data.service_name
         } : undefined,
         status: data.optimoroute_status || data.status || 'pending',
+        service_notes: data.notes,
+        description: data.description,
         custom_fields: {
-          field1: data.customField1,
-          field2: data.customField2,
-          field3: data.customField3,
-          field4: data.customField4,
-          field5: data.customField5
-        }
+          field1: customFields.field1,
+          field2: customFields.field2,
+          field3: customFields.field3,
+          field4: customFields.field4,
+          field5: customFields.field5
+        },
+        priority: data.priority
       };
 
       return mappedData;
@@ -100,8 +148,6 @@ export const useWorkOrderData = (workOrderId: string | null) => {
               console.warn(`Failed to generate public URL for image ${image.id}`);
               return { ...image, image_url: null };
             }
-
-            console.log(`Generated URL for image ${image.id}:`, publicUrlData.publicUrl);
 
             return {
               ...image,
