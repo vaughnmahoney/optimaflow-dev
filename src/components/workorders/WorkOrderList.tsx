@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const WorkOrderList = ({ 
   workOrders, 
@@ -29,6 +30,37 @@ export const WorkOrderList = ({
   const [selectedWorkOrderId, setSelectedWorkOrderId] = useState<string | null>(null);
   const [optimoSearch, setOptimoSearch] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [searchResponse, setSearchResponse] = useState<any>(null);
+  const [transformedData, setTransformedData] = useState<any>(null);
+
+  const transformResponse = (data: any) => {
+    if (!data) return null;
+    
+    return {
+      Order: {
+        ID: data.id,
+        Number: data.order_no || data.external_id,
+        Status: data.status,
+        Date: data.service_date,
+      },
+      Location: {
+        Name: data.location?.name,
+        Address: data.location?.address,
+        Coordinates: data.location?.coordinates,
+      },
+      ServiceDetails: {
+        Notes: data.service_notes,
+        Description: data.description,
+        CustomFields: data.custom_fields,
+      },
+      CompletionInfo: {
+        Status: data.completion_data?.data?.status,
+        Images: data.completion_data?.data?.form?.images?.length || 0,
+        HasSignature: !!data.completion_data?.data?.form?.signature,
+        Notes: data.completion_data?.data?.form?.note,
+      }
+    };
+  };
 
   const handleOptimoSearch = async () => {
     if (!optimoSearch.trim()) return;
@@ -45,16 +77,17 @@ export const WorkOrderList = ({
       }
 
       console.log('Response from function:', data);
+      setSearchResponse(data);
+      setTransformedData(transformResponse(data));
 
       if (data?.success) {
         toast.success("Work order imported successfully");
         setOptimoSearch("");
-        // Refresh the work orders list by clearing the search
         onSearchChange("");
       } else {
         toast.error(data?.error || "No work order found with that number");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('OptimoRoute search error:', error);
       toast.error(`Failed to import work order: ${error.message}`);
     } finally {
@@ -109,6 +142,33 @@ export const WorkOrderList = ({
           </SelectContent>
         </Select>
       </div>
+
+      {/* Debug Data Display */}
+      {searchResponse && (
+        <div className="grid grid-cols-2 gap-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Raw JSON Response</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <pre className="text-xs overflow-auto max-h-96 bg-slate-50 p-4 rounded-md">
+                {JSON.stringify(searchResponse, null, 2)}
+              </pre>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Transformed Data</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <pre className="text-xs overflow-auto max-h-96 bg-slate-50 p-4 rounded-md">
+                {JSON.stringify(transformedData, null, 2)}
+              </pre>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <WorkOrderTable 
         workOrders={workOrders}
