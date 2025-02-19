@@ -30,6 +30,15 @@ interface DBCompletionData {
   customFields?: Record<string, string>;
 }
 
+// Define the expected shape of service details
+interface ServiceDetails {
+  groundUnits?: string;
+  deliveryDate?: string;
+  field3?: string;
+  field4?: string;
+  field5?: string;
+}
+
 export const useWorkOrderData = (workOrderId: string | null) => {
   const { data: workOrder, isLoading: isWorkOrderLoading } = useQuery({
     queryKey: ["workOrder", workOrderId],
@@ -64,12 +73,12 @@ export const useWorkOrderData = (workOrderId: string | null) => {
       // Parse JSON fields with type safety
       const locationData = data.location as LocationData || {};
       const completionData = data.completion_data as DBCompletionData || {};
-      const customFields = data.service_details || {};
+      const serviceDetails = data.service_details as ServiceDetails || {};
 
       console.log('Parsed fields:', {
         locationData,
         completionData,
-        customFields
+        serviceDetails
       });
 
       // Map the database fields to match our WorkOrder type
@@ -104,11 +113,11 @@ export const useWorkOrderData = (workOrderId: string | null) => {
         service_notes: data.notes,
         description: data.description,
         custom_fields: {
-          field1: customFields.groundUnits,
-          field2: customFields.deliveryDate,
-          field3: customFields.field3,
-          field4: customFields.field4,
-          field5: customFields.field5
+          field1: serviceDetails.groundUnits || '',
+          field2: serviceDetails.deliveryDate || '',
+          field3: serviceDetails.field3 || '',
+          field4: serviceDetails.field4 || '',
+          field5: serviceDetails.field5 || ''
         },
         priority: data.priority
       };
