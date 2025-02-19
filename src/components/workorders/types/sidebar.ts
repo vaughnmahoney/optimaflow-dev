@@ -33,7 +33,6 @@ export interface WorkOrder {
         unixTimestamp: number;
         utcTime: string;
       };
-      assignedTo?: { name: string };
       status?: string;
       form?: { 
         note?: string;
@@ -51,7 +50,6 @@ export interface WorkOrder {
   };
   status?: string;
   service_notes?: string;
-  serviceNotes?: string;
   description?: string;
   custom_fields?: {
     field1?: string;
