@@ -61,6 +61,8 @@ export const useWorkOrderData = (workOrderId: string | null) => {
     queryFn: async () => {
       if (!workOrderId) return null;
       
+      console.log('Fetching work order:', workOrderId);
+      
       const { data, error } = await supabase
         .from("work_orders")
         .select(`
@@ -72,15 +74,30 @@ export const useWorkOrderData = (workOrderId: string | null) => {
         .eq("id", workOrderId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching work order:', error);
+        throw error;
+      }
 
-      if (!data) return null;
+      if (!data) {
+        console.log('No data found for work order:', workOrderId);
+        return null;
+      }
+
+      console.log('Raw work order data:', data);
 
       // Parse JSON fields with type safety
       const locationData = data.location as LocationData || {};
       const scheduleInfo = (data.service_details as any)?.scheduleInformation as ScheduleInformation || {};
       const completionData = data.completion_data as CompletionData || {};
       const customFields = data.service_details as Record<string, string> || {};
+
+      console.log('Parsed fields:', {
+        locationData,
+        scheduleInfo,
+        completionData,
+        customFields
+      });
 
       // Calculate time on site if available
       const timeOnSite = completionData.data?.startTime && completionData.data?.endTime
@@ -129,6 +146,8 @@ export const useWorkOrderData = (workOrderId: string | null) => {
         },
         priority: data.priority
       };
+
+      console.log('Mapped work order data:', mappedData);
 
       return mappedData;
     },
