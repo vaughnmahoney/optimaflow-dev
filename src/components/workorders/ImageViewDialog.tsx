@@ -1,5 +1,5 @@
 
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { WorkOrderDetailsSidebar } from "./WorkOrderDetailsSidebar";
@@ -26,7 +26,6 @@ export const ImageViewDialog = ({
   const queryClient = useQueryClient();
   const currentWorkOrderIndex = workOrders.findIndex(wo => wo.id === workOrderId);
   
-  // Always call hooks at the top level, before any conditional logic
   const { workOrder, images, isLoading } = useWorkOrderData(workOrderId);
   const { 
     currentImageIndex, 
@@ -40,10 +39,8 @@ export const ImageViewDialog = ({
     isTransitioning
   });
 
-  // Always call prefetch hook
   useWorkOrderPrefetch(workOrderId, currentWorkOrderIndex, workOrders);
 
-  // Handle work order navigation
   const handleWorkOrderChange = (newIndex: number) => {
     if (newIndex >= 0 && newIndex < workOrders.length) {
       setIsTransitioning(true);
@@ -54,7 +51,6 @@ export const ImageViewDialog = ({
     }
   };
 
-  // Handle status updates and cache invalidation
   const handleStatusUpdate = async (status: string) => {
     if (!workOrderId) return;
     
@@ -73,7 +69,6 @@ export const ImageViewDialog = ({
     console.log("Downloading all images");
   };
 
-  // Early return with null if no workOrderId, but after all hooks
   if (!workOrderId) {
     return null;
   }
@@ -84,6 +79,7 @@ export const ImageViewDialog = ({
       onOpenChange={onClose}
     >
       <DialogContent className="max-w-6xl p-0">
+        <DialogTitle className="sr-only">Work Order Details</DialogTitle>
         <div className="flex flex-col h-full">
           <div className="flex flex-1 min-h-0">
             <WorkOrderDetailsSidebar

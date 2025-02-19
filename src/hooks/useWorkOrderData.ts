@@ -7,52 +7,27 @@ import { Database } from "@/integrations/supabase/types";
 // Define the expected shape of location data
 interface LocationData {
   name?: string;
-  locationName?: string;
   address?: string;
-  locationNo?: string;
-  latitude?: number;
-  longitude?: number;
-  notes?: string;
-}
-
-// Define time data structure
-interface TimeData {
-  localTime: string;
-  unixTimestamp: number;
-  utcTime: string;
-  timezone?: string;
-}
-
-// Define the expected shape of schedule information
-interface ScheduleInformation {
-  driverName?: string;
-  driverExternalId?: string;
-  driverSerial?: string;
-}
-
-// Define the expected shape of completion data
-interface CompletionData {
-  data?: {
-    startTime?: TimeData;
-    endTime?: TimeData;
-    status?: string;
-    tracking_url?: string;
-    form?: {
-      note?: string;
-      images?: Array<{
-        type: string;
-        url: string;
-        timestamp?: string;
-        latitude?: number;
-        longitude?: number;
-      }>;
-      signature?: {
-        type: string;
-        url: string;
-        timestamp?: string;
-      };
-    };
+  coordinates?: {
+    latitude?: number;
+    longitude?: number;
   };
+}
+
+// Define the expected shape of completion data from the database
+interface DBCompletionData {
+  status?: string;
+  photos?: Array<{
+    url: string;
+    type: string;
+    timestamp?: string;
+  }>;
+  signatures?: Array<{
+    url: string;
+    type: string;
+    timestamp?: string;
+  }>;
+  customFields?: Record<string, string>;
 }
 
 export const useWorkOrderData = (workOrderId: string | null) => {
@@ -88,58 +63,49 @@ export const useWorkOrderData = (workOrderId: string | null) => {
 
       // Parse JSON fields with type safety
       const locationData = data.location as LocationData || {};
-      const scheduleInfo = (data.service_details as any)?.scheduleInformation as ScheduleInformation || {};
-      const completionData = data.completion_data as CompletionData || {};
-      const customFields = data.service_details as Record<string, string> || {};
+      const completionData = data.completion_data as DBCompletionData || {};
+      const customFields = data.service_details || {};
 
       console.log('Parsed fields:', {
         locationData,
-        scheduleInfo,
         completionData,
         customFields
       });
-
-      // Calculate time on site if available
-      const timeOnSite = completionData.data?.startTime && completionData.data?.endTime
-        ? (new Date(completionData.data.endTime.localTime).getTime() - 
-           new Date(completionData.data.startTime.localTime).getTime()) / 1000 / 60
-        : undefined;
 
       // Map the database fields to match our WorkOrder type
       const mappedData: WorkOrder = {
         id: data.id,
         order_no: data.optimoroute_order_number || data.external_id || 'N/A',
         location: {
-          name: locationData.locationName || locationData.name,
-          locationNo: locationData.locationNo,
-          notes: locationData.notes,
-          latitude: locationData.latitude,
-          longitude: locationData.longitude,
-          address: locationData.address
+          name: locationData.name,
+          address: locationData.address,
+          latitude: locationData.coordinates?.latitude,
+          longitude: locationData.coordinates?.longitude
         },
         completion_data: {
           data: {
-            ...completionData.data,
-            tracking_url: completionData.data?.tracking_url,
+            status: completionData.status,
             form: {
-              note: completionData.data?.form?.note,
-              images: completionData.data?.form?.images || [],
-              signature: completionData.data?.form?.signature
+              images: completionData.photos?.map(photo => ({
+                type: photo.type,
+                url: photo.url
+              })) || [],
+              signature: completionData.signatures?.[0],
+              note: completionData.customFields?.notes
             }
           }
         },
         service_date: data.service_date,
-        driver: scheduleInfo ? {
-          name: scheduleInfo.driverName || '',
-          externalId: scheduleInfo.driverExternalId,
-          serial: scheduleInfo.driverSerial
+        driver: data.technicians?.name ? {
+          name: data.technicians.name,
+          externalId: data.technician_id
         } : undefined,
         status: data.optimoroute_status || data.status || 'pending',
         service_notes: data.notes,
         description: data.description,
         custom_fields: {
-          field1: customFields.field1,
-          field2: customFields.field2,
+          field1: customFields.groundUnits,
+          field2: customFields.deliveryDate,
           field3: customFields.field3,
           field4: customFields.field4,
           field5: customFields.field5
