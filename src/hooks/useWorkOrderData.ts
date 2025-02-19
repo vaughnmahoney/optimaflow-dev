@@ -23,13 +23,18 @@ interface TimeData {
   timezone?: string;
 }
 
+// Define the expected shape of schedule information
+interface ScheduleInformation {
+  driverName?: string;
+  driverExternalId?: string;
+  driverSerial?: string;
+}
+
 // Define the expected shape of completion data
 interface CompletionData {
   data?: {
     startTime?: TimeData;
     endTime?: TimeData;
-    scheduledAtDt?: TimeData;
-    completedAtDt?: TimeData;
     status?: string;
     tracking_url?: string;
     form?: {
@@ -73,6 +78,7 @@ export const useWorkOrderData = (workOrderId: string | null) => {
 
       // Parse JSON fields with type safety
       const locationData = data.location as LocationData || {};
+      const scheduleInfo = data.optimoroute_schedule_info as ScheduleInformation || {};
       const completionData = data.completion_data as CompletionData || {};
       const customFields = data.service_details as Record<string, string> || {};
 
@@ -106,10 +112,10 @@ export const useWorkOrderData = (workOrderId: string | null) => {
           }
         },
         service_date: data.service_date,
-        driver: data.technicians ? {
-          name: data.technicians.name,
-          externalId: data.external_id,
-          serial: data.service_name
+        driver: scheduleInfo ? {
+          name: scheduleInfo.driverName || '',
+          externalId: scheduleInfo.driverExternalId,
+          serial: scheduleInfo.driverSerial
         } : undefined,
         status: data.optimoroute_status || data.status || 'pending',
         service_notes: data.notes,
