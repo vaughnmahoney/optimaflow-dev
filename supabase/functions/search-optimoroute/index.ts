@@ -3,95 +3,119 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.0'
 import { corsHeaders } from '../_shared/cors.ts'
 
 const optimoRouteApiKey = Deno.env.get('OPTIMOROUTE_API_KEY')
-if (!optimoRouteApiKey) {
-  throw new Error('OPTIMOROUTE_API_KEY is required')
+const baseUrl = 'https://api.optimoroute.com/v1'
+
+interface OptimoRouteError {
+  error: string;
+  message: string;
+  code: number;
+}
+
+interface SearchParams {
+  searchQuery: string;
+  fromDate?: string;
+  toDate?: string;
+  status?: string;
+}
+
+async function fetchWithRetry(url: string, options: RequestInit, retries = 3): Promise<Response> {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await fetch(url, options);
+      
+      // Handle rate limiting
+      if (response.status === 429) {
+        const retryAfter = response.headers.get('Retry-After') || '60';
+        await new Promise(resolve => setTimeout(resolve, parseInt(retryAfter) * 1000));
+        continue;
+      }
+
+      // Handle other errors
+      if (!response.ok) {
+        const error = await response.json() as OptimoRouteError;
+        throw new Error(`OptimoRoute API error: ${error.message}`);
+      }
+
+      return response;
+    } catch (error) {
+      if (i === retries - 1) throw error;
+      await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+    }
+  }
+  throw new Error('Max retries reached');
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const { searchQuery } = await req.json()
-    console.log('Searching for order:', searchQuery)
+    const { searchQuery, fromDate, toDate, status }: SearchParams = await req.json()
+    
+    // Build query parameters
+    const queryParams = new URLSearchParams({
+      key: optimoRouteApiKey!,
+      ...(fromDate && { from: fromDate }),
+      ...(toDate && { to: toDate }),
+      ...(status && { status })
+    });
 
-    // Make request to OptimoRoute API
-    const response = await fetch(
-      `https://api.optimoroute.com/v1/orders/${searchQuery}`,
+    const url = `${baseUrl}/orders/${searchQuery}?${queryParams}`;
+    console.log('Fetching from URL:', url);
+    
+    const response = await fetchWithRetry(
+      url,
       {
         headers: {
-          'Authorization': `Bearer ${optimoRouteApiKey}`,
           'Content-Type': 'application/json',
         },
       }
-    )
+    );
 
-    const data = await response.json()
-    console.log('OptimoRoute API response:', data)
+    const data = await response.json();
+    console.log('OptimoRoute API response:', data);
 
-    if (!response.ok) {
-      throw new Error(data.message || 'Failed to fetch order from OptimoRoute')
+    // Validate response data
+    if (!data || (Array.isArray(data.orders) && !data.orders.length)) {
+      console.log('No orders found in response');
+      return new Response(
+        JSON.stringify({ 
+          error: 'No orders found',
+          success: false,
+          data: null
+        }),
+        { 
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
 
-    // Transform the data into our format
-    const transformedData = {
-      id: data.order_id || data.id,
-      order_no: searchQuery,
-      external_id: data.id,
-      status: data.status,
-      service_date: data.date,
-      location: {
-        name: data.location_name,
-        address: data.address,
-        coordinates: {
-          latitude: data.latitude,
-          longitude: data.longitude
-        }
-      },
-      service_notes: data.notes,
-      description: data.description,
-      custom_fields: {
-        groundUnits: data.custom_field_values?.ground_units,
-        deliveryDate: data.custom_field_values?.delivery_date,
-        field3: data.custom_field_values?.field3,
-        field4: data.custom_field_values?.field4,
-        field5: data.custom_field_values?.field5
-      },
-      completion_data: {
-        data: {
-          status: data.completion_status,
-          form: {
-            images: data.photos?.map((photo: any) => ({
-              type: photo.type,
-              url: photo.url
-            })) || [],
-            signature: data.signature,
-            note: data.completion_notes
-          }
-        }
-      }
-    }
-
-    console.log('Transformed data:', transformedData)
-
-    return new Response(
-      JSON.stringify(transformedData),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-
-  } catch (error) {
-    console.error('Error:', error)
+    console.log('Successfully processed order data');
     return new Response(
       JSON.stringify({ 
-        error: error.message || 'Internal server error',
-        success: false 
+        data,
+        success: true
       }),
       { 
-        status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
-    )
+    );
+
+  } catch (error) {
+    console.error('Error in edge function:', error);
+    
+    return new Response(
+      JSON.stringify({ 
+        error: error.message,
+        success: false,
+        code: error.code || 500
+      }),
+      { 
+        status: error.code || 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    );
   }
-})
+});
