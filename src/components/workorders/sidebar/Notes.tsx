@@ -5,14 +5,21 @@ export const Notes = ({ workOrder }: NotesProps) => {
   const getNotes = () => {
     const notes = [];
     
+    // Service notes
     if (workOrder.service_notes) notes.push(workOrder.service_notes);
     if (workOrder.serviceNotes) notes.push(workOrder.serviceNotes);
     if (workOrder.description) notes.push(workOrder.description);
-    if (workOrder.completion_data?.data?.form?.note) notes.push(workOrder.completion_data.data.form.note);
-    if (workOrder.completion_response?.notes) notes.push(workOrder.completion_response.notes);
-    if (workOrder.completion_response?.proofOfDelivery?.notes) {
-      notes.push(workOrder.completion_response.proofOfDelivery.notes);
+    
+    // Custom fields
+    if (workOrder.custom_fields?.field1) notes.push(workOrder.custom_fields.field1);
+    
+    // Completion notes
+    if (workOrder.completion_data?.data?.form?.note) {
+      notes.push(workOrder.completion_data.data.form.note);
     }
+    
+    // Location notes
+    if (workOrder.location?.notes) notes.push(workOrder.location.notes);
     
     return notes.filter(Boolean).join('\n\n');
   };

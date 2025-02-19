@@ -1,38 +1,66 @@
 
 export interface WorkOrder {
+  id: string;
   order_no: string;
   qc_status?: string;
   location?: {
     name?: string;
     locationName?: string;
     address?: string;
-  } | string;
+    locationNo?: string;
+    latitude?: number;
+    longitude?: number;
+    notes?: string;
+  };
   address?: string;
   service_date?: string;
   lastServiceDate?: string;
-  driver?: { name: string };
+  driver?: { 
+    name: string;
+    externalId?: string;
+    serial?: string;
+  };
   driverName?: string;
   completion_data?: {
     data?: {
-      startTime?: { localTime: string };
-      endTime?: { localTime: string };
+      startTime?: { 
+        localTime: string;
+        unixTimestamp: number;
+        utcTime: string;
+      };
+      endTime?: { 
+        localTime: string;
+        unixTimestamp: number;
+        utcTime: string;
+      };
       assignedTo?: { name: string };
       status?: string;
-      form?: { note?: string };
-    };
-  };
-  completion_response?: {
-    timeOnSite?: string;
-    notes?: string;
-    proofOfDelivery?: {
-      timestamp?: string;
-      notes?: string;
+      form?: { 
+        note?: string;
+        images?: Array<{
+          type: string;
+          url: string;
+        }>;
+        signature?: {
+          type: string;
+          url: string;
+        };
+      };
+      tracking_url?: string;
     };
   };
   status?: string;
   service_notes?: string;
   serviceNotes?: string;
   description?: string;
+  custom_fields?: {
+    field1?: string;
+    field2?: string;
+    field3?: string;
+    field4?: string;
+    field5?: string;
+  };
+  priority?: string;
 }
 
 export interface HeaderProps {

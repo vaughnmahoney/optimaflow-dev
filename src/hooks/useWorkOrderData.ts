@@ -20,16 +20,49 @@ export const useWorkOrderData = (workOrderId: string | null) => {
 
       if (error) throw error;
 
+      if (!data) return null;
+
       // Map the database fields to match our WorkOrder type
-      return data ? {
+      const mappedData: WorkOrder = {
         ...data,
+        id: data.id,
         order_no: data.optimoroute_order_number || data.external_id || 'N/A',
-        location: data.location || {},
-        completion_data: data.completion_data || {},
+        location: {
+          ...data.location,
+          name: data.location?.locationName || data.location?.name,
+          locationNo: data.location?.locationNo,
+          notes: data.location?.notes,
+          latitude: data.location?.latitude,
+          longitude: data.location?.longitude
+        },
+        completion_data: {
+          data: {
+            ...data.completion_data?.data,
+            tracking_url: data.completion_data?.data?.tracking_url,
+            form: {
+              ...data.completion_data?.data?.form,
+              images: data.completion_data?.data?.form?.images || [],
+              signature: data.completion_data?.data?.form?.signature
+            }
+          }
+        },
         service_date: data.service_date,
-        driver: data.technicians ? { name: data.technicians.name } : undefined,
-        status: data.optimoroute_status || data.status || 'pending'
-      } as WorkOrder : null;
+        driver: data.technicians ? {
+          name: data.technicians.name,
+          externalId: data.driverExternalId,
+          serial: data.driverSerial
+        } : undefined,
+        status: data.optimoroute_status || data.status || 'pending',
+        custom_fields: {
+          field1: data.customField1,
+          field2: data.customField2,
+          field3: data.customField3,
+          field4: data.customField4,
+          field5: data.customField5
+        }
+      };
+
+      return mappedData;
     },
     enabled: !!workOrderId,
   });

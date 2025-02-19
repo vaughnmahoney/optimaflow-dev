@@ -1,5 +1,5 @@
 
-import { Calendar, Clock, Truck, User } from "lucide-react";
+import { Calendar, Clock, Truck, User, MapPin } from "lucide-react";
 import { format } from "date-fns";
 import { ServiceDetailsProps } from "../types/sidebar";
 
@@ -60,6 +60,13 @@ export const ServiceDetails = ({ workOrder }: ServiceDetailsProps) => {
     return 'Not available';
   };
 
+  const getLocation = () => {
+    if (workOrder.location?.locationName && workOrder.location?.locationNo) {
+      return `${workOrder.location.locationName} (${workOrder.location.locationNo})`;
+    }
+    return workOrder.location?.locationName || workOrder.location?.name || 'Not available';
+  };
+
   return (
     <div>
       <h4 className="text-sm font-medium text-muted-foreground mb-2">Service Details</h4>
@@ -69,6 +76,14 @@ export const ServiceDetails = ({ workOrder }: ServiceDetailsProps) => {
           <div>
             <p className="text-sm text-muted-foreground">Service Date</p>
             <p className="text-sm">{getServiceDate()}</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
+          <div>
+            <p className="text-sm text-muted-foreground">Location</p>
+            <p className="text-sm">{getLocation()}</p>
           </div>
         </div>
 
