@@ -33,6 +33,7 @@ export const WorkOrderList = ({
   const [searchResponse, setSearchResponse] = useState<any>(null);
   const [transformedData, setTransformedData] = useState<any>(null);
 
+  // Import function that transforms the data
   const transformResponse = (data: any) => {
     if (!data) return null;
     
@@ -145,26 +146,81 @@ export const WorkOrderList = ({
 
       {/* Debug Data Display */}
       {searchResponse && (
-        <div className="grid grid-cols-2 gap-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Raw JSON Response</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <pre className="text-xs overflow-auto max-h-96 bg-slate-50 p-4 rounded-md">
-                {JSON.stringify(searchResponse, null, 2)}
-              </pre>
-            </CardContent>
-          </Card>
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Raw JSON Response</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <pre className="text-xs overflow-auto max-h-96 bg-slate-50 p-4 rounded-md">
+                  {JSON.stringify(searchResponse, null, 2)}
+                </pre>
+              </CardContent>
+            </Card>
 
+            <Card>
+              <CardHeader>
+                <CardTitle>Transformed Data</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <pre className="text-xs overflow-auto max-h-96 bg-slate-50 p-4 rounded-md">
+                  {JSON.stringify(transformedData, null, 2)}
+                </pre>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Import Logic Display */}
           <Card>
             <CardHeader>
-              <CardTitle>Transformed Data</CardTitle>
+              <CardTitle>Import & Transform Logic</CardTitle>
             </CardHeader>
             <CardContent>
-              <pre className="text-xs overflow-auto max-h-96 bg-slate-50 p-4 rounded-md">
-                {JSON.stringify(transformedData, null, 2)}
-              </pre>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-sm font-semibold mb-2">Edge Function Call:</h3>
+                  <pre className="text-xs bg-slate-50 p-4 rounded-md">
+{`const { data, error } = await supabase.functions.invoke('search-optimoroute', {
+  body: { searchQuery: optimoSearch }
+});`}
+                  </pre>
+                </div>
+                
+                <div>
+                  <h3 className="text-sm font-semibold mb-2">Transform Function:</h3>
+                  <pre className="text-xs bg-slate-50 p-4 rounded-md">
+{`const transformResponse = (data: any) => {
+  if (!data) return null;
+  
+  return {
+    Order: {
+      ID: data.id,
+      Number: data.order_no || data.external_id,
+      Status: data.status,
+      Date: data.service_date,
+    },
+    Location: {
+      Name: data.location?.name,
+      Address: data.location?.address,
+      Coordinates: data.location?.coordinates,
+    },
+    ServiceDetails: {
+      Notes: data.service_notes,
+      Description: data.description,
+      CustomFields: data.custom_fields,
+    },
+    CompletionInfo: {
+      Status: data.completion_data?.data?.status,
+      Images: data.completion_data?.data?.form?.images?.length || 0,
+      HasSignature: !!data.completion_data?.data?.form?.signature,
+      Notes: data.completion_data?.data?.form?.note,
+    }
+  };
+}`}
+                  </pre>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
