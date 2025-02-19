@@ -1,6 +1,6 @@
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { WorkOrderDetailsSidebar } from "./WorkOrderDetailsSidebar";
 import { ImageViewer } from "./ImageViewer";
@@ -25,35 +25,9 @@ export const ImageViewDialog = ({
   const [isTransitioning, setIsTransitioning] = useState(false);
   const queryClient = useQueryClient();
   const currentWorkOrderIndex = workOrders.findIndex(wo => wo.id === workOrderId);
-
-  // Use our custom hooks
+  
+  // Always call hooks at the top level, before any conditional logic
   const { workOrder, images, isLoading } = useWorkOrderData(workOrderId);
-  useWorkOrderPrefetch(workOrderId, currentWorkOrderIndex, workOrders);
-
-  const handlePreviousWorkOrder = () => {
-    if (currentWorkOrderIndex > 0) {
-      const previousWorkOrder = workOrders[currentWorkOrderIndex - 1];
-      setIsTransitioning(true);
-      
-      const event = new CustomEvent('openWorkOrder', { detail: previousWorkOrder.id });
-      window.dispatchEvent(event);
-      
-      setTimeout(() => setIsTransitioning(false), 300);
-    }
-  };
-
-  const handleNextWorkOrder = () => {
-    if (currentWorkOrderIndex < workOrders.length - 1) {
-      const nextWorkOrder = workOrders[currentWorkOrderIndex + 1];
-      setIsTransitioning(true);
-      
-      const event = new CustomEvent('openWorkOrder', { detail: nextWorkOrder.id });
-      window.dispatchEvent(event);
-      
-      setTimeout(() => setIsTransitioning(false), 300);
-    }
-  };
-
   const { 
     currentImageIndex, 
     setCurrentImageIndex, 
@@ -61,10 +35,24 @@ export const ImageViewDialog = ({
     handleNext 
   } = useImageNavigation({
     totalImages: images?.length || 0,
-    onPreviousWorkOrder: handlePreviousWorkOrder,
-    onNextWorkOrder: handleNextWorkOrder,
+    onPreviousWorkOrder: () => handleWorkOrderChange(currentWorkOrderIndex - 1),
+    onNextWorkOrder: () => handleWorkOrderChange(currentWorkOrderIndex + 1),
     isTransitioning
   });
+
+  // Always call prefetch hook
+  useWorkOrderPrefetch(workOrderId, currentWorkOrderIndex, workOrders);
+
+  // Handle work order navigation
+  const handleWorkOrderChange = (newIndex: number) => {
+    if (newIndex >= 0 && newIndex < workOrders.length) {
+      setIsTransitioning(true);
+      const nextWorkOrder = workOrders[newIndex];
+      const event = new CustomEvent('openWorkOrder', { detail: nextWorkOrder.id });
+      window.dispatchEvent(event);
+      setTimeout(() => setIsTransitioning(false), 300);
+    }
+  };
 
   // Handle status updates and cache invalidation
   const handleStatusUpdate = async (status: string) => {
@@ -84,6 +72,11 @@ export const ImageViewDialog = ({
   const handleDownloadAll = async () => {
     console.log("Downloading all images");
   };
+
+  // Early return with null if no workOrderId, but after all hooks
+  if (!workOrderId) {
+    return null;
+  }
 
   return (
     <Dialog 
@@ -115,8 +108,8 @@ export const ImageViewDialog = ({
           <WorkOrderNavigation
             currentIndex={currentWorkOrderIndex}
             totalCount={workOrders.length}
-            onPrevious={handlePreviousWorkOrder}
-            onNext={handleNextWorkOrder}
+            onPrevious={() => handleWorkOrderChange(currentWorkOrderIndex - 1)}
+            onNext={() => handleWorkOrderChange(currentWorkOrderIndex + 1)}
           />
         </div>
       </DialogContent>
