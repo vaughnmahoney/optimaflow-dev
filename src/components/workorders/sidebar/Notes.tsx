@@ -7,7 +7,6 @@ export const Notes = ({ workOrder }: NotesProps) => {
     
     // Service notes
     if (workOrder.service_notes) notes.push(workOrder.service_notes);
-    if (workOrder.serviceNotes) notes.push(workOrder.serviceNotes);
     if (workOrder.description) notes.push(workOrder.description);
     
     // Custom fields

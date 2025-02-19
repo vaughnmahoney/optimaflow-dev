@@ -94,7 +94,6 @@ export const ServiceDetails = ({ workOrder }: ServiceDetailsProps) => {
             <p className="text-sm">
               {workOrder.driver?.name || 
                workOrder.driverName || 
-               workOrder.completion_data?.data?.assignedTo?.name || 
                'Not assigned'}
             </p>
           </div>

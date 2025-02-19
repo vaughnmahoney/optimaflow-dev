@@ -78,7 +78,7 @@ export const useWorkOrderData = (workOrderId: string | null) => {
 
       // Parse JSON fields with type safety
       const locationData = data.location as LocationData || {};
-      const scheduleInfo = data.optimoroute_schedule_info as ScheduleInformation || {};
+      const scheduleInfo = (data.service_details as any)?.scheduleInformation as ScheduleInformation || {};
       const completionData = data.completion_data as CompletionData || {};
       const customFields = data.service_details as Record<string, string> || {};
 
