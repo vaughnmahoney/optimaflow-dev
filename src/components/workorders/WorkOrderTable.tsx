@@ -24,18 +24,12 @@ export const WorkOrderTable = ({
   onStatusUpdate,
   onImageView 
 }: WorkOrderTableProps) => {
-  const formatTimeOnSite = (timeOnSite: unknown | null): string => {
-    if (!timeOnSite) return "N/A";
-    return String(timeOnSite);
-  };
-
-  const getLocationAddress = (location: any): string => {
-    if (!location) return 'N/A';
-    if (typeof location === 'object') {
-      // Handle different location object structures
+  const getLocationAddress = (order: WorkOrder): string => {
+    if (!order.search_response) return 'N/A';
+    const location = order.search_response.location;
+    if (typeof location === 'object' && location !== null) {
       if ('address' in location) return location.address;
-      if ('locationName' in location) return location.locationName;
-      return 'Invalid location format';
+      if ('name' in location) return location.name;
     }
     return 'N/A';
   };
@@ -63,18 +57,18 @@ export const WorkOrderTable = ({
           ) : (
             workOrders.map((workOrder) => (
               <TableRow key={workOrder.id}>
-                <TableCell>{workOrder.order_id || workOrder.optimoroute_order_number || 'N/A'}</TableCell>
+                <TableCell>{workOrder.order_no || 'N/A'}</TableCell>
                 <TableCell>
                   {workOrder.service_date ? format(new Date(workOrder.service_date), "MMM d, yyyy") : "N/A"}
                 </TableCell>
                 <TableCell className="max-w-xs truncate">
-                  {getLocationAddress(workOrder.location)}
+                  {getLocationAddress(workOrder)}
                 </TableCell>
                 <TableCell className="max-w-xs truncate">
-                  {workOrder.description || workOrder.service_notes || "No notes"}
+                  {workOrder.service_notes || "No notes"}
                 </TableCell>
                 <TableCell>
-                  <StatusBadge status={workOrder.qc_status || 'pending_review'} />
+                  <StatusBadge status={workOrder.status || 'pending_review'} />
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">

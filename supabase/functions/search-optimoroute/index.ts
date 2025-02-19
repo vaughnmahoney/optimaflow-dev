@@ -14,6 +14,10 @@ Deno.serve(async (req) => {
     const { searchQuery } = await req.json()
     console.log('Searching for order:', searchQuery)
     
+    if (!optimoRouteApiKey) {
+      throw new Error('OptimoRoute API key not configured')
+    }
+    
     // 1. Search for orders with full data
     const searchResponse = await fetch(
       `${baseUrl}/search_orders?key=${optimoRouteApiKey}`,
@@ -29,6 +33,12 @@ Deno.serve(async (req) => {
         })
       }
     )
+
+    if (!searchResponse.ok) {
+      const errorData = await searchResponse.text()
+      console.error('OptimoRoute API error:', errorData)
+      throw new Error(`OptimoRoute API error: ${searchResponse.status}`)
+    }
 
     const searchData = await searchResponse.json()
     console.log('Search response:', searchData)
@@ -54,6 +64,12 @@ Deno.serve(async (req) => {
       }
     )
 
+    if (!completionResponse.ok) {
+      const errorData = await completionResponse.text()
+      console.error('OptimoRoute completion API error:', errorData)
+      throw new Error(`OptimoRoute completion API error: ${completionResponse.status}`)
+    }
+
     const completionData = await completionResponse.json()
     console.log('Completion data:', completionData)
 
@@ -78,28 +94,26 @@ Deno.serve(async (req) => {
     }
 
     // 4. Return formatted response
-    const formattedResponse = {
-      success: true,
-      orders: [
-        {
-          data: searchData.orders[0].data,
-          id: searchData.orders[0].id,
-          scheduleInformation: searchData.orders[0].scheduleInformation
-        }
-      ],
-      completion_data: completionData
-    }
-
     return new Response(
-      JSON.stringify(formattedResponse),
+      JSON.stringify({
+        success: true,
+        orders: searchData.orders,
+        completion_data: completionData
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
   } catch (error) {
     console.error('Error:', error)
     return new Response(
-      JSON.stringify({ error: error.message, success: false }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ 
+        error: error.message, 
+        success: false 
+      }),
+      { 
+        status: 500, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
     )
   }
 })
