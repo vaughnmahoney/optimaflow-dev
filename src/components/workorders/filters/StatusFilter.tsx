@@ -29,6 +29,7 @@ export const StatusFilter = ({
         <SelectItem value="pending_review">Pending Review</SelectItem>
         <SelectItem value="approved">Approved</SelectItem>
         <SelectItem value="flagged">Flagged</SelectItem>
+        <SelectItem value="pending">Pending</SelectItem>
       </SelectContent>
     </Select>
   );

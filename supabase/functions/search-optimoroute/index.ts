@@ -57,7 +57,27 @@ Deno.serve(async (req) => {
     const completionData = await completionResponse.json()
     console.log('Completion data:', completionData)
 
-    // 3. Format the response
+    // 3. Store in database
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
+    const { error: dbError } = await supabase
+      .from('work_orders')
+      .insert({
+        order_no: searchQuery,
+        search_response: searchData.orders[0],
+        completion_response: completionData,
+        status: 'pending_review'
+      })
+
+    if (dbError) {
+      console.error('Database error:', dbError)
+      throw new Error('Failed to store work order')
+    }
+
+    // 4. Return formatted response
     const formattedResponse = {
       success: true,
       orders: [
@@ -69,8 +89,6 @@ Deno.serve(async (req) => {
       ],
       completion_data: completionData
     }
-
-    console.log('Sending formatted response:', formattedResponse)
 
     return new Response(
       JSON.stringify(formattedResponse),

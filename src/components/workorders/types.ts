@@ -3,23 +3,15 @@ import { Json } from "@/integrations/supabase/types";
 
 export interface WorkOrder {
   id: string;
-  optimoroute_id?: string;
-  optimoroute_order_number?: string | null;
-  optimoroute_status?: string | null;
-  service_date: string;
-  qc_status?: string | null;
-  description?: string | null;
-  location?: Json | null;
-  time_on_site?: unknown | null;
-  service_name?: string | null;
-  customer_name?: string | null;
-  technician_name?: string | null;
-  billing_status?: string | null;
+  order_no: string;
+  status: string;
+  timestamp: string;
+  service_date?: string;
+  service_notes?: string;
+  location?: Json;
   has_images?: boolean;
-  priority?: string | null;
-  service_notes?: string | null;
-  qc_notes?: string | null;
-  order_id?: string | null;
+  search_response?: Json;
+  completion_response?: Json;
 }
 
 export interface WorkOrderListProps {

@@ -494,16 +494,49 @@ export type Database = {
       }
       work_orders: {
         Row: {
+          completion_response: Json | null
+          created_at: string | null
+          id: string
+          order_no: string | null
+          search_response: Json | null
+          status: string | null
+          timestamp: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          completion_response?: Json | null
+          created_at?: string | null
+          id?: string
+          order_no?: string | null
+          search_response?: Json | null
+          status?: string | null
+          timestamp?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          completion_response?: Json | null
+          created_at?: string | null
+          id?: string
+          order_no?: string | null
+          search_response?: Json | null
+          status?: string | null
+          timestamp?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      work_orders_backup: {
+        Row: {
           billing_status: string | null
           completion_data: Json | null
           completion_notes: string | null
           created_at: string | null
-          customer_id: string
+          customer_id: string | null
           description: string | null
           end_time: string | null
           external_id: string | null
           flag_reason: string | null
-          id: string
+          id: string | null
           location: Json | null
           notes: string | null
           optimoroute_id: string | null
@@ -512,13 +545,13 @@ export type Database = {
           priority: string | null
           qc_notes: string | null
           qc_status: string | null
-          service_date: string
+          service_date: string | null
           service_details: Json | null
           service_name: string | null
           service_type_id: string | null
           start_time: string | null
-          status: string
-          technician_id: string
+          status: string | null
+          technician_id: string | null
           time_on_site: unknown | null
           timestamps: Json | null
           updated_at: string | null
@@ -528,12 +561,12 @@ export type Database = {
           completion_data?: Json | null
           completion_notes?: string | null
           created_at?: string | null
-          customer_id: string
+          customer_id?: string | null
           description?: string | null
           end_time?: string | null
           external_id?: string | null
           flag_reason?: string | null
-          id?: string
+          id?: string | null
           location?: Json | null
           notes?: string | null
           optimoroute_id?: string | null
@@ -542,13 +575,13 @@ export type Database = {
           priority?: string | null
           qc_notes?: string | null
           qc_status?: string | null
-          service_date: string
+          service_date?: string | null
           service_details?: Json | null
           service_name?: string | null
           service_type_id?: string | null
           start_time?: string | null
-          status?: string
-          technician_id: string
+          status?: string | null
+          technician_id?: string | null
           time_on_site?: unknown | null
           timestamps?: Json | null
           updated_at?: string | null
@@ -558,12 +591,12 @@ export type Database = {
           completion_data?: Json | null
           completion_notes?: string | null
           created_at?: string | null
-          customer_id?: string
+          customer_id?: string | null
           description?: string | null
           end_time?: string | null
           external_id?: string | null
           flag_reason?: string | null
-          id?: string
+          id?: string | null
           location?: Json | null
           notes?: string | null
           optimoroute_id?: string | null
@@ -572,40 +605,18 @@ export type Database = {
           priority?: string | null
           qc_notes?: string | null
           qc_status?: string | null
-          service_date?: string
+          service_date?: string | null
           service_details?: Json | null
           service_name?: string | null
           service_type_id?: string | null
           start_time?: string | null
-          status?: string
-          technician_id?: string
+          status?: string | null
+          technician_id?: string | null
           time_on_site?: unknown | null
           timestamps?: Json | null
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "work_orders_customer_id_fkey"
-            columns: ["customer_id"]
-            isOneToOne: false
-            referencedRelation: "customers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "work_orders_service_type_id_fkey"
-            columns: ["service_type_id"]
-            isOneToOne: false
-            referencedRelation: "service_types"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "work_orders_technician_id_fkey"
-            columns: ["technician_id"]
-            isOneToOne: false
-            referencedRelation: "technicians"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Views: {
@@ -628,19 +639,34 @@ export type Database = {
       }
       qc_dashboard_view: {
         Row: {
-          billing_status: string | null
-          customer_name: string | null
           has_images: boolean | null
           id: string | null
           location: Json | null
-          order_id: string | null
-          priority: string | null
-          qc_notes: string | null
-          qc_status: string | null
+          order_no: string | null
           service_date: string | null
           service_notes: string | null
-          technician_name: string | null
-          time_on_site: unknown | null
+          status: string | null
+          timestamp: string | null
+        }
+        Insert: {
+          has_images?: never
+          id?: string | null
+          location?: never
+          order_no?: string | null
+          service_date?: never
+          service_notes?: never
+          status?: string | null
+          timestamp?: string | null
+        }
+        Update: {
+          has_images?: never
+          id?: string | null
+          location?: never
+          order_no?: string | null
+          service_date?: never
+          service_notes?: never
+          status?: string | null
+          timestamp?: string | null
         }
         Relationships: []
       }

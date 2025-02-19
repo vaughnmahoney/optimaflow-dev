@@ -16,7 +16,7 @@ export const WorkOrderContent = () => {
       const { data, error } = await supabase
         .from("qc_dashboard_view")
         .select("*")
-        .order("service_date", { ascending: false });
+        .order("timestamp", { ascending: false });
 
       if (error) throw error;
       return data as WorkOrder[];
@@ -36,7 +36,7 @@ export const WorkOrderContent = () => {
   const handleStatusChange = async (workOrderId: string, newStatus: string) => {
     const { error } = await supabase
       .from("work_orders")
-      .update({ qc_status: newStatus })
+      .update({ status: newStatus })
       .eq("id", workOrderId);
 
     if (error) {
@@ -57,11 +57,9 @@ export const WorkOrderContent = () => {
     
     return workOrders.filter(order => {
       const matchesSearch = !searchQuery || 
-        order.technician_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.order_id?.toLowerCase().includes(searchQuery.toLowerCase());
+        order.order_no?.toLowerCase().includes(searchQuery.toLowerCase());
         
-      const matchesStatus = !statusFilter || order.qc_status === statusFilter;
+      const matchesStatus = !statusFilter || order.status === statusFilter;
       
       return matchesSearch && matchesStatus;
     });
