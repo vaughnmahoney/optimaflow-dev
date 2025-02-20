@@ -4,12 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
 
 export const SearchBar = ({ onSearch }: { onSearch: (value: string) => void }) => {
   const [searchValue, setSearchValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
 
   const handleSearch = async () => {
     if (!searchValue.trim()) return;
@@ -24,7 +22,7 @@ export const SearchBar = ({ onSearch }: { onSearch: (value: string) => void }) =
 
       if (data.success && data.workOrderId) {
         toast.success('Work order found');
-        navigate(`/work-orders/${data.workOrderId}`);
+        onSearch(searchValue);
       } else {
         toast.error(data.error || 'Failed to find work order');
       }
@@ -33,7 +31,6 @@ export const SearchBar = ({ onSearch }: { onSearch: (value: string) => void }) =
       toast.error('Failed to search for work order');
     } finally {
       setIsLoading(false);
-      onSearch(searchValue);
     }
   };
 
