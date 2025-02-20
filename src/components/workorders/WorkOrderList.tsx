@@ -4,6 +4,7 @@ import { WorkOrderListProps } from "./types";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SearchBar } from "./search/SearchBar";
+import { OptimoRouteSearchBar } from "./search/OptimoRouteSearchBar";
 import { StatusFilter } from "./filters/StatusFilter";
 import { DebugDataDisplay } from "./debug/DebugDataDisplay";
 import { transformResponse } from "./utils/transformResponse";
@@ -30,9 +31,13 @@ export const WorkOrderList = ({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-4">
-        <SearchBar onSearch={onSearchChange} />
-
+      <div className="flex flex-col gap-4 md:flex-row md:items-center">
+        <div className="flex-1">
+          <SearchBar onSearch={onSearchChange} />
+        </div>
+        <div className="flex-1">
+          <OptimoRouteSearchBar onSearch={onSearchChange} />
+        </div>
         <StatusFilter 
           statusFilter={statusFilter}
           onStatusFilterChange={onStatusFilterChange}
