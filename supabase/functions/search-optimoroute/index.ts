@@ -1,5 +1,5 @@
 
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,122 +7,137 @@ const corsHeaders = {
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const optimoRouteApiKey = Deno.env.get('OPTIMOROUTE_API_KEY')
-    if (!optimoRouteApiKey) {
-      console.error('OptimoRoute API key missing')
-      throw new Error('OptimoRoute API key not configured')
-    }
-
     const { searchQuery } = await req.json()
-    console.log('Search query received:', searchQuery)
+    console.log('Received search query:', searchQuery)
 
+    // Validate inputs
     if (!searchQuery) {
       throw new Error('Search query is required')
     }
 
-    const baseUrl = 'https://api.optimoroute.com/v1'
-    
-    // 1. Search for orders
-    const searchResponse = await fetch(
-      `${baseUrl}/search_orders?key=${optimoRouteApiKey}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query: searchQuery,
-          includeOrderData: true,
-          includeScheduleInformation: true
-        })
-      }
-    )
+    const optimoRouteApiKey = Deno.env.get('OPTIMOROUTE_API_KEY')
+    if (!optimoRouteApiKey) {
+      throw new Error('OptimoRoute API key not configured')
+    }
+
+    // 1. Search OptimoRoute for order
+    console.log('Fetching order details from OptimoRoute...')
+    const searchResponse = await fetch('https://api.optimoroute.com/v1/search_orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        key: optimoRouteApiKey,
+        query: searchQuery,
+        includeOrderData: true,
+        includeScheduleInformation: true
+      })
+    })
 
     if (!searchResponse.ok) {
-      const errorText = await searchResponse.text()
-      console.error('OptimoRoute search error:', errorText)
-      throw new Error(`OptimoRoute API error: ${searchResponse.status}`)
+      throw new Error(`OptimoRoute search failed: ${searchResponse.status}`)
     }
 
     const searchData = await searchResponse.json()
-    console.log('Search data received:', searchData)
-    
+    console.log('Search response received:', searchData)
+
     if (!searchData.orders?.length) {
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'No orders found' 
-        }),
-        { 
-          status: 404,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
+        JSON.stringify({ success: false, error: 'No orders found' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
       )
     }
 
+    const order = searchData.orders[0]
+
     // 2. Get completion details
-    const completionResponse = await fetch(
-      `${baseUrl}/get_completion_details?key=${optimoRouteApiKey}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          orderId: searchData.orders[0].id
-        })
-      }
-    )
+    console.log('Fetching completion details...')
+    const completionResponse = await fetch('https://api.optimoroute.com/v1/get_completion_details', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        key: optimoRouteApiKey,
+        orderId: order.id
+      })
+    })
 
     if (!completionResponse.ok) {
-      const errorText = await completionResponse.text()
-      console.error('OptimoRoute completion error:', errorText)
-      throw new Error(`OptimoRoute completion API error: ${completionResponse.status}`)
+      throw new Error(`OptimoRoute completion details failed: ${completionResponse.status}`)
     }
 
     const completionData = await completionResponse.json()
     console.log('Completion data received:', completionData)
 
     // 3. Store in Supabase
+    console.log('Storing data in Supabase...')
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
     if (!supabaseUrl || !supabaseKey) {
-      console.error('Supabase configuration missing')
       throw new Error('Supabase configuration missing')
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    const { error: dbError } = await supabase
+    const { data: existingOrder, error: checkError } = await supabase
       .from('work_orders')
-      .insert({
-        order_no: searchQuery,
-        search_response: searchData.orders[0],
-        completion_response: completionData,
-        status: 'pending_review'
-      })
+      .select('id')
+      .eq('order_no', searchQuery)
+      .maybeSingle()
 
-    if (dbError) {
-      console.error('Database error:', dbError)
-      throw new Error('Failed to store work order')
+    if (checkError) {
+      throw new Error(`Database check failed: ${checkError.message}`)
     }
+
+    let workOrderId
+
+    if (existingOrder) {
+      // Update existing order
+      const { error: updateError } = await supabase
+        .from('work_orders')
+        .update({
+          search_response: order,
+          completion_response: completionData,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingOrder.id)
+
+      if (updateError) throw new Error(`Failed to update work order: ${updateError.message}`)
+      workOrderId = existingOrder.id
+    } else {
+      // Insert new order
+      const { data: newOrder, error: insertError } = await supabase
+        .from('work_orders')
+        .insert({
+          order_no: searchQuery,
+          search_response: order,
+          completion_response: completionData,
+          status: 'pending_review',
+          timestamp: new Date().toISOString()
+        })
+        .select()
+        .single()
+
+      if (insertError) throw new Error(`Failed to insert work order: ${insertError.message}`)
+      workOrderId = newOrder.id
+    }
+
+    console.log('Successfully stored work order:', workOrderId)
 
     return new Response(
       JSON.stringify({
         success: true,
-        orders: searchData.orders,
-        completion_data: completionData
+        workOrderId,
+        order: {
+          ...order,
+          completion_data: completionData
+        }
       }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
   } catch (error) {
@@ -133,8 +148,8 @@ Deno.serve(async (req) => {
         error: error.message
       }),
       { 
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500
       }
     )
   }
