@@ -8,7 +8,7 @@ import { WorkOrder, WorkOrderSearchResponse, WorkOrderCompletionResponse } from 
 import { ImageViewModal } from "./ImageViewModal";
 
 export const WorkOrderContent = () => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [filterQuery, setFilterQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [selectedWorkOrder, setSelectedWorkOrder] = useState<WorkOrder | null>(null);
   
@@ -69,8 +69,15 @@ export const WorkOrderContent = () => {
     refetch();
   };
 
-  const handleSearch = useCallback((query: string) => {
-    setSearchQuery(query.toLowerCase());
+  // Local filtering handler
+  const handleFilter = useCallback((query: string) => {
+    setFilterQuery(query.toLowerCase());
+  }, []);
+
+  // OptimoRoute search handler
+  const handleOptimoRouteSearch = useCallback(async (query: string) => {
+    // The API search will be handled entirely in the OptimoRouteSearchBar component
+    console.log('OptimoRoute search initiated:', query);
   }, []);
 
   const handleImageView = (workOrderId: string) => {
@@ -97,17 +104,17 @@ export const WorkOrderContent = () => {
     if (!workOrders) return [];
     
     return workOrders.filter(order => {
-      const matchesSearch = !searchQuery || 
-        order.order_no?.toLowerCase().includes(searchQuery) ||
-        order.service_notes?.toLowerCase().includes(searchQuery) ||
-        order.location?.address?.toLowerCase().includes(searchQuery) ||
-        order.location?.name?.toLowerCase().includes(searchQuery);
+      const matchesSearch = !filterQuery || 
+        order.order_no?.toLowerCase().includes(filterQuery) ||
+        order.service_notes?.toLowerCase().includes(filterQuery) ||
+        order.location?.address?.toLowerCase().includes(filterQuery) ||
+        order.location?.name?.toLowerCase().includes(filterQuery);
         
       const matchesStatus = !statusFilter || order.status === statusFilter;
       
       return matchesSearch && matchesStatus;
     });
-  }, [workOrders, searchQuery, statusFilter]);
+  }, [workOrders, filterQuery, statusFilter]);
 
   if (error) {
     console.error("Error loading work orders:", error);
@@ -119,9 +126,10 @@ export const WorkOrderContent = () => {
       <WorkOrderList 
         workOrders={filteredWorkOrders()} 
         isLoading={isLoading}
-        onSearchChange={handleSearch}
+        onSearchChange={handleFilter}
+        onOptimoRouteSearch={handleOptimoRouteSearch}
         onStatusFilterChange={setStatusFilter}
-        searchQuery={searchQuery}
+        searchQuery={filterQuery}
         statusFilter={statusFilter}
         onStatusUpdate={handleStatusChange}
         onImageView={handleImageView}

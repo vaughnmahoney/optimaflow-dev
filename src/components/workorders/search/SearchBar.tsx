@@ -2,36 +2,12 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 
 export const SearchBar = ({ onSearch }: { onSearch: (value: string) => void }) => {
   const [searchValue, setSearchValue] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSearch = async () => {
-    if (!searchValue.trim()) return;
-
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('search-optimoroute', {
-        body: { searchQuery: searchValue.trim() }
-      });
-
-      if (error) throw error;
-
-      if (data.success && data.workOrderId) {
-        toast.success('Work order found');
-        onSearch(searchValue);
-      } else {
-        toast.error(data.error || 'Failed to find work order');
-      }
-    } catch (error) {
-      console.error('Search error:', error);
-      toast.error('Failed to search for work order');
-    } finally {
-      setIsLoading(false);
-    }
+  const handleSearch = () => {
+    onSearch(searchValue.trim());
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -40,18 +16,24 @@ export const SearchBar = ({ onSearch }: { onSearch: (value: string) => void }) =
     }
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchValue(value);
+    onSearch(value); // Immediate filtering as user types
+  };
+
   return (
     <div className="flex gap-2">
       <Input
         type="text"
-        placeholder="Search work orders..."
+        placeholder="Filter work orders..."
         value={searchValue}
-        onChange={(e) => setSearchValue(e.target.value)}
+        onChange={handleChange}
         onKeyPress={handleKeyPress}
         className="min-w-[200px]"
       />
-      <Button onClick={handleSearch} disabled={isLoading}>
-        {isLoading ? "Searching..." : "Search"}
+      <Button onClick={handleSearch}>
+        Filter
       </Button>
     </div>
   );

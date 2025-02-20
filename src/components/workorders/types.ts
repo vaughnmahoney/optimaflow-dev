@@ -41,6 +41,7 @@ export interface WorkOrderListProps {
   workOrders: WorkOrder[];
   isLoading: boolean;
   onSearchChange: (value: string) => void;
+  onOptimoRouteSearch: (value: string) => void;
   onStatusFilterChange: (value: string | null) => void;
   onStatusUpdate: (workOrderId: string, newStatus: string) => void;
   onImageView: (workOrderId: string) => void;

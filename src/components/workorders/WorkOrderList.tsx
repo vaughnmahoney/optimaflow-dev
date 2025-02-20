@@ -12,6 +12,7 @@ export const WorkOrderList = ({
   workOrders, 
   isLoading,
   onSearchChange,
+  onOptimoRouteSearch,
   onStatusFilterChange,
   onStatusUpdate,
   onImageView,
@@ -33,7 +34,7 @@ export const WorkOrderList = ({
           <SearchBar onSearch={onSearchChange} />
         </div>
         <div className="flex-1">
-          <OptimoRouteSearchBar onSearch={onSearchChange} />
+          <OptimoRouteSearchBar onSearch={onOptimoRouteSearch} />
         </div>
         <StatusFilter 
           statusFilter={statusFilter}
