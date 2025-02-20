@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // 1. First get the order details
+    // 1. First get the order details with correct format
     const searchResponse = await fetch(
       `https://api.optimoroute.com/v1/search_orders?key=${optimoRouteApiKey}`,
       {
@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          orders: [{ orderNo: searchQuery }]
+          orders: [{ orderNo: searchQuery }],
           includeOrderData: true,
           includeScheduleInformation: true
         })
@@ -52,16 +52,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Find the specific order from the search results
-    const order = searchData.orders.find(order => order.order_no === searchQuery);
-    if (!order) {
-      return new Response(
-        JSON.stringify({ error: 'Specific order not found', success: false }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
-      );
-    }
+    // Get the first matching order
+    const order = searchData.orders[0];
 
-    // 2. Then get the completion details using the found order's ID
+    // 2. Then get the completion details with correct format
     const completionResponse = await fetch(
       `https://api.optimoroute.com/v1/get_completion_details?key=${optimoRouteApiKey}`,
       {
@@ -70,7 +64,7 @@ Deno.serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          orders: [{ orderNo: searchQuery }]
+          orders: [{ orderId: order.id }]
         })
       }
     );
