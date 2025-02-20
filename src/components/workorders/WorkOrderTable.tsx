@@ -1,4 +1,3 @@
-
 import {
   Table,
   TableBody,
@@ -11,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Eye, Flag, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 import { StatusBadge } from "./StatusBadge";
-import { WorkOrder } from "./types";
+import { WorkOrder, WorkOrderSearchResponse } from "./types";
 
 interface WorkOrderTableProps {
   workOrders: WorkOrder[];
@@ -25,13 +24,11 @@ export const WorkOrderTable = ({
   onImageView 
 }: WorkOrderTableProps) => {
   const getLocationAddress = (order: WorkOrder): string => {
-    if (!order.search_response) return 'N/A';
-    const location = order.search_response.location;
-    if (typeof location === 'object' && location !== null) {
-      if ('address' in location) return location.address;
-      if ('name' in location) return location.name;
-    }
-    return 'N/A';
+    const searchResponse = order.search_response as WorkOrderSearchResponse;
+    const location = searchResponse?.location;
+    
+    if (!location) return 'N/A';
+    return location.address || location.name || 'N/A';
   };
 
   return (

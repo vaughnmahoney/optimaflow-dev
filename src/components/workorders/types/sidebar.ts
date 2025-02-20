@@ -1,17 +1,18 @@
+export interface WorkOrderLocation {
+  name?: string;
+  locationName?: string;
+  address?: string;
+  locationNo?: string;
+  latitude?: number;
+  longitude?: number;
+  notes?: string;
+}
 
 export interface WorkOrder {
   id: string;
   order_no: string;
   qc_status?: string;
-  location?: {
-    name?: string;
-    locationName?: string;
-    address?: string;
-    locationNo?: string;
-    latitude?: number;
-    longitude?: number;
-    notes?: string;
-  };
+  location?: WorkOrderLocation;
   address?: string;
   service_date?: string;
   lastServiceDate?: string;
@@ -59,6 +60,8 @@ export interface WorkOrder {
     field5?: string;
   };
   priority?: string;
+  search_response?: any;
+  completion_response?: any;
 }
 
 export interface HeaderProps {

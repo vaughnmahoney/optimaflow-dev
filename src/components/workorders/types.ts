@@ -1,6 +1,29 @@
 
 import { Json } from "@/integrations/supabase/types";
 
+export interface WorkOrderLocation {
+  name?: string;
+  locationName?: string;
+  address?: string;
+  locationNo?: string;
+  latitude?: number;
+  longitude?: number;
+  notes?: string;
+}
+
+export interface WorkOrderSearchResponse {
+  date?: string;
+  notes?: string;
+  location?: WorkOrderLocation;
+}
+
+export interface WorkOrderCompletionResponse {
+  photos?: Array<{
+    type: string;
+    url: string;
+  }>;
+}
+
 export interface WorkOrder {
   id: string;
   order_no: string;
@@ -8,10 +31,10 @@ export interface WorkOrder {
   timestamp: string;
   service_date?: string;
   service_notes?: string;
-  location?: Json;
+  location?: WorkOrderLocation;
   has_images?: boolean;
-  search_response?: Json;
-  completion_response?: Json;
+  search_response?: WorkOrderSearchResponse;
+  completion_response?: WorkOrderCompletionResponse;
 }
 
 export interface WorkOrderListProps {
