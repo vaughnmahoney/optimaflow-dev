@@ -1,4 +1,6 @@
 
+import { createClient } from '@supabase/supabase-js'
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -13,6 +15,7 @@ Deno.serve(async (req) => {
   try {
     const optimoRouteApiKey = Deno.env.get('OPTIMOROUTE_API_KEY')
     if (!optimoRouteApiKey) {
+      console.error('OptimoRoute API key missing')
       throw new Error('OptimoRoute API key not configured')
     }
 
@@ -48,6 +51,7 @@ Deno.serve(async (req) => {
     }
 
     const searchData = await searchResponse.json()
+    console.log('Search data received:', searchData)
     
     if (!searchData.orders?.length) {
       return new Response(
@@ -83,12 +87,14 @@ Deno.serve(async (req) => {
     }
 
     const completionData = await completionResponse.json()
+    console.log('Completion data received:', completionData)
 
     // 3. Store in Supabase
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
     if (!supabaseUrl || !supabaseKey) {
+      console.error('Supabase configuration missing')
       throw new Error('Supabase configuration missing')
     }
 
