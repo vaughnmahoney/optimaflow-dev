@@ -51,7 +51,16 @@ Deno.serve(async (req) => {
       );
     }
 
-    // 2. Then get the completion details
+    // Find the specific order from the search results
+    const order = searchData.orders.find(order => order.order_no === searchQuery);
+    if (!order) {
+      return new Response(
+        JSON.stringify({ error: 'Specific order not found', success: false }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
+      );
+    }
+
+    // 2. Then get the completion details using the found order's ID
     const completionResponse = await fetch(
       `https://api.optimoroute.com/v1/get_completion_details?key=${optimoRouteApiKey}`,
       {
@@ -60,7 +69,7 @@ Deno.serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          orderId: searchQuery
+          order_id: order.id
         })
       }
     );
@@ -72,7 +81,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        orders: searchData.orders,
+        order: order,
         completion_data: completionData
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
