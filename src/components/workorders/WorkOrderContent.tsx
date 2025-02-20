@@ -70,7 +70,7 @@ export const WorkOrderContent = () => {
   };
 
   const handleSearch = useCallback((query: string) => {
-    setSearchQuery(query);
+    setSearchQuery(query.toLowerCase());
   }, []);
 
   const handleImageView = (workOrderId: string) => {
@@ -98,7 +98,10 @@ export const WorkOrderContent = () => {
     
     return workOrders.filter(order => {
       const matchesSearch = !searchQuery || 
-        order.order_no?.toLowerCase().includes(searchQuery.toLowerCase());
+        order.order_no?.toLowerCase().includes(searchQuery) ||
+        order.service_notes?.toLowerCase().includes(searchQuery) ||
+        order.location?.address?.toLowerCase().includes(searchQuery) ||
+        order.location?.name?.toLowerCase().includes(searchQuery);
         
       const matchesStatus = !statusFilter || order.status === statusFilter;
       
