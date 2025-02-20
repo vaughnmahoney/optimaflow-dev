@@ -32,8 +32,8 @@ export const WorkOrderContent = () => {
           service_date: searchResponse?.date,
           service_notes: searchResponse?.notes,
           location: searchResponse?.location || {
-            name: searchResponse?.locationName,
-            address: searchResponse?.address,
+            name: searchResponse?.location?.name,
+            address: searchResponse?.location?.address,
           },
           has_images: Boolean(completionResponse?.photos?.length),
           search_response: searchResponse,
