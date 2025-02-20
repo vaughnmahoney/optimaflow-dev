@@ -34,7 +34,6 @@ Deno.serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          searchQuery: searchQuery,  // Changed from 'query' to 'searchQuery'
           includeOrderData: true,
           includeScheduleInformation: true
         })
