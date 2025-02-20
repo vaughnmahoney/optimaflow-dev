@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { WorkOrderList } from "./WorkOrderList";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { WorkOrder } from "./types";
+import { WorkOrder, WorkOrderSearchResponse, WorkOrderCompletionResponse } from "./types";
 
 export const WorkOrderContent = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -20,18 +20,23 @@ export const WorkOrderContent = () => {
 
       if (error) throw error;
       
-      return data.map((order): WorkOrder => ({
-        id: order.id,
-        order_no: order.order_no || 'N/A',
-        status: order.status || 'pending_review',
-        timestamp: order.timestamp || new Date().toISOString(),
-        service_date: order.search_response?.date,
-        service_notes: order.search_response?.notes,
-        location: order.search_response?.location,
-        has_images: Boolean(order.completion_response?.photos?.length),
-        search_response: order.search_response,
-        completion_response: order.completion_response
-      }));
+      return data.map((order): WorkOrder => {
+        const searchResponse = order.search_response as WorkOrderSearchResponse | undefined;
+        const completionResponse = order.completion_response as WorkOrderCompletionResponse | undefined;
+
+        return {
+          id: order.id,
+          order_no: order.order_no || 'N/A',
+          status: order.status || 'pending_review',
+          timestamp: order.timestamp || new Date().toISOString(),
+          service_date: searchResponse?.date,
+          service_notes: searchResponse?.notes,
+          location: searchResponse?.location,
+          has_images: Boolean(completionResponse?.photos?.length),
+          search_response: searchResponse,
+          completion_response: completionResponse
+        };
+      });
     },
     refetchInterval: 15 * 60 * 1000, // Refetch every 15 minutes
   });
