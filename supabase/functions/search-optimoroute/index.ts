@@ -1,4 +1,3 @@
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
 
 const corsHeaders = {
@@ -16,28 +15,36 @@ Deno.serve(async (req) => {
     const { searchQuery } = await req.json();
     console.log('Received search query:', searchQuery);
 
-    // Validate inputs
-    if (!searchQuery) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Search query is required' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      );
-    }
-
+    // Debug: Log environment variables (excluding sensitive values)
+    console.log('Available env keys:', Object.keys(Deno.env.toObject()));
+    
     const optimoRouteApiKey = Deno.env.get('OPTIMOROUTE_API_KEY');
+    console.log('API Key present:', !!optimoRouteApiKey);
+
     if (!optimoRouteApiKey) {
-      console.error('OptimoRoute API key not configured');
+      console.error('OptimoRoute API key not found in environment');
       return new Response(
-        JSON.stringify({ success: false, error: 'Service configuration error' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+        JSON.stringify({ 
+          success: false, 
+          error: 'Service configuration error: API key missing',
+          debug: {
+            envKeys: Object.keys(Deno.env.toObject())
+          }
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
+          status: 500 
+        }
       );
     }
 
     // 1. Search OptimoRoute for order
-    console.log('Fetching order details from OptimoRoute...');
+    console.log('Making request to OptimoRoute API...');
     const searchResponse = await fetch('https://api.optimoroute.com/v1/search_orders', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({
         key: optimoRouteApiKey,
         query: searchQuery,
@@ -47,12 +54,20 @@ Deno.serve(async (req) => {
     });
 
     const searchData = await searchResponse.json();
-    console.log('Search response:', searchData);
+    console.log('Search response status:', searchResponse.status);
+    console.log('Search response headers:', Object.fromEntries(searchResponse.headers));
 
     if (!searchResponse.ok) {
-      console.error('OptimoRoute search failed:', searchResponse.status, searchData);
+      console.error('OptimoRoute API error:', searchData);
       return new Response(
-        JSON.stringify({ success: false, error: 'Failed to search OptimoRoute orders' }),
+        JSON.stringify({ 
+          success: false, 
+          error: 'Failed to search OptimoRoute orders',
+          debug: {
+            status: searchResponse.status,
+            apiError: searchData
+          }
+        }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 502 }
       );
     }
@@ -174,7 +189,8 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: false,
-        error: 'Internal server error'
+        error: 'Internal server error',
+        debug: { message: error.message }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
