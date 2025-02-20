@@ -44,7 +44,6 @@ export const WorkOrderContent = () => {
     refetchInterval: 15 * 60 * 1000, // Refetch every 15 minutes
   });
 
-  // Set up auto-refresh
   useEffect(() => {
     const interval = setInterval(() => {
       refetch();
