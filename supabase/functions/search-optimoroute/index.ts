@@ -34,6 +34,7 @@ Deno.serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          orders: [{ orderNo: searchQuery }]
           includeOrderData: true,
           includeScheduleInformation: true
         })
@@ -69,7 +70,7 @@ Deno.serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          order_id: order.id
+          orders: [{ orderNo: searchQuery }]
         })
       }
     );
