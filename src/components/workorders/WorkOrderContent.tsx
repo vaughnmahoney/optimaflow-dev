@@ -78,6 +78,21 @@ export const WorkOrderContent = () => {
     setSelectedWorkOrder(workOrder);
   };
 
+  const handleDelete = async (workOrderId: string) => {
+    const { error } = await supabase
+      .from("work_orders")
+      .delete()
+      .eq("id", workOrderId);
+
+    if (error) {
+      toast.error("Failed to delete work order");
+      return;
+    }
+
+    toast.success("Work order deleted successfully");
+    refetch();
+  };
+
   const filteredWorkOrders = useCallback(() => {
     if (!workOrders) return [];
     
@@ -107,6 +122,7 @@ export const WorkOrderContent = () => {
         statusFilter={statusFilter}
         onStatusUpdate={handleStatusChange}
         onImageView={handleImageView}
+        onDelete={handleDelete}
       />
       
       <ImageViewModal

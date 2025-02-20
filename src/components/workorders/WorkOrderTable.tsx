@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, Flag, CheckCircle } from "lucide-react";
+import { Eye, Flag, CheckCircle, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { StatusBadge } from "./StatusBadge";
 import { WorkOrder, WorkOrderSearchResponse } from "./types";
@@ -17,12 +17,14 @@ interface WorkOrderTableProps {
   workOrders: WorkOrder[];
   onStatusUpdate: (workOrderId: string, newStatus: string) => void;
   onImageView: (workOrderId: string) => void;
+  onDelete: (workOrderId: string) => void;
 }
 
 export const WorkOrderTable = ({ 
   workOrders, 
   onStatusUpdate,
-  onImageView 
+  onImageView,
+  onDelete
 }: WorkOrderTableProps) => {
   const getLocationAddress = (order: WorkOrder): string => {
     const searchResponse = order.search_response as WorkOrderSearchResponse;
@@ -97,6 +99,15 @@ export const WorkOrderTable = ({
                       onClick={() => onStatusUpdate(workOrder.id, "flagged")}
                     >
                       <Flag className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      title="Delete Order"
+                      className="text-gray-600 hover:text-red-600"
+                      onClick={() => onDelete(workOrder.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </TableCell>

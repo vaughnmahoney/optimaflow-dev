@@ -15,6 +15,7 @@ export const WorkOrderList = ({
   onStatusFilterChange,
   onStatusUpdate,
   onImageView,
+  onDelete,
   searchQuery,
   statusFilter
 }: WorkOrderListProps) => {
@@ -49,6 +50,7 @@ export const WorkOrderList = ({
         workOrders={workOrders}
         onStatusUpdate={onStatusUpdate}
         onImageView={onImageView}
+        onDelete={onDelete}
       />
     </div>
   );
