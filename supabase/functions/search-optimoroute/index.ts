@@ -17,13 +17,18 @@ Deno.serve(async (req) => {
     console.log('Received search query:', searchQuery);
     
     const optimoRouteApiKey = Deno.env.get('OPTIMOROUTE_API_KEY');
-    if (!optimoRouteApiKey) {
-      console.error('OptimoRoute API key not found');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+    if (!optimoRouteApiKey || !supabaseUrl || !supabaseKey) {
+      console.error('Required environment variables not found');
       return new Response(
-        JSON.stringify({ error: 'API key not configured', success: false }),
+        JSON.stringify({ error: 'Server configuration error', success: false }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
       );
     }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     // 1. First get the order details with correct format
     const searchResponse = await fetch(
@@ -72,10 +77,32 @@ Deno.serve(async (req) => {
     const completionData = await completionResponse.json();
     console.log('Completion data:', completionData);
 
-    // 3. Combine the data
+    // 3. Store the data in Supabase
+    const { data: workOrder, error: upsertError } = await supabase
+      .from('work_orders')
+      .upsert({
+        order_no: searchQuery,
+        search_response: order,
+        completion_response: completionData,
+        status: 'pending_review',
+        timestamp: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (upsertError) {
+      console.error('Error storing work order:', upsertError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to store work order', success: false }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      );
+    }
+
+    // 4. Return the work order ID along with the data
     return new Response(
       JSON.stringify({
         success: true,
+        workOrderId: workOrder.id,
         order: order,
         completion_data: completionData
       }),
