@@ -31,7 +31,10 @@ export const WorkOrderContent = () => {
           timestamp: order.timestamp || new Date().toISOString(),
           service_date: searchResponse?.date,
           service_notes: searchResponse?.notes,
-          location: searchResponse?.location,
+          location: searchResponse?.location || {
+            name: searchResponse?.locationName,
+            address: searchResponse?.address,
+          },
           has_images: Boolean(completionResponse?.photos?.length),
           search_response: searchResponse,
           completion_response: completionResponse
