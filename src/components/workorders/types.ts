@@ -43,6 +43,7 @@ export interface WorkOrderListProps {
   onSearchChange: (value: string) => void;
   onStatusFilterChange: (value: string | null) => void;
   onStatusUpdate: (workOrderId: string, newStatus: string) => void;
+  onImageView: (workOrderId: string) => void;
   searchQuery: string;
   statusFilter: string | null;
 }

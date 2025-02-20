@@ -5,10 +5,12 @@ import { WorkOrderList } from "./WorkOrderList";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { WorkOrder, WorkOrderSearchResponse, WorkOrderCompletionResponse } from "./types";
+import { ImageViewModal } from "./ImageViewModal";
 
 export const WorkOrderContent = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [selectedWorkOrder, setSelectedWorkOrder] = useState<WorkOrder | null>(null);
   
   const { data: workOrders, isLoading, error, refetch } = useQuery({
     queryKey: ["workOrders"],
@@ -71,6 +73,11 @@ export const WorkOrderContent = () => {
     setSearchQuery(query);
   }, []);
 
+  const handleImageView = (workOrderId: string) => {
+    const workOrder = workOrders?.find(wo => wo.id === workOrderId) || null;
+    setSelectedWorkOrder(workOrder);
+  };
+
   const filteredWorkOrders = useCallback(() => {
     if (!workOrders) return [];
     
@@ -90,14 +97,24 @@ export const WorkOrderContent = () => {
   }
 
   return (
-    <WorkOrderList 
-      workOrders={filteredWorkOrders()} 
-      isLoading={isLoading}
-      onSearchChange={handleSearch}
-      onStatusFilterChange={setStatusFilter}
-      searchQuery={searchQuery}
-      statusFilter={statusFilter}
-      onStatusUpdate={handleStatusChange}
-    />
+    <>
+      <WorkOrderList 
+        workOrders={filteredWorkOrders()} 
+        isLoading={isLoading}
+        onSearchChange={handleSearch}
+        onStatusFilterChange={setStatusFilter}
+        searchQuery={searchQuery}
+        statusFilter={statusFilter}
+        onStatusUpdate={handleStatusChange}
+        onImageView={handleImageView}
+      />
+      
+      <ImageViewModal
+        workOrder={selectedWorkOrder}
+        isOpen={!!selectedWorkOrder}
+        onClose={() => setSelectedWorkOrder(null)}
+        onStatusUpdate={handleStatusChange}
+      />
+    </>
   );
 };
