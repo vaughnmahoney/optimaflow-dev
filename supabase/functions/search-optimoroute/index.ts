@@ -4,25 +4,28 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.0'
-
-const optimoRouteApiKey = Deno.env.get('OPTIMOROUTE_API_KEY')
-const baseUrl = 'https://api.optimoroute.com/v1'
-
 Deno.serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const { searchQuery } = await req.json()
-    console.log('Searching for order:', searchQuery)
-    
+    const optimoRouteApiKey = Deno.env.get('OPTIMOROUTE_API_KEY')
     if (!optimoRouteApiKey) {
       throw new Error('OptimoRoute API key not configured')
     }
+
+    const { searchQuery } = await req.json()
+    console.log('Search query received:', searchQuery)
+
+    if (!searchQuery) {
+      throw new Error('Search query is required')
+    }
+
+    const baseUrl = 'https://api.optimoroute.com/v1'
     
-    // 1. Search for orders with full data
+    // 1. Search for orders
     const searchResponse = await fetch(
       `${baseUrl}/search_orders?key=${optimoRouteApiKey}`,
       {
@@ -39,18 +42,23 @@ Deno.serve(async (req) => {
     )
 
     if (!searchResponse.ok) {
-      const errorData = await searchResponse.text()
-      console.error('OptimoRoute API error:', errorData)
+      const errorText = await searchResponse.text()
+      console.error('OptimoRoute search error:', errorText)
       throw new Error(`OptimoRoute API error: ${searchResponse.status}`)
     }
 
     const searchData = await searchResponse.json()
-    console.log('Search response:', searchData)
     
-    if (!searchData.orders || searchData.orders.length === 0) {
+    if (!searchData.orders?.length) {
       return new Response(
-        JSON.stringify({ error: 'Order not found', success: false }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ 
+          success: false, 
+          error: 'No orders found' 
+        }),
+        { 
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
       )
     }
 
@@ -69,19 +77,22 @@ Deno.serve(async (req) => {
     )
 
     if (!completionResponse.ok) {
-      const errorData = await completionResponse.text()
-      console.error('OptimoRoute completion API error:', errorData)
+      const errorText = await completionResponse.text()
+      console.error('OptimoRoute completion error:', errorText)
       throw new Error(`OptimoRoute completion API error: ${completionResponse.status}`)
     }
 
     const completionData = await completionResponse.json()
-    console.log('Completion data:', completionData)
 
-    // 3. Store in database
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+    // 3. Store in Supabase
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Supabase configuration missing')
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey)
 
     const { error: dbError } = await supabase
       .from('work_orders')
@@ -97,26 +108,27 @@ Deno.serve(async (req) => {
       throw new Error('Failed to store work order')
     }
 
-    // 4. Return formatted response
     return new Response(
       JSON.stringify({
         success: true,
         orders: searchData.orders,
         completion_data: completionData
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
     )
 
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Function error:', error)
     return new Response(
-      JSON.stringify({ 
-        error: error.message, 
-        success: false 
+      JSON.stringify({
+        success: false,
+        error: error.message
       }),
       { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )
   }
