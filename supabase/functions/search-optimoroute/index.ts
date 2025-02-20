@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          orders: [{ orderId: order.id }]
+          orders: [{ order_id: order.id }]
         })
       }
     );
