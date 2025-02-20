@@ -12,7 +12,6 @@ import Supervisor from "./pages/Supervisor";
 import AttendanceHistory from "./pages/AttendanceHistory";
 import WorkOrders from "./pages/WorkOrders";
 import NotFound from "./pages/NotFound";
-import WorkOrderDetail from "./pages/WorkOrderDetail";
 
 const queryClient = new QueryClient();
 
@@ -55,14 +54,6 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <WorkOrders />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/work-orders/:id"
-              element={
-                <ProtectedRoute>
-                  <WorkOrderDetail />
                 </ProtectedRoute>
               }
             />
