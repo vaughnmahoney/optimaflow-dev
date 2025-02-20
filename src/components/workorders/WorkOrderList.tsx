@@ -21,42 +21,8 @@ export const WorkOrderList = ({
   statusFilter
 }: WorkOrderListProps) => {
   const [selectedWorkOrderId, setSelectedWorkOrderId] = useState<string | null>(null);
-  const [optimoSearch, setOptimoSearch] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchResponse, setSearchResponse] = useState<any>(null);
   const [transformedData, setTransformedData] = useState<any>(null);
-
-  const handleOptimoSearch = async () => {
-    if (!optimoSearch.trim()) return;
-    
-    setIsSearching(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('search-optimoroute', {
-        body: { searchQuery: optimoSearch }
-      });
-
-      if (error) {
-        console.error('Function error:', error);
-        throw error;
-      }
-
-      console.log('Response from function:', data);
-      setSearchResponse(data);
-      setTransformedData(transformResponse(data));
-
-      if (data?.success) {
-        toast.success("Work order found");
-        setOptimoSearch("");
-      } else {
-        toast.error(data?.error || "No work order found with that number");
-      }
-    } catch (error: any) {
-      console.error('OptimoRoute search error:', error);
-      toast.error(`Failed to find work order: ${error.message}`);
-    } finally {
-      setIsSearching(false);
-    }
-  };
+  const [searchResponse, setSearchResponse] = useState<any>(null);
 
   if (isLoading) {
     return <LoadingSkeleton />;
@@ -65,14 +31,7 @@ export const WorkOrderList = ({
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4">
-        <SearchBar 
-          searchQuery={searchQuery}
-          optimoSearch={optimoSearch}
-          isSearching={isSearching}
-          onSearchChange={onSearchChange}
-          onOptimoSearchChange={setOptimoSearch}
-          onOptimoSearch={handleOptimoSearch}
-        />
+        <SearchBar onSearch={onSearchChange} />
 
         <StatusFilter 
           statusFilter={statusFilter}
