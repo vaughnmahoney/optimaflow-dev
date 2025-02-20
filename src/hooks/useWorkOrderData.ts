@@ -29,21 +29,18 @@ export const useWorkOrderData = (workOrderId: string | null) => {
 
       console.log('Raw work order data:', data);
 
-      const searchResponse = data.search_response as WorkOrderSearchResponse;
-      const completionResponse = data.completion_response as WorkOrderCompletionResponse;
-
       // Map the database fields to match our WorkOrder type
       const mappedData: WorkOrder = {
         id: data.id,
         order_no: data.order_no || 'N/A',
-        status: data.status || 'pending',
+        status: data.status || 'pending_review',
         timestamp: data.timestamp,
-        search_response: searchResponse,
-        completion_response: completionResponse,
-        service_date: searchResponse?.date,
-        service_notes: searchResponse?.notes,
-        location: searchResponse?.location,
-        has_images: Boolean(completionResponse?.photos?.length)
+        service_date: data.search_response?.date,
+        service_notes: data.search_response?.notes,
+        location: data.search_response?.location,
+        has_images: Boolean(data.completion_response?.photos?.length),
+        search_response: data.search_response as WorkOrderSearchResponse,
+        completion_response: data.completion_response as WorkOrderCompletionResponse
       };
 
       console.log('Mapped work order data:', mappedData);

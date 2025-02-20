@@ -14,12 +14,24 @@ export const WorkOrderContent = () => {
     queryKey: ["workOrders"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("qc_dashboard_view")
+        .from("work_orders")
         .select("*")
         .order("timestamp", { ascending: false });
 
       if (error) throw error;
-      return data as WorkOrder[];
+      
+      return data.map((order): WorkOrder => ({
+        id: order.id,
+        order_no: order.order_no || 'N/A',
+        status: order.status || 'pending_review',
+        timestamp: order.timestamp || new Date().toISOString(),
+        service_date: order.search_response?.date,
+        service_notes: order.search_response?.notes,
+        location: order.search_response?.location,
+        has_images: Boolean(order.completion_response?.photos?.length),
+        search_response: order.search_response,
+        completion_response: order.completion_response
+      }));
     },
     refetchInterval: 15 * 60 * 1000, // Refetch every 15 minutes
   });
