@@ -1,51 +1,61 @@
 
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
-interface SearchBarProps {
-  searchQuery: string;
-  optimoSearch: string;
-  isSearching: boolean;
-  onSearchChange: (value: string) => void;
-  onOptimoSearchChange: (value: string) => void;
-  onOptimoSearch: () => void;
-}
+export const SearchBar = ({ onSearch }: { onSearch: (value: string) => void }) => {
+  const [searchValue, setSearchValue] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
-export const SearchBar = ({
-  searchQuery,
-  optimoSearch,
-  isSearching,
-  onSearchChange,
-  onOptimoSearchChange,
-  onOptimoSearch,
-}: SearchBarProps) => {
+  const handleSearch = async () => {
+    if (!searchValue.trim()) return;
+
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('search-optimoroute', {
+        body: { searchQuery: searchValue.trim() }
+      });
+
+      if (error) throw error;
+
+      if (data.success && data.workOrderId) {
+        toast.success('Work order found');
+        navigate(`/work-orders/${data.workOrderId}`);
+      } else {
+        toast.error(data.error || 'Failed to find work order');
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+      toast.error('Failed to search for work order');
+    } finally {
+      setIsLoading(false);
+      onSearch(searchValue);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
   return (
-    <div className="flex items-center gap-4">
-      <div className="flex-1 max-w-sm">
-        <Input
-          placeholder="Search orders..."
-          value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
-        />
-      </div>
-      
-      <div className="flex items-center gap-2">
-        <Input
-          placeholder="Import OptimoRoute order #"
-          value={optimoSearch}
-          onChange={(e) => onOptimoSearchChange(e.target.value)}
-          className="w-64"
-        />
-        <Button 
-          variant="secondary"
-          onClick={onOptimoSearch}
-          disabled={!optimoSearch.trim() || isSearching}
-        >
-          <Search className="h-4 w-4 mr-2" />
-          {isSearching ? 'Searching...' : 'Search'}
-        </Button>
-      </div>
+    <div className="flex gap-2">
+      <Input
+        type="text"
+        placeholder="Search work orders..."
+        value={searchValue}
+        onChange={(e) => setSearchValue(e.target.value)}
+        onKeyPress={handleKeyPress}
+        className="min-w-[200px]"
+      />
+      <Button onClick={handleSearch} disabled={isLoading}>
+        {isLoading ? "Searching..." : "Search"}
+      </Button>
     </div>
   );
 };
