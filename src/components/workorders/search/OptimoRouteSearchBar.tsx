@@ -4,10 +4,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 export const OptimoRouteSearchBar = ({ onSearch }: { onSearch: (value: string) => void }) => {
   const [searchValue, setSearchValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSearch = async () => {
     if (!searchValue.trim()) return;
@@ -22,7 +24,7 @@ export const OptimoRouteSearchBar = ({ onSearch }: { onSearch: (value: string) =
 
       if (data.success && data.workOrderId) {
         toast.success('OptimoRoute order found');
-        onSearch(searchValue);
+        navigate(`/work-orders/${data.workOrderId}`);
       } else {
         toast.error(data.error || 'Failed to find OptimoRoute order');
       }
@@ -31,6 +33,7 @@ export const OptimoRouteSearchBar = ({ onSearch }: { onSearch: (value: string) =
       toast.error('Failed to search OptimoRoute');
     } finally {
       setIsLoading(false);
+      onSearch(searchValue);
     }
   };
 
