@@ -127,17 +127,21 @@ export const ImageViewModal = ({
 
   if (!workOrder) return null;
 
+  const driverName = workOrder.completion_response?.orders[0]?.data?.form?.driver_name || 'No Driver Assigned';
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-screen-xl max-h-[90vh] p-0 flex flex-col">
+        <ModalHeader
+          orderNo={workOrder.order_no}
+          status={workOrder.status}
+          driverName={driverName}
+          onClose={onClose}
+        />
+        
         <div className="flex-1 grid grid-cols-[2fr_3fr] min-h-0">
           {/* Left Panel - Details */}
           <div className="border-r bg-background flex flex-col min-h-0">
-            <ModalHeader
-              orderNo={workOrder.order_no}
-              status={workOrder.status}
-              onClose={onClose}
-            />
             <TabsContainer workOrder={workOrder} />
             <ActionButtons
               workOrderId={workOrder.id}

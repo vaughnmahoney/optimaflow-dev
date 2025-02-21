@@ -7,10 +7,11 @@ import { cn } from "@/lib/utils";
 interface ModalHeaderProps {
   orderNo: string;
   status: string;
+  driverName?: string;
   onClose: () => void;
 }
 
-export const ModalHeader = ({ orderNo, status, onClose }: ModalHeaderProps) => {
+export const ModalHeader = ({ orderNo, status, driverName, onClose }: ModalHeaderProps) => {
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'approved':
@@ -23,23 +24,33 @@ export const ModalHeader = ({ orderNo, status, onClose }: ModalHeaderProps) => {
   };
 
   return (
-    <div className="p-6 border-b">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-semibold">
-          Work Order #{orderNo}
-        </h2>
-        <Button variant="ghost" size="icon" onClick={onClose}>
-          <X className="h-5 w-4" />
-        </Button>
+    <div className="p-6 border-b w-full">
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <h2 className="text-2xl font-semibold">
+            Work Order #{orderNo}
+          </h2>
+          <Badge 
+            className={cn(
+              "px-4 py-1",
+              getStatusColor(status || 'pending')
+            )}
+          >
+            {(status || 'PENDING').toUpperCase()}
+          </Badge>
+        </div>
+        <div className="flex items-center gap-6">
+          {driverName && (
+            <div className="text-right">
+              <div className="text-sm text-muted-foreground">Driver</div>
+              <div className="font-medium">{driverName}</div>
+            </div>
+          )}
+          <Button variant="ghost" size="icon" onClick={onClose}>
+            <X className="h-5 w-4" />
+          </Button>
+        </div>
       </div>
-      <Badge 
-        className={cn(
-          "px-4 py-1",
-          getStatusColor(status || 'pending')
-        )}
-      >
-        {(status || 'PENDING').toUpperCase()}
-      </Badge>
     </div>
   );
 };
