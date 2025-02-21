@@ -95,13 +95,13 @@ export const ImageViewModal = ({
               </TabsList>
               
               <div className="flex-1 overflow-y-auto">
-                <TabsContent value="details" className="m-0">
+                <TabsContent value="details" className="m-0 p-6">
                   <OrderDetailsTab workOrder={workOrder} />
                 </TabsContent>
-                <TabsContent value="notes" className="m-0">
+                <TabsContent value="notes" className="m-0 p-6">
                   <NotesTab workOrder={workOrder} />
                 </TabsContent>
-                <TabsContent value="signature" className="m-0">
+                <TabsContent value="signature" className="m-0 p-6">
                   <SignatureTab workOrder={workOrder} />
                 </TabsContent>
               </div>
