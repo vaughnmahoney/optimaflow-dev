@@ -1,24 +1,14 @@
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CheckCircle, Flag, Download, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { WorkOrder } from "../types";
-import { cn } from "@/lib/utils";
-import { OrderDetailsTab } from "./tabs/OrderDetailsTab";
-import { NotesTab } from "./tabs/NotesTab";
-import { SignatureTab } from "./tabs/SignatureTab";
 import { ImageViewer } from "./modal/ImageViewer";
 import { NavigationFooter } from "./NavigationFooter";
 import { toast } from "sonner";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { ModalHeader } from "./components/ModalHeader";
+import { ActionButtons } from "./components/ActionButtons";
+import { TabsContainer } from "./components/TabsContainer";
 
 interface ImageViewModalProps {
   workOrder: WorkOrder | null;
@@ -123,17 +113,6 @@ export const ImageViewModal = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, currentIndex, currentImageIndex, workOrders.length, images.length]);
 
-  const getStatusColor = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case 'approved':
-        return 'bg-green-500 hover:bg-green-600';
-      case 'flagged':
-        return 'bg-red-500 hover:bg-red-600';
-      default:
-        return 'bg-blue-500 hover:bg-blue-600';
-    }
-  };
-
   if (!workOrder) return null;
 
   return (
@@ -142,93 +121,18 @@ export const ImageViewModal = ({
         <div className="flex-1 grid grid-cols-[2fr_3fr] min-h-0">
           {/* Left Panel - Details */}
           <div className="border-r bg-background flex flex-col min-h-0">
-            {/* Header */}
-            <div className="p-6 border-b">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-semibold">
-                  Work Order #{workOrder.order_no}
-                </h2>
-                <Button variant="ghost" size="icon" onClick={onClose}>
-                  <X className="h-5 w-5" />
-                </Button>
-              </div>
-              <Badge 
-                className={cn(
-                  "px-4 py-1",
-                  getStatusColor(workOrder.status || 'pending')
-                )}
-              >
-                {(workOrder.status || 'PENDING').toUpperCase()}
-              </Badge>
-            </div>
-
-            {/* Tabbed Content */}
-            <Tabs defaultValue="details" className="flex-1 flex flex-col min-h-0">
-              <TabsList className="px-6 pt-2 justify-start border-b rounded-none gap-4">
-                <TabsTrigger value="details">Order Details</TabsTrigger>
-                <TabsTrigger value="notes">Notes</TabsTrigger>
-                <TabsTrigger value="signature">Signature</TabsTrigger>
-              </TabsList>
-              
-              <div className="flex-1 overflow-y-auto">
-                <TabsContent value="details" className="m-0 p-6">
-                  <OrderDetailsTab workOrder={workOrder} />
-                </TabsContent>
-                <TabsContent value="notes" className="m-0 p-6">
-                  <NotesTab workOrder={workOrder} />
-                </TabsContent>
-                <TabsContent value="signature" className="m-0 p-6">
-                  <SignatureTab workOrder={workOrder} />
-                </TabsContent>
-              </div>
-            </Tabs>
-
-            {/* Action Buttons */}
-            <div className="p-6 border-t bg-background space-y-2">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      className="w-full justify-start"
-                      variant="outline"
-                      onClick={() => onStatusUpdate?.(workOrder.id, 'approved')}
-                    >
-                      <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
-                      Mark as Approved
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Shortcut: Ctrl/⌘ + A</p>
-                  </TooltipContent>
-                </Tooltip>
-
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      className="w-full justify-start"
-                      variant="outline"
-                      onClick={() => onStatusUpdate?.(workOrder.id, 'flagged')}
-                    >
-                      <Flag className="mr-2 h-4 w-4 text-red-600" />
-                      Flag for Review
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Shortcut: Ctrl/⌘ + F</p>
-                  </TooltipContent>
-                </Tooltip>
-                
-                <Button 
-                  className="w-full justify-start"
-                  variant="outline"
-                  onClick={onDownloadAll}
-                  disabled={images.length === 0}
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  Download All Images
-                </Button>
-              </TooltipProvider>
-            </div>
+            <ModalHeader
+              orderNo={workOrder.order_no}
+              status={workOrder.status}
+              onClose={onClose}
+            />
+            <TabsContainer workOrder={workOrder} />
+            <ActionButtons
+              workOrderId={workOrder.id}
+              hasImages={images.length > 0}
+              onStatusUpdate={onStatusUpdate}
+              onDownloadAll={onDownloadAll}
+            />
           </div>
 
           {/* Right Panel - Image Viewer */}
@@ -244,7 +148,7 @@ export const ImageViewModal = ({
           </div>
         </div>
 
-        {/* Navigation Footer - Now spans the entire bottom */}
+        {/* Navigation Footer */}
         <TooltipProvider>
           <NavigationFooter
             currentIndex={currentIndex}
