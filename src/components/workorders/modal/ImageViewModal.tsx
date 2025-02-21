@@ -137,7 +137,7 @@ export const ImageViewModal = ({
           </div>
 
           {/* Right Panel */}
-          <div className="col-span-3 bg-background/50 max-h-full overflow-hidden">
+          <div className="col-span-3 bg-background/50 flex flex-col max-h-full">
             <ImageViewer
               images={images}
               currentImageIndex={currentImageIndex}
