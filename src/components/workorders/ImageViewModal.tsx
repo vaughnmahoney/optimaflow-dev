@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
-import { CheckCircle, Flag, Download, ChevronLeft, ChevronRight, ArrowLeft, ArrowRight, X } from "lucide-react";
+import { CheckCircle, Flag, Download, ChevronLeft, ChevronRight, ArrowLeft, ArrowRight, X, ImageOff } from "lucide-react";
 import { useState } from "react";
 import { format } from "date-fns";
 import { WorkOrder } from "./types";
@@ -103,7 +103,7 @@ export const ImageViewModal = ({
                     </p>
                     <p>
                       <span className="text-muted-foreground">Address: </span>
-                      {workOrder.location?.address || workOrder.address || 'N/A'}
+                      {workOrder.location?.address || 'N/A'}
                     </p>
                   </div>
                 </Card>
@@ -118,7 +118,7 @@ export const ImageViewModal = ({
                     </p>
                     <p>
                       <span className="text-muted-foreground">Driver: </span>
-                      {workOrder.driver?.name || workOrder.driverName || 'Not assigned'}
+                      {'Not assigned'}
                     </p>
                     <p>
                       <span className="text-muted-foreground">Status: </span>
@@ -161,6 +161,7 @@ export const ImageViewModal = ({
                 className="w-full justify-start"
                 variant="outline"
                 onClick={onDownloadAll}
+                disabled={images.length === 0}
               >
                 <Download className="mr-2 h-4 w-4" />
                 Download All Images
@@ -169,7 +170,7 @@ export const ImageViewModal = ({
           </div>
 
           {/* Right Panel - Image Viewer */}
-          <div className="w-[60%] bg-black flex flex-col">
+          <div className="w-[60%] bg-background flex flex-col">
             <div className="flex-1 relative flex items-center justify-center">
               {images.length > 0 ? (
                 <>
@@ -184,7 +185,7 @@ export const ImageViewModal = ({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute left-4 text-white hover:bg-white/20"
+                        className="absolute left-4 hover:bg-background/20"
                         onClick={handlePrevious}
                       >
                         <ChevronLeft className="h-8 w-8" />
@@ -192,7 +193,7 @@ export const ImageViewModal = ({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute right-4 text-white hover:bg-white/20"
+                        className="absolute right-4 hover:bg-background/20"
                         onClick={handleNext}
                       >
                         <ChevronRight className="h-8 w-8" />
@@ -201,12 +202,16 @@ export const ImageViewModal = ({
                   )}
                 </>
               ) : (
-                <div className="text-white/70">No images available</div>
+                <div className="text-center space-y-4 text-muted-foreground">
+                  <ImageOff className="h-16 w-16 mx-auto" />
+                  <p className="text-lg font-medium">No images available</p>
+                  <p className="text-sm">This work order doesn't have any images attached.</p>
+                </div>
               )}
             </div>
 
             {/* Image Navigation Footer */}
-            <div className="p-4 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="p-4 border-t">
               <div className="flex justify-between items-center">
                 <Button
                   variant="outline"
