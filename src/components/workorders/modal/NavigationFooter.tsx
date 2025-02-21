@@ -14,7 +14,7 @@ export const NavigationFooter = ({
   onNavigate,
 }: NavigationFooterProps) => {
   return (
-    <div className="border-t bg-background p-4">
+    <div className="p-4 border-t bg-background">
       <div className="flex justify-between items-center">
         <Button
           variant="outline"
