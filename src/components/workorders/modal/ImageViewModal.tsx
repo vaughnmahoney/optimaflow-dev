@@ -62,14 +62,13 @@ export const ImageViewModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-screen-xl w-[90vw] h-[90vh] p-0">
+      <DialogContent className="max-w-screen-xl w-[90vw] h-[90vh] p-0 overflow-hidden">
         <div className="h-full flex flex-col">
-          {/* Main Content Area */}
-          <div className="flex-1 min-h-0 grid grid-cols-[2fr_3fr]">
+          <div className="flex-1 min-h-0 flex">
             {/* Left Panel - Details */}
-            <div className="border-r bg-background flex flex-col overflow-hidden">
+            <div className="w-[40%] border-r flex flex-col bg-background overflow-hidden">
               {/* Header */}
-              <div className="p-6 border-b">
+              <div className="p-6 border-b flex-shrink-0">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-2xl font-semibold">
                     Work Order #{workOrder.order_no}
@@ -90,7 +89,7 @@ export const ImageViewModal = ({
 
               {/* Tabbed Content */}
               <Tabs defaultValue="details" className="flex-1 flex flex-col min-h-0">
-                <TabsList className="px-6 pt-2 justify-start border-b rounded-none gap-4">
+                <TabsList className="px-6 pt-2 justify-start border-b rounded-none gap-4 flex-shrink-0">
                   <TabsTrigger value="details">Order Details</TabsTrigger>
                   <TabsTrigger value="notes">Notes</TabsTrigger>
                   <TabsTrigger value="signature">Signature</TabsTrigger>
@@ -110,7 +109,7 @@ export const ImageViewModal = ({
               </Tabs>
 
               {/* Action Buttons */}
-              <div className="p-6 border-t bg-background space-y-2">
+              <div className="p-6 border-t bg-background space-y-2 flex-shrink-0">
                 <Button 
                   className="w-full justify-start"
                   variant="outline"
@@ -140,7 +139,7 @@ export const ImageViewModal = ({
             </div>
 
             {/* Right Panel - Image Viewer */}
-            <div className="bg-background/50 overflow-hidden">
+            <div className="w-[60%] bg-background/50 relative overflow-hidden">
               <ImageViewer
                 images={images}
                 currentImageIndex={currentImageIndex}
@@ -150,12 +149,14 @@ export const ImageViewModal = ({
             </div>
           </div>
 
-          {/* Footer Navigation - Now spans full width */}
-          <NavigationFooter
-            currentIndex={currentIndex}
-            totalItems={workOrders.length}
-            onNavigate={onNavigate}
-          />
+          {/* Footer Navigation */}
+          <div className="flex-shrink-0">
+            <NavigationFooter
+              currentIndex={currentIndex}
+              totalItems={workOrders.length}
+              onNavigate={onNavigate}
+            />
+          </div>
         </div>
       </DialogContent>
     </Dialog>

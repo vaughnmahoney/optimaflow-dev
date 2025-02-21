@@ -17,7 +17,7 @@ export const ImageViewer = ({
   onNext,
 }: ImageViewerProps) => {
   return (
-    <div className="absolute inset-0 flex flex-col">
+    <div className="flex flex-col h-full">
       {/* Main Image Container */}
       <div className="flex-1 relative">
         {images.length > 0 ? (
@@ -62,7 +62,7 @@ export const ImageViewer = ({
 
       {/* Thumbnail Strip */}
       {images.length > 1 && (
-        <div className="h-24 border-t bg-background">
+        <div className="h-24 border-t bg-background flex-shrink-0">
           <div className="h-full flex items-center px-4 gap-2 overflow-x-auto">
             {images.map((image, index) => (
               <button
