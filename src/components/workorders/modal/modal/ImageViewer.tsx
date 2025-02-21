@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, ImageOff } from "lucide-react";
+import { ChevronLeft, ChevronRight, ImageOff, ArrowLeft, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ImageViewerProps {
@@ -8,6 +8,9 @@ interface ImageViewerProps {
   currentImageIndex: number;
   onPrevious: () => void;
   onNext: () => void;
+  currentOrderIndex: number;
+  totalOrders: number;
+  onNavigateOrder: (index: number) => void;
 }
 
 export const ImageViewer = ({
@@ -15,6 +18,9 @@ export const ImageViewer = ({
   currentImageIndex,
   onPrevious,
   onNext,
+  currentOrderIndex,
+  totalOrders,
+  onNavigateOrder,
 }: ImageViewerProps) => {
   return (
     <div className="h-full flex flex-col">
@@ -91,6 +97,33 @@ export const ImageViewer = ({
           </div>
         </div>
       )}
+
+      {/* Work Order Navigation */}
+      <div className="p-4 border-t bg-background">
+        <div className="flex justify-between items-center">
+          <Button
+            variant="outline"
+            onClick={() => onNavigateOrder(currentOrderIndex - 1)}
+            disabled={currentOrderIndex <= 0}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Previous Order
+          </Button>
+
+          <span className="text-sm text-muted-foreground">
+            Order {currentOrderIndex + 1} of {totalOrders}
+          </span>
+
+          <Button
+            variant="outline"
+            onClick={() => onNavigateOrder(currentOrderIndex + 1)}
+            disabled={currentOrderIndex >= totalOrders - 1}
+          >
+            Next Order
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };
