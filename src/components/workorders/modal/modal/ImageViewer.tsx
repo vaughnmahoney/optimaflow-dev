@@ -17,37 +17,45 @@ export const ImageViewer = ({
   onNext,
 }: ImageViewerProps) => {
   return (
-    <div className="absolute inset-0 flex flex-col">
+    <div className="h-full flex flex-col">
       {/* Main Image Container */}
       <div className="flex-1 relative">
         {images.length > 0 ? (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <img 
-              src={images[currentImageIndex].url} 
-              alt={`Image ${currentImageIndex + 1}`}
-              className="max-w-full max-h-full object-contain"
-            />
-            
-            {images.length > 1 && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-background/10 hover:bg-background/20"
-                  onClick={onPrevious}
-                >
-                  <ChevronLeft className="h-8 w-8" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-background/10 hover:bg-background/20"
-                  onClick={onNext}
-                >
-                  <ChevronRight className="h-8 w-8" />
-                </Button>
-              </>
-            )}
+          <div className="absolute inset-0">
+            {/* Image Counter */}
+            <div className="absolute top-4 right-4 z-10 px-3 py-1.5 rounded-full bg-background/80 backdrop-blur-sm text-sm font-medium">
+              {currentImageIndex + 1} of {images.length} photos
+            </div>
+
+            {/* Main Image with dark overlay gradient */}
+            <div className="relative h-full flex items-center justify-center bg-black/5">
+              <img 
+                src={images[currentImageIndex].url} 
+                alt={`Image ${currentImageIndex + 1}`}
+                className="max-w-full max-h-full object-contain animate-fade-in"
+              />
+              
+              {images.length > 1 && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-background/40 hover:bg-background/60 backdrop-blur-sm transition-all duration-200"
+                    onClick={onPrevious}
+                  >
+                    <ChevronLeft className="h-8 w-8" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-background/40 hover:bg-background/60 backdrop-blur-sm transition-all duration-200"
+                    onClick={onNext}
+                  >
+                    <ChevronRight className="h-8 w-8" />
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -62,7 +70,7 @@ export const ImageViewer = ({
 
       {/* Thumbnail Strip */}
       {images.length > 1 && (
-        <div className="h-24 border-t bg-background">
+        <div className="h-24 bg-background/80 backdrop-blur-sm border-t">
           <div className="h-full flex items-center px-4 gap-2 overflow-x-auto">
             {images.map((image, index) => (
               <button
@@ -75,10 +83,10 @@ export const ImageViewer = ({
                   }
                 }}
                 className={cn(
-                  "h-20 w-20 flex-shrink-0 rounded-md overflow-hidden border-2 transition-all duration-200",
+                  "relative h-20 w-20 flex-shrink-0 rounded-md overflow-hidden transition-all duration-200 hover:scale-105",
                   index === currentImageIndex 
-                    ? "border-primary opacity-100 scale-105" 
-                    : "border-transparent opacity-50 hover:opacity-75"
+                    ? "ring-2 ring-primary ring-offset-2 shadow-lg" 
+                    : "opacity-50 hover:opacity-75"
                 )}
               >
                 <img
