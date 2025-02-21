@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CheckCircle, Flag, Download, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { WorkOrder } from "../types";
 import { cn } from "@/lib/utils";
 import { OrderDetailsTab } from "./tabs/OrderDetailsTab";
@@ -12,6 +12,7 @@ import { NotesTab } from "./tabs/NotesTab";
 import { SignatureTab } from "./tabs/SignatureTab";
 import { ImageViewer } from "./modal/ImageViewer";
 import { NavigationFooter } from "./NavigationFooter";
+import { toast } from "sonner";
 
 interface ImageViewModalProps {
   workOrder: WorkOrder | null;
@@ -40,12 +41,81 @@ export const ImageViewModal = ({
   const images = completionData?.form?.images || [];
   
   const handlePrevious = () => {
-    setCurrentImageIndex(prev => prev === 0 ? images.length - 1 : prev - 1);
+    if (currentImageIndex > 0) {
+      setCurrentImageIndex(prev => prev - 1);
+      toast.info(`Viewing image ${currentImageIndex} of ${images.length}`);
+    } else if (images.length > 0) {
+      setCurrentImageIndex(images.length - 1);
+      toast.info(`Viewing image ${images.length} of ${images.length}`);
+    }
   };
   
   const handleNext = () => {
-    setCurrentImageIndex(prev => prev === images.length - 1 ? 0 : prev + 1);
+    if (currentImageIndex < images.length - 1) {
+      setCurrentImageIndex(prev => prev + 1);
+      toast.info(`Viewing image ${currentImageIndex + 2} of ${images.length}`);
+    } else if (images.length > 0) {
+      setCurrentImageIndex(0);
+      toast.info(`Viewing image 1 of ${images.length}`);
+    }
   };
+
+  const handlePreviousOrder = () => {
+    if (currentIndex > 0) {
+      onNavigate(currentIndex - 1);
+      setCurrentImageIndex(0);
+      toast.info("Previous work order");
+    }
+  };
+
+  const handleNextOrder = () => {
+    if (currentIndex < workOrders.length - 1) {
+      onNavigate(currentIndex + 1);
+      setCurrentImageIndex(0);
+      toast.info("Next work order");
+    }
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case 'ArrowLeft':
+          if (e.altKey) {
+            handlePreviousOrder();
+          } else {
+            handlePrevious();
+          }
+          break;
+        case 'ArrowRight':
+          if (e.altKey) {
+            handleNextOrder();
+          } else {
+            handleNext();
+          }
+          break;
+        case 'Escape':
+          onClose();
+          break;
+        case 'a':
+          if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            onStatusUpdate?.(workOrder?.id || '', 'approved');
+          }
+          break;
+        case 'f':
+          if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            onStatusUpdate?.(workOrder?.id || '', 'flagged');
+          }
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, currentIndex, currentImageIndex, workOrders.length, images.length]);
 
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
@@ -84,6 +154,11 @@ export const ImageViewModal = ({
               >
                 {(workOrder.status || 'PENDING').toUpperCase()}
               </Badge>
+              <div className="mt-4 text-sm text-muted-foreground">
+                <p>Press ←/→ to navigate images</p>
+                <p>Hold Alt + ←/→ to navigate work orders</p>
+                <p>Ctrl/⌘ + A to approve, Ctrl/⌘ + F to flag</p>
+              </div>
             </div>
 
             {/* Tabbed Content */}
