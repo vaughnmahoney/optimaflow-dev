@@ -61,12 +61,12 @@ export const ImageViewModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-screen-xl w-[90vw] h-[90vh] p-0">
+      <DialogContent className="max-w-screen-xl w-[90vw] h-[85vh] p-0">
         <div className="h-full grid grid-cols-5">
           {/* Left Panel */}
-          <div className="col-span-2 flex flex-col border-r bg-background">
+          <div className="col-span-2 flex flex-col border-r bg-background max-h-full overflow-hidden">
             {/* Header */}
-            <div className="p-6 border-b">
+            <div className="shrink-0 p-6 border-b">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl font-semibold">
                   Work Order #{workOrder.order_no}
@@ -86,28 +86,28 @@ export const ImageViewModal = ({
             </div>
 
             {/* Tabs */}
-            <Tabs defaultValue="details" className="flex-1 flex flex-col min-h-0">
-              <TabsList className="px-6 pt-2 justify-start border-b rounded-none gap-4">
+            <Tabs defaultValue="details" className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              <TabsList className="px-6 pt-2 justify-start border-b rounded-none gap-4 shrink-0">
                 <TabsTrigger value="details">Order Details</TabsTrigger>
                 <TabsTrigger value="notes">Notes</TabsTrigger>
                 <TabsTrigger value="signature">Signature</TabsTrigger>
               </TabsList>
               
               <div className="flex-1 overflow-y-auto">
-                <TabsContent value="details" className="m-0 p-6">
+                <TabsContent value="details" className="m-0 p-6 h-full">
                   <OrderDetailsTab workOrder={workOrder} />
                 </TabsContent>
-                <TabsContent value="notes" className="m-0 p-6">
+                <TabsContent value="notes" className="m-0 p-6 h-full">
                   <NotesTab workOrder={workOrder} />
                 </TabsContent>
-                <TabsContent value="signature" className="m-0 p-6">
+                <TabsContent value="signature" className="m-0 p-6 h-full">
                   <SignatureTab workOrder={workOrder} />
                 </TabsContent>
               </div>
             </Tabs>
 
             {/* Action Buttons */}
-            <div className="p-6 border-t bg-background space-y-2">
+            <div className="shrink-0 p-6 border-t bg-background space-y-2">
               <Button 
                 className="w-full justify-start"
                 variant="outline"
@@ -137,7 +137,7 @@ export const ImageViewModal = ({
           </div>
 
           {/* Right Panel */}
-          <div className="col-span-3 bg-background/50">
+          <div className="col-span-3 bg-background/50 max-h-full overflow-hidden">
             <ImageViewer
               images={images}
               currentImageIndex={currentImageIndex}
