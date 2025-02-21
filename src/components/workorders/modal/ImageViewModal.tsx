@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +10,6 @@ import { OrderDetailsTab } from "./tabs/OrderDetailsTab";
 import { NotesTab } from "./tabs/NotesTab";
 import { SignatureTab } from "./tabs/SignatureTab";
 import { ImageViewer } from "./modal/ImageViewer";
-
 interface ImageViewModalProps {
   workOrder: WorkOrder | null;
   workOrders: WorkOrder[];
@@ -22,7 +20,6 @@ interface ImageViewModalProps {
   onNavigate: (index: number) => void;
   onDownloadAll?: () => void;
 }
-
 export const ImageViewModal = ({
   workOrder,
   workOrders,
@@ -31,21 +28,17 @@ export const ImageViewModal = ({
   onClose,
   onStatusUpdate,
   onNavigate,
-  onDownloadAll,
+  onDownloadAll
 }: ImageViewModalProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  
   const completionData = workOrder?.completion_response?.orders[0]?.data;
   const images = completionData?.form?.images || [];
-  
   const handlePrevious = () => {
     setCurrentImageIndex(prev => prev === 0 ? images.length - 1 : prev - 1);
   };
-  
   const handleNext = () => {
     setCurrentImageIndex(prev => prev === images.length - 1 ? 0 : prev + 1);
   };
-
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'approved':
@@ -56,11 +49,8 @@ export const ImageViewModal = ({
         return 'bg-blue-500 hover:bg-blue-600';
     }
   };
-
   if (!workOrder) return null;
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+  return <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-screen-xl w-[90vw] h-[85vh] p-0">
         <div className="h-full grid grid-cols-5">
           {/* Left Panel */}
@@ -75,12 +65,7 @@ export const ImageViewModal = ({
                   <X className="h-5 w-5" />
                 </Button>
               </div>
-              <Badge 
-                className={cn(
-                  "px-4 py-1",
-                  getStatusColor(workOrder.status || 'pending')
-                )}
-              >
+              <Badge className={cn("px-4 py-1", getStatusColor(workOrder.status || 'pending'))}>
                 {(workOrder.status || 'PENDING').toUpperCase()}
               </Badge>
             </div>
@@ -94,10 +79,10 @@ export const ImageViewModal = ({
               </TabsList>
               
               <div className="flex-1 overflow-y-auto">
-                <TabsContent value="details" className="m-0 p-6 h-full">
+                <TabsContent value="details" className="m-0 p-6 h-12">
                   <OrderDetailsTab workOrder={workOrder} />
                 </TabsContent>
-                <TabsContent value="notes" className="m-0 p-6 h-full">
+                <TabsContent value="notes" className="m-0 p-6 h-6">
                   <NotesTab workOrder={workOrder} />
                 </TabsContent>
                 <TabsContent value="signature" className="m-0 p-6 h-full">
@@ -108,28 +93,15 @@ export const ImageViewModal = ({
 
             {/* Action Buttons */}
             <div className="shrink-0 p-6 border-t bg-background space-y-2">
-              <Button 
-                className="w-full justify-start"
-                variant="outline"
-                onClick={() => onStatusUpdate?.(workOrder.id, 'approved')}
-              >
+              <Button className="w-full justify-start" variant="outline" onClick={() => onStatusUpdate?.(workOrder.id, 'approved')}>
                 <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
                 Mark as Approved
               </Button>
-              <Button 
-                className="w-full justify-start"
-                variant="outline"
-                onClick={() => onStatusUpdate?.(workOrder.id, 'flagged')}
-              >
+              <Button className="w-full justify-start" variant="outline" onClick={() => onStatusUpdate?.(workOrder.id, 'flagged')}>
                 <Flag className="mr-2 h-4 w-4 text-red-600" />
                 Flag for Review
               </Button>
-              <Button 
-                className="w-full justify-start"
-                variant="outline"
-                onClick={onDownloadAll}
-                disabled={images.length === 0}
-              >
+              <Button className="w-full justify-start" variant="outline" onClick={onDownloadAll} disabled={images.length === 0}>
                 <Download className="mr-2 h-4 w-4" />
                 Download All Images
               </Button>
@@ -138,18 +110,9 @@ export const ImageViewModal = ({
 
           {/* Right Panel */}
           <div className="col-span-3 bg-background/50 flex flex-col max-h-full">
-            <ImageViewer
-              images={images}
-              currentImageIndex={currentImageIndex}
-              onPrevious={handlePrevious}
-              onNext={handleNext}
-              currentOrderIndex={currentIndex}
-              totalOrders={workOrders.length}
-              onNavigateOrder={onNavigate}
-            />
+            <ImageViewer images={images} currentImageIndex={currentImageIndex} onPrevious={handlePrevious} onNext={handleNext} currentOrderIndex={currentIndex} totalOrders={workOrders.length} onNavigateOrder={onNavigate} />
           </div>
         </div>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>;
 };
