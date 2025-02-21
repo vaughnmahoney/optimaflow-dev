@@ -269,7 +269,7 @@ export const ImageViewModal = ({
           {/* Right Panel - Image Viewer */}
           <div className="w-[60%] bg-background flex flex-col h-full">
             {/* Main Image Container */}
-            <div className="flex-1 relative bg-black/5">
+            <div className="flex-1 relative bg-white">
               {/* Image Wrapper */}
               <div className="absolute inset-0 flex items-center justify-center p-4">
                 {images.length > 0 ? (
