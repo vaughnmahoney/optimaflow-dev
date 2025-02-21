@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -93,7 +94,7 @@ export const ImageViewModal = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-[90vw] max-h-[90vh] p-0 gap-0">
         <div className="flex h-[85vh]">
-          {/* Left Panel - Work Order Details */}
+          {/* Left Panel */}
           <div className="w-[40%] border-r bg-background flex flex-col overflow-hidden">
             {/* Header */}
             <div className="p-6 border-b flex-shrink-0">
@@ -266,50 +267,53 @@ export const ImageViewModal = ({
           </div>
 
           {/* Right Panel - Image Viewer */}
-          <div className="w-[60%] bg-background flex flex-col">
-            <div className="flex-1 relative flex items-center justify-center p-4 overflow-hidden">
-              {images.length > 0 ? (
-                <>
-                  <div className="max-h-full max-w-full overflow-hidden flex items-center justify-center">
+          <div className="w-[60%] bg-background flex flex-col h-full">
+            {/* Main Image Container */}
+            <div className="flex-1 relative bg-black/5">
+              {/* Image Wrapper */}
+              <div className="absolute inset-0 flex items-center justify-center p-4">
+                {images.length > 0 ? (
+                  <div className="relative w-full h-full flex items-center justify-center">
                     <img 
                       src={images[currentImageIndex].url} 
                       alt={`Image ${currentImageIndex + 1}`}
-                      className="object-contain max-h-[70vh] w-auto"
+                      className="max-w-full max-h-full object-contain"
+                      style={{ width: 'auto', height: 'auto' }}
                     />
+                    
+                    {images.length > 1 && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute left-4 top-1/2 -translate-y-1/2 hover:bg-background/20"
+                          onClick={handlePrevious}
+                        >
+                          <ChevronLeft className="h-8 w-8" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-4 top-1/2 -translate-y-1/2 hover:bg-background/20"
+                          onClick={handleNext}
+                        >
+                          <ChevronRight className="h-8 w-8" />
+                        </Button>
+                      </>
+                    )}
                   </div>
-                  
-                  {images.length > 1 && (
-                    <>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute left-4 hover:bg-background/20"
-                        onClick={handlePrevious}
-                      >
-                        <ChevronLeft className="h-8 w-8" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-4 hover:bg-background/20"
-                        onClick={handleNext}
-                      >
-                        <ChevronRight className="h-8 w-8" />
-                      </Button>
-                    </>
-                  )}
-                </>
-              ) : (
-                <div className="text-center space-y-4 text-muted-foreground">
-                  <ImageOff className="h-16 w-16 mx-auto" />
-                  <p className="text-lg font-medium">No images available</p>
-                  <p className="text-sm">This work order doesn't have any images attached.</p>
-                </div>
-              )}
+                ) : (
+                  <div className="text-center space-y-4 text-muted-foreground">
+                    <ImageOff className="h-16 w-16 mx-auto" />
+                    <p className="text-lg font-medium">No images available</p>
+                    <p className="text-sm">This work order doesn't have any images attached.</p>
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Image Navigation Footer */}
-            <div className="p-4 border-t">
+            {/* Navigation Footer */}
+            <div className="p-4 border-t bg-background">
               <div className="flex justify-between items-center">
                 <Button
                   variant="outline"
