@@ -17,11 +17,11 @@ export const ImageViewer = ({
   onNext,
 }: ImageViewerProps) => {
   return (
-    <div className="h-full flex flex-col">
+    <div className="absolute inset-0 flex flex-col">
       {/* Main Image Container */}
-      <div className="flex-1 relative min-h-0">
+      <div className="flex-1 relative">
         {images.length > 0 ? (
-          <div className="absolute inset-0 flex items-center justify-center p-4">
+          <div className="absolute inset-0 flex items-center justify-center">
             <img 
               src={images[currentImageIndex].url} 
               alt={`Image ${currentImageIndex + 1}`}
@@ -33,7 +33,7 @@ export const ImageViewer = ({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute left-4 top-1/2 -translate-y-1/2 hover:bg-background/20"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-background/10 hover:bg-background/20"
                   onClick={onPrevious}
                 >
                   <ChevronLeft className="h-8 w-8" />
@@ -41,7 +41,7 @@ export const ImageViewer = ({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute right-4 top-1/2 -translate-y-1/2 hover:bg-background/20"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-background/10 hover:bg-background/20"
                   onClick={onNext}
                 >
                   <ChevronRight className="h-8 w-8" />
@@ -62,7 +62,7 @@ export const ImageViewer = ({
 
       {/* Thumbnail Strip */}
       {images.length > 1 && (
-        <div className="h-24 flex-shrink-0 border-t">
+        <div className="h-24 border-t bg-background">
           <div className="h-full flex items-center px-4 gap-2 overflow-x-auto">
             {images.map((image, index) => (
               <button

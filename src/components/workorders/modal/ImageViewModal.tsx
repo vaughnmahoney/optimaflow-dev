@@ -62,12 +62,12 @@ export const ImageViewModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[90vw] max-h-[90vh] p-0 gap-0">
-        <div className="flex h-[85vh]">
-          {/* Left Panel */}
-          <div className="w-[40%] border-r bg-background flex flex-col overflow-hidden">
+      <DialogContent className="max-w-screen-xl max-h-[90vh] p-0">
+        <div className="grid grid-cols-[2fr_3fr] h-[85vh]">
+          {/* Left Panel - Details */}
+          <div className="border-r bg-background flex flex-col overflow-hidden">
             {/* Header */}
-            <div className="p-6 border-b flex-shrink-0">
+            <div className="p-6 border-b">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl font-semibold">
                   Work Order #{workOrder.order_no}
@@ -88,29 +88,27 @@ export const ImageViewModal = ({
 
             {/* Tabbed Content */}
             <Tabs defaultValue="details" className="flex-1 flex flex-col min-h-0">
-              <TabsList className="px-6 pt-2 justify-start border-b rounded-none gap-4 flex-shrink-0">
+              <TabsList className="px-6 pt-2 justify-start border-b rounded-none gap-4">
                 <TabsTrigger value="details">Order Details</TabsTrigger>
                 <TabsTrigger value="notes">Notes</TabsTrigger>
                 <TabsTrigger value="signature">Signature</TabsTrigger>
               </TabsList>
               
-              <div className="flex-1 overflow-hidden">
-                <TabsContent value="details" className="h-full mt-0 data-[state=active]:flex flex-col">
+              <div className="flex-1 overflow-y-auto">
+                <TabsContent value="details" className="m-0 p-6">
                   <OrderDetailsTab workOrder={workOrder} />
                 </TabsContent>
-
-                <TabsContent value="notes" className="h-full mt-0 data-[state=active]:flex flex-col">
+                <TabsContent value="notes" className="m-0 p-6">
                   <NotesTab workOrder={workOrder} />
                 </TabsContent>
-
-                <TabsContent value="signature" className="h-full mt-0 data-[state=active]:flex flex-col">
+                <TabsContent value="signature" className="m-0 p-6">
                   <SignatureTab workOrder={workOrder} />
                 </TabsContent>
               </div>
             </Tabs>
 
             {/* Action Buttons */}
-            <div className="p-6 border-t bg-background space-y-2 flex-shrink-0">
+            <div className="p-6 border-t bg-background space-y-2">
               <Button 
                 className="w-full justify-start"
                 variant="outline"
@@ -140,13 +138,15 @@ export const ImageViewModal = ({
           </div>
 
           {/* Right Panel - Image Viewer */}
-          <div className="w-[60%] bg-background flex flex-col h-full">
-            <ImageViewer
-              images={images}
-              currentImageIndex={currentImageIndex}
-              onPrevious={handlePrevious}
-              onNext={handleNext}
-            />
+          <div className="bg-background/50 flex flex-col">
+            <div className="flex-1 relative">
+              <ImageViewer
+                images={images}
+                currentImageIndex={currentImageIndex}
+                onPrevious={handlePrevious}
+                onNext={handleNext}
+              />
+            </div>
             <NavigationFooter
               currentIndex={currentIndex}
               totalItems={workOrders.length}
