@@ -62,9 +62,9 @@ export const ImageViewModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-screen-xl max-h-[90vh] p-0">
-        <div className="flex flex-col h-[85vh]">
-          <div className="flex-1 grid grid-cols-[2fr_3fr]">
+      <DialogContent className="max-w-screen-xl w-[90vw] h-[90vh] p-0">
+        <div className="h-full flex flex-col">
+          <div className="flex-1 grid grid-cols-[2fr_3fr] min-h-0">
             {/* Left Panel - Details */}
             <div className="border-r bg-background flex flex-col overflow-hidden">
               {/* Header */}
@@ -139,7 +139,7 @@ export const ImageViewModal = ({
             </div>
 
             {/* Right Panel - Image Viewer */}
-            <div className="bg-background/50">
+            <div className="bg-background/50 overflow-hidden">
               <ImageViewer
                 images={images}
                 currentImageIndex={currentImageIndex}
@@ -149,12 +149,14 @@ export const ImageViewModal = ({
             </div>
           </div>
 
-          {/* Footer Navigation - Now spans full width */}
-          <NavigationFooter
-            currentIndex={currentIndex}
-            totalItems={workOrders.length}
-            onNavigate={onNavigate}
-          />
+          {/* Footer Navigation */}
+          <div className="border-t bg-background">
+            <NavigationFooter
+              currentIndex={currentIndex}
+              totalItems={workOrders.length}
+              onNavigate={onNavigate}
+            />
+          </div>
         </div>
       </DialogContent>
     </Dialog>
