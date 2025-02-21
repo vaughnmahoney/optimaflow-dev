@@ -24,8 +24,18 @@ export const WorkOrderContent = () => {
       if (error) throw error;
       
       return data.map((order): WorkOrder => {
+        // Add debugging logs
+        console.log('Raw order:', order);
+        console.log('Search response:', order.search_response);
+        console.log('Completion response:', order.completion_response);
+        
         const searchResponse = order.search_response as WorkOrderSearchResponse;
         const completionResponse = order.completion_response as WorkOrderCompletionResponse;
+        
+        // Log the mapped data
+        console.log('Mapped location:', searchResponse?.location);
+        console.log('Mapped date:', searchResponse?.date);
+        console.log('Mapped notes:', searchResponse?.notes);
         
         return {
           id: order.id,
