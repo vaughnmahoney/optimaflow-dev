@@ -130,6 +130,7 @@ export const ImageViewModal = ({
             <ActionButtons
               workOrderId={workOrder.id}
               hasImages={images.length > 0}
+              currentStatus={workOrder.status}
               onStatusUpdate={onStatusUpdate}
               onDownloadAll={onDownloadAll}
             />
