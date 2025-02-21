@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { OrderDetailsTab } from "./tabs/OrderDetailsTab";
 import { NotesTab } from "./tabs/NotesTab";
 import { SignatureTab } from "./tabs/SignatureTab";
-import { ImageViewer } from "./ImageViewer";
+import { ImageViewer } from "./modal/ImageViewer";
 import { NavigationFooter } from "./NavigationFooter";
 
 interface ImageViewModalProps {
