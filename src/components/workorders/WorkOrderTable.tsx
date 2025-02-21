@@ -72,16 +72,14 @@ export const WorkOrderTable = ({
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    {workOrder.has_images && (
-                      <Button 
-                        variant="ghost" 
-                        size="icon"
-                        title="View Proof of Service"
-                        onClick={() => onImageView(workOrder.id)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    )}
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      title="View Proof of Service"
+                      onClick={() => onImageView(workOrder.id)}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
                     <Button 
                       variant="ghost" 
                       size="icon"
