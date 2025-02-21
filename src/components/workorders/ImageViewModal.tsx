@@ -1,11 +1,14 @@
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { WorkOrder } from "./types";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card } from "@/components/ui/card";
+import { CheckCircle, Flag, Download, ChevronLeft, ChevronRight, ArrowLeft, ArrowRight, X } from "lucide-react";
 import { useState } from "react";
-import { WorkOrderDetailsSidebar } from "./WorkOrderDetailsSidebar";
-import { WorkOrderNavigation } from "./WorkOrderNavigation";
+import { format } from "date-fns";
+import { WorkOrder } from "./types";
+import { cn } from "@/lib/utils";
 
 interface ImageViewModalProps {
   workOrder: WorkOrder | null;
@@ -15,67 +18,159 @@ interface ImageViewModalProps {
   onClose: () => void;
   onStatusUpdate?: (workOrderId: string, status: string) => void;
   onNavigate: (index: number) => void;
+  onDownloadAll?: () => void;
 }
 
-export const ImageViewModal = ({ 
-  workOrder, 
+export const ImageViewModal = ({
+  workOrder,
   workOrders,
   currentIndex,
-  isOpen, 
+  isOpen,
   onClose,
   onStatusUpdate,
-  onNavigate
+  onNavigate,
+  onDownloadAll,
 }: ImageViewModalProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   const images = workOrder?.completion_response?.photos || [];
   
   const handlePrevious = () => {
-    setCurrentImageIndex(prev => 
-      prev === 0 ? images.length - 1 : prev - 1
-    );
+    setCurrentImageIndex(prev => prev === 0 ? images.length - 1 : prev - 1);
   };
   
   const handleNext = () => {
-    setCurrentImageIndex(prev => 
-      prev === images.length - 1 ? 0 : prev + 1
-    );
+    setCurrentImageIndex(prev => prev === images.length - 1 ? 0 : prev + 1);
   };
 
-  const handlePreviousOrder = () => {
-    onNavigate(currentIndex - 1);
+  const getStatusColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'approved':
+        return 'bg-green-500 hover:bg-green-600';
+      case 'flagged':
+        return 'bg-red-500 hover:bg-red-600';
+      default:
+        return 'bg-blue-500 hover:bg-blue-600';
+    }
   };
 
-  const handleNextOrder = () => {
-    onNavigate(currentIndex + 1);
+  const formatDate = (date: string) => {
+    try {
+      return format(new Date(date), "EEEE, MMMM d, yyyy");
+    } catch {
+      return 'Not available';
+    }
   };
+
+  if (!workOrder) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={() => onClose()}>
-      <DialogContent className="max-w-[90vw] h-[90vh] flex flex-col p-0">
-        <div className="flex h-full">
-          {/* Left Side - Work Order Details */}
-          <div className="w-1/3 border-r">
-            {workOrder && (
-              <WorkOrderDetailsSidebar
-                workOrder={workOrder}
-                onStatusUpdate={onStatusUpdate}
-              />
-            )}
-          </div>
-
-          {/* Right Side - Image Viewer */}
-          <div className="w-2/3 flex flex-col">
-            <div className="flex justify-between items-center p-4 border-b">
-              <h2 className="text-xl font-semibold">
-                Work Order #{workOrder?.order_no}
-              </h2>
-              <Button variant="ghost" size="icon" onClick={onClose}>
-                <X className="h-4 w-4" />
-              </Button>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-[90vw] max-h-[90vh] p-0 gap-0">
+        <div className="flex h-[85vh]">
+          {/* Left Panel - Work Order Details */}
+          <div className="w-[40%] border-r bg-background flex flex-col">
+            {/* Header */}
+            <div className="p-6 border-b">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-semibold">
+                  Work Order #{workOrder.order_no}
+                </h2>
+                <Button variant="ghost" size="icon" onClick={onClose}>
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+              <Badge 
+                className={cn(
+                  "px-4 py-1",
+                  getStatusColor(workOrder.status || 'pending')
+                )}
+              >
+                {(workOrder.status || 'PENDING').toUpperCase()}
+              </Badge>
             </div>
 
-            <div className="flex-1 relative flex items-center justify-center p-4">
+            {/* Scrollable Content */}
+            <ScrollArea className="flex-1 p-6">
+              <div className="space-y-6">
+                {/* Location Section */}
+                <Card className="p-4">
+                  <h3 className="font-medium mb-2">Location Details</h3>
+                  <div className="space-y-2 text-sm">
+                    <p>
+                      <span className="text-muted-foreground">Name: </span>
+                      {workOrder.location?.name || workOrder.location?.locationName || 'N/A'}
+                    </p>
+                    <p>
+                      <span className="text-muted-foreground">Address: </span>
+                      {workOrder.location?.address || workOrder.address || 'N/A'}
+                    </p>
+                  </div>
+                </Card>
+
+                {/* Service Details */}
+                <Card className="p-4">
+                  <h3 className="font-medium mb-2">Service Details</h3>
+                  <div className="space-y-2 text-sm">
+                    <p>
+                      <span className="text-muted-foreground">Date: </span>
+                      {formatDate(workOrder.service_date || '')}
+                    </p>
+                    <p>
+                      <span className="text-muted-foreground">Driver: </span>
+                      {workOrder.driver?.name || workOrder.driverName || 'Not assigned'}
+                    </p>
+                    <p>
+                      <span className="text-muted-foreground">Status: </span>
+                      {workOrder.status || 'Pending'}
+                    </p>
+                  </div>
+                </Card>
+
+                {/* Notes */}
+                {workOrder.service_notes && (
+                  <Card className="p-4">
+                    <h3 className="font-medium mb-2">Notes</h3>
+                    <p className="text-sm whitespace-pre-wrap">
+                      {workOrder.service_notes}
+                    </p>
+                  </Card>
+                )}
+              </div>
+            </ScrollArea>
+
+            {/* Action Buttons */}
+            <div className="p-6 border-t bg-background space-y-2">
+              <Button 
+                className="w-full justify-start"
+                variant="outline"
+                onClick={() => onStatusUpdate?.(workOrder.id, 'approved')}
+              >
+                <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
+                Mark as Approved
+              </Button>
+              <Button 
+                className="w-full justify-start"
+                variant="outline"
+                onClick={() => onStatusUpdate?.(workOrder.id, 'flagged')}
+              >
+                <Flag className="mr-2 h-4 w-4 text-red-600" />
+                Flag for Review
+              </Button>
+              <Button 
+                className="w-full justify-start"
+                variant="outline"
+                onClick={onDownloadAll}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Download All Images
+              </Button>
+            </div>
+          </div>
+
+          {/* Right Panel - Image Viewer */}
+          <div className="w-[60%] bg-black flex flex-col">
+            <div className="flex-1 relative flex items-center justify-center">
               {images.length > 0 ? (
                 <>
                   <img 
@@ -89,38 +184,55 @@ export const ImageViewModal = ({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute left-2"
+                        className="absolute left-4 text-white hover:bg-white/20"
                         onClick={handlePrevious}
                       >
-                        <ChevronLeft className="h-4 w-4" />
+                        <ChevronLeft className="h-8 w-8" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute right-2"
+                        className="absolute right-4 text-white hover:bg-white/20"
                         onClick={handleNext}
                       >
-                        <ChevronRight className="h-4 w-4" />
+                        <ChevronRight className="h-8 w-8" />
                       </Button>
                     </>
                   )}
                 </>
               ) : (
-                <div className="flex-1 flex items-center justify-center text-gray-500">
-                  No images available
-                </div>
+                <div className="text-white/70">No images available</div>
               )}
+            </div>
+
+            {/* Image Navigation Footer */}
+            <div className="p-4 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+              <div className="flex justify-between items-center">
+                <Button
+                  variant="outline"
+                  onClick={() => onNavigate(currentIndex - 1)}
+                  disabled={currentIndex <= 0}
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Previous Order
+                </Button>
+
+                <span className="text-sm text-muted-foreground">
+                  Order {currentIndex + 1} of {workOrders.length}
+                </span>
+
+                <Button
+                  variant="outline"
+                  onClick={() => onNavigate(currentIndex + 1)}
+                  disabled={currentIndex >= workOrders.length - 1}
+                >
+                  Next Order
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
-
-        {/* Bottom Navigation */}
-        <WorkOrderNavigation
-          currentIndex={currentIndex}
-          totalCount={workOrders.length}
-          onPrevious={handlePreviousOrder}
-          onNext={handleNextOrder}
-        />
       </DialogContent>
     </Dialog>
   );
