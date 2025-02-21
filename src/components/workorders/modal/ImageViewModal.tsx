@@ -13,6 +13,12 @@ import { SignatureTab } from "./tabs/SignatureTab";
 import { ImageViewer } from "./modal/ImageViewer";
 import { NavigationFooter } from "./NavigationFooter";
 import { toast } from "sonner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ImageViewModalProps {
   workOrder: WorkOrder | null;
@@ -154,11 +160,6 @@ export const ImageViewModal = ({
               >
                 {(workOrder.status || 'PENDING').toUpperCase()}
               </Badge>
-              <div className="mt-4 text-sm text-muted-foreground">
-                <p>Press ←/→ to navigate images</p>
-                <p>Hold Alt + ←/→ to navigate work orders</p>
-                <p>Ctrl/⌘ + A to approve, Ctrl/⌘ + F to flag</p>
-              </div>
             </div>
 
             {/* Tabbed Content */}
@@ -184,31 +185,49 @@ export const ImageViewModal = ({
 
             {/* Action Buttons */}
             <div className="p-6 border-t bg-background space-y-2">
-              <Button 
-                className="w-full justify-start"
-                variant="outline"
-                onClick={() => onStatusUpdate?.(workOrder.id, 'approved')}
-              >
-                <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
-                Mark as Approved
-              </Button>
-              <Button 
-                className="w-full justify-start"
-                variant="outline"
-                onClick={() => onStatusUpdate?.(workOrder.id, 'flagged')}
-              >
-                <Flag className="mr-2 h-4 w-4 text-red-600" />
-                Flag for Review
-              </Button>
-              <Button 
-                className="w-full justify-start"
-                variant="outline"
-                onClick={onDownloadAll}
-                disabled={images.length === 0}
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Download All Images
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      className="w-full justify-start"
+                      variant="outline"
+                      onClick={() => onStatusUpdate?.(workOrder.id, 'approved')}
+                    >
+                      <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
+                      Mark as Approved
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Shortcut: Ctrl/⌘ + A</p>
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      className="w-full justify-start"
+                      variant="outline"
+                      onClick={() => onStatusUpdate?.(workOrder.id, 'flagged')}
+                    >
+                      <Flag className="mr-2 h-4 w-4 text-red-600" />
+                      Flag for Review
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Shortcut: Ctrl/⌘ + F</p>
+                  </TooltipContent>
+                </Tooltip>
+                
+                <Button 
+                  className="w-full justify-start"
+                  variant="outline"
+                  onClick={onDownloadAll}
+                  disabled={images.length === 0}
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Download All Images
+                </Button>
+              </TooltipProvider>
             </div>
           </div>
 
@@ -226,11 +245,13 @@ export const ImageViewModal = ({
         </div>
 
         {/* Navigation Footer - Now spans the entire bottom */}
-        <NavigationFooter
-          currentIndex={currentIndex}
-          totalItems={workOrders.length}
-          onNavigate={onNavigate}
-        />
+        <TooltipProvider>
+          <NavigationFooter
+            currentIndex={currentIndex}
+            totalItems={workOrders.length}
+            onNavigate={onNavigate}
+          />
+        </TooltipProvider>
       </DialogContent>
     </Dialog>
   );
