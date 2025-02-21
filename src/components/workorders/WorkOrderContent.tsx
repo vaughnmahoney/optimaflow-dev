@@ -76,8 +76,18 @@ export const WorkOrderContent = () => {
       return;
     }
 
+    // Update the selected work order if it matches
+    if (selectedWorkOrder?.id === workOrderId) {
+      setSelectedWorkOrder(prev => prev ? {
+        ...prev,
+        status: newStatus
+      } : null);
+    }
+
+    // Immediately refetch to update the list
+    await refetch();
+    
     toast.success("Status updated successfully");
-    refetch();
   };
 
   const handleFilter = useCallback((query: string) => {
