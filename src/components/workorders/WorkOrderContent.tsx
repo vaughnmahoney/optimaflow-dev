@@ -11,6 +11,7 @@ export const WorkOrderContent = () => {
   const [filterQuery, setFilterQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [selectedWorkOrder, setSelectedWorkOrder] = useState<WorkOrder | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number>(0);
   
   const { data: workOrders, isLoading, error, refetch } = useQuery({
     queryKey: ["workOrders"],
@@ -69,20 +70,26 @@ export const WorkOrderContent = () => {
     refetch();
   };
 
-  // Local filtering handler
   const handleFilter = useCallback((query: string) => {
     setFilterQuery(query.toLowerCase());
   }, []);
 
-  // OptimoRoute search handler
   const handleOptimoRouteSearch = useCallback(async (query: string) => {
-    // The API search will be handled entirely in the OptimoRouteSearchBar component
     console.log('OptimoRoute search initiated:', query);
   }, []);
 
   const handleImageView = (workOrderId: string) => {
-    const workOrder = workOrders?.find(wo => wo.id === workOrderId) || null;
+    const filteredOrders = filteredWorkOrders();
+    const index = filteredOrders.findIndex(wo => wo.id === workOrderId);
+    const workOrder = filteredOrders[index];
     setSelectedWorkOrder(workOrder);
+    setSelectedIndex(index);
+  };
+
+  const handleOrderNavigation = (newIndex: number) => {
+    const filteredOrders = filteredWorkOrders();
+    setSelectedWorkOrder(filteredOrders[newIndex]);
+    setSelectedIndex(newIndex);
   };
 
   const handleDelete = async (workOrderId: string) => {
@@ -138,9 +145,12 @@ export const WorkOrderContent = () => {
       
       <ImageViewModal
         workOrder={selectedWorkOrder}
+        workOrders={filteredWorkOrders()}
+        currentIndex={selectedIndex}
         isOpen={!!selectedWorkOrder}
         onClose={() => setSelectedWorkOrder(null)}
         onStatusUpdate={handleStatusChange}
+        onNavigate={handleOrderNavigation}
       />
     </>
   );
