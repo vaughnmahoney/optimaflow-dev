@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -95,7 +94,7 @@ export const ImageViewModal = ({
       <DialogContent className="max-w-[90vw] max-h-[90vh] p-0 gap-0">
         <div className="flex h-[85vh]">
           {/* Left Panel - Work Order Details */}
-          <div className="w-[40%] border-r bg-background flex flex-col">
+          <div className="w-[40%] border-r bg-background flex flex-col overflow-hidden">
             {/* Header */}
             <div className="p-6 border-b flex-shrink-0">
               <div className="flex items-center justify-between mb-4">
@@ -268,14 +267,16 @@ export const ImageViewModal = ({
 
           {/* Right Panel - Image Viewer */}
           <div className="w-[60%] bg-background flex flex-col">
-            <div className="flex-1 relative flex items-center justify-center">
+            <div className="flex-1 relative flex items-center justify-center p-4 overflow-hidden">
               {images.length > 0 ? (
                 <>
-                  <img 
-                    src={images[currentImageIndex].url} 
-                    alt={`Image ${currentImageIndex + 1}`}
-                    className="max-h-full max-w-full object-contain"
-                  />
+                  <div className="max-h-full max-w-full overflow-hidden flex items-center justify-center">
+                    <img 
+                      src={images[currentImageIndex].url} 
+                      alt={`Image ${currentImageIndex + 1}`}
+                      className="object-contain max-h-[70vh] w-auto"
+                    />
+                  </div>
                   
                   {images.length > 1 && (
                     <>

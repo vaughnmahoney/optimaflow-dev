@@ -3,103 +3,36 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { WorkOrder, WorkOrderSearchResponse, WorkOrderCompletionResponse } from "@/components/workorders/types";
 
-export const useWorkOrderData = (workOrderId: string | null) => {
-  const { data: workOrder, isLoading: isWorkOrderLoading } = useQuery({
-    queryKey: ["workOrder", workOrderId],
+export const useWorkOrderData = () => {
+  return useQuery({
+    queryKey: ["workOrders"],
     queryFn: async () => {
-      if (!workOrderId) return null;
-      
-      console.log('Fetching work order:', workOrderId);
-      
       const { data, error } = await supabase
         .from("work_orders")
         .select("*")
-        .eq("id", workOrderId)
-        .maybeSingle();
+        .order("timestamp", { ascending: false });
 
-      if (error) {
-        console.error('Error fetching work order:', error);
-        throw error;
-      }
+      if (error) throw error;
 
-      if (!data) {
-        console.log('No data found for work order:', workOrderId);
-        return null;
-      }
-
-      console.log('Raw work order data:', data);
-
-      const searchResponse = data.search_response as WorkOrderSearchResponse | undefined;
-      const completionResponse = data.completion_response as WorkOrderCompletionResponse | undefined;
-
-      // Map the database fields to match our WorkOrder type
-      const mappedData: WorkOrder = {
-        id: data.id,
-        order_no: data.order_no || 'N/A',
-        status: data.status || 'pending_review',
-        timestamp: data.timestamp,
-        service_date: searchResponse?.date,
-        service_notes: searchResponse?.notes,
-        location: searchResponse?.location,
-        has_images: Boolean(completionResponse?.photos?.length),
-        search_response: searchResponse,
-        completion_response: completionResponse
-      };
-
-      console.log('Mapped work order data:', mappedData);
-      return mappedData;
-    },
-    enabled: !!workOrderId,
-    staleTime: 1000 * 60 * 5 // Consider data stale after 5 minutes
+      return data.map((order): WorkOrder => {
+        const searchResponse = order.search_response as unknown as WorkOrderSearchResponse;
+        const completionResponse = order.completion_response as unknown as WorkOrderCompletionResponse;
+        
+        return {
+          id: order.id,
+          order_no: order.order_no || 'N/A',
+          status: order.status || 'pending_review',
+          timestamp: order.timestamp || new Date().toISOString(),
+          service_date: searchResponse?.data?.date,
+          service_notes: searchResponse?.data?.notes,
+          tech_notes: completionResponse?.orders?.[0]?.data?.form?.note,
+          location: searchResponse?.data?.location,
+          has_images: Boolean(completionResponse?.orders?.[0]?.data?.form?.images?.length),
+          signature_url: completionResponse?.orders?.[0]?.data?.form?.signature?.url,
+          search_response: searchResponse,
+          completion_response: completionResponse
+        };
+      });
+    }
   });
-
-  const { data: images = [], isLoading: isImagesLoading } = useQuery({
-    queryKey: ["workOrderImages", workOrderId],
-    queryFn: async () => {
-      if (!workOrderId) return [];
-      
-      const { data: imageRecords, error } = await supabase
-        .from("work_order_images")
-        .select("*")
-        .eq("work_order_id", workOrderId);
-
-      if (error) {
-        console.error("Error fetching work order images:", error);
-        throw error;
-      }
-
-      const imagesWithUrls = await Promise.all(
-        imageRecords.map(async (image) => {
-          if (!image.storage_path) {
-            console.warn(`Missing storage path for image ${image.id}`);
-            return { ...image, image_url: null };
-          }
-
-          try {
-            const { data: publicUrlData } = supabase.storage
-              .from('work-order-images')
-              .getPublicUrl(image.storage_path);
-
-            return {
-              ...image,
-              image_url: publicUrlData?.publicUrl || null
-            };
-          } catch (error) {
-            console.error(`Error generating public URL for image ${image.id}:`, error);
-            return { ...image, image_url: null };
-          }
-        })
-      );
-
-      return imagesWithUrls.filter(image => image.image_url !== null);
-    },
-    enabled: !!workOrderId,
-    staleTime: 1000 * 60 * 5 // Consider data stale after 5 minutes
-  });
-
-  return {
-    workOrder,
-    images,
-    isLoading: isWorkOrderLoading || isImagesLoading
-  };
 };
