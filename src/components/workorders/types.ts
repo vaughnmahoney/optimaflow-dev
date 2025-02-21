@@ -9,6 +9,7 @@ export interface WorkOrderLocation {
   latitude?: number;
   longitude?: number;
   notes?: string;
+  valid?: boolean;
 }
 
 export interface WorkOrderDriver {
@@ -16,17 +17,63 @@ export interface WorkOrderDriver {
   id: string;
 }
 
+export interface WorkOrderSearchResponseData {
+  id: string;
+  date: string;
+  notes: string;
+  location: WorkOrderLocation;
+  type: string;
+  // Add other fields as needed
+}
+
+export interface WorkOrderScheduleInformation {
+  arrivalTimeDt?: string;
+  distance?: number;
+  driverName?: string;
+  driverSerial?: string;
+  scheduledAt?: string;
+  scheduledAtDt?: string;
+  stopNumber?: number;
+  travelTime?: number;
+}
+
 export interface WorkOrderSearchResponse {
-  date?: string;
-  notes?: string;
-  location?: WorkOrderLocation;
+  id: string;
+  data: WorkOrderSearchResponseData;
+  scheduleInformation: WorkOrderScheduleInformation;
+}
+
+export interface WorkOrderFormData {
+  note?: string;
+  images?: Array<string>;
+  signature?: {
+    url?: string;
+  };
+}
+
+export interface WorkOrderTimeData {
+  utcTime: string;
+  localTime: string;
+  unixTimestamp: number;
+}
+
+export interface WorkOrderCompletionData {
+  endTime: WorkOrderTimeData;
+  startTime: WorkOrderTimeData;
+  form: WorkOrderFormData;
+  status: string;
+  tracking_url?: string;
+}
+
+export interface WorkOrderCompletionOrder {
+  data: WorkOrderCompletionData;
+  orderNo: string;
+  success: boolean;
 }
 
 export interface WorkOrderCompletionResponse {
-  photos?: Array<{
-    type: string;
-    url: string;
-  }>;
+  orders: WorkOrderCompletionOrder[];
+  success: boolean;
 }
 
 export interface WorkOrder {
