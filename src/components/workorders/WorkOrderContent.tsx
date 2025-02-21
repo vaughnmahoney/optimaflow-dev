@@ -33,22 +33,22 @@ export const WorkOrderContent = () => {
         const completionResponse = order.completion_response as WorkOrderCompletionResponse;
         
         // Log the mapped data
-        console.log('Mapped location:', searchResponse?.location);
-        console.log('Mapped date:', searchResponse?.date);
-        console.log('Mapped notes:', searchResponse?.notes);
+        console.log('Mapped location:', searchResponse?.data?.location);
+        console.log('Mapped date:', searchResponse?.data?.date);
+        console.log('Mapped notes:', searchResponse?.data?.notes);
         
         return {
           id: order.id,
           order_no: order.order_no || 'N/A',
           status: order.status || 'pending_review',
           timestamp: order.timestamp || new Date().toISOString(),
-          service_date: searchResponse?.date,
-          service_notes: searchResponse?.notes,
-          location: searchResponse?.location || {
-            name: searchResponse?.location?.name,
-            address: searchResponse?.location?.address,
+          service_date: searchResponse?.data?.date,
+          service_notes: searchResponse?.data?.notes,
+          location: searchResponse?.data?.location || {
+            name: searchResponse?.data?.location?.name,
+            address: searchResponse?.data?.location?.address,
           },
-          has_images: Boolean(completionResponse?.photos?.length),
+          has_images: Boolean(completionResponse?.orders?.[0]?.data?.form?.images?.length),
           search_response: searchResponse,
           completion_response: completionResponse
         };
