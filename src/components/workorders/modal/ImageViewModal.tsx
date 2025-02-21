@@ -1,12 +1,13 @@
+
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CheckCircle, Flag, Download, ChevronLeft, ChevronRight, ArrowLeft, ArrowRight, X, ImageOff } from "lucide-react";
+import { CheckCircle, Flag, Download, ChevronLeft, ChevronRight, ArrowLeft, ArrowRight, X, ImageOff, Link as LinkIcon } from "lucide-react";
 import { useState } from "react";
-import { format } from "date-fns";
+import { format, differenceInMinutes } from "date-fns";
 import { WorkOrder } from "../types";
 import { cn } from "@/lib/utils";
 
@@ -33,7 +34,10 @@ export const ImageViewModal = ({
 }: ImageViewModalProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
-  const images = workOrder?.completion_response?.photos || [];
+  const completionData = workOrder?.completion_response?.orders[0]?.data;
+  const images = completionData?.form?.images || [];
+  const signatureUrl = completionData?.form?.signature?.url;
+  const trackingUrl = completionData?.tracking_url;
   
   const handlePrevious = () => {
     setCurrentImageIndex(prev => prev === 0 ? images.length - 1 : prev - 1);
@@ -67,6 +71,20 @@ export const ImageViewModal = ({
       return format(new Date(date), "h:mm a");
     } catch {
       return 'Not available';
+    }
+  };
+
+  const calculateDuration = (startTime?: string, endTime?: string) => {
+    if (!startTime || !endTime) return "N/A";
+    try {
+      const start = new Date(startTime);
+      const end = new Date(endTime);
+      const durationInMinutes = differenceInMinutes(end, start);
+      const hours = Math.floor(durationInMinutes / 60);
+      const minutes = durationInMinutes % 60;
+      return `${hours}h ${minutes}m`;
+    } catch {
+      return "N/A";
     }
   };
 
@@ -125,21 +143,44 @@ export const ImageViewModal = ({
                             {workOrder.location?.address || 'N/A'}
                           </p>
                           <p>
-                            <span className="text-muted-foreground">Date: </span>
-                            {formatDate(workOrder.service_date || '')}
+                            <span className="text-muted-foreground">Start Date: </span>
+                            {formatDate(completionData?.startTime?.localTime || '')}
                           </p>
                           <p>
-                            <span className="text-muted-foreground">Time: </span>
-                            {formatTime(workOrder.service_date || '')}
+                            <span className="text-muted-foreground">Start Time: </span>
+                            {formatTime(completionData?.startTime?.localTime || '')}
+                          </p>
+                          <p>
+                            <span className="text-muted-foreground">End Date: </span>
+                            {formatDate(completionData?.endTime?.localTime || '')}
+                          </p>
+                          <p>
+                            <span className="text-muted-foreground">End Time: </span>
+                            {formatTime(completionData?.endTime?.localTime || '')}
                           </p>
                           <p>
                             <span className="text-muted-foreground">Duration: </span>
-                            {workOrder.duration || 'N/A'}
+                            {calculateDuration(
+                              completionData?.startTime?.localTime,
+                              completionData?.endTime?.localTime
+                            )}
                           </p>
                           <p>
                             <span className="text-muted-foreground">LDS: </span>
                             {workOrder.lds || 'N/A'}
                           </p>
+                          {trackingUrl && (
+                            <div className="pt-2">
+                              <Button
+                                variant="outline"
+                                className="w-full text-left flex items-center gap-2"
+                                onClick={() => window.open(trackingUrl, '_blank')}
+                              >
+                                <LinkIcon className="h-4 w-4" />
+                                View Tracking URL
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       </Card>
                     </div>
@@ -150,9 +191,9 @@ export const ImageViewModal = ({
                   <ScrollArea className="flex-1">
                     <div className="p-6 space-y-6">
                       <Card className="p-4">
-                        <h3 className="font-medium mb-2">Notes</h3>
+                        <h3 className="font-medium mb-2">Tech Notes</h3>
                         <p className="text-sm whitespace-pre-wrap">
-                          {workOrder.notes || 'No notes available'}
+                          {completionData?.form?.note || 'No tech notes available'}
                         </p>
                       </Card>
 
@@ -164,9 +205,9 @@ export const ImageViewModal = ({
                       </Card>
 
                       <Card className="p-4">
-                        <h3 className="font-medium mb-2">Tech Notes</h3>
+                        <h3 className="font-medium mb-2">Additional Notes</h3>
                         <p className="text-sm whitespace-pre-wrap">
-                          {workOrder.tech_notes || 'No tech notes available'}
+                          {workOrder.notes || 'No additional notes available'}
                         </p>
                       </Card>
                     </div>
@@ -177,9 +218,9 @@ export const ImageViewModal = ({
                   <ScrollArea className="flex-1">
                     <div className="p-6">
                       <Card className="p-4">
-                        {workOrder.signature_url ? (
+                        {signatureUrl ? (
                           <img 
-                            src={workOrder.signature_url} 
+                            src={signatureUrl} 
                             alt="Signature" 
                             className="max-w-full"
                           />
