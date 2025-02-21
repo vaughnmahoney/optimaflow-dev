@@ -17,7 +17,7 @@ export const ImageViewer = ({
   onNext,
 }: ImageViewerProps) => {
   return (
-    <div className="absolute inset-0 flex flex-col">
+    <div className="h-full flex flex-col">
       {/* Main Image Container */}
       <div className="flex-1 relative">
         {images.length > 0 ? (
