@@ -4,10 +4,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const OptimoRouteSearchBar = ({ onSearch }: { onSearch: (value: string) => void }) => {
   const [searchValue, setSearchValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
 
   const handleSearch = async () => {
     if (!searchValue.trim()) return;
@@ -23,6 +25,8 @@ export const OptimoRouteSearchBar = ({ onSearch }: { onSearch: (value: string) =
       if (data.success && data.workOrderId) {
         toast.success('OptimoRoute order found');
         onSearch(searchValue);
+        // Immediately refetch the work orders list
+        await queryClient.invalidateQueries({ queryKey: ["workOrders"] });
       } else {
         toast.error(data.error || 'Failed to find OptimoRoute order');
       }
