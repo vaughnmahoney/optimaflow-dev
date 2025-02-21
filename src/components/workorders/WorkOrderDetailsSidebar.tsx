@@ -10,9 +10,9 @@ import { WorkOrder } from "./types/sidebar";
 
 interface WorkOrderDetailsSidebarProps {
   workOrder: WorkOrder;
-  onClose: () => void;
-  onStatusUpdate: (status: string) => void;
-  onDownloadAll: () => void;
+  onClose?: () => void;
+  onStatusUpdate: (workOrderId: string, status: string) => void;
+  onDownloadAll?: () => void;
 }
 
 export const WorkOrderDetailsSidebar = ({
@@ -23,6 +23,10 @@ export const WorkOrderDetailsSidebar = ({
 }: WorkOrderDetailsSidebarProps) => {
   if (!workOrder) return null;
 
+  const handleStatusUpdate = (status: string) => {
+    onStatusUpdate(workOrder.id, status);
+  };
+
   return (
     <div className="w-[300px] border-r bg-background">
       <Header orderNo={workOrder.order_no} onClose={onClose} />
@@ -32,7 +36,7 @@ export const WorkOrderDetailsSidebar = ({
           <LocationDetails location={workOrder.location} address={workOrder.address} />
           <ServiceDetails workOrder={workOrder} />
           <Notes workOrder={workOrder} />
-          <ActionButtons onStatusUpdate={onStatusUpdate} onDownloadAll={onDownloadAll} />
+          <ActionButtons onStatusUpdate={handleStatusUpdate} onDownloadAll={onDownloadAll} />
         </div>
       </ScrollArea>
     </div>
