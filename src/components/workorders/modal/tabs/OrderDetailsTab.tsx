@@ -45,7 +45,7 @@ export const OrderDetailsTab = ({ workOrder }: OrderDetailsTabProps) => {
   };
 
   return (
-    <ScrollArea className="h-[calc(100vh-20rem)]">
+    <ScrollArea className="flex-1">
       <div className="p-6">
         <Card className="p-4">
           <div className="space-y-3 text-sm">

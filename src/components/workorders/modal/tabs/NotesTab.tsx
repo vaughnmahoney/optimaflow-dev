@@ -11,7 +11,7 @@ export const NotesTab = ({ workOrder }: NotesTabProps) => {
   const completionData = workOrder.completion_response?.orders[0]?.data;
 
   return (
-    <ScrollArea className="h-[calc(100vh-20rem)]">
+    <ScrollArea className="flex-1">
       <div className="p-6 space-y-6">
         <Card className="p-4">
           <h3 className="font-medium mb-2">Tech Notes</h3>
