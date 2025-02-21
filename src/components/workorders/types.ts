@@ -11,6 +11,11 @@ export interface WorkOrderLocation {
   notes?: string;
 }
 
+export interface WorkOrderDriver {
+  name: string;
+  id: string;
+}
+
 export interface WorkOrderSearchResponse {
   date?: string;
   notes?: string;
@@ -31,8 +36,14 @@ export interface WorkOrder {
   timestamp: string;
   service_date?: string;
   service_notes?: string;
+  tech_notes?: string;
+  notes?: string;
+  duration?: string;
+  lds?: string;
   location?: WorkOrderLocation;
+  driver?: WorkOrderDriver;
   has_images?: boolean;
+  signature_url?: string;
   search_response?: WorkOrderSearchResponse;
   completion_response?: WorkOrderCompletionResponse;
 }

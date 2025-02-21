@@ -80,7 +80,7 @@ export const ImageViewModal = ({
           {/* Left Panel - Work Order Details */}
           <div className="w-[40%] border-r bg-background flex flex-col">
             {/* Header */}
-            <div className="p-6 border-b">
+            <div className="p-6 border-b flex-shrink-0">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl font-semibold">
                   Work Order #{workOrder.order_no}
@@ -100,102 +100,104 @@ export const ImageViewModal = ({
             </div>
 
             {/* Tabbed Content */}
-            <Tabs defaultValue="details" className="flex-1 flex flex-col">
-              <TabsList className="px-6 pt-2 justify-start border-b rounded-none gap-4">
+            <Tabs defaultValue="details" className="flex-1 flex flex-col min-h-0">
+              <TabsList className="px-6 pt-2 justify-start border-b rounded-none gap-4 flex-shrink-0">
                 <TabsTrigger value="details">Order Details</TabsTrigger>
                 <TabsTrigger value="notes">Notes</TabsTrigger>
                 <TabsTrigger value="signature">Signature</TabsTrigger>
               </TabsList>
               
-              <TabsContent value="details" className="flex-1 mt-0">
-                <ScrollArea className="h-full">
-                  <div className="p-6">
-                    <Card className="p-4">
-                      <div className="space-y-3 text-sm">
-                        <p>
-                          <span className="text-muted-foreground">Driver: </span>
-                          {workOrder.driver?.name || 'Not assigned'}
-                        </p>
-                        <p>
-                          <span className="text-muted-foreground">Location: </span>
-                          {workOrder.location?.name || workOrder.location?.locationName || 'N/A'}
-                        </p>
-                        <p>
-                          <span className="text-muted-foreground">Address: </span>
-                          {workOrder.location?.address || 'N/A'}
-                        </p>
-                        <p>
-                          <span className="text-muted-foreground">Date: </span>
-                          {formatDate(workOrder.service_date || '')}
-                        </p>
-                        <p>
-                          <span className="text-muted-foreground">Time: </span>
-                          {formatTime(workOrder.service_date || '')}
-                        </p>
-                        <p>
-                          <span className="text-muted-foreground">Duration: </span>
-                          {workOrder.duration || 'N/A'}
-                        </p>
-                        <p>
-                          <span className="text-muted-foreground">LDS: </span>
-                          {workOrder.lds || 'N/A'}
-                        </p>
-                      </div>
-                    </Card>
-                  </div>
-                </ScrollArea>
-              </TabsContent>
-
-              <TabsContent value="notes" className="flex-1 mt-0">
-                <ScrollArea className="h-full">
-                  <div className="p-6 space-y-6">
-                    <Card className="p-4">
-                      <h3 className="font-medium mb-2">Notes</h3>
-                      <p className="text-sm whitespace-pre-wrap">
-                        {workOrder.notes || 'No notes available'}
-                      </p>
-                    </Card>
-
-                    <Card className="p-4">
-                      <h3 className="font-medium mb-2">Service Notes</h3>
-                      <p className="text-sm whitespace-pre-wrap">
-                        {workOrder.service_notes || 'No service notes available'}
-                      </p>
-                    </Card>
-
-                    <Card className="p-4">
-                      <h3 className="font-medium mb-2">Tech Notes</h3>
-                      <p className="text-sm whitespace-pre-wrap">
-                        {workOrder.tech_notes || 'No tech notes available'}
-                      </p>
-                    </Card>
-                  </div>
-                </ScrollArea>
-              </TabsContent>
-
-              <TabsContent value="signature" className="flex-1 mt-0">
-                <ScrollArea className="h-full">
-                  <div className="p-6">
-                    <Card className="p-4">
-                      {workOrder.signature_url ? (
-                        <img 
-                          src={workOrder.signature_url} 
-                          alt="Signature" 
-                          className="max-w-full"
-                        />
-                      ) : (
-                        <div className="text-center py-8 text-muted-foreground">
-                          No signature available
+              <div className="flex-1 overflow-hidden">
+                <TabsContent value="details" className="h-full mt-0 data-[state=active]:flex flex-col">
+                  <ScrollArea className="flex-1">
+                    <div className="p-6">
+                      <Card className="p-4">
+                        <div className="space-y-3 text-sm">
+                          <p>
+                            <span className="text-muted-foreground">Driver: </span>
+                            {workOrder.driver?.name || 'Not assigned'}
+                          </p>
+                          <p>
+                            <span className="text-muted-foreground">Location: </span>
+                            {workOrder.location?.name || workOrder.location?.locationName || 'N/A'}
+                          </p>
+                          <p>
+                            <span className="text-muted-foreground">Address: </span>
+                            {workOrder.location?.address || 'N/A'}
+                          </p>
+                          <p>
+                            <span className="text-muted-foreground">Date: </span>
+                            {formatDate(workOrder.service_date || '')}
+                          </p>
+                          <p>
+                            <span className="text-muted-foreground">Time: </span>
+                            {formatTime(workOrder.service_date || '')}
+                          </p>
+                          <p>
+                            <span className="text-muted-foreground">Duration: </span>
+                            {workOrder.duration || 'N/A'}
+                          </p>
+                          <p>
+                            <span className="text-muted-foreground">LDS: </span>
+                            {workOrder.lds || 'N/A'}
+                          </p>
                         </div>
-                      )}
-                    </Card>
-                  </div>
-                </ScrollArea>
-              </TabsContent>
+                      </Card>
+                    </div>
+                  </ScrollArea>
+                </TabsContent>
+
+                <TabsContent value="notes" className="h-full mt-0 data-[state=active]:flex flex-col">
+                  <ScrollArea className="flex-1">
+                    <div className="p-6 space-y-6">
+                      <Card className="p-4">
+                        <h3 className="font-medium mb-2">Notes</h3>
+                        <p className="text-sm whitespace-pre-wrap">
+                          {workOrder.notes || 'No notes available'}
+                        </p>
+                      </Card>
+
+                      <Card className="p-4">
+                        <h3 className="font-medium mb-2">Service Notes</h3>
+                        <p className="text-sm whitespace-pre-wrap">
+                          {workOrder.service_notes || 'No service notes available'}
+                        </p>
+                      </Card>
+
+                      <Card className="p-4">
+                        <h3 className="font-medium mb-2">Tech Notes</h3>
+                        <p className="text-sm whitespace-pre-wrap">
+                          {workOrder.tech_notes || 'No tech notes available'}
+                        </p>
+                      </Card>
+                    </div>
+                  </ScrollArea>
+                </TabsContent>
+
+                <TabsContent value="signature" className="h-full mt-0 data-[state=active]:flex flex-col">
+                  <ScrollArea className="flex-1">
+                    <div className="p-6">
+                      <Card className="p-4">
+                        {workOrder.signature_url ? (
+                          <img 
+                            src={workOrder.signature_url} 
+                            alt="Signature" 
+                            className="max-w-full"
+                          />
+                        ) : (
+                          <div className="text-center py-8 text-muted-foreground">
+                            No signature available
+                          </div>
+                        )}
+                      </Card>
+                    </div>
+                  </ScrollArea>
+                </TabsContent>
+              </div>
             </Tabs>
 
             {/* Action Buttons */}
-            <div className="p-6 border-t bg-background space-y-2">
+            <div className="p-6 border-t bg-background space-y-2 flex-shrink-0">
               <Button 
                 className="w-full justify-start"
                 variant="outline"
