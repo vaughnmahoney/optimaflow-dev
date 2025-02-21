@@ -27,11 +27,8 @@ export const WorkOrderTable = ({
   onDelete
 }: WorkOrderTableProps) => {
   const getLocationAddress = (order: WorkOrder): string => {
-    const searchResponse = order.search_response as WorkOrderSearchResponse;
-    const location = searchResponse?.location;
-    
-    if (!location) return 'N/A';
-    return location.address || location.name || 'N/A';
+    if (!order.location) return 'N/A';
+    return order.location.address || order.location.name || 'N/A';
   };
 
   return (

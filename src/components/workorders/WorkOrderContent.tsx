@@ -24,9 +24,9 @@ export const WorkOrderContent = () => {
       if (error) throw error;
       
       return data.map((order): WorkOrder => {
-        const searchResponse = order.search_response as WorkOrderSearchResponse | undefined;
-        const completionResponse = order.completion_response as WorkOrderCompletionResponse | undefined;
-
+        const searchResponse = order.search_response as WorkOrderSearchResponse;
+        const completionResponse = order.completion_response as WorkOrderCompletionResponse;
+        
         return {
           id: order.id,
           order_no: order.order_no || 'N/A',
