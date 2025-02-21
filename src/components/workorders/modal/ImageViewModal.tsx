@@ -32,6 +32,7 @@ export const ImageViewModal = ({
   onDownloadAll,
 }: ImageViewModalProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isUpdating, setIsUpdating] = useState(false);
   
   const completionData = workOrder?.completion_response?.orders[0]?.data;
   const images = completionData?.form?.images || [];
@@ -72,6 +73,17 @@ export const ImageViewModal = ({
     }
   };
 
+  const handleStatusUpdate = async (status: string) => {
+    if (!workOrder || isUpdating) return;
+    
+    setIsUpdating(true);
+    try {
+      await onStatusUpdate?.(workOrder.id, status);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -97,13 +109,13 @@ export const ImageViewModal = ({
         case 'a':
           if (e.ctrlKey || e.metaKey) {
             e.preventDefault();
-            onStatusUpdate?.(workOrder?.id || '', 'approved');
+            handleStatusUpdate('approved');
           }
           break;
         case 'f':
           if (e.ctrlKey || e.metaKey) {
             e.preventDefault();
-            onStatusUpdate?.(workOrder?.id || '', 'flagged');
+            handleStatusUpdate('flagged');
           }
           break;
       }
@@ -111,7 +123,7 @@ export const ImageViewModal = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, currentIndex, currentImageIndex, workOrders.length, images.length]);
+  }, [isOpen, currentIndex, currentImageIndex, workOrders.length, images.length, isUpdating]);
 
   if (!workOrder) return null;
 
