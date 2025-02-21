@@ -23,7 +23,6 @@ export interface WorkOrderSearchResponseData {
   notes: string;
   location: WorkOrderLocation;
   type: string;
-  // Add other fields as needed
 }
 
 export interface WorkOrderScheduleInformation {
@@ -45,7 +44,7 @@ export interface WorkOrderSearchResponse {
 
 export interface WorkOrderFormData {
   note?: string;
-  images?: Array<string>;
+  images?: Array<{ url: string }>;
   signature?: {
     url?: string;
   };

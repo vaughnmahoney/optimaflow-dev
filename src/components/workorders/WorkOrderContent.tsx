@@ -29,8 +29,8 @@ export const WorkOrderContent = () => {
         console.log('Search response:', order.search_response);
         console.log('Completion response:', order.completion_response);
         
-        const searchResponse = order.search_response as WorkOrderSearchResponse;
-        const completionResponse = order.completion_response as WorkOrderCompletionResponse;
+        const searchResponse = order.search_response as unknown as WorkOrderSearchResponse;
+        const completionResponse = order.completion_response as unknown as WorkOrderCompletionResponse;
         
         // Log the mapped data
         console.log('Mapped location:', searchResponse?.data?.location);

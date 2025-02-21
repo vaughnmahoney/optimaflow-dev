@@ -272,7 +272,7 @@ export const ImageViewModal = ({
               {images.length > 0 ? (
                 <>
                   <img 
-                    src={images[currentImageIndex]?.url} 
+                    src={images[currentImageIndex].url} 
                     alt={`Image ${currentImageIndex + 1}`}
                     className="max-h-full max-w-full object-contain"
                   />
