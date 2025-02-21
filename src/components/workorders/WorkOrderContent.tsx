@@ -5,7 +5,7 @@ import { WorkOrderList } from "./WorkOrderList";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { WorkOrder, WorkOrderSearchResponse, WorkOrderCompletionResponse } from "./types";
-import { ImageViewModal } from "./ImageViewModal";
+import { ImageViewModal } from "./modal/ImageViewModal";
 
 export const WorkOrderContent = () => {
   const [filterQuery, setFilterQuery] = useState("");

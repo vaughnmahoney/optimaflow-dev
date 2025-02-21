@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CheckCircle, Flag, Download, ChevronLeft, ChevronRight, ArrowLeft, ArrowRight, X, ImageOff } from "lucide-react";
 import { useState } from "react";
 import { format } from "date-fns";
-import { WorkOrder } from "./types";
+import { WorkOrder } from "../types";
 import { cn } from "@/lib/utils";
 
 interface ImageViewModalProps {
