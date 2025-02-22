@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { WorkOrder } from "../types";
 import { ImageViewer } from "./modal/ImageViewer";
 import { NavigationFooter } from "./NavigationFooter";
-import { toast } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ModalHeader } from "./components/ModalHeader";
 import { ActionButtons } from "./components/ActionButtons";
@@ -40,20 +39,16 @@ export const ImageViewModal = ({
   const handlePrevious = () => {
     if (currentImageIndex > 0) {
       setCurrentImageIndex(prev => prev - 1);
-      toast.info(`Viewing image ${currentImageIndex} of ${images.length}`);
     } else if (images.length > 0) {
       setCurrentImageIndex(images.length - 1);
-      toast.info(`Viewing image ${images.length} of ${images.length}`);
     }
   };
   
   const handleNext = () => {
     if (currentImageIndex < images.length - 1) {
       setCurrentImageIndex(prev => prev + 1);
-      toast.info(`Viewing image ${currentImageIndex + 2} of ${images.length}`);
     } else if (images.length > 0) {
       setCurrentImageIndex(0);
-      toast.info(`Viewing image 1 of ${images.length}`);
     }
   };
 
@@ -61,7 +56,6 @@ export const ImageViewModal = ({
     if (currentIndex > 0) {
       onNavigate(currentIndex - 1);
       setCurrentImageIndex(0);
-      toast.info("Previous work order");
     }
   };
 
@@ -69,7 +63,6 @@ export const ImageViewModal = ({
     if (currentIndex < workOrders.length - 1) {
       onNavigate(currentIndex + 1);
       setCurrentImageIndex(0);
-      toast.info("Next work order");
     }
   };
 
@@ -127,9 +120,8 @@ export const ImageViewModal = ({
 
   if (!workOrder) return null;
 
-  // Safely access the driver name
   const driverInfo = workOrder.completion_response?.orders[0]?.data?.form || {};
-  const driverName = driverInfo.driver_name || 'No Driver Assigned';
+  const driverName = String(driverInfo.driver_name || 'No Driver Assigned');
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
