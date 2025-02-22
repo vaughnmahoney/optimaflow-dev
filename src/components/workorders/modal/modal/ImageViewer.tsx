@@ -1,7 +1,8 @@
 
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, ImageOff } from "lucide-react";
+import { ChevronLeft, ChevronRight, ImageOff, Grid, Maximize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 interface ImageViewerProps {
   images: Array<{
@@ -18,6 +19,8 @@ export const ImageViewer = ({
   onPrevious,
   onNext
 }: ImageViewerProps) => {
+  const [isGridView, setIsGridView] = useState(false);
+
   if (images.length === 0) {
     return (
       <div className="absolute inset-0 flex items-center justify-center">
@@ -30,10 +33,68 @@ export const ImageViewer = ({
     );
   }
 
+  if (isGridView) {
+    return (
+      <div className="absolute inset-0 flex flex-col">
+        <div className="p-4 flex justify-end">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsGridView(false)}
+            className="hover:bg-background/20"
+          >
+            <Maximize2 className="h-5 w-5" />
+          </Button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {images.map((image, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  setIsGridView(false);
+                  while (currentImageIndex !== index) {
+                    if (index > currentImageIndex) {
+                      onNext();
+                    } else {
+                      onPrevious();
+                    }
+                  }
+                }}
+                className={cn(
+                  "relative aspect-square rounded-lg overflow-hidden group hover:ring-2 hover:ring-primary transition-all duration-200",
+                  index === currentImageIndex && "ring-2 ring-primary"
+                )}
+              >
+                <img
+                  src={image.url}
+                  alt={`Image ${index + 1}`}
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="absolute inset-0 flex flex-col">
       {/* Main Image View */}
       <div className="flex-1 relative">
+        <div className="absolute right-4 top-4 z-10">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsGridView(true)}
+            className="hover:bg-background/20"
+          >
+            <Grid className="h-5 w-5" />
+          </Button>
+        </div>
+
         <img
           src={images[currentImageIndex].url}
           alt={`Image ${currentImageIndex + 1}`}
@@ -62,7 +123,7 @@ export const ImageViewer = ({
         )}
       </div>
 
-      {/* Thumbnail Grid */}
+      {/* Thumbnail Strip */}
       <div className="h-32 border-t bg-background">
         <div className="h-full flex items-center gap-2 overflow-x-auto px-4">
           {images.map((image, index) => (
