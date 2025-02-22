@@ -1,7 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
+import { CheckCircle, Flag, Clock, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ModalHeaderProps {
@@ -12,38 +11,30 @@ interface ModalHeaderProps {
 }
 
 export const ModalHeader = ({ orderNo, status, driverName, onClose }: ModalHeaderProps) => {
-  const getStatusColor = (status: string) => {
+  const getStatusIcon = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'approved':
-        return 'bg-green-500 hover:bg-green-600';
+        return <CheckCircle className="h-6 w-6 text-green-500" />;
       case 'flagged':
-        return 'bg-red-500 hover:bg-red-600';
+        return <Flag className="h-6 w-6 text-red-500" />;
       default:
-        return 'bg-blue-500 hover:bg-blue-600';
+        return <Clock className="h-6 w-6 text-yellow-500" />;
     }
   };
 
   return (
     <div className="p-6 border-b w-full">
       <div className="flex items-center justify-between">
-        <div className="space-y-2">
+        <div className="flex items-center gap-3">
           <h2 className="text-2xl font-semibold">
-            Work Order #{orderNo}
+            #{orderNo}
           </h2>
-          <Badge 
-            className={cn(
-              "px-4 py-1",
-              getStatusColor(status || 'pending')
-            )}
-          >
-            {(status || 'PENDING').toUpperCase()}
-          </Badge>
+          {getStatusIcon(status || 'pending')}
         </div>
         <div className="flex items-center gap-6">
           {driverName && (
-            <div className="text-right">
-              <div className="text-sm text-muted-foreground">Driver</div>
-              <div className="font-medium">{driverName}</div>
+            <div className="text-right font-medium">
+              {driverName}
             </div>
           )}
           <Button variant="ghost" size="icon" onClick={onClose}>

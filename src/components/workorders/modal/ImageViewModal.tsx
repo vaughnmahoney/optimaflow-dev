@@ -127,7 +127,9 @@ export const ImageViewModal = ({
 
   if (!workOrder) return null;
 
-  const driverName = workOrder.completion_response?.orders[0]?.data?.form?.driver_name || 'No Driver Assigned';
+  // Safely access the driver name
+  const driverInfo = workOrder.completion_response?.orders[0]?.data?.form || {};
+  const driverName = driverInfo.driver_name || 'No Driver Assigned';
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
