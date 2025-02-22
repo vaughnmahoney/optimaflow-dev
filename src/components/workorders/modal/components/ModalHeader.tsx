@@ -1,16 +1,18 @@
-
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Flag, Clock, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-
 interface ModalHeaderProps {
   orderNo: string;
   status: string;
   driverName?: string;
   onClose: () => void;
 }
-
-export const ModalHeader = ({ orderNo, status, driverName, onClose }: ModalHeaderProps) => {
+export const ModalHeader = ({
+  orderNo,
+  status,
+  driverName,
+  onClose
+}: ModalHeaderProps) => {
   const getStatusIcon = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'approved':
@@ -21,9 +23,7 @@ export const ModalHeader = ({ orderNo, status, driverName, onClose }: ModalHeade
         return <Clock className="h-6 w-6 text-yellow-500" />;
     }
   };
-
-  return (
-    <div className="p-6 border-b w-full">
+  return <div className="p-6 border-b w-full py-[5px]">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h2 className="text-2xl font-semibold">
@@ -32,16 +32,13 @@ export const ModalHeader = ({ orderNo, status, driverName, onClose }: ModalHeade
           {getStatusIcon(status || 'pending')}
         </div>
         <div className="flex items-center gap-6">
-          {driverName && (
-            <div className="text-right font-medium">
+          {driverName && <div className="text-right font-medium">
               {driverName}
-            </div>
-          )}
+            </div>}
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-5 w-4" />
           </Button>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
