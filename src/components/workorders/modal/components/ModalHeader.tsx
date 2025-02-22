@@ -23,7 +23,7 @@ export const ModalHeader = ({
         return <Clock className="h-6 w-6 text-yellow-500" />;
     }
   };
-  return <div className="p-6 border-b w-full py-[4px]">
+  return <div className="p-6 border-b w-full mx-0 my-0 py-[10px]">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h2 className="text-2xl font-semibold">
@@ -35,7 +35,7 @@ export const ModalHeader = ({
           {driverName && <div className="text-right font-medium">
               {driverName}
             </div>}
-          <Button variant="ghost" size="icon" onClick={onClose}>
+          <Button variant="ghost" size="icon" onClick={onClose} className="mx-0 px-0 text-right">
             <X className="h-5 w-4" />
           </Button>
         </div>
