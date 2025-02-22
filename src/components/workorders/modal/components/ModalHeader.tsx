@@ -23,7 +23,7 @@ export const ModalHeader = ({
         return <Clock className="h-6 w-6 text-yellow-500" />;
     }
   };
-  return <div className="p-6 border-b w-full py-[5px]">
+  return <div className="p-6 border-b w-full py-[4px]">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h2 className="text-2xl font-semibold">
