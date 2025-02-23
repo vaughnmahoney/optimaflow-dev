@@ -1,3 +1,4 @@
+
 export interface Location {
   id: string;
   name: string;
@@ -6,13 +7,17 @@ export interface Location {
   longitude: number;
 }
 
-export interface CompletionResponse {
-  orders: {
-    order_id: string;
-    data: {
-      form: WorkOrderFormData;
-    };
-  }[]
+export interface WorkOrderFormData {
+  images?: string[];
+  driver_name?: string;
+  note?: string;
+  signature?: string;
+  startTime?: string;
+  endTime?: string;
+  tracking_url?: string;
+  form?: {
+    signature?: string;
+  };
 }
 
 export interface WorkOrder {
@@ -24,6 +29,20 @@ export interface WorkOrder {
   status: string;
   location?: Location;
   completion_response?: CompletionResponse;
+  tech_notes?: string;
+  driver?: string;
+  duration?: string;
+  lds?: string;
+  signature_url?: string;
+}
+
+export interface CompletionResponse {
+  orders: {
+    order_id: string;
+    data: {
+      form: WorkOrderFormData;
+    };
+  }[];
 }
 
 export interface WorkOrderSearchResponse {
@@ -44,9 +63,4 @@ export interface WorkOrderListProps {
   onDelete: (workOrderId: string) => void;
   searchQuery: string;
   statusFilter: string | null;
-}
-
-export interface WorkOrderFormData {
-  images?: string[];
-  driver_name?: string;
 }

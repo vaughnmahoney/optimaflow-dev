@@ -33,23 +33,23 @@ export const WorkOrderTable = ({
   };
 
   return (
-    <div className="rounded-xl border bg-card shadow-md">
+    <div className="rounded-xl border bg-card shadow-lg overflow-hidden animate-fade-in">
       <Table>
         <TableHeader>
-          <TableRow className="bg-muted/50 border-b border-border/50">
-            <TableHead className="py-5 text-base font-semibold">Order #</TableHead>
-            <TableHead className="py-5 text-base font-semibold">Service Date</TableHead>
-            <TableHead className="py-5 text-base font-semibold">Location</TableHead>
-            <TableHead className="py-5 text-base font-semibold">Notes</TableHead>
-            <TableHead className="py-5 text-base font-semibold">Status</TableHead>
-            <TableHead className="py-5 text-base font-semibold">Actions</TableHead>
+          <TableRow className="bg-muted/60 border-b border-border/50">
+            <TableHead className="py-5 text-base font-semibold text-foreground/80">Order #</TableHead>
+            <TableHead className="py-5 text-base font-semibold text-foreground/80">Service Date</TableHead>
+            <TableHead className="py-5 text-base font-semibold text-foreground/80">Location</TableHead>
+            <TableHead className="py-5 text-base font-semibold text-foreground/80">Notes</TableHead>
+            <TableHead className="py-5 text-base font-semibold text-foreground/80">Status</TableHead>
+            <TableHead className="py-5 text-base font-semibold text-foreground/80">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {workOrders.length === 0 ? (
             <TableRow>
               <TableCell colSpan={6} className="h-[400px]">
-                <div className="flex flex-col items-center justify-center space-y-3 text-muted-foreground">
+                <div className="flex flex-col items-center justify-center space-y-4 text-muted-foreground">
                   <svg
                     className="h-12 w-12 opacity-20"
                     fill="none"
@@ -73,62 +73,64 @@ export const WorkOrderTable = ({
               <TableRow 
                 key={workOrder.id}
                 className={cn(
-                  "transition-colors border-b border-border/30 hover:bg-muted/40",
-                  index % 2 === 0 ? "bg-muted/10" : "bg-background"
+                  "transition-all duration-200 border-b border-border/30 hover:bg-muted/30",
+                  index % 2 === 0 ? "bg-muted/5" : "bg-background"
                 )}
               >
-                <TableCell className="py-4">
-                  <span className="font-semibold text-base">{workOrder.order_no || 'N/A'}</span>
+                <TableCell className="py-4 pl-6">
+                  <span className="font-bold text-base text-foreground/90">
+                    {workOrder.order_no || 'N/A'}
+                  </span>
                 </TableCell>
-                <TableCell className="py-4 text-base">
+                <TableCell className="py-4 text-base text-foreground/75">
                   {workOrder.service_date ? format(new Date(workOrder.service_date), "MMM d, yyyy") : "N/A"}
                 </TableCell>
                 <TableCell className="max-w-xs py-4">
-                  <div className="truncate text-base">{getLocationAddress(workOrder)}</div>
+                  <div className="truncate text-base text-foreground/75">{getLocationAddress(workOrder)}</div>
                 </TableCell>
                 <TableCell className="max-w-xs py-4">
-                  <div className="truncate text-base">{workOrder.service_notes || "No notes"}</div>
+                  <div className="truncate text-base text-foreground/75">{workOrder.service_notes || "No notes"}</div>
                 </TableCell>
                 <TableCell className="py-4">
                   <StatusBadge status={workOrder.status || 'pending_review'} />
                 </TableCell>
                 <TableCell className="py-4">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <Button 
                       variant="ghost" 
                       size="icon"
                       title="View Proof of Service"
                       onClick={() => onImageView(workOrder.id)}
-                      className="h-9 w-9 rounded-lg transition-all duration-200 hover:scale-105 hover:bg-blue-50 hover:text-blue-600"
+                      className="h-10 w-10 rounded-lg transition-all duration-200 hover:scale-105 hover:bg-blue-50 hover:text-blue-600 hover:shadow-sm"
                     >
-                      <Eye className="h-4 w-4" />
+                      <Eye className="h-[18px] w-[18px]" />
                     </Button>
                     <Button 
                       variant="ghost" 
                       size="icon"
                       title="Approve"
-                      className="h-9 w-9 rounded-lg transition-all duration-200 hover:scale-105 hover:bg-green-50 hover:text-green-600"
+                      className="h-10 w-10 rounded-lg transition-all duration-200 hover:scale-105 hover:bg-green-50 hover:text-green-600 hover:shadow-sm"
                       onClick={() => onStatusUpdate(workOrder.id, "approved")}
                     >
-                      <CheckCircle className="h-4 w-4" />
+                      <CheckCircle className="h-[18px] w-[18px]" />
                     </Button>
                     <Button 
                       variant="ghost" 
                       size="icon"
                       title="Flag for Review"
-                      className="h-9 w-9 rounded-lg transition-all duration-200 hover:scale-105 hover:bg-red-50 hover:text-red-600"
+                      className="h-10 w-10 rounded-lg transition-all duration-200 hover:scale-105 hover:bg-red-50 hover:text-red-600 hover:shadow-sm"
                       onClick={() => onStatusUpdate(workOrder.id, "flagged")}
                     >
-                      <Flag className="h-4 w-4" />
+                      <Flag className="h-[18px] w-[18px]" />
                     </Button>
                     <Button 
                       variant="ghost" 
                       size="icon"
                       title="Delete Order"
-                      className="h-9 w-9 rounded-lg transition-all duration-200 hover:scale-105 hover:bg-red-50 hover:text-red-600"
+                      className="h-10 w-10 rounded-lg transition-all duration-200 hover:scale-105 hover:bg-red-50 hover:text-red-600 hover:shadow-sm"
                       onClick={() => onDelete(workOrder.id)}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-[18px] w-[18px]" />
                     </Button>
                   </div>
                 </TableCell>
