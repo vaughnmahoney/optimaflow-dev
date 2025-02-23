@@ -17,29 +17,38 @@ export interface WorkOrderDriver {
   id: string;
 }
 
-export interface WorkOrderSearchResponseData {
-  id: string;
-  date: string;
-  notes: string;
-  location: WorkOrderLocation;
-  type: string;
-}
-
 export interface WorkOrderScheduleInformation {
-  arrivalTimeDt?: string;
-  distance?: number;
-  driverName?: string;
+  driverExternalId?: string;
   driverSerial?: string;
+  driverName?: string;
+  vehicleRegistration?: string | null;
+  vehicleLabel?: string | null;
+  stopNumber?: number;
   scheduledAt?: string;
   scheduledAtDt?: string;
-  stopNumber?: number;
+  arrivalTimeDt?: string;
   travelTime?: number;
+  distance?: number;
+}
+
+export interface WorkOrderSearchData {
+  id: string;
+  orderNo: string;
+  date: string;
+  type: string;
+  notes: string;
+  location: WorkOrderLocation;
+}
+
+export interface WorkOrderSearchResponseOrder {
+  id: string;
+  data: WorkOrderSearchData;
+  scheduleInformation: WorkOrderScheduleInformation;
 }
 
 export interface WorkOrderSearchResponse {
-  id: string;
-  data: WorkOrderSearchResponseData;
-  scheduleInformation: WorkOrderScheduleInformation;
+  success: boolean;
+  orders: WorkOrderSearchResponseOrder[];
 }
 
 export interface WorkOrderFormData {
