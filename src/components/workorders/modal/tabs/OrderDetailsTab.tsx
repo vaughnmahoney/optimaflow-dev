@@ -51,7 +51,7 @@ export const OrderDetailsTab = ({ workOrder }: OrderDetailsTabProps) => {
           <div className="space-y-3 text-sm">
             <p>
               <span className="text-muted-foreground">Driver: </span>
-              {workOrder.driver?.name || 'Not assigned'}
+              {workOrder.driver || 'Not assigned'}
             </p>
             <p>
               <span className="text-muted-foreground">Location: </span>
@@ -63,25 +63,25 @@ export const OrderDetailsTab = ({ workOrder }: OrderDetailsTabProps) => {
             </p>
             <p>
               <span className="text-muted-foreground">Start Date: </span>
-              {formatDate(completionData?.startTime?.localTime || '')}
+              {formatDate(completionData?.startTime || '')}
             </p>
             <p>
               <span className="text-muted-foreground">Start Time: </span>
-              {formatTime(completionData?.startTime?.localTime || '')}
+              {formatTime(completionData?.startTime || '')}
             </p>
             <p>
               <span className="text-muted-foreground">End Date: </span>
-              {formatDate(completionData?.endTime?.localTime || '')}
+              {formatDate(completionData?.endTime || '')}
             </p>
             <p>
               <span className="text-muted-foreground">End Time: </span>
-              {formatTime(completionData?.endTime?.localTime || '')}
+              {formatTime(completionData?.endTime || '')}
             </p>
             <p>
               <span className="text-muted-foreground">Duration: </span>
               {calculateDuration(
-                completionData?.startTime?.localTime,
-                completionData?.endTime?.localTime
+                completionData?.startTime,
+                completionData?.endTime
               )}
             </p>
             <p>
