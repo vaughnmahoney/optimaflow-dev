@@ -2,6 +2,8 @@
 #root {
   margin: 0 auto;
   text-align: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1A1F2C 0%, #8B5CF6 100%);
 }
 
 .logo {
@@ -12,7 +14,7 @@
 }
 
 .logo:hover {
-  filter: drop-shadow(0 0 2em rgba(99, 102, 241, 0.4));
+  filter: drop-shadow(0 0 2em rgba(139, 92, 246, 0.4));
 }
 
 @keyframes logo-spin {
@@ -27,6 +29,33 @@
 @media (prefers-reduced-motion: no-preference) {
   a:nth-of-type(2) .logo {
     animation: logo-spin infinite 20s linear;
+  }
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.125);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
+
+.status-glow {
+  animation: status-glow 2s infinite;
+}
+
+@keyframes status-glow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.8);
   }
 }
 
