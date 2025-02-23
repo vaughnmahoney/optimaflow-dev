@@ -4,8 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { WorkOrderList } from "./WorkOrderList";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { WorkOrder, WorkOrderSearchResponse, WorkOrderCompletionResponse } from "./types";
+import { WorkOrder } from "./types";
 import { ImageViewModal } from "./modal/ImageViewModal";
+import { Card } from "@/components/ui/card";
 
 export const WorkOrderContent = () => {
   const [filterQuery, setFilterQuery] = useState("");
@@ -24,37 +25,23 @@ export const WorkOrderContent = () => {
       if (error) throw error;
       
       return data.map((order): WorkOrder => {
-        // Add debugging logs
-        console.log('Raw order:', order);
-        console.log('Search response:', order.search_response);
-        console.log('Completion response:', order.completion_response);
-        
-        const searchResponse = order.search_response as unknown as WorkOrderSearchResponse;
-        const completionResponse = order.completion_response as unknown as WorkOrderCompletionResponse;
-        
-        // Log the mapped data
-        console.log('Mapped location:', searchResponse?.data?.location);
-        console.log('Mapped date:', searchResponse?.data?.date);
-        console.log('Mapped notes:', searchResponse?.data?.notes);
-        
         return {
           id: order.id,
           order_no: order.order_no || 'N/A',
           status: order.status || 'pending_review',
           timestamp: order.timestamp || new Date().toISOString(),
-          service_date: searchResponse?.data?.date,
-          service_notes: searchResponse?.data?.notes,
-          location: searchResponse?.data?.location || {
-            name: searchResponse?.data?.location?.name,
-            address: searchResponse?.data?.location?.address,
+          service_date: order.search_response?.data?.date,
+          service_notes: order.search_response?.data?.notes,
+          location: order.search_response?.data?.location || {
+            name: order.search_response?.data?.location?.name,
+            address: order.search_response?.data?.location?.address,
           },
-          has_images: Boolean(completionResponse?.orders?.[0]?.data?.form?.images?.length),
-          search_response: searchResponse,
-          completion_response: completionResponse
+          has_images: Boolean(order.completion_response?.orders?.[0]?.data?.form?.images?.length),
+          search_response: order.search_response,
+          completion_response: order.completion_response
         };
       });
     },
-    refetchInterval: 15 * 60 * 1000, // Refetch every 15 minutes
   });
 
   useEffect(() => {
@@ -76,7 +63,6 @@ export const WorkOrderContent = () => {
       return;
     }
 
-    // Update the selected work order if it matches
     if (selectedWorkOrder?.id === workOrderId) {
       setSelectedWorkOrder(prev => prev ? {
         ...prev,
@@ -84,9 +70,7 @@ export const WorkOrderContent = () => {
       } : null);
     }
 
-    // Immediately refetch to update the list
     await refetch();
-    
     toast.success("Status updated successfully");
   };
 
@@ -145,11 +129,15 @@ export const WorkOrderContent = () => {
 
   if (error) {
     console.error("Error loading work orders:", error);
-    return <div>Error loading work orders. Please try again.</div>;
+    return (
+      <Card className="p-6 text-center">
+        <div className="text-red-500">Error loading work orders. Please try again.</div>
+      </Card>
+    );
   }
 
   return (
-    <>
+    <div className="p-6 space-y-8">
       <WorkOrderList 
         workOrders={filteredWorkOrders()} 
         isLoading={isLoading}
@@ -172,6 +160,6 @@ export const WorkOrderContent = () => {
         onStatusUpdate={handleStatusChange}
         onNavigate={handleOrderNavigation}
       />
-    </>
+    </div>
   );
 };

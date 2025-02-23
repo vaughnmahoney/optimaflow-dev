@@ -7,6 +7,7 @@ import { StatusFilter } from "./filters/StatusFilter";
 import { DebugDataDisplay } from "./debug/DebugDataDisplay";
 import { WorkOrderTable } from "./WorkOrderTable";
 import { LoadingSkeleton } from "./LoadingSkeleton";
+import { Card } from "@/components/ui/card";
 
 export const WorkOrderList = ({ 
   workOrders, 
@@ -28,31 +29,35 @@ export const WorkOrderList = ({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center">
-        <div className="flex-1">
-          <SearchBar onSearch={onSearchChange} />
+    <div className="max-w-7xl mx-auto space-y-8">
+      <Card className="p-6 shadow-lg rounded-xl border-opacity-20">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center">
+          <div className="flex-1">
+            <SearchBar onSearch={onSearchChange} />
+          </div>
+          <div className="flex-1">
+            <OptimoRouteSearchBar onSearch={onOptimoRouteSearch} />
+          </div>
+          <StatusFilter 
+            statusFilter={statusFilter}
+            onStatusFilterChange={onStatusFilterChange}
+          />
         </div>
-        <div className="flex-1">
-          <OptimoRouteSearchBar onSearch={onOptimoRouteSearch} />
-        </div>
-        <StatusFilter 
-          statusFilter={statusFilter}
-          onStatusFilterChange={onStatusFilterChange}
-        />
-      </div>
+      </Card>
 
       <DebugDataDisplay 
         searchResponse={searchResponse}
         transformedData={transformedData}
       />
 
-      <WorkOrderTable 
-        workOrders={workOrders}
-        onStatusUpdate={onStatusUpdate}
-        onImageView={onImageView}
-        onDelete={onDelete}
-      />
+      <Card className="shadow-lg rounded-xl border-opacity-20">
+        <WorkOrderTable 
+          workOrders={workOrders}
+          onStatusUpdate={onStatusUpdate}
+          onImageView={onImageView}
+          onDelete={onDelete}
+        />
+      </Card>
     </div>
   );
 };
