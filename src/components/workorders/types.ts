@@ -10,6 +10,7 @@ export interface WorkOrderLocation {
   longitude?: number;
   notes?: string;
   valid?: boolean;
+  checkInTime?: number;
 }
 
 export interface WorkOrderDriver {
@@ -57,6 +58,7 @@ export interface WorkOrderFormData {
   signature?: {
     url?: string;
   };
+  driver_name?: string;
 }
 
 export interface WorkOrderTimeData {
