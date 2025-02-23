@@ -5,18 +5,24 @@ export interface Location {
   address: string;
   latitude: number;
   longitude: number;
+  locationName?: string;  // Added for backward compatibility
 }
 
 export interface WorkOrderFormData {
-  images?: string[];
+  images?: Array<{ url: string }>;  // Updated to match the expected type
   driver_name?: string;
   note?: string;
+  notes?: string;  // Added for backward compatibility
   signature?: string;
   startTime?: string;
   endTime?: string;
   tracking_url?: string;
+  timestamp?: string;  // Added for backward compatibility
   form?: {
     signature?: string;
+    startTime?: string;
+    endTime?: string;
+    tracking_url?: string;
   };
 }
 
@@ -34,6 +40,9 @@ export interface WorkOrder {
   duration?: string;
   lds?: string;
   signature_url?: string;
+  notes?: string;  // Added for backward compatibility
+  date?: string;   // Added for backward compatibility
+  timestamp?: string;  // Added for backward compatibility
 }
 
 export interface CompletionResponse {
@@ -41,6 +50,9 @@ export interface CompletionResponse {
     order_id: string;
     data: {
       form: WorkOrderFormData;
+      startTime?: string;
+      endTime?: string;
+      tracking_url?: string;
     };
   }[];
 }

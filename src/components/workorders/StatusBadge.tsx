@@ -45,7 +45,7 @@ export const StatusBadge = ({ status }: StatusBadgeProps) => {
       variant={config.variant}
       className={cn(
         "px-3 py-1.5 gap-1.5 font-semibold text-sm rounded-full border shadow-sm",
-        "inline-flex items-center transition-all duration-200 hover:shadow",
+        "inline-flex items-center transition-all duration-200 hover:shadow-md",
         config.className
       )}
     >
