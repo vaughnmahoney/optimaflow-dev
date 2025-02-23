@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { WorkOrderList } from "./WorkOrderList";
@@ -24,18 +23,8 @@ export const WorkOrderContent = () => {
       if (error) throw error;
       
       return data.map((order): WorkOrder => {
-        // Add debugging logs
-        console.log('Raw order:', order);
-        console.log('Search response:', order.search_response);
-        console.log('Completion response:', order.completion_response);
-        
-        const searchResponse = order.search_response as unknown as WorkOrderSearchResponse;
-        const completionResponse = order.completion_response as unknown as WorkOrderCompletionResponse;
-        
-        // Log the mapped data
-        console.log('Mapped location:', searchResponse?.data?.location);
-        console.log('Mapped date:', searchResponse?.data?.date);
-        console.log('Mapped notes:', searchResponse?.data?.notes);
+        const searchResponse = order.search_response as WorkOrderSearchResponse;
+        const completionResponse = order.completion_response as WorkOrderCompletionResponse;
         
         return {
           id: order.id,
@@ -76,7 +65,6 @@ export const WorkOrderContent = () => {
       return;
     }
 
-    // Update the selected work order if it matches
     if (selectedWorkOrder?.id === workOrderId) {
       setSelectedWorkOrder(prev => prev ? {
         ...prev,
@@ -84,7 +72,6 @@ export const WorkOrderContent = () => {
       } : null);
     }
 
-    // Immediately refetch to update the list
     await refetch();
     
     toast.success("Status updated successfully");

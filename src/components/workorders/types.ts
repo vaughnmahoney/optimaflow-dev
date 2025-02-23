@@ -25,6 +25,12 @@ export interface WorkOrderSearchResponseData {
   type: string;
 }
 
+export interface WorkOrderSearchResponse {
+  id: string;
+  data: WorkOrderSearchResponseData;
+  scheduleInformation: WorkOrderScheduleInformation;
+}
+
 export interface WorkOrderScheduleInformation {
   arrivalTimeDt?: string;
   distance?: number;
@@ -36,18 +42,13 @@ export interface WorkOrderScheduleInformation {
   travelTime?: number;
 }
 
-export interface WorkOrderSearchResponse {
-  id: string;
-  data: WorkOrderSearchResponseData;
-  scheduleInformation: WorkOrderScheduleInformation;
-}
-
 export interface WorkOrderFormData {
   note?: string;
   images?: Array<{ url: string }>;
   signature?: {
     url?: string;
   };
+  driver_name?: string;
 }
 
 export interface WorkOrderTimeData {
