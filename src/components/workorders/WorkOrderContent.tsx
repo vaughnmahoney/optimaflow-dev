@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { WorkOrderList } from "./WorkOrderList";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { WorkOrder, WorkOrderSearchResponse, CompletionResponse } from "./types";
+import { WorkOrder, WorkOrderSearchResponse, WorkOrderCompletionResponse } from "./types";
 import { ImageViewModal } from "./modal/ImageViewModal";
 
 export const WorkOrderContent = () => {
@@ -30,31 +30,27 @@ export const WorkOrderContent = () => {
         console.log('Completion response:', order.completion_response);
         
         const searchResponse = order.search_response as unknown as WorkOrderSearchResponse;
-        const completionResponse = order.completion_response as unknown as CompletionResponse;
+        const completionResponse = order.completion_response as unknown as WorkOrderCompletionResponse;
         
         // Log the mapped data
-        console.log('Mapped location:', searchResponse?.data?.[0]?.location);
-        console.log('Mapped date:', searchResponse?.data?.[0]?.date);
-        console.log('Mapped notes:', searchResponse?.data?.[0]?.notes);
+        console.log('Mapped location:', searchResponse?.data?.location);
+        console.log('Mapped date:', searchResponse?.data?.date);
+        console.log('Mapped notes:', searchResponse?.data?.notes);
         
         return {
           id: order.id,
           order_no: order.order_no || 'N/A',
           status: order.status || 'pending_review',
           timestamp: order.timestamp || new Date().toISOString(),
-          service_date: searchResponse?.data?.[0]?.date,
-          service_notes: searchResponse?.data?.[0]?.notes,
-          location: searchResponse?.data?.[0]?.location || {
-            name: searchResponse?.data?.[0]?.location?.name,
-            address: searchResponse?.data?.[0]?.location?.address,
-            id: '',
-            latitude: 0,
-            longitude: 0
+          service_date: searchResponse?.data?.date,
+          service_notes: searchResponse?.data?.notes,
+          location: searchResponse?.data?.location || {
+            name: searchResponse?.data?.location?.name,
+            address: searchResponse?.data?.location?.address,
           },
           has_images: Boolean(completionResponse?.orders?.[0]?.data?.form?.images?.length),
-          completion_response: completionResponse,
-          location_id: order.location_id || '',
-          tech_notes: order.tech_notes
+          search_response: searchResponse,
+          completion_response: completionResponse
         };
       });
     },
