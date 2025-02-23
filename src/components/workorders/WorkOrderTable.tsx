@@ -32,81 +32,106 @@ export const WorkOrderTable = ({
   };
 
   return (
-    <div className="rounded-lg border shadow-sm bg-background animate-fade-in">
+    <div className="rounded-xl border bg-background shadow-lg animate-fade-in overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow className="bg-muted/50">
-            <TableHead className="font-semibold">Order #</TableHead>
-            <TableHead className="font-semibold">Service Date</TableHead>
-            <TableHead className="font-semibold">Location</TableHead>
-            <TableHead className="font-semibold">Notes</TableHead>
-            <TableHead className="font-semibold">Status</TableHead>
-            <TableHead className="font-semibold">Actions</TableHead>
+          <TableRow className="bg-muted">
+            <TableHead className="py-4 text-base font-semibold text-foreground/90">Order #</TableHead>
+            <TableHead className="py-4 text-base font-semibold text-foreground/90">Service Date</TableHead>
+            <TableHead className="py-4 text-base font-semibold text-foreground/90">Location</TableHead>
+            <TableHead className="py-4 text-base font-semibold text-foreground/90">Notes</TableHead>
+            <TableHead className="py-4 text-base font-semibold text-foreground/90">Status</TableHead>
+            <TableHead className="py-4 text-base font-semibold text-foreground/90">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {workOrders.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center h-32 text-muted-foreground">
-                No work orders found. Import orders from OptimoRoute to get started.
+              <TableCell colSpan={6} className="h-[400px]">
+                <div className="flex flex-col items-center justify-center space-y-3 text-muted-foreground">
+                  <svg
+                    className="h-12 w-12 opacity-20"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 48 48"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M9 13h30M9 24h30M9 35h30"
+                    />
+                  </svg>
+                  <div className="text-xl font-medium">No work orders found</div>
+                  <div className="text-sm">Import orders from OptimoRoute to get started</div>
+                </div>
               </TableCell>
             </TableRow>
           ) : (
             workOrders.map((workOrder) => (
               <TableRow 
                 key={workOrder.id}
-                className="transition-colors hover:bg-muted/50"
+                className="group transition-colors hover:bg-muted/50"
               >
-                <TableCell className="font-medium">{workOrder.order_no || 'N/A'}</TableCell>
-                <TableCell>
-                  {workOrder.service_date ? format(new Date(workOrder.service_date), "MMM d, yyyy") : "N/A"}
+                <TableCell className="py-4 text-base font-semibold">
+                  {workOrder.order_no || 'N/A'}
                 </TableCell>
-                <TableCell className="max-w-xs truncate">
-                  {getLocationAddress(workOrder)}
+                <TableCell className="py-4">
+                  <span className="text-base">
+                    {workOrder.service_date ? format(new Date(workOrder.service_date), "MMM d, yyyy") : "N/A"}
+                  </span>
                 </TableCell>
-                <TableCell className="max-w-xs truncate">
-                  {workOrder.service_notes || "No notes"}
+                <TableCell className="max-w-xs py-4">
+                  <div className="truncate text-base">
+                    {getLocationAddress(workOrder)}
+                  </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="max-w-xs py-4">
+                  <div className="truncate text-base">
+                    {workOrder.service_notes || "No notes"}
+                  </div>
+                </TableCell>
+                <TableCell className="py-4">
                   <StatusBadge status={workOrder.status || 'pending_review'} />
                 </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
+                <TableCell className="py-4">
+                  <div className="flex items-center justify-start gap-2 opacity-90 group-hover:opacity-100 transition-opacity">
                     <Button 
                       variant="ghost" 
                       size="icon"
                       title="View Proof of Service"
                       onClick={() => onImageView(workOrder.id)}
-                      className="hover:bg-background"
+                      className="h-9 w-9 hover:bg-background hover:scale-105 transition-transform"
                     >
-                      <Eye className="h-4 w-4" />
+                      <Eye className="h-[18px] w-[18px]" />
                     </Button>
                     <Button 
                       variant="ghost" 
                       size="icon"
                       title="Approve"
-                      className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                      className="h-9 w-9 text-green-600 hover:text-green-700 hover:bg-green-50 hover:scale-105 transition-transform"
                       onClick={() => onStatusUpdate(workOrder.id, "approved")}
                     >
-                      <CheckCircle className="h-4 w-4" />
+                      <CheckCircle className="h-[18px] w-[18px]" />
                     </Button>
                     <Button 
                       variant="ghost" 
                       size="icon"
                       title="Flag for Review"
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      className="h-9 w-9 text-red-600 hover:text-red-700 hover:bg-red-50 hover:scale-105 transition-transform"
                       onClick={() => onStatusUpdate(workOrder.id, "flagged")}
                     >
-                      <Flag className="h-4 w-4" />
+                      <Flag className="h-[18px] w-[18px]" />
                     </Button>
                     <Button 
                       variant="ghost" 
                       size="icon"
                       title="Delete Order"
-                      className="text-gray-600 hover:text-red-600 hover:bg-red-50"
+                      className="h-9 w-9 text-gray-600 hover:text-red-600 hover:bg-red-50 hover:scale-105 transition-transform"
                       onClick={() => onDelete(workOrder.id)}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-[18px] w-[18px]" />
                     </Button>
                   </div>
                 </TableCell>
