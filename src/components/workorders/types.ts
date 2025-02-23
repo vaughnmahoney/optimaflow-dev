@@ -43,6 +43,7 @@ export interface WorkOrder {
   notes?: string;  // Added for backward compatibility
   date?: string;   // Added for backward compatibility
   timestamp?: string;  // Added for backward compatibility
+  has_images?: boolean; // Added to support image checking
 }
 
 export interface CompletionResponse {
