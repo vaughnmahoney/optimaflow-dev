@@ -1,4 +1,3 @@
-
 # OptimaFlow API Integration Documentation
 
 ## 1. Overview
@@ -120,6 +119,23 @@ CREATE TABLE work_orders (
 | data.date | search_response | search_orders | Service date |
 | scheduleInformation | search_response | search_orders | Driver and scheduling info |
 
+### Image and Signature Storage
+- Images from `completion_response` are accessible via URLs
+- All images are stored in OptimoRoute's storage
+- Signatures are treated similarly to images
+
+### Work Order Statuses
+```typescript
+type WorkOrderStatus = 'pending' | 'pending_review' | 'approved' | 'flagged';
+
+const STATUS_FLOW = {
+  pending: ['pending_review'],
+  pending_review: ['approved', 'flagged'],
+  approved: ['flagged'],
+  flagged: ['approved']
+};
+```
+
 ## 4. Frontend Display Logic
 
 ### Work Order List Component
@@ -186,6 +202,24 @@ const getVariant = (status: string) => {
 - Use optional chaining for nested objects
 - Add proper error handling for API calls
 
+### Keyboard Shortcuts
+```typescript
+// Modal Navigation
+'ArrowLeft' - Previous image
+'ArrowRight' - Next image
+'Alt + ArrowLeft' - Previous work order
+'Alt + ArrowRight' - Next work order
+'Ctrl/Cmd + A' - Approve work order
+'Ctrl/Cmd + F' - Flag work order
+'Escape' - Close modal
+```
+
+### Error Handling Best Practices
+- Log all API errors with relevant context
+- Include order number in error messages
+- Handle network timeouts gracefully
+- Implement retry logic for image loading
+
 ### Type Validation
 ```typescript
 interface WorkOrder {
@@ -223,7 +257,47 @@ interface WorkOrder {
 3. Automated status updates based on rules
 4. Enhanced error recovery mechanisms
 
+## 9. OptimoRoute API Rate Limits
+
+### Limits
+- Maximum 10 requests per second
+- 10,000 requests per day per endpoint
+- 5MB maximum payload size
+
+### Error Codes
+```typescript
+const API_ERROR_CODES = {
+  400: 'Invalid request parameters',
+  401: 'Authentication failed',
+  403: 'API key lacks permission',
+  404: 'Order not found',
+  429: 'Rate limit exceeded',
+  500: 'OptimoRoute server error'
+};
+```
+
+### Retry Strategy
+- Implement exponential backoff
+- Maximum 3 retry attempts
+- Handle rate limits with queuing
+
+## 10. Performance Considerations
+
+### Edge Function Optimization
+- Cache frequent lookups
+- Batch API requests when possible
+- Monitor execution times
+
+### Frontend Performance
+- Lazy load images
+- Implement virtual scrolling for large lists
+- Cache completed work order data
+
+### Real-time Updates
+- Poll for updates every 15 minutes
+- Implement manual refresh option
+- Show loading states during updates
+
 ---
 
 **Note**: This document should be referenced before any modifications to the API integration flow. All changes should be validated against the existing data structures and tested thoroughly before deployment.
-
