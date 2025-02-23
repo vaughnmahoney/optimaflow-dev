@@ -1,4 +1,3 @@
-
 import { Json } from "@/integrations/supabase/types";
 
 export interface WorkOrderLocation {
@@ -43,11 +42,16 @@ export interface WorkOrderSearchResponse {
 }
 
 export interface WorkOrderFormData {
-  note?: string;
-  images?: Array<{ url: string }>;
-  signature?: {
-    url?: string;
+  id: string;
+  order_no?: string;
+  service_date?: string;
+  location?: {
+    address?: string;
+    name?: string;
   };
+  service_notes?: string;
+  status?: string;
+  driver_name?: string;
 }
 
 export interface WorkOrderTimeData {

@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Eye, Flag, CheckCircle, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { StatusBadge } from "./StatusBadge";
-import { WorkOrder, WorkOrderSearchResponse } from "./types";
+import { WorkOrder } from "./types";
 
 interface WorkOrderTableProps {
   workOrders: WorkOrder[];
@@ -32,22 +32,22 @@ export const WorkOrderTable = ({
   };
 
   return (
-    <div className="rounded-xl border bg-white/10 backdrop-blur-xl shadow-xl transition-all duration-300">
+    <div className="rounded-lg border border-white/10 bg-white/5 backdrop-blur-md shadow-xl">
       <Table>
         <TableHeader>
-          <TableRow className="hover:bg-transparent">
-            <TableHead className="text-lg font-semibold text-gray-200">Order #</TableHead>
-            <TableHead className="text-lg font-semibold text-gray-200">Service Date</TableHead>
-            <TableHead className="text-lg font-semibold text-gray-200">Location</TableHead>
-            <TableHead className="text-lg font-semibold text-gray-200">Notes</TableHead>
-            <TableHead className="text-lg font-semibold text-gray-200">Status</TableHead>
-            <TableHead className="text-lg font-semibold text-gray-200">Actions</TableHead>
+          <TableRow className="border-b border-white/10">
+            <TableHead className="text-sm font-semibold text-white/70">Order #</TableHead>
+            <TableHead className="text-sm font-semibold text-white/70">Service Date</TableHead>
+            <TableHead className="text-sm font-semibold text-white/70">Location</TableHead>
+            <TableHead className="text-sm font-semibold text-white/70">Notes</TableHead>
+            <TableHead className="text-sm font-semibold text-white/70">Status</TableHead>
+            <TableHead className="text-sm font-semibold text-white/70">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {workOrders.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center h-24 text-gray-400">
+              <TableCell colSpan={6} className="text-center h-24 text-white/50">
                 No work orders found. Import orders from OptimoRoute to get started.
               </TableCell>
             </TableRow>
@@ -55,16 +55,16 @@ export const WorkOrderTable = ({
             workOrders.map((workOrder) => (
               <TableRow 
                 key={workOrder.id}
-                className="bg-white/5 backdrop-blur-lg hover:bg-white/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg rounded-lg my-2"
+                className="border-b border-white/5 bg-white/5 hover:bg-white/10 transition-colors duration-200"
               >
-                <TableCell className="font-medium text-gray-200">{workOrder.order_no || 'N/A'}</TableCell>
-                <TableCell className="text-gray-200">
+                <TableCell className="font-medium text-white">{workOrder.order_no || 'N/A'}</TableCell>
+                <TableCell className="text-white/70">
                   {workOrder.service_date ? format(new Date(workOrder.service_date), "MMM d, yyyy") : "N/A"}
                 </TableCell>
-                <TableCell className="max-w-xs truncate text-gray-200">
+                <TableCell className="max-w-xs truncate text-white/70">
                   {getLocationAddress(workOrder)}
                 </TableCell>
-                <TableCell className="max-w-xs truncate text-gray-200">
+                <TableCell className="max-w-xs truncate text-white/70">
                   {workOrder.service_notes || "No notes"}
                 </TableCell>
                 <TableCell>
@@ -77,7 +77,7 @@ export const WorkOrderTable = ({
                       size="icon"
                       title="View Proof of Service"
                       onClick={() => onImageView(workOrder.id)}
-                      className="hover:scale-110 transition-transform duration-200"
+                      className="text-white/70 hover:text-white hover:bg-white/10 transition-colors duration-200"
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
@@ -85,8 +85,8 @@ export const WorkOrderTable = ({
                       variant="ghost" 
                       size="icon"
                       title="Approve"
-                      className="text-green-400 hover:text-green-300 hover:scale-110 transition-all duration-200"
                       onClick={() => onStatusUpdate(workOrder.id, "approved")}
+                      className="text-green-400/70 hover:text-green-400 hover:bg-green-400/10 transition-colors duration-200"
                     >
                       <CheckCircle className="h-4 w-4" />
                     </Button>
@@ -94,8 +94,8 @@ export const WorkOrderTable = ({
                       variant="ghost" 
                       size="icon"
                       title="Flag for Review"
-                      className="text-red-400 hover:text-red-300 hover:scale-110 transition-all duration-200"
                       onClick={() => onStatusUpdate(workOrder.id, "flagged")}
+                      className="text-yellow-400/70 hover:text-yellow-400 hover:bg-yellow-400/10 transition-colors duration-200"
                     >
                       <Flag className="h-4 w-4" />
                     </Button>
@@ -103,8 +103,8 @@ export const WorkOrderTable = ({
                       variant="ghost" 
                       size="icon"
                       title="Delete Order"
-                      className="text-gray-400 hover:text-red-300 hover:scale-110 transition-all duration-200"
                       onClick={() => onDelete(workOrder.id)}
+                      className="text-red-400/70 hover:text-red-400 hover:bg-red-400/10 transition-colors duration-200"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
