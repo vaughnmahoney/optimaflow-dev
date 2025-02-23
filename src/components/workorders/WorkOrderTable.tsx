@@ -12,6 +12,7 @@ import { Eye, Flag, CheckCircle, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { StatusBadge } from "./StatusBadge";
 import { WorkOrder } from "./types";
+import { cn } from "@/lib/utils";
 
 interface WorkOrderTableProps {
   workOrders: WorkOrder[];
