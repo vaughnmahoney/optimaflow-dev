@@ -28,18 +28,20 @@ export const WorkOrderList = ({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center">
-        <div className="flex-1">
-          <SearchBar onSearch={onSearchChange} />
+    <div className="space-y-6">
+      <div className="p-4 rounded-xl bg-white/40 backdrop-blur-sm border border-border/40 shadow-sm">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center">
+          <div className="flex-1">
+            <SearchBar onSearch={onSearchChange} />
+          </div>
+          <div className="flex-1">
+            <OptimoRouteSearchBar onSearch={onOptimoRouteSearch} />
+          </div>
+          <StatusFilter 
+            statusFilter={statusFilter}
+            onStatusFilterChange={onStatusFilterChange}
+          />
         </div>
-        <div className="flex-1">
-          <OptimoRouteSearchBar onSearch={onOptimoRouteSearch} />
-        </div>
-        <StatusFilter 
-          statusFilter={statusFilter}
-          onStatusFilterChange={onStatusFilterChange}
-        />
       </div>
 
       <DebugDataDisplay 

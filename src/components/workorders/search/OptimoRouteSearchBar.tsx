@@ -2,37 +2,18 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
+import { Search } from "lucide-react";
 
 export const OptimoRouteSearchBar = ({ onSearch }: { onSearch: (value: string) => void }) => {
   const [searchValue, setSearchValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const queryClient = useQueryClient();
 
   const handleSearch = async () => {
     if (!searchValue.trim()) return;
-
+    
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('search-optimoroute', {
-        body: { searchQuery: searchValue.trim() }
-      });
-
-      if (error) throw error;
-
-      if (data.success && data.workOrderId) {
-        toast.success('OptimoRoute order found');
-        onSearch(searchValue);
-        // Immediately refetch the work orders list
-        await queryClient.invalidateQueries({ queryKey: ["workOrders"] });
-      } else {
-        toast.error(data.error || 'Failed to find OptimoRoute order');
-      }
-    } catch (error) {
-      console.error('OptimoRoute search error:', error);
-      toast.error('Failed to search OptimoRoute');
+      await onSearch(searchValue.trim());
     } finally {
       setIsLoading(false);
     }
@@ -45,16 +26,27 @@ export const OptimoRouteSearchBar = ({ onSearch }: { onSearch: (value: string) =
   };
 
   return (
-    <div className="flex gap-2">
-      <Input
-        type="text"
-        placeholder="Search OptimoRoute orders..."
-        value={searchValue}
-        onChange={(e) => setSearchValue(e.target.value)}
-        onKeyPress={handleKeyPress}
-        className="min-w-[200px]"
-      />
-      <Button onClick={handleSearch} disabled={isLoading}>
+    <div className="relative flex w-full max-w-sm items-center">
+      <div className="relative flex-1">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+          <Search className="h-4 w-4" />
+        </div>
+        <Input
+          type="text"
+          placeholder="Search OptimoRoute orders..."
+          value={searchValue}
+          onChange={(e) => setSearchValue(e.target.value)}
+          onKeyPress={handleKeyPress}
+          className="h-10 pl-9 pr-4 text-sm bg-white/50 backdrop-blur-sm border-border/50 shadow-sm 
+                   transition-all duration-200 hover:bg-white/80 focus:bg-white 
+                   focus:shadow-md rounded-lg"
+        />
+      </div>
+      <Button 
+        onClick={handleSearch}
+        disabled={isLoading}
+        className="ml-2 h-10 px-4 shadow-sm hover:shadow-md transition-all duration-200"
+      >
         {isLoading ? "Searching..." : "Search OptimoRoute"}
       </Button>
     </div>
