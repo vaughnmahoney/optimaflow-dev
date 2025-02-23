@@ -125,7 +125,7 @@ export const ImageViewModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-screen-xl max-h-[90vh] p-0 flex flex-col rounded-lg border shadow-lg animate-fade-in">
+      <DialogContent className="max-w-screen-xl max-h-[90vh] p-0 flex flex-col">
         <ModalHeader
           orderNo={workOrder.order_no}
           status={workOrder.status}
@@ -133,13 +133,13 @@ export const ImageViewModal = ({
           onClose={onClose}
         />
         
-        <div className="flex-1 grid grid-cols-[2fr_3fr] min-h-0 divide-x">
+        <div className="flex-1 grid grid-cols-[2fr_3fr] min-h-0">
           {/* Left Panel - Details */}
-          <div className="bg-background flex flex-col min-h-0">
+          <div className="border-r bg-background flex flex-col min-h-0">
             <TabsContainer workOrder={workOrder} />
             <ActionButtons
               workOrderId={workOrder.id}
-              hasImages={workOrder.completion_response?.orders[0]?.data?.form?.images?.length > 0}
+              hasImages={images.length > 0}
               currentStatus={workOrder.status}
               onStatusUpdate={onStatusUpdate}
               onDownloadAll={onDownloadAll}
@@ -150,7 +150,7 @@ export const ImageViewModal = ({
           <div className="bg-background/50 flex flex-col min-h-0">
             <div className="flex-1 relative">
               <ImageViewer
-                images={workOrder.completion_response?.orders[0]?.data?.form?.images || []}
+                images={images}
                 currentImageIndex={currentImageIndex}
                 onPrevious={handlePrevious}
                 onNext={handleNext}
