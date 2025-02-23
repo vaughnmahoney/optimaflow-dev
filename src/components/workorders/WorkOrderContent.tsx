@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { WorkOrderList } from "./WorkOrderList";
@@ -23,8 +24,8 @@ export const WorkOrderContent = () => {
       if (error) throw error;
       
       return data.map((order): WorkOrder => {
-        const searchResponse = order.search_response as WorkOrderSearchResponse;
-        const completionResponse = order.completion_response as WorkOrderCompletionResponse;
+        const searchResponse = (order.search_response as unknown) as WorkOrderSearchResponse;
+        const completionResponse = (order.completion_response as unknown) as WorkOrderCompletionResponse;
         
         return {
           id: order.id,
