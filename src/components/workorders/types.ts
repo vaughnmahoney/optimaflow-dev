@@ -1,76 +1,105 @@
 
-export interface Location {
-  id: string;
+import { Json } from "@/integrations/supabase/types";
+
+export interface WorkOrderLocation {
+  name?: string;
+  locationName?: string;
+  address?: string;
+  locationNo?: string;
+  latitude?: number;
+  longitude?: number;
+  notes?: string;
+  valid?: boolean;
+}
+
+export interface WorkOrderDriver {
   name: string;
-  address: string;
-  latitude: number;
-  longitude: number;
-  locationName?: string;  // Added for backward compatibility
+  id: string;
+}
+
+export interface WorkOrderSearchResponseData {
+  id: string;
+  date: string;
+  notes: string;
+  location: WorkOrderLocation;
+  type: string;
+}
+
+export interface WorkOrderScheduleInformation {
+  arrivalTimeDt?: string;
+  distance?: number;
+  driverName?: string;
+  driverSerial?: string;
+  scheduledAt?: string;
+  scheduledAtDt?: string;
+  stopNumber?: number;
+  travelTime?: number;
+}
+
+export interface WorkOrderSearchResponse {
+  id: string;
+  data: WorkOrderSearchResponseData;
+  scheduleInformation: WorkOrderScheduleInformation;
 }
 
 export interface WorkOrderFormData {
-  images?: Array<{ url: string }>;  // Updated to match the expected type
-  driver_name?: string;
   note?: string;
-  notes?: string;  // Added for backward compatibility
-  signature?: string;
-  startTime?: string;
-  endTime?: string;
-  tracking_url?: string;
-  timestamp?: string;  // Added for backward compatibility
-  form?: {
-    signature?: string;
-    startTime?: string;
-    endTime?: string;
-    tracking_url?: string;
+  images?: Array<{ url: string }>;
+  signature?: {
+    url?: string;
   };
+}
+
+export interface WorkOrderTimeData {
+  utcTime: string;
+  localTime: string;
+  unixTimestamp: number;
+}
+
+export interface WorkOrderCompletionData {
+  endTime: WorkOrderTimeData;
+  startTime: WorkOrderTimeData;
+  form: WorkOrderFormData;
+  status: string;
+  tracking_url?: string;
+}
+
+export interface WorkOrderCompletionOrder {
+  data: WorkOrderCompletionData;
+  orderNo: string;
+  success: boolean;
+}
+
+export interface WorkOrderCompletionResponse {
+  orders: WorkOrderCompletionOrder[];
+  success: boolean;
 }
 
 export interface WorkOrder {
   id: string;
   order_no: string;
-  service_date: string;
-  location_id: string;
-  service_notes: string;
   status: string;
-  location?: Location;
-  completion_response?: CompletionResponse;
+  timestamp: string;
+  service_date?: string;
+  service_notes?: string;
   tech_notes?: string;
-  driver?: string;
+  notes?: string;
   duration?: string;
   lds?: string;
+  location?: WorkOrderLocation;
+  driver?: WorkOrderDriver;
+  has_images?: boolean;
   signature_url?: string;
-  notes?: string;  // Added for backward compatibility
-  date?: string;   // Added for backward compatibility
-  timestamp?: string;  // Added for backward compatibility
-  has_images?: boolean; // Added to support image checking
-}
-
-export interface CompletionResponse {
-  orders: {
-    order_id: string;
-    data: {
-      form: WorkOrderFormData;
-      startTime?: string;
-      endTime?: string;
-      tracking_url?: string;
-    };
-  }[];
-}
-
-export interface WorkOrderSearchResponse {
-  data: WorkOrder[];
-  total: number;
-  page: number;
-  pageSize: number;
+  search_response?: WorkOrderSearchResponse;
+  completion_response?: WorkOrderCompletionResponse;
 }
 
 export interface WorkOrderListProps {
   workOrders: WorkOrder[];
   isLoading: boolean;
-  onSearchChange: (searchQuery: string) => void;
-  onOptimoRouteSearch: (orderNumber: string) => void;
-  onStatusFilterChange: (status: string | null) => void;
+  onSearchChange: (value: string) => void;
+  onOptimoRouteSearch: (value: string) => void;
+  onStatusFilterChange: (value: string | null) => void;
   onStatusUpdate: (workOrderId: string, newStatus: string) => void;
   onImageView: (workOrderId: string) => void;
   onDelete: (workOrderId: string) => void;
