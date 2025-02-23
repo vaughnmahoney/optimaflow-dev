@@ -28,47 +28,68 @@ const endpoints = {
 }
 ```
 
-### Search Response Structure
+### Search Orders Response Structure
 ```json
 {
+  "id": "85514ce8ac8b12ece36fdda246efc04e",
   "data": {
-    "form": {
-      "note": "Service Complete. Found compartment panel off RTU7...",
-      "images": [
-        { "url": "..." }
-      ],
-      "signature": {
-        "url": "..."
-      }
-    },
-    "status": "success",
-    "endTime": {
-      "utcTime": "2025-02-20T20:55:08",
-      "localTime": "2025-02-20T14:55:08",
-      "unixTimestamp": 1740084908
-    },
-    "startTime": {
-      "utcTime": "2025-02-20T18:47:39",
-      "localTime": "2025-02-20T12:47:39",
-      "unixTimestamp": 1740077259
-    },
-    "tracking_url": "https://order.is/bmduhpzc"
+    "id": "85514ce8ac8b12ece36fdda246efc04e",
+    "date": "2025-02-17",
+    "type": "T",
+    "notes": "HATCH MECH IS BINDING FRM ROOF...",
+    "orderNo": "1313975",
+    "location": {
+      "notes": "ILCWI2",
+      "valid": true,
+      "address": "1357 CAPITOL DRIVE, PEWAUKEE, WI, 53072",
+      "latitude": 43.0861351,
+      "longitude": -88.2313184,
+      "locationNo": "48779",
+      "locationName": "MENARDS #3143 PEWA"
+    }
   },
-  "orderNo": "1313937",
-  "success": true
+  "scheduleInformation": {
+    "distance": 44239,
+    "driverName": "MW - Joe Shimeck",
+    "stopNumber": 7,
+    "travelTime": 729,
+    "scheduledAt": "01:06",
+    "driverSerial": "96"
+  }
 }
 ```
 
-### Location Data Structure
+### Completion Details Response Structure
 ```json
 {
-  "notes": "ILCWI1",
-  "valid": true,
-  "address": "2315 BLUEMOUND ROAD, WAUKESHA, WI, 53186",
-  "latitude": 43.0345143,
-  "longitude": -88.1806101,
-  "locationNo": "48895",
-  "locationName": "MENARDS #3261 WAKA"
+  "orders": [{
+    "data": {
+      "form": {
+        "note": "Service Complete...",
+        "images": [
+          { "url": "..." }
+        ],
+        "signature": {
+          "url": "..."
+        }
+      },
+      "status": "success",
+      "endTime": {
+        "utcTime": "2025-02-22T23:16:53",
+        "localTime": "2025-02-22T17:16:53",
+        "unixTimestamp": 1740266213
+      },
+      "startTime": {
+        "utcTime": "2025-02-22T22:18:54",
+        "localTime": "2025-02-22T16:18:54",
+        "unixTimestamp": 1740262734
+      },
+      "tracking_url": "https://order.is/zbehxt6p"
+    },
+    "orderNo": "1325219",
+    "success": true
+  }],
+  "success": true
 }
 ```
 
@@ -90,12 +111,14 @@ CREATE TABLE work_orders (
 
 ### Data Mapping Rules
 
-| OptimoRoute Field | Supabase Field | Notes |
-|-------------------|----------------|-------|
-| orderNo | order_no | Primary identifier |
-| data.status | status | Enum: pending_review, approved, flagged |
-| data.form.images | completion_response->data->form->images | JSONB array |
-| data.location | search_response->data->location | JSONB object |
+| API Field | Supabase Field | Source | Notes |
+|-----------|----------------|--------|-------|
+| orderNo | order_no | Both | Primary identifier |
+| data.status | status | completion_response | Enum: pending_review, approved, flagged |
+| data.form.images | completion_response | get_completion_details | JSONB array of image URLs |
+| data.location | search_response | search_orders | Location details |
+| data.date | search_response | search_orders | Service date |
+| scheduleInformation | search_response | search_orders | Driver and scheduling info |
 
 ## 4. Frontend Display Logic
 
@@ -107,9 +130,13 @@ const mappedWorkOrder = {
   order_no: order.order_no || 'N/A',
   status: order.status || 'pending_review',
   timestamp: order.timestamp,
-  service_date: searchResponse?.data?.[0]?.date,
-  service_notes: searchResponse?.data?.[0]?.notes,
-  location: searchResponse?.data?.[0]?.location,
+  service_date: searchResponse?.data?.date,
+  service_notes: searchResponse?.data?.notes,
+  location: searchResponse?.data?.location,
+  driver: {
+    name: searchResponse?.scheduleInformation?.driverName,
+    id: searchResponse?.scheduleInformation?.driverSerial
+  },
   has_images: Boolean(completionResponse?.orders?.[0]?.data?.form?.images?.length)
 };
 ```
@@ -130,7 +157,7 @@ const getVariant = (status: string) => {
 
 ### Data Retrieval Issues
 1. **Missing Images**
-   - Check completion_response->data->form->images array
+   - Check completion_response->orders[0]->data->form->images array
    - Verify OptimoRoute upload success
    - Ensure image URLs are still valid
 
@@ -171,6 +198,7 @@ interface WorkOrder {
   location?: WorkOrderLocation;
   has_images?: boolean;
   completion_response?: CompletionResponse;
+  search_response?: SearchResponse;
 }
 ```
 
