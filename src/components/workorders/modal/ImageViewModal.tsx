@@ -120,8 +120,7 @@ export const ImageViewModal = ({
 
   if (!workOrder) return null;
 
-  const driverInfo = workOrder.completion_response?.orders[0]?.data?.form || {};
-  const driverName = String(driverInfo.driver_name || 'No Driver Assigned');
+  const driverName = workOrder.search_response?.scheduleInformation?.driverName || 'No Driver Assigned';
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -171,3 +170,4 @@ export const ImageViewModal = ({
     </Dialog>
   );
 };
+
