@@ -12,6 +12,7 @@ import Supervisor from "./pages/Supervisor";
 import AttendanceHistory from "./pages/AttendanceHistory";
 import WorkOrders from "./pages/WorkOrders";
 import NotFound from "./pages/NotFound";
+import Index from "./pages/Index";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/" element={<Navigate to="/work-orders" replace />} />
+            <Route path="/landing" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route
               path="/admin"
