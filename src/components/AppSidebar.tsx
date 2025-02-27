@@ -20,23 +20,24 @@ export function AppSidebar() {
     >
       <SidebarHeader className="border-b border-gray-100">
         <div className="flex items-center justify-between w-full p-4">
-          <div className="flex-1 min-w-0 overflow-hidden">
+          <div className="flex-1">
             <SidebarLogo />
           </div>
-          <SidebarTrigger className="h-8 w-8 flex items-center justify-center text-gray-500 hover:text-gray-900 transition-colors shrink-0">
+          <SidebarTrigger className="h-8 w-8 flex items-center justify-center text-gray-500 hover:text-gray-900 transition-colors [data-collapsed=true]:-ml-2">
             <Menu className="h-6 w-6" />
           </SidebarTrigger>
         </div>
         <SidebarProfile />
       </SidebarHeader>
 
-      <SidebarContent className="py-4 flex-1 min-h-0 custom-scrollbar">
+      <SidebarContent className="py-4">
         <SidebarNavigation />
       </SidebarContent>
 
-      <SidebarFooter className="mt-auto border-t border-gray-100">
+      <SidebarFooter className="mt-auto p-4 border-t border-gray-100">
         <SidebarLogout />
       </SidebarFooter>
     </Sidebar>
   );
 }
+
