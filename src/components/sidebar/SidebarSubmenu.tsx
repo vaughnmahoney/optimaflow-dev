@@ -16,7 +16,6 @@ interface SidebarSubmenuProps {
 export function SidebarSubmenu({ item }: SidebarSubmenuProps) {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(
-    // Initialize open state based on current route
     item.items?.some(subItem => location.pathname === subItem.url) || false
   );
   
@@ -39,10 +38,9 @@ export function SidebarSubmenu({ item }: SidebarSubmenuProps) {
           }`}
       >
         <div className="flex items-center gap-3">
-          <item.icon 
-            className="w-6 h-6 transition-colors duration-200" 
-            strokeWidth={1.75} 
-          />
+          <div className="w-5 h-5 flex items-center justify-center shrink-0">
+            <item.icon className="w-full h-full" strokeWidth={1.5} />
+          </div>
           <span className="font-semibold">{item.title}</span>
         </div>
         <ChevronDown
@@ -52,9 +50,7 @@ export function SidebarSubmenu({ item }: SidebarSubmenuProps) {
         />
       </CollapsibleTrigger>
       
-      <CollapsibleContent 
-        className="animate-accordion-down overflow-hidden"
-      >
+      <CollapsibleContent className="animate-accordion-down overflow-hidden">
         <div className="pl-12 pr-4 pb-2 space-y-1">
           {item.items?.map((subItem) => (
             <a
@@ -69,10 +65,9 @@ export function SidebarSubmenu({ item }: SidebarSubmenuProps) {
                 }
                 animate-fade-in`}
             >
-              <subItem.icon 
-                className="w-5 h-5 transition-colors duration-200" 
-                strokeWidth={1.75} 
-              />
+              <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                <subItem.icon className="w-full h-full" strokeWidth={1.5} />
+              </div>
               <span className="transition-opacity duration-200">
                 {subItem.title}
               </span>

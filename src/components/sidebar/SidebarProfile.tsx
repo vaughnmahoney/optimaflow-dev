@@ -15,7 +15,9 @@ export function SidebarProfile() {
           variant="ghost" 
           className="w-full justify-start text-sm font-medium hover:bg-purple-50 hover:text-purple-900"
         >
-          <Edit className="mr-2 h-4 w-4 shrink-0" />
+          <div className="w-4 h-4 flex items-center justify-center shrink-0 mr-2">
+            <Edit className="w-full h-full" strokeWidth={1.5} />
+          </div>
           <span>Edit Profile</span>
         </Button>
       </div>

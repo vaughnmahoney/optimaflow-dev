@@ -22,7 +22,9 @@ export function SidebarLogout() {
     >
       <div className="absolute inset-0 mx-4 rounded-md transition-colors hover:bg-red-50 group-data-[state=closed]:mx-2" />
       <div className="relative flex items-center w-full gap-3 group-data-[state=closed]:justify-center">
-        <LogOut className="w-5 h-5 shrink-0" strokeWidth={1.75} />
+        <div className="w-5 h-5 flex items-center justify-center shrink-0">
+          <LogOut className="w-full h-full" strokeWidth={1.5} />
+        </div>
         <span className="font-medium transition-all duration-300 group-data-[state=closed]:w-0 group-data-[state=closed]:opacity-0 group-data-[state=closed]:translate-x-2">
           Logout
         </span>
