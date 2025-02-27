@@ -7,7 +7,7 @@ export function SidebarNavigation() {
   const location = useLocation();
 
   return (
-    <nav className="flex-1 space-y-1 px-2 overflow-hidden">
+    <nav className="flex-1 space-y-1 px-2 overflow-y-auto">
       {navigationConfig.map((item) => {
         if (item.items) {
           return <SidebarSubmenu key={item.title} item={item} />;

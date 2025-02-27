@@ -13,10 +13,10 @@ export function SidebarProfile() {
       <div className="flex-1 min-w-0 overflow-hidden">
         <Button 
           variant="ghost" 
-          className="w-full justify-start text-sm font-medium hover:bg-purple-50 hover:text-purple-900 transition-opacity duration-300 whitespace-nowrap"
+          className="w-full justify-start text-sm font-medium hover:bg-purple-50 hover:text-purple-900 transition-all duration-300 whitespace-nowrap"
         >
           <Edit className="mr-2 h-4 w-4 shrink-0" />
-          Edit Profile
+          <span className="transition-opacity duration-300">Edit Profile</span>
         </Button>
       </div>
     </div>
