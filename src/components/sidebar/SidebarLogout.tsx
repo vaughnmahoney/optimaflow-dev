@@ -18,7 +18,7 @@ export function SidebarLogout() {
   return (
     <button
       onClick={handleLogout}
-      className="relative flex items-center w-full px-6 py-3 text-red-600 transition-colors hover:text-red-700 group-data-[state=closed]:px-0"
+      className="relative flex items-center w-full px-4 py-3 text-red-600 transition-colors hover:text-red-700 group-data-[state=closed]:px-0"
     >
       <div className="absolute inset-0 mx-4 rounded-md transition-colors hover:bg-red-50 group-data-[state=closed]:mx-2" />
       <div className="relative flex items-center w-full gap-3 group-data-[state=closed]:justify-center">
