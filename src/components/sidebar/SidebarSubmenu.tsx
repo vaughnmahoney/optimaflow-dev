@@ -41,7 +41,7 @@ export function SidebarSubmenu({ item }: SidebarSubmenuProps) {
           <div className="w-5 h-5 flex items-center justify-center shrink-0">
             <item.icon className="w-full h-full" strokeWidth={1.5} />
           </div>
-          <span className="font-semibold">{item.title}</span>
+          <span className="font-medium">{item.title}</span>
         </div>
         <ChevronDown
           className={`w-4 h-4 transition-transform duration-300 ease-in-out transform

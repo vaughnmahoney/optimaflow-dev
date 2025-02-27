@@ -18,7 +18,7 @@ export function SidebarNavigation() {
           <a
             key={item.title}
             href={item.url}
-            className={`relative flex items-center w-full px-6 py-2.5 transition-colors
+            className={`relative flex items-center w-full px-4 py-2 transition-colors
               ${isActive 
                 ? 'text-purple-900' 
                 : 'text-gray-700 hover:text-gray-900'
