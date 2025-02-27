@@ -5,7 +5,7 @@ import { Edit } from "lucide-react";
 
 export function SidebarProfile() {
   return (
-    <div className="p-4 flex items-center gap-4 group/profile">
+    <div className="p-4 flex items-center gap-4 group/profile group-data-[state=closed]:justify-center">
       <Avatar className="h-10 w-10 border-2 border-purple-200 shrink-0">
         <AvatarImage src="/placeholder.svg" />
         <AvatarFallback>HF</AvatarFallback>
