@@ -1,27 +1,17 @@
 
-import { useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
 
 export function SidebarLogout() {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-
-  const handleLogout = () => {
-    toast({
-      title: "Logged out successfully",
-      description: "You have been logged out of your account.",
-    });
-    navigate("/login");
-  };
-
   return (
-    <button
-      onClick={handleLogout}
-      className="flex items-center gap-3 w-full px-3 py-2 rounded-md text-red-600 hover:bg-red-50 transition-colors"
+    <Button 
+      variant="ghost" 
+      className="w-full justify-start hover:bg-purple-50 hover:text-purple-900 transition-all duration-300 whitespace-nowrap"
     >
-      <LogOut className="w-5 h-5 shrink-0" strokeWidth={1.75} />
-      <span className="font-medium truncate">Logout</span>
-    </button>
+      <LogOut className="mr-2 h-5 w-5 shrink-0" />
+      <span className="font-medium transition-opacity duration-300">
+        Logout
+      </span>
+    </Button>
   );
 }

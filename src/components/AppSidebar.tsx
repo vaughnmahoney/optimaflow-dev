@@ -20,10 +20,10 @@ export function AppSidebar() {
     >
       <SidebarHeader className="border-b border-gray-100">
         <div className="flex items-center justify-between w-full p-4">
-          <div className="flex-1">
+          <div className="flex-1 min-w-0 overflow-hidden">
             <SidebarLogo />
           </div>
-          <SidebarTrigger className="h-8 w-8 flex items-center justify-center text-gray-500 hover:text-gray-900 transition-colors [data-collapsed=true]:-ml-2">
+          <SidebarTrigger className="h-8 w-8 flex items-center justify-center text-gray-500 hover:text-gray-900 transition-colors shrink-0">
             <Menu className="h-6 w-6" />
           </SidebarTrigger>
         </div>
@@ -40,4 +40,3 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
-

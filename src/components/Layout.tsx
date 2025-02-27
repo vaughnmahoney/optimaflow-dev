@@ -19,4 +19,3 @@ export const Layout = ({ children }: LayoutProps) => {
     </SidebarProvider>
   );
 };
-
