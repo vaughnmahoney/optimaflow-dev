@@ -10,15 +10,16 @@ import {
 import { SidebarLogo } from "@/components/sidebar/SidebarLogo";
 import { SidebarNavigation } from "@/components/sidebar/SidebarNavigation";
 import { SidebarLogout } from "@/components/sidebar/SidebarLogout";
+import { SidebarProfile } from "@/components/sidebar/SidebarProfile";
 
 export function AppSidebar() {
   return (
     <Sidebar
-      className="border-r border-gray-200 bg-white shadow-sm transition-all duration-300"
+      className="border-r border-gray-200 bg-white/80 backdrop-blur-xl shadow-sm transition-all duration-300"
       collapsible="icon"
     >
-      <SidebarHeader className="p-4">
-        <div className="flex items-center justify-between w-full">
+      <SidebarHeader className="border-b border-gray-100">
+        <div className="flex items-center justify-between w-full p-4">
           <div className="flex-1">
             <SidebarLogo />
           </div>
@@ -26,9 +27,10 @@ export function AppSidebar() {
             <Menu className="h-6 w-6" />
           </SidebarTrigger>
         </div>
+        <SidebarProfile />
       </SidebarHeader>
 
-      <SidebarContent className="px-2">
+      <SidebarContent className="py-4">
         <SidebarNavigation />
       </SidebarContent>
 
@@ -38,3 +40,4 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+
