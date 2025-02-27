@@ -17,18 +17,19 @@ export function SidebarNavigation() {
           <a
             key={item.title}
             href={item.url}
-            className={`flex items-center gap-3 px-4 py-2 rounded-md transition-colors duration-200
+            className={`flex items-center gap-3 px-4 py-2 rounded-md transition-all duration-300 group/nav
               ${location.pathname === item.url
                 ? 'bg-purple-50 text-purple-900'
-                : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                : 'text-gray-700 hover:bg-gray-50/80 hover:text-gray-900'
               }`}
           >
-            <item.icon className="w-6 h-6" strokeWidth={1.75} />
-            <span className="font-semibold">{item.title}</span>
+            <item.icon className="w-6 h-6 shrink-0" strokeWidth={1.75} />
+            <span className="font-semibold transition-all duration-300 group-data-[state=closed]:w-0 group-data-[state=closed]:opacity-0">
+              {item.title}
+            </span>
           </a>
         );
       })}
     </nav>
   );
 }
-
