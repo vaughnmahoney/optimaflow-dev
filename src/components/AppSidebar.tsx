@@ -19,13 +19,15 @@ export function AppSidebar() {
       collapsible="icon"
     >
       <SidebarHeader className="border-b border-gray-100">
-        <div className="flex items-center justify-between w-full px-4 py-4">
+        <div className="flex items-center justify-between w-full px-4 py-3">
           <div className="flex-1 overflow-hidden transition-all duration-300">
             <SidebarLogo />
           </div>
-          <SidebarTrigger className="w-5 h-5 flex items-center justify-center text-gray-500 hover:text-gray-900 transition-colors">
-            <Menu className="w-full h-full" strokeWidth={1.5} />
-          </SidebarTrigger>
+          <div className="flex items-center justify-center w-10 h-10">
+            <SidebarTrigger className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-gray-900 transition-colors rounded-md">
+              <Menu className="h-5 w-5" strokeWidth={1.5} />
+            </SidebarTrigger>
+          </div>
         </div>
         <SidebarProfile />
       </SidebarHeader>
