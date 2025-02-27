@@ -29,8 +29,8 @@ export function SidebarNavigation() {
               group-data-[state=closed]:mx-2`} 
             />
             <div className="relative flex items-center w-full gap-3 group-data-[state=closed]:justify-center">
-              <div className="w-10 h-10 flex items-center justify-center">
-                <item.icon className="h-5 w-5" strokeWidth={1.5} />
+              <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                <item.icon className="w-full h-full" strokeWidth={1.5} />
               </div>
               <span className="font-medium transition-all duration-300 group-data-[state=closed]:w-0 group-data-[state=closed]:opacity-0 group-data-[state=closed]:translate-x-2">
                 {item.title}
