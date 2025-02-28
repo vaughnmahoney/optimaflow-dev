@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, CheckCircle, Flag, Trash2, MoreHorizontal } from "lucide-react";
+import { Eye, CheckCircle, Flag, Trash2, MoreVertical } from "lucide-react";
 import { format } from "date-fns";
 import { StatusBadge } from "./StatusBadge";
 import { WorkOrder } from "./types";
@@ -96,7 +96,7 @@ export const WorkOrderTable = ({
                           size="icon"
                           className="h-8 w-8"
                         >
-                          <MoreHorizontal className="h-4 w-4" />
+                          <MoreVertical className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
