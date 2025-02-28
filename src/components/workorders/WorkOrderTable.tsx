@@ -87,7 +87,7 @@ export const WorkOrderTable = ({
                       size="icon"
                       title="Approve"
                       onClick={() => onStatusUpdate(workOrder.id, "approved")}
-                      className={`h-8 w-8 ${workOrder.status === 'approved' ? 'text-green-600' : ''}`}
+                      className={`h-8 w-8 ${workOrder.status === 'approved' ? 'text-gray-900' : ''}`}
                     >
                       <CheckCircle className="h-4 w-4" />
                     </Button>
@@ -96,7 +96,7 @@ export const WorkOrderTable = ({
                       size="icon"
                       title="Flag for Review"
                       onClick={() => onStatusUpdate(workOrder.id, "flagged")}
-                      className={`h-8 w-8 ${workOrder.status === 'flagged' ? 'text-red-600' : ''}`}
+                      className={`h-8 w-8 ${workOrder.status === 'flagged' ? 'text-gray-900' : ''}`}
                     >
                       <Flag className="h-4 w-4" />
                     </Button>
