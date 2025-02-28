@@ -11,17 +11,21 @@ interface LayoutProps {
 export const Layout = ({ children, header }: LayoutProps) => {
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex flex-col w-full bg-gray-50/80 backdrop-blur-sm">
+      <div className="min-h-screen w-full">
         {/* Fixed header at the top */}
         {header && (
-          <div className="w-full z-40 fixed top-0 left-0 right-0 page-header">
+          <div className="fixed top-0 left-0 right-0 w-full z-50 bg-white shadow-sm">
             {header}
           </div>
         )}
-        <div className="flex flex-1 w-full main-content">
+        <div className="flex pt-[var(--header-height)]">
+          {/* Sidebar */}
           <AppSidebar />
-          <main className="flex-1 transition-all duration-300">
-            <div className="container mx-auto px-6 py-8">{children}</div>
+          {/* Main content - this is the only part that should scroll */}
+          <main className="flex-1 ml-[4.5rem] md:ml-64 transition-all duration-300">
+            <div className="container mx-auto px-6 py-8 min-h-screen">
+              {children}
+            </div>
           </main>
         </div>
       </div>
