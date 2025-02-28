@@ -11,17 +11,21 @@ interface LayoutProps {
 export const Layout = ({ children, header }: LayoutProps) => {
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex flex-col w-full bg-gray-50/80 backdrop-blur-sm">
-        {/* Fixed header at the top */}
+      <div className="flex flex-col min-h-screen w-full">
+        {/* Fixed header */}
         {header && (
-          <div className="w-full z-40 fixed top-0 left-0 right-0 page-header">
+          <div className="fixed top-0 left-0 right-0 z-50 page-header">
             {header}
           </div>
         )}
-        <div className="flex flex-1 w-full main-content">
+        <div className="flex flex-1 pt-[var(--header-height)]">
+          {/* Sidebar will be fixed by the AppSidebar component */}
           <AppSidebar />
-          <main className="flex-1 transition-all duration-300">
-            <div className="container mx-auto px-6 py-8">{children}</div>
+          {/* Main content - scrollable */}
+          <main className="flex-1 ml-[var(--sidebar-width)]">
+            <div className="container mx-auto px-6 py-8">
+              {children}
+            </div>
           </main>
         </div>
       </div>
