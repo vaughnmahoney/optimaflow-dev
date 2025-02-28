@@ -41,18 +41,7 @@ const WorkOrders = () => {
       }
     >
       <div className="space-y-8">
-        <WorkOrderContent 
-          workOrders={workOrders} 
-          isLoading={isLoading}
-          onSearchChange={searchWorkOrder}
-          onOptimoRouteSearch={searchOptimoRoute}
-          onStatusFilterChange={setStatusFilter}
-          onStatusUpdate={updateWorkOrderStatus}
-          onImageView={openImageViewer}
-          onDelete={deleteWorkOrder}
-          searchQuery={searchQuery}
-          statusFilter={statusFilter}
-        />
+        <WorkOrderContent />
       </div>
     </Layout>
   );
