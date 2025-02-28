@@ -6,7 +6,6 @@ import { useSidebar } from "@/components/ui/sidebar";
 import { SidebarProfile } from "@/components/sidebar/SidebarProfile";
 import { SidebarLogout } from "@/components/sidebar/SidebarLogout";
 import { SidebarToggleButton } from "@/components/sidebar/SidebarToggleButton";
-import { SidebarSearch } from "@/components/sidebar/SidebarSearch";
 import { SidebarNavigation } from "@/components/sidebar/SidebarNavigation";
 import { MobileSidebarToggle } from "@/components/sidebar/MobileSidebarToggle";
 import { cn } from "@/lib/utils";
@@ -73,19 +72,6 @@ export function AppSidebar() {
     }
   };
 
-  // Focus search input when sidebar expands
-  useEffect(() => {
-    if (!isCollapsed && searchInputRef.current) {
-      // Small delay to wait for transition
-      const timer = setTimeout(() => {
-        if (document.activeElement?.tagName !== "INPUT") {
-          searchInputRef.current?.focus();
-        }
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [isCollapsed]);
-
   return (
     <>
       {/* Mobile Toggle Button */}
@@ -114,15 +100,6 @@ export function AppSidebar() {
         <div className="px-3 py-4 border-b border-sidebar-border">
           <SidebarProfile isCollapsed={isCollapsed} />
         </div>
-        
-        {/* Search Input - Hidden when collapsed */}
-        {!isCollapsed && (
-          <SidebarSearch 
-            searchTerm={searchTerm} 
-            setSearchTerm={setSearchTerm} 
-            searchInputRef={searchInputRef} 
-          />
-        )}
         
         {/* Navigation Items - Scrollable Area */}
         <div className="overflow-y-auto flex-1 py-3 px-2">
