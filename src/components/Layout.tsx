@@ -12,14 +12,14 @@ export const Layout = ({ children, header }: LayoutProps) => {
   return (
     <SidebarProvider>
       <div className="flex flex-col min-h-screen w-full">
-        {/* Fixed header */}
+        {/* Fixed header - positioned above everything */}
         {header && (
           <div className="fixed top-0 left-0 right-0 z-50 page-header">
             {header}
           </div>
         )}
         <div className="flex flex-1 pt-[var(--header-height)]">
-          {/* Sidebar will be fixed by the AppSidebar component */}
+          {/* AppSidebar will handle its own positioning */}
           <AppSidebar />
           {/* Main content - scrollable */}
           <main className="flex-1 ml-[var(--sidebar-width)]">
