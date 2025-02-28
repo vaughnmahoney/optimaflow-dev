@@ -13,7 +13,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar
-      className={`border-r border-sidebar-border bg-sidebar transition-all duration-300 ease-in-out h-[calc(100vh-4rem)] ${
+      className={`border-r border-sidebar-border bg-sidebar transition-all duration-300 ease-in-out fixed sidebar-with-header ${
         isCollapsed ? 'w-[4.5rem]' : 'w-64'
       }`}
     >
