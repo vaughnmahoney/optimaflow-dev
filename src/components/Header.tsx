@@ -43,18 +43,11 @@ export function Header({ title, children }: HeaderProps) {
 
         {/* Title - Always visible, positioned appropriately for mobile/desktop */}
         {title && (
-          <h1 className={`text-lg sm:text-xl font-bold ${isMobile ? 'ml-auto mr-2' : 'hidden md:block'}`}>
+          <h1 className={`text-lg sm:text-xl font-bold ${isMobile ? 'ml-auto mr-2' : ''}`}>
             {title}
           </h1>
         )}
       </div>
-      
-      {/* Center section: Page title - Only on desktop */}
-      {title && !isMobile && (
-        <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 z-10 bg-background px-4">
-          <h1 className="text-xl font-bold whitespace-nowrap">{title}</h1>
-        </div>
-      )}
       
       {/* Right section: Contains search, import, etc. */}
       <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto sm:ml-auto">
