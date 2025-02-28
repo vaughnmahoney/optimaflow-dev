@@ -13,10 +13,9 @@ export function AppSidebar() {
 
   return (
     <div 
-      className={`fixed top-[var(--header-height)] left-0 bottom-0 z-40 transition-all duration-300 ease-in-out ${
-        isCollapsed ? 'w-[4.5rem]' : 'w-64'
-      }`}
+      className="fixed left-0 top-[var(--header-height)] bottom-0 z-40 transition-all duration-300 ease-in-out"
       style={{
+        width: isCollapsed ? '4.5rem' : '16rem',
         '--sidebar-width': isCollapsed ? '4.5rem' : '16rem',
       } as React.CSSProperties}
     >
