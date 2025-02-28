@@ -110,3 +110,9 @@
   height: calc(100vh - var(--header-height));
   top: var(--header-height);
 }
+
+/* Adjustments for fixed header layout */
+[data-sidebar="sidebar"] {
+  margin-top: var(--header-height);
+  height: calc(100vh - var(--header-height));
+}

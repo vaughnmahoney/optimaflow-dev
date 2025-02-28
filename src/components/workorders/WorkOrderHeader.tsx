@@ -63,8 +63,8 @@ export const WorkOrderHeader = ({
   };
 
   return (
-    <header className="w-full bg-white border-b border-gray-200 shadow-sm">
-      <div className="container mx-auto px-6 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <header className="w-full bg-white border-b border-gray-200 shadow-sm h-16">
+      <div className="container mx-auto px-6 h-full flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Work Orders</h1>
         
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
