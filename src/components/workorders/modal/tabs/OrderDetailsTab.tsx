@@ -51,7 +51,7 @@ export const OrderDetailsTab = ({ workOrder }: OrderDetailsTabProps) => {
           <div className="space-y-3 text-sm">
             <p>
               <span className="text-muted-foreground">Driver: </span>
-              {workOrder.driver?.name || 'Not assigned'}
+              {workOrder.search_response?.scheduleInformation?.driverName || 'Not assigned'}
             </p>
             <p>
               <span className="text-muted-foreground">Location: </span>

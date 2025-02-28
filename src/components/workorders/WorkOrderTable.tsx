@@ -26,9 +26,13 @@ export const WorkOrderTable = ({
   onImageView,
   onDelete
 }: WorkOrderTableProps) => {
-  const getLocationAddress = (order: WorkOrder): string => {
+  const getLocationName = (order: WorkOrder): string => {
     if (!order.location) return 'N/A';
-    return order.location.address || order.location.name || 'N/A';
+    return order.location.name || order.location.locationName || 'N/A';
+  };
+
+  const getDriverName = (order: WorkOrder): string => {
+    return order.search_response?.scheduleInformation?.driverName || 'No Driver Assigned';
   };
 
   return (
@@ -38,8 +42,8 @@ export const WorkOrderTable = ({
           <TableRow>
             <TableHead>Order #</TableHead>
             <TableHead>Service Date</TableHead>
+            <TableHead>Driver</TableHead>
             <TableHead>Location</TableHead>
-            <TableHead>Notes</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
@@ -59,10 +63,10 @@ export const WorkOrderTable = ({
                   {workOrder.service_date ? format(new Date(workOrder.service_date), "MMM d, yyyy") : "N/A"}
                 </TableCell>
                 <TableCell className="max-w-xs truncate">
-                  {getLocationAddress(workOrder)}
+                  {getDriverName(workOrder)}
                 </TableCell>
                 <TableCell className="max-w-xs truncate">
-                  {workOrder.service_notes || "No notes"}
+                  {getLocationName(workOrder)}
                 </TableCell>
                 <TableCell>
                   <StatusBadge status={workOrder.status || 'pending_review'} />
