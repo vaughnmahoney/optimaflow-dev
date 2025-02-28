@@ -13,7 +13,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar
-      className={`border-r border-sidebar-border bg-sidebar transition-all duration-300 ease-in-out fixed inset-y-0 top-[var(--header-height)] h-[calc(100vh-var(--header-height))] ${
+      className={`border-r border-sidebar-border bg-sidebar fixed left-0 top-[var(--header-height)] h-[calc(100vh-var(--header-height))] z-30 ${
         isCollapsed ? 'w-[4.5rem]' : 'w-64'
       }`}
     >
@@ -37,7 +37,7 @@ export function AppSidebar() {
         <SidebarProfile isCollapsed={isCollapsed} />
       </SidebarHeader>
 
-      <SidebarContent className="p-3">
+      <SidebarContent className="p-3 overflow-y-auto">
         <SidebarNavigation isCollapsed={isCollapsed} />
       </SidebarContent>
 

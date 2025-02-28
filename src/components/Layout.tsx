@@ -22,7 +22,7 @@ const LayoutContent = ({ children, header }: LayoutProps) => {
       )}
       <div className="flex flex-1 w-full">
         <AppSidebar />
-        <main className={`flex-1 transition-all duration-300 ${isCollapsed ? 'main-content-with-sidebar-collapsed' : 'main-content-with-sidebar'}`}>
+        <main className={`flex-1 transition-all duration-300 ${isCollapsed ? 'ml-[4.5rem]' : 'ml-64'}`}>
           <div className="container mx-auto px-6 py-8 main-content">{children}</div>
         </main>
       </div>
