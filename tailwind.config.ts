@@ -23,40 +23,15 @@ export default {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
-        background: "#F1F0FB",
-        foreground: "#222222",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#8B5CF6",
+          DEFAULT: "#64748b",
           foreground: "#ffffff",
-          50: "#f5f3ff",
-          100: "#ede9fe",
-          200: "#ddd6fe",
-          300: "#c4b5fd",
-          400: "#a78bfa",
-          500: "#8b5cf6",
-          600: "#7c3aed",
-          700: "#6d28d9",
-          800: "#5b21b6",
-          900: "#4c1d95",
         },
         secondary: {
-          DEFAULT: "#E5DEFF",
-          foreground: "#4c1d95",
-          light: "#F2FCE2",
-        },
-        accent: {
-          DEFAULT: "#F97316",
-          foreground: "#ffffff",
-          50: "#fff7ed",
-          100: "#ffedd5",
-          200: "#fed7aa",
-          300: "#fdba74",
-          400: "#fb923c",
-          500: "#f97316",
-          600: "#ea580c",
-          700: "#c2410c",
-          800: "#9a3412",
-          900: "#7c2d12",
+          DEFAULT: "#f1f5f9",
+          foreground: "#1e293b",
         },
         success: {
           DEFAULT: "#4ade80",
@@ -71,8 +46,12 @@ export default {
           foreground: "#ffffff",
         },
         muted: {
-          DEFAULT: "#6B7280",
-          foreground: "#ffffff",
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
@@ -100,21 +79,12 @@ export default {
         "fade-in": {
           "0%": { opacity: "0", transform: "translateY(10px)" },
           "100%": { opacity: "1", transform: "translateY(0)" }
-        },
-        "gradient-shift": {
-          "0%, 100%": { backgroundPosition: "0% 50%" },
-          "50%": { backgroundPosition: "100% 50%" },
         }
       },
       animation: {
         "accordion-down": "accordion-down 0.3s ease-out",
         "accordion-up": "accordion-up 0.3s ease-out",
         "fade-in": "fade-in 0.3s ease-out",
-        "gradient-shift": "gradient-shift 15s ease infinite",
-      },
-      backgroundImage: {
-        "gradient-soft": "linear-gradient(to bottom right, var(--tw-gradient-stops))",
-        "card-gradient": "linear-gradient(120deg, #E5DEFF, #F2FCE2)",
       },
     },
   },
