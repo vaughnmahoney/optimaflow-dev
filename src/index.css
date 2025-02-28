@@ -103,12 +103,25 @@
 
 .main-content {
   padding-top: var(--header-height);
+  min-height: 100vh;
 }
 
 /* Fix for sidebar with header */
 .sidebar-with-header {
-  height: calc(100vh - var(--header-height));
   top: var(--header-height);
+  height: calc(100vh - var(--header-height));
+  z-index: 30;
+  overflow-y: auto;
+}
+
+/* Main content padding with sidebar */
+.main-content-with-sidebar {
+  padding-left: 16rem; /* 64px (w-64) for expanded sidebar */
+  transition: padding-left 0.3s ease-in-out;
+}
+
+.main-content-with-sidebar-collapsed {
+  padding-left: 4.5rem; /* For collapsed sidebar */
 }
 
 /* Adjustments for fixed header layout */
