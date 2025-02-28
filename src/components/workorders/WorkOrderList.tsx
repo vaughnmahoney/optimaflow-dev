@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { WorkOrderListProps } from "./types";
-import { StatusFilter } from "./filters/StatusFilter";
+import { StatusFilterCards } from "./filters/StatusFilterCards";
 import { DebugDataDisplay } from "./debug/DebugDataDisplay";
 import { WorkOrderTable } from "./WorkOrderTable";
 import { LoadingSkeleton } from "./LoadingSkeleton";
@@ -24,12 +24,10 @@ export const WorkOrderList = ({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-end">
-        <StatusFilter 
-          statusFilter={statusFilter}
-          onStatusFilterChange={onStatusFilterChange}
-        />
-      </div>
+      <StatusFilterCards 
+        statusFilter={statusFilter}
+        onStatusFilterChange={onStatusFilterChange}
+      />
 
       <DebugDataDisplay 
         searchResponse={searchResponse}

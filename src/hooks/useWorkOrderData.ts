@@ -6,17 +6,23 @@ import { WorkOrder, WorkOrderSearchResponse, WorkOrderCompletionResponse } from 
 import { toast } from "sonner";
 
 export const useWorkOrderData = () => {
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const queryClient = useQueryClient();
 
   const { data: workOrders = [], isLoading, refetch } = useQuery({
-    queryKey: ["workOrders"],
+    queryKey: ["workOrders", statusFilter],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("work_orders")
         .select("*")
         .order("timestamp", { ascending: false });
+      
+      if (statusFilter) {
+        query = query.eq('status', statusFilter);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
