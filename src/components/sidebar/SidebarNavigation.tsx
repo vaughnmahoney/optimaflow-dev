@@ -31,10 +31,10 @@ export function SidebarNavigation({
   // Create navigation items
   const navItems: NavItem[] = [
     { 
-      to: "/", 
+      to: "/dashboard", 
       icon: LayoutDashboard, 
       label: "Dashboard", 
-      isActive: location.pathname === "/" 
+      isActive: location.pathname === "/dashboard" || location.pathname === "/" 
     },
     { 
       to: "/work-orders", 
@@ -65,13 +65,13 @@ export function SidebarNavigation({
       to: "/attendance", 
       icon: Clock, 
       label: "Attendance", 
-      isActive: location.pathname.startsWith("/attendance")
+      isActive: location.pathname.startsWith("/attendance") || location.pathname.startsWith("/supervisor")
     },
     { 
       to: "/employees", 
       icon: Users, 
       label: "Employees", 
-      isActive: location.pathname.startsWith("/employees") 
+      isActive: location.pathname.startsWith("/employees") || location.pathname.startsWith("/admin") 
     },
     { 
       to: "/receipts", 
@@ -84,6 +84,12 @@ export function SidebarNavigation({
       icon: ExternalLink, 
       label: "Integrations", 
       isActive: location.pathname.startsWith("/integrations") || location.pathname.startsWith("/api") 
+    },
+    { 
+      to: "/calendar", 
+      icon: CalendarDays, 
+      label: "Calendar", 
+      isActive: location.pathname.startsWith("/calendar")
     },
   ];
 

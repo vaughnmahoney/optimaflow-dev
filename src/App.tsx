@@ -7,10 +7,17 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./components/AuthProvider";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import Login from "./pages/Login";
-import Admin from "./pages/Admin";
-import Supervisor from "./pages/Supervisor";
+import Employees from "./pages/Employees";
+import Attendance from "./pages/Attendance";
 import AttendanceHistory from "./pages/AttendanceHistory";
 import WorkOrders from "./pages/WorkOrders";
+import Dashboard from "./pages/Dashboard";
+import Payroll from "./pages/Payroll";
+import VehicleMaintenance from "./pages/VehicleMaintenance";
+import Storage from "./pages/Storage";
+import Receipts from "./pages/Receipts";
+import Integrations from "./pages/Integrations";
+import Calendar from "./pages/Calendar";
 import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
 
@@ -24,22 +31,73 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            <Route path="/" element={<Navigate to="/work-orders" replace />} />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/landing" element={<Index />} />
             <Route path="/login" element={<Login />} />
+            
+            {/* Main application routes */}
             <Route
-              path="/admin"
+              path="/dashboard"
               element={
                 <ProtectedRoute>
-                  <Admin />
+                  <Dashboard />
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/supervisor"
+              path="/work-orders"
               element={
                 <ProtectedRoute>
-                  <Supervisor />
+                  <WorkOrders />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/payroll"
+              element={
+                <ProtectedRoute>
+                  <Payroll />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/vehicle-maintenance"
+              element={
+                <ProtectedRoute>
+                  <VehicleMaintenance />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/storage"
+              element={
+                <ProtectedRoute>
+                  <Storage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/attendance"
+              element={
+                <ProtectedRoute>
+                  <Attendance />
+                </ProtectedRoute>
+              }
+            />
+            {/* Legacy routes redirected to new paths */}
+            <Route
+              path="/supervisor"
+              element={<Navigate to="/attendance" replace />}
+            />
+            <Route
+              path="/admin"
+              element={<Navigate to="/employees" replace />}
+            />
+            <Route
+              path="/employees"
+              element={
+                <ProtectedRoute>
+                  <Employees />
                 </ProtectedRoute>
               }
             />
@@ -52,10 +110,26 @@ const App = () => (
               }
             />
             <Route
-              path="/work-orders"
+              path="/receipts"
               element={
                 <ProtectedRoute>
-                  <WorkOrders />
+                  <Receipts />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/integrations"
+              element={
+                <ProtectedRoute>
+                  <Integrations />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/calendar"
+              element={
+                <ProtectedRoute>
+                  <Calendar />
                 </ProtectedRoute>
               }
             />
