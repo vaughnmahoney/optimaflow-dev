@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { WorkOrder, WorkOrderSearchResponse, WorkOrderCompletionResponse } from "@/components/workorders/types";
 import { toast } from "sonner";
@@ -8,6 +8,7 @@ import { toast } from "sonner";
 export const useWorkOrderData = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const queryClient = useQueryClient();
 
   const { data: workOrders = [], isLoading, refetch } = useQuery({
     queryKey: ["workOrders"],
@@ -62,6 +63,8 @@ export const useWorkOrderData = () => {
         toast.success('Order imported successfully');
         // Refetch work orders to show the newly imported one
         refetch();
+        // Update the badge count as well
+        queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
       } else {
         toast.error(data.error || 'Failed to import order');
       }
@@ -81,7 +84,10 @@ export const useWorkOrderData = () => {
       if (error) throw error;
 
       toast.success(`Status updated to ${newStatus}`);
+      
+      // Immediately refetch work orders and the badge count
       refetch();
+      queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
     } catch (error) {
       console.error('Status update error:', error);
       toast.error('Failed to update status');
@@ -104,6 +110,8 @@ export const useWorkOrderData = () => {
 
       toast.success('Work order deleted');
       refetch();
+      // Also update the badge count
+      queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
     } catch (error) {
       console.error('Delete error:', error);
       toast.error('Failed to delete work order');

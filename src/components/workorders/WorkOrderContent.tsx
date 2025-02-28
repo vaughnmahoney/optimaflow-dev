@@ -1,5 +1,5 @@
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { WorkOrderList } from "./WorkOrderList";
 import { useCallback, useEffect, useState } from "react";
@@ -12,6 +12,7 @@ export const WorkOrderContent = () => {
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [selectedWorkOrder, setSelectedWorkOrder] = useState<WorkOrder | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const queryClient = useQueryClient();
   
   const { data: workOrders, isLoading, error, refetch } = useQuery({
     queryKey: ["workOrders"],
@@ -73,7 +74,11 @@ export const WorkOrderContent = () => {
       } : null);
     }
 
+    // Immediately refetch the current work orders list
     await refetch();
+    
+    // Invalidate the flagged work orders count query to update the sidebar badge
+    queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
     
     toast.success("Status updated successfully");
   };
@@ -113,6 +118,8 @@ export const WorkOrderContent = () => {
 
     toast.success("Work order deleted successfully");
     refetch();
+    // Also invalidate the flagged work orders count
+    queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
   };
 
   const filteredWorkOrders = useCallback(() => {

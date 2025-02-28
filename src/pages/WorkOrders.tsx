@@ -5,11 +5,13 @@ import { WorkOrderHeader } from "@/components/workorders/WorkOrderHeader";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useWorkOrderData } from "@/hooks/useWorkOrderData";
+import { useQueryClient } from "@tanstack/react-query";
 
 const WorkOrders = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
+  const queryClient = useQueryClient();
   
   const {
     data: workOrders,
@@ -22,6 +24,13 @@ const WorkOrders = () => {
     openImageViewer,
     deleteWorkOrder
   } = useWorkOrderData();
+
+  // Prefetch flagged count when we enter this page
+  useEffect(() => {
+    queryClient.prefetchQuery({ 
+      queryKey: ["flaggedWorkOrdersCount"]
+    });
+  }, [queryClient]);
 
   useEffect(() => {
     // If we're on a work order detail route, redirect to the main list

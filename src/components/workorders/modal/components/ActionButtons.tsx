@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Flag, Download, Loader2 } from "lucide-react";
 import {
@@ -9,6 +10,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ActionButtonsProps {
   workOrderId: string;
@@ -26,11 +28,15 @@ export const ActionButtons = ({
   onDownloadAll,
 }: ActionButtonsProps) => {
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   const handleStatusUpdate = async (status: string) => {
     try {
       setIsUpdating(status);
       await onStatusUpdate?.(workOrderId, status);
+      
+      // Immediately invalidate the badge count query to update the sidebar badge
+      queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
       
       toast.success(
         status === 'approved' 
