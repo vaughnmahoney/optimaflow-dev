@@ -1,13 +1,14 @@
 
 import { useNavigate } from "react-router-dom";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Flow } from "lucide-react";
+import { Zap } from "lucide-react";
 
 interface HeaderProps {
   title?: string;
+  children?: React.ReactNode;
 }
 
-export function Header({ title }: HeaderProps) {
+export function Header({ title, children }: HeaderProps) {
   const navigate = useNavigate();
   
   return (
@@ -29,7 +30,7 @@ export function Header({ title }: HeaderProps) {
           }}
           aria-label="Go to dashboard"
         >
-          <Flow className="h-5 w-5 text-primary" />
+          <Zap className="h-5 w-5 text-primary" />
           <span className="text-xl font-semibold">OptimaFlow</span>
         </div>
       </div>
@@ -47,6 +48,7 @@ export function Header({ title }: HeaderProps) {
         {title && (
           <h1 className="md:hidden text-lg font-semibold">{title}</h1>
         )}
+        {children}
       </div>
     </div>
   );
