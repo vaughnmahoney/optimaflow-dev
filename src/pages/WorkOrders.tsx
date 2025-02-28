@@ -22,7 +22,8 @@ const WorkOrders = () => {
     searchOptimoRoute,
     updateWorkOrderStatus,
     openImageViewer,
-    deleteWorkOrder
+    deleteWorkOrder,
+    statusCounts
   } = useWorkOrderData();
 
   // Prefetch flagged count when we enter this page
@@ -62,6 +63,7 @@ const WorkOrders = () => {
           searchQuery={searchQuery}
           onSearchChange={searchWorkOrder}
           onOptimoRouteSearch={searchOptimoRoute}
+          statusCounts={statusCounts}
         />
       </div>
     </Layout>

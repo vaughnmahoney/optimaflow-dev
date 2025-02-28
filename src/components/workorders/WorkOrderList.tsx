@@ -16,7 +16,8 @@ export const WorkOrderList = ({
   statusFilter,
   searchQuery,
   onSearchChange,
-  onOptimoRouteSearch
+  onOptimoRouteSearch,
+  statusCounts
 }: WorkOrderListProps) => {
   const [transformedData, setTransformedData] = useState<any>(null);
   const [searchResponse, setSearchResponse] = useState<any>(null);
@@ -30,6 +31,7 @@ export const WorkOrderList = ({
       <StatusFilterCards 
         statusFilter={statusFilter}
         onStatusFilterChange={onStatusFilterChange}
+        statusCounts={statusCounts}
       />
 
       <DebugDataDisplay 

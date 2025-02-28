@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { WorkOrder, WorkOrderSearchResponse, WorkOrderCompletionResponse } from "@/components/workorders/types";
@@ -47,6 +47,55 @@ export const useWorkOrderData = () => {
       });
     }
   });
+
+  // Calculate status counts from the work orders data
+  const statusCounts = useMemo(() => {
+    const counts = {
+      approved: 0,
+      pending_review: 0,
+      flagged: 0,
+      all: 0
+    };
+    
+    // Query all work orders to get accurate counts
+    const fetchStatusCounts = async () => {
+      const { data, error } = await supabase
+        .from("work_orders")
+        .select("status");
+      
+      if (!error && data) {
+        data.forEach(order => {
+          const status = order.status || 'pending_review';
+          if (counts[status] !== undefined) {
+            counts[status]++;
+          }
+          counts.all = (counts.all || 0) + 1;
+        });
+      }
+      
+      return counts;
+    };
+    
+    // Initialize counts from current workOrders array
+    if (workOrders) {
+      workOrders.forEach(order => {
+        if (order.status && counts[order.status] !== undefined) {
+          counts[order.status]++;
+        }
+      });
+    }
+    
+    // Fetch accurate counts if we're filtering
+    if (statusFilter) {
+      fetchStatusCounts().then(newCounts => {
+        Object.keys(counts).forEach(key => {
+          counts[key] = newCounts[key] || 0;
+        });
+      });
+    }
+    
+    return counts;
+  }, [workOrders, statusFilter]);
 
   const searchWorkOrder = (query: string) => {
     setSearchQuery(query);
@@ -133,6 +182,7 @@ export const useWorkOrderData = () => {
     searchOptimoRoute,
     updateWorkOrderStatus,
     openImageViewer,
-    deleteWorkOrder
+    deleteWorkOrder,
+    statusCounts
   };
 };

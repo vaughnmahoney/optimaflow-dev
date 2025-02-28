@@ -7,11 +7,18 @@ import { useIsMobile } from "@/hooks/use-mobile";
 interface StatusFilterCardsProps {
   statusFilter: string | null;
   onStatusFilterChange: (value: string | null) => void;
+  statusCounts: {
+    approved: number;
+    pending_review: number;
+    flagged: number;
+    all?: number;
+  };
 }
 
 export const StatusFilterCards = ({
   statusFilter,
   onStatusFilterChange,
+  statusCounts,
 }: StatusFilterCardsProps) => {
   const isMobile = useIsMobile();
   
@@ -49,6 +56,7 @@ export const StatusFilterCards = ({
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 w-full mb-2 sm:mb-4">
       {statuses.map((status) => {
         const isActive = statusFilter === status.value;
+        const count = statusCounts[status.value] || 0;
         
         return (
           <Card 
@@ -87,7 +95,7 @@ export const StatusFilterCards = ({
                 "w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-xs font-medium",
                 isActive ? "bg-white text-gray-800" : `bg-gray-100 ${status.textColor}`
               )}>
-                0
+                {count}
               </div>
             </CardContent>
           </Card>

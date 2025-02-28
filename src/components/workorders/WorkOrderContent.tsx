@@ -1,15 +1,27 @@
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { WorkOrderList } from "./WorkOrderList";
-import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
-import { WorkOrder, WorkOrderSearchResponse, WorkOrderCompletionResponse, WorkOrderListProps } from "./types";
-import { ImageViewModal } from "./modal/ImageViewModal";
+import { WorkOrder } from "./types";
 
-interface WorkOrderContentProps extends WorkOrderListProps {}
+interface WorkOrderContentProps {
+  workOrders: WorkOrder[];
+  isLoading: boolean;
+  statusFilter: string | null;
+  onStatusFilterChange: (value: string | null) => void;
+  onStatusUpdate: (workOrderId: string, newStatus: string) => void;
+  onImageView: (workOrderId: string) => void;
+  onDelete: (workOrderId: string) => void;
+  searchQuery: string;
+  onSearchChange: (value: string) => void;
+  onOptimoRouteSearch: (value: string) => void;
+  statusCounts?: {
+    approved: number;
+    pending_review: number;
+    flagged: number;
+    all?: number;
+  };
+}
 
-export const WorkOrderContent = ({ 
+export const WorkOrderContent = ({
   workOrders,
   isLoading,
   statusFilter,
@@ -19,48 +31,22 @@ export const WorkOrderContent = ({
   onDelete,
   searchQuery,
   onSearchChange,
-  onOptimoRouteSearch
+  onOptimoRouteSearch,
+  statusCounts = { approved: 0, pending_review: 0, flagged: 0 }
 }: WorkOrderContentProps) => {
-  const [selectedWorkOrder, setSelectedWorkOrder] = useState<WorkOrder | null>(null);
-  const [selectedIndex, setSelectedIndex] = useState<number>(0);
-  const queryClient = useQueryClient();
-  
-  const handleImageView = (workOrderId: string) => {
-    const index = workOrders.findIndex(wo => wo.id === workOrderId);
-    const workOrder = workOrders[index];
-    setSelectedWorkOrder(workOrder);
-    setSelectedIndex(index);
-  };
-
-  const handleOrderNavigation = (newIndex: number) => {
-    setSelectedWorkOrder(workOrders[newIndex]);
-    setSelectedIndex(newIndex);
-  };
-
   return (
-    <>
-      <WorkOrderList 
-        workOrders={workOrders} 
-        isLoading={isLoading}
-        onSearchChange={onSearchChange}
-        onOptimoRouteSearch={onOptimoRouteSearch}
-        onStatusFilterChange={onStatusFilterChange}
-        searchQuery={searchQuery}
-        statusFilter={statusFilter}
-        onStatusUpdate={onStatusUpdate}
-        onImageView={handleImageView}
-        onDelete={onDelete}
-      />
-      
-      <ImageViewModal
-        workOrder={selectedWorkOrder}
-        workOrders={workOrders}
-        currentIndex={selectedIndex}
-        isOpen={!!selectedWorkOrder}
-        onClose={() => setSelectedWorkOrder(null)}
-        onStatusUpdate={onStatusUpdate}
-        onNavigate={handleOrderNavigation}
-      />
-    </>
+    <WorkOrderList
+      workOrders={workOrders}
+      isLoading={isLoading}
+      statusFilter={statusFilter}
+      onStatusFilterChange={onStatusFilterChange}
+      onStatusUpdate={onStatusUpdate}
+      onImageView={onImageView}
+      onDelete={onDelete}
+      searchQuery={searchQuery}
+      onSearchChange={onSearchChange}
+      onOptimoRouteSearch={onOptimoRouteSearch}
+      statusCounts={statusCounts}
+    />
   );
 };

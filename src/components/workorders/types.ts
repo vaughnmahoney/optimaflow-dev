@@ -106,4 +106,10 @@ export interface WorkOrderListProps {
   onDelete: (workOrderId: string) => void;
   searchQuery: string;
   statusFilter: string | null;
+  statusCounts: {
+    approved: number;
+    pending_review: number;
+    flagged: number;
+    all?: number;
+  };
 }
