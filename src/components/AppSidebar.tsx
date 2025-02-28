@@ -15,6 +15,8 @@ import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export function AppSidebar() {
   const location = useLocation();
@@ -48,6 +50,25 @@ export function AppSidebar() {
   useEffect(() => {
     setIsMobileOpen(false);
   }, [location]);
+
+  // Fetch flagged work orders count for badge
+  const { data: flaggedWorkOrdersCount = 0 } = useQuery({
+    queryKey: ["flaggedWorkOrdersCount"],
+    queryFn: async () => {
+      const { data, error, count } = await supabase
+        .from("work_orders")
+        .select("id", { count: 'exact' })
+        .in("status", ["flagged", "needs_review"]);
+      
+      if (error) {
+        console.error("Error fetching flagged work orders count:", error);
+        return 0;
+      }
+      
+      return count || 0;
+    },
+    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
+  });
 
   // Handle keyboard navigation
   const handleKeyboardNavigation = (e: KeyboardEvent, action: () => void) => {
@@ -83,7 +104,7 @@ export function AppSidebar() {
       icon: AlertCircle, 
       label: "Quality Control", 
       isActive: location.pathname.startsWith("/work-orders"),
-      badge: 14
+      badge: flaggedWorkOrdersCount > 0 ? flaggedWorkOrdersCount : undefined
     },
     { 
       to: "/payroll", 
