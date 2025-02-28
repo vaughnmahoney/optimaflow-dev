@@ -11,8 +11,8 @@ const WorkOrders = () => {
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   
-  const { 
-    workOrders, 
+  const {
+    data: workOrders,
     isLoading, 
     statusFilter, 
     setStatusFilter,
@@ -21,7 +21,7 @@ const WorkOrders = () => {
     updateWorkOrderStatus,
     openImageViewer,
     deleteWorkOrder
-  } = useWorkOrderData(searchQuery);
+  } = useWorkOrderData();
 
   useEffect(() => {
     // If we're on a work order detail route, redirect to the main list
@@ -41,7 +41,7 @@ const WorkOrders = () => {
       }
     >
       <div className="space-y-8">
-        <WorkOrderList 
+        <WorkOrderContent 
           workOrders={workOrders} 
           isLoading={isLoading}
           onSearchChange={searchWorkOrder}
@@ -55,35 +55,6 @@ const WorkOrders = () => {
         />
       </div>
     </Layout>
-  );
-};
-
-// Internal component to avoid circular references
-const WorkOrderList = ({
-  workOrders,
-  isLoading,
-  onSearchChange,
-  onOptimoRouteSearch,
-  onStatusFilterChange,
-  onStatusUpdate,
-  onImageView,
-  onDelete,
-  searchQuery,
-  statusFilter
-}) => {
-  return (
-    <WorkOrderContent
-      workOrders={workOrders}
-      isLoading={isLoading}
-      onSearchChange={onSearchChange}
-      onOptimoRouteSearch={onOptimoRouteSearch}
-      onStatusFilterChange={onStatusFilterChange}
-      onStatusUpdate={onStatusUpdate}
-      onImageView={onImageView}
-      onDelete={onDelete}
-      searchQuery={searchQuery}
-      statusFilter={statusFilter}
-    />
   );
 };
 
