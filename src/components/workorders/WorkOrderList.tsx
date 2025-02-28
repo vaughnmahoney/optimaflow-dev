@@ -13,7 +13,10 @@ export const WorkOrderList = ({
   onStatusUpdate,
   onImageView,
   onDelete,
-  statusFilter
+  statusFilter,
+  searchQuery,
+  onSearchChange,
+  onOptimoRouteSearch
 }: WorkOrderListProps) => {
   const [transformedData, setTransformedData] = useState<any>(null);
   const [searchResponse, setSearchResponse] = useState<any>(null);
