@@ -65,43 +65,47 @@ export const WorkOrderHeader = ({
 
   return (
     <Header title="Work Orders">
-      <div className="flex items-center gap-3 w-full max-w-3xl ml-auto">
-        <div className="relative flex-1 min-w-[180px]">
+      <div className="flex items-center gap-4 w-full max-w-2xl">
+        {/* Search field with icon */}
+        <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
           <Input
             type="text"
             placeholder="Search work order..."
             value={searchValue}
             onChange={handleSearchChange}
-            className="pl-10 w-full"
+            className="pl-10 w-full bg-gray-50 border-gray-200"
           />
         </div>
         
-        <div className="flex flex-row gap-2 flex-shrink-0">
-          <div className="relative flex w-44">
+        <div className="flex flex-row gap-3 flex-shrink-0">
+          {/* Import section with better visual grouping */}
+          <div className="relative flex items-center">
             <Input
               type="text"
               placeholder="Import Order#"
               value={importValue}
               onChange={(e) => setImportValue(e.target.value)}
               onKeyPress={handleKeyPress}
-              className="w-full"
+              className="w-44 bg-gray-50 border-gray-200"
             />
             <Button 
               className="ml-2 whitespace-nowrap"
               onClick={handleImport}
               disabled={isImporting}
+              variant="default"
             >
               <Import className="h-4 w-4 mr-2" />
               Import
             </Button>
           </div>
 
+          {/* Refresh button */}
           <Button 
             variant="outline" 
             size="icon" 
             onClick={handleRefresh}
-            className="flex-shrink-0"
+            className="flex-shrink-0 bg-gray-50"
           >
             <RefreshCw className="h-4 w-4" />
             <span className="sr-only">Refresh</span>

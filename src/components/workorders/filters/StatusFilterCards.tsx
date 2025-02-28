@@ -43,7 +43,7 @@ export const StatusFilterCards = ({
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mb-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mb-4">
       {statuses.map((status) => {
         const isActive = statusFilter === status.value;
         
@@ -51,7 +51,7 @@ export const StatusFilterCards = ({
           <Card 
             key={status.value}
             className={cn(
-              "cursor-pointer transition-all overflow-hidden group",
+              "cursor-pointer transition-all overflow-hidden group shadow-sm",
               isActive 
                 ? `ring-2 ring-offset-2 ${status.ringColor}` 
                 : `hover:shadow-md ${status.hoverColor}`
@@ -62,20 +62,30 @@ export const StatusFilterCards = ({
           >
             <div 
               className={cn(
-                "h-1 w-full", 
+                "h-1.5 w-full", 
                 status.color
               )}
               aria-hidden="true"
             />
             <CardContent className={cn(
-              "p-4 flex items-center justify-center gap-2 transition-colors",
+              "p-3 flex items-center justify-between transition-colors",
               isActive ? `${status.color} text-white` : "bg-white"
             )}>
-              <status.icon 
-                size={18} 
-                className={isActive ? "text-white" : status.textColor} 
-              />
-              <h3 className="font-medium">{status.label}</h3>
+              <div className="flex items-center gap-2">
+                <status.icon 
+                  size={18} 
+                  className={isActive ? "text-white" : status.textColor} 
+                />
+                <h3 className="font-medium">{status.label}</h3>
+              </div>
+              
+              {/* Could add dynamic counts here in the future */}
+              <div className={cn(
+                "w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium",
+                isActive ? "bg-white text-gray-800" : `bg-gray-100 ${status.textColor}`
+              )}>
+                0
+              </div>
             </CardContent>
           </Card>
         );
