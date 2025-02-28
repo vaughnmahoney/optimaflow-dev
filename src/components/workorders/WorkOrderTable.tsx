@@ -8,10 +8,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, Flag, CheckCircle, Trash2 } from "lucide-react";
+import { Eye, CheckCircle, Flag, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { StatusBadge } from "./StatusBadge";
-import { WorkOrder, WorkOrderSearchResponse } from "./types";
+import { WorkOrder } from "./types";
 
 interface WorkOrderTableProps {
   workOrders: WorkOrder[];
@@ -72,12 +72,13 @@ export const WorkOrderTable = ({
                   <StatusBadge status={workOrder.status || 'pending_review'} />
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center space-x-2">
                     <Button 
                       variant="ghost" 
                       size="icon"
                       title="View Proof of Service"
                       onClick={() => onImageView(workOrder.id)}
+                      className="h-8 w-8"
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
@@ -85,8 +86,8 @@ export const WorkOrderTable = ({
                       variant="ghost" 
                       size="icon"
                       title="Approve"
-                      className="text-green-600"
                       onClick={() => onStatusUpdate(workOrder.id, "approved")}
+                      className={`h-8 w-8 ${workOrder.status === 'approved' ? 'text-green-600' : ''}`}
                     >
                       <CheckCircle className="h-4 w-4" />
                     </Button>
@@ -94,8 +95,8 @@ export const WorkOrderTable = ({
                       variant="ghost" 
                       size="icon"
                       title="Flag for Review"
-                      className="text-red-600"
                       onClick={() => onStatusUpdate(workOrder.id, "flagged")}
+                      className={`h-8 w-8 ${workOrder.status === 'flagged' ? 'text-red-600' : ''}`}
                     >
                       <Flag className="h-4 w-4" />
                     </Button>
@@ -103,8 +104,8 @@ export const WorkOrderTable = ({
                       variant="ghost" 
                       size="icon"
                       title="Delete Order"
-                      className="text-gray-600 hover:text-red-600"
                       onClick={() => onDelete(workOrder.id)}
+                      className="h-8 w-8"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
