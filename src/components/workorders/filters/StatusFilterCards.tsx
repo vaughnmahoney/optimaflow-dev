@@ -18,6 +18,7 @@ export const StatusFilterCards = ({
       value: "approved", 
       icon: Check, 
       color: "bg-green-500",
+      ringColor: "ring-green-500",
       hoverColor: "hover:bg-green-600",
       textColor: "text-green-500" 
     },
@@ -26,6 +27,7 @@ export const StatusFilterCards = ({
       value: "pending_review", 
       icon: Clock, 
       color: "bg-yellow-500",
+      ringColor: "ring-yellow-500",
       hoverColor: "hover:bg-yellow-600",
       textColor: "text-yellow-500" 
     },
@@ -34,6 +36,7 @@ export const StatusFilterCards = ({
       value: "flagged", 
       icon: Flag, 
       color: "bg-red-500",
+      ringColor: "ring-red-500",
       hoverColor: "hover:bg-red-600",
       textColor: "text-red-500" 
     },
@@ -50,9 +53,8 @@ export const StatusFilterCards = ({
             className={cn(
               "cursor-pointer transition-all overflow-hidden group",
               isActive 
-                ? "ring-2 ring-offset-2" 
-                : `hover:shadow-md ${status.hoverColor}`,
-              isActive ? "ring-black" : ""
+                ? `ring-2 ring-offset-2 ${status.ringColor}` 
+                : `hover:shadow-md ${status.hoverColor}`
             )}
             onClick={() => onStatusFilterChange(
               statusFilter === status.value ? null : status.value
@@ -61,13 +63,13 @@ export const StatusFilterCards = ({
             <div 
               className={cn(
                 "h-1 w-full", 
-                isActive ? "bg-black" : status.color
+                status.color
               )}
               aria-hidden="true"
             />
             <CardContent className={cn(
               "p-4 flex items-center justify-center gap-2 transition-colors",
-              isActive ? "bg-black text-white" : "bg-white"
+              isActive ? `${status.color} text-white` : "bg-white"
             )}>
               <status.icon 
                 size={18} 
