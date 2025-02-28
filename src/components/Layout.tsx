@@ -24,8 +24,8 @@ export const Layout = ({ children, header }: LayoutProps) => {
           <AppSidebar />
           
           {/* Main content area */}
-          <main className="flex-1 ml-[var(--sidebar-width)]">
-            <div className="container mx-auto px-6 py-8">
+          <main className="flex-1 transition-all duration-300 ease-in-out ml-[var(--sidebar-width)] md:ml-[var(--sidebar-width)] ml-0">
+            <div className="container mx-auto px-4 md:px-6 py-6 md:py-8">
               {children}
             </div>
           </main>
