@@ -65,8 +65,8 @@ export const WorkOrderHeader = ({
 
   return (
     <Header title="Work Orders">
-      <div className="flex items-center gap-3 ml-auto">
-        <div className="relative flex-1 w-64">
+      <div className="flex items-center gap-3 w-full max-w-3xl ml-auto">
+        <div className="relative flex-1 min-w-[180px]">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
           <Input
             type="text"
@@ -77,7 +77,7 @@ export const WorkOrderHeader = ({
           />
         </div>
         
-        <div className="flex flex-row gap-2">
+        <div className="flex flex-row gap-2 flex-shrink-0">
           <div className="relative flex w-44">
             <Input
               type="text"

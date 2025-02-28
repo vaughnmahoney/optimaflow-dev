@@ -14,7 +14,7 @@ export function Header({ title, children }: HeaderProps) {
   return (
     <div className="w-full h-full flex items-center justify-between px-6">
       {/* Left section: OptimaFlow logo and name */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-shrink-0">
         <SidebarTrigger className="mr-2 md:mr-4" />
         
         <div 
@@ -37,13 +37,13 @@ export function Header({ title, children }: HeaderProps) {
       
       {/* Center section: Page title */}
       {title && (
-        <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2">
-          <h1 className="text-xl font-semibold">{title}</h1>
+        <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 z-10 bg-background px-4">
+          <h1 className="text-xl font-semibold whitespace-nowrap">{title}</h1>
         </div>
       )}
       
       {/* Right section: Could add user profile, notifications, etc. here */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-shrink-0 flex-grow md:flex-grow-0">
         {/* Mobile page title (shows when center title is hidden) */}
         {title && (
           <h1 className="md:hidden text-lg font-semibold">{title}</h1>
