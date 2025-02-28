@@ -25,7 +25,7 @@ export const StatusFilterCards = ({
           key={status.value}
           className={`cursor-pointer transition-all overflow-hidden ${
             statusFilter === status.value 
-              ? "ring-2 ring-sidebar-accent ring-offset-2" 
+              ? "ring-2 ring-black ring-offset-2" // Changed from sidebar-accent to black
               : "hover:shadow-md"
           }`}
           onClick={() => onStatusFilterChange(
@@ -33,7 +33,7 @@ export const StatusFilterCards = ({
           )}
         >
           <div 
-            className="h-1 w-full bg-sidebar-accent" 
+            className="h-1 w-full bg-black" // Changed from sidebar-accent to black
             aria-hidden="true"
           />
           <CardContent className="p-4 text-center">
