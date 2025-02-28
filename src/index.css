@@ -26,8 +26,11 @@
     --ring: 224 71.4% 4.1%;
     --radius: 0.5rem;
 
-    /* Header height variable */
+    /* Header and sidebar size variables */
     --header-height: 4rem;
+    --sidebar-width: 16rem;
+    --sidebar-width-collapsed: 4.5rem;
+    --sidebar-width-mobile: 0;
 
     /* Sidebar specific colors */
     --sidebar: 220 100% 100%;
@@ -95,24 +98,45 @@
   }
 }
 
-/* Header and Layout adjustments */
-.page-header {
-  height: var(--header-height);
-  z-index: 40;
+/* Custom scrollbar for the sidebar */
+.overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--sidebar-border)) transparent;
 }
 
-.main-content {
-  padding-top: var(--header-height);
+.overflow-y-auto::-webkit-scrollbar {
+  width: 4px;
 }
 
-/* Fix for sidebar with header */
-.sidebar-with-header {
-  height: calc(100vh - var(--header-height));
-  top: var(--header-height);
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-/* Adjustments for fixed header layout */
-[data-sidebar="sidebar"] {
-  margin-top: var(--header-height);
-  height: calc(100vh - var(--header-height));
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--sidebar-border));
+  border-radius: 20px;
+}
+
+/* Animations and transitions */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+/* Accessibility - Focus styling */
+:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+
+/* Ensure touch targets are large enough */
+@media (pointer: coarse) {
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
+  }
 }
