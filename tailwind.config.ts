@@ -61,6 +61,16 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Added custom colors for sidebar
+        sidebar: {
+          DEFAULT: "#F8F9FC",
+          hover: "#F1F3F9",
+          active: "#E9ECFA",
+          border: "#E2E8F0",
+          icon: "#7C8DB5",
+          text: "#334155",
+          accent: "#8B5CF6",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -79,12 +89,22 @@ export default {
         "fade-in": {
           "0%": { opacity: "0", transform: "translateY(10px)" },
           "100%": { opacity: "1", transform: "translateY(0)" }
+        },
+        "fade-in-right": {
+          "0%": { opacity: "0", transform: "translateX(-10px)" },
+          "100%": { opacity: "1", transform: "translateX(0)" }
+        },
+        "fade-out-right": {
+          "0%": { opacity: "1", transform: "translateX(0)" },
+          "100%": { opacity: "0", transform: "translateX(-10px)" }
         }
       },
       animation: {
         "accordion-down": "accordion-down 0.3s ease-out",
         "accordion-up": "accordion-up 0.3s ease-out",
         "fade-in": "fade-in 0.3s ease-out",
+        "fade-in-right": "fade-in-right 0.3s ease-out",
+        "fade-out-right": "fade-out-right 0.3s ease-out",
       },
     },
   },

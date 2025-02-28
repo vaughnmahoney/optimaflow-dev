@@ -1,43 +1,51 @@
 
-import { Menu } from "lucide-react";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { useState } from 'react';
+import { Menu, ChevronLeft } from "lucide-react";
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
 import { SidebarLogo } from "@/components/sidebar/SidebarLogo";
 import { SidebarNavigation } from "@/components/sidebar/SidebarNavigation";
 import { SidebarLogout } from "@/components/sidebar/SidebarLogout";
 import { SidebarProfile } from "@/components/sidebar/SidebarProfile";
 
 export function AppSidebar() {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
   return (
     <Sidebar
-      className="w-64 border-r border-gray-200 bg-white/80 backdrop-blur-xl shadow-sm transition-[width] duration-300 ease-in-out group data-[state=closed]:w-[4rem]"
-      collapsible="icon"
+      className={`border-r border-sidebar-border bg-sidebar transition-all duration-300 ease-in-out ${
+        isCollapsed ? 'w-[4.5rem]' : 'w-64'
+      }`}
     >
-      <SidebarHeader className="border-b border-gray-100">
-        <div className="flex items-center justify-between w-full px-4 py-3">
-          <div className="flex-1 overflow-hidden transition-all duration-300">
+      <SidebarHeader className="p-4 flex flex-col gap-6 border-b border-sidebar-border">
+        <div className="flex items-center justify-between">
+          <div className={`transition-opacity duration-300 ${isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100 flex-1'}`}>
             <SidebarLogo />
           </div>
-          <div className="flex items-center justify-center w-10 h-10">
-            <SidebarTrigger className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-gray-900 transition-colors rounded-md">
-              <Menu className="h-5 w-5" strokeWidth={1.5} />
-            </SidebarTrigger>
-          </div>
+          <button
+            onClick={toggleSidebar}
+            className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-sidebar-hover text-sidebar-icon transition-colors"
+            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {isCollapsed ? (
+              <Menu size={20} />
+            ) : (
+              <ChevronLeft size={20} />
+            )}
+          </button>
         </div>
-        <SidebarProfile />
+        <SidebarProfile isCollapsed={isCollapsed} />
       </SidebarHeader>
 
-      <SidebarContent>
-        <SidebarNavigation />
+      <SidebarContent className="p-3">
+        <SidebarNavigation isCollapsed={isCollapsed} />
       </SidebarContent>
 
-      <SidebarFooter className="mt-auto border-t border-gray-100">
-        <SidebarLogout />
+      <SidebarFooter className="mt-auto p-3 border-t border-sidebar-border">
+        <SidebarLogout isCollapsed={isCollapsed} />
       </SidebarFooter>
     </Sidebar>
   );

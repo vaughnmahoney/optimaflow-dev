@@ -2,8 +2,13 @@
 import { useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-export function SidebarLogout() {
+interface SidebarLogoutProps {
+  isCollapsed: boolean;
+}
+
+export function SidebarLogout({ isCollapsed }: SidebarLogoutProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -16,19 +21,31 @@ export function SidebarLogout() {
   };
 
   return (
-    <button
-      onClick={handleLogout}
-      className="relative flex items-center w-full px-4 py-3 text-red-600 transition-colors hover:text-red-700 group-data-[state=closed]:px-0"
-    >
-      <div className="absolute inset-0 mx-4 rounded-md transition-colors hover:bg-red-50 group-data-[state=closed]:mx-2" />
-      <div className="relative flex items-center w-full gap-3 group-data-[state=closed]:justify-center">
-        <div className="w-10 h-10 flex items-center justify-center">
-          <LogOut className="h-5 w-5" strokeWidth={1.5} />
-        </div>
-        <span className="font-medium transition-all duration-300 opacity-100 group-data-[state=closed]:w-0 group-data-[state=closed]:opacity-0 group-data-[state=closed]:translate-x-2">
-          Logout
-        </span>
-      </div>
-    </button>
+    <TooltipProvider delayDuration={300}>
+      {isCollapsed ? (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={handleLogout}
+              className="flex items-center justify-center w-full h-10 rounded-md text-danger-DEFAULT hover:bg-danger-DEFAULT/10 transition-colors"
+              aria-label="Logout"
+            >
+              <LogOut size={20} strokeWidth={1.5} />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="right">
+            <p>Logout</p>
+          </TooltipContent>
+        </Tooltip>
+      ) : (
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 px-3 h-10 w-full rounded-md text-danger-DEFAULT hover:bg-danger-DEFAULT/10 transition-colors"
+        >
+          <LogOut size={20} strokeWidth={1.5} />
+          <span className="font-medium text-sm">Logout</span>
+        </button>
+      )}
+    </TooltipProvider>
   );
 }

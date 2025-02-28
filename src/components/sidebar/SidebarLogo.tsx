@@ -31,27 +31,33 @@ export function SidebarLogo() {
   };
 
   return (
-    <div className="flex items-center justify-center">
+    <div className="flex items-center">
       <div className="relative cursor-pointer group">
-        {logoUrl ? (
-          <img
-            src={logoUrl}
-            alt="Company Logo"
-            className="h-16 w-16 object-contain rounded transition-opacity group-hover:opacity-80"
-          />
-        ) : (
-          <div className="h-16 w-16 bg-gray-100 rounded flex items-center justify-center text-gray-400 transition-colors group-hover:bg-gray-200">
-            Logo
-          </div>
-        )}
+        <div className="w-10 h-10 overflow-hidden rounded-lg bg-white shadow-sm border border-sidebar-border flex items-center justify-center">
+          {logoUrl ? (
+            <img
+              src={logoUrl}
+              alt="Company Logo"
+              className="h-full w-full object-contain transition-opacity group-hover:opacity-80"
+            />
+          ) : (
+            <div className="h-full w-full flex items-center justify-center text-sidebar-icon text-sm font-medium">
+              LOGO
+            </div>
+          )}
+        </div>
         <input
           type="file"
           accept="image/*"
           onChange={handleLogoUpload}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          aria-label="Click to upload logo"
+          aria-label="Upload logo"
         />
+        <span className="opacity-0 group-hover:opacity-100 absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] text-sidebar-text whitespace-nowrap transition-opacity">
+          Click to upload
+        </span>
       </div>
+      <span className="ml-3 font-semibold text-sidebar-text">OptimaFlow</span>
     </div>
   );
 }
