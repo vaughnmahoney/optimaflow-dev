@@ -71,7 +71,7 @@ export default {
           foreground: "#ffffff",
         },
         muted: {
-          DEFAULT: "#8E9196",
+          DEFAULT: "#6B7280",
           foreground: "#ffffff",
         },
         popover: {
