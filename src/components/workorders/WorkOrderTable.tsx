@@ -8,10 +8,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, CheckCircle, Flag, Trash2 } from "lucide-react";
+import { Eye, CheckCircle, Flag, Trash2, MoreHorizontal } from "lucide-react";
 import { format } from "date-fns";
 import { StatusBadge } from "./StatusBadge";
 import { WorkOrder } from "./types";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface WorkOrderTableProps {
   workOrders: WorkOrder[];
@@ -82,33 +88,41 @@ export const WorkOrderTable = ({
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      title="Approve"
-                      onClick={() => onStatusUpdate(workOrder.id, "approved")}
-                      className={`h-8 w-8 ${workOrder.status === 'approved' ? 'text-green-600' : ''}`}
-                    >
-                      <CheckCircle className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      title="Flag for Review"
-                      onClick={() => onStatusUpdate(workOrder.id, "flagged")}
-                      className={`h-8 w-8 ${workOrder.status === 'flagged' ? 'text-red-600' : ''}`}
-                    >
-                      <Flag className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      title="Delete Order"
-                      onClick={() => onDelete(workOrder.id)}
-                      className="h-8 w-8"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          className="h-8 w-8"
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem 
+                          onClick={() => onStatusUpdate(workOrder.id, "approved")}
+                          className={workOrder.status === 'approved' ? 'text-green-600' : ''}
+                        >
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          Approve
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => onStatusUpdate(workOrder.id, "flagged")}
+                          className={workOrder.status === 'flagged' ? 'text-red-600' : ''}
+                        >
+                          <Flag className="h-4 w-4 mr-2" />
+                          Flag for Review
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => onDelete(workOrder.id)}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </TableCell>
               </TableRow>
