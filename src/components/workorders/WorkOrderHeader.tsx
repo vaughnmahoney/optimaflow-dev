@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Search, Import, RefreshCw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Header } from "@/components/Header";
 
 interface WorkOrderHeaderProps {
   onSearchChange: (value: string) => void;
@@ -63,54 +64,50 @@ export const WorkOrderHeader = ({
   };
 
   return (
-    <header className="w-full bg-white border-b border-gray-200 shadow-sm h-16">
-      <div className="container mx-auto px-6 h-full flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Work Orders</h1>
+    <Header title="Work Orders">
+      <div className="flex items-center gap-3 ml-auto">
+        <div className="relative flex-1 w-64">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+          <Input
+            type="text"
+            placeholder="Search work order..."
+            value={searchValue}
+            onChange={handleSearchChange}
+            className="pl-10 w-full"
+          />
+        </div>
         
-        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-          <div className="relative flex-1 sm:w-64">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+        <div className="flex flex-row gap-2">
+          <div className="relative flex w-44">
             <Input
               type="text"
-              placeholder="Search work order..."
-              value={searchValue}
-              onChange={handleSearchChange}
-              className="pl-10 w-full"
+              placeholder="Import Order#"
+              value={importValue}
+              onChange={(e) => setImportValue(e.target.value)}
+              onKeyPress={handleKeyPress}
+              className="w-full"
             />
-          </div>
-          
-          <div className="flex flex-row gap-2">
-            <div className="relative flex w-full sm:w-auto">
-              <Input
-                type="text"
-                placeholder="Import Order#"
-                value={importValue}
-                onChange={(e) => setImportValue(e.target.value)}
-                onKeyPress={handleKeyPress}
-                className="w-full sm:w-44"
-              />
-              <Button 
-                className="ml-2 whitespace-nowrap"
-                onClick={handleImport}
-                disabled={isImporting}
-              >
-                <Import className="h-4 w-4 mr-2" />
-                Import
-              </Button>
-            </div>
-
             <Button 
-              variant="outline" 
-              size="icon" 
-              onClick={handleRefresh}
-              className="flex-shrink-0"
+              className="ml-2 whitespace-nowrap"
+              onClick={handleImport}
+              disabled={isImporting}
             >
-              <RefreshCw className="h-4 w-4" />
-              <span className="sr-only">Refresh</span>
+              <Import className="h-4 w-4 mr-2" />
+              Import
             </Button>
           </div>
+
+          <Button 
+            variant="outline" 
+            size="icon" 
+            onClick={handleRefresh}
+            className="flex-shrink-0"
+          >
+            <RefreshCw className="h-4 w-4" />
+            <span className="sr-only">Refresh</span>
+          </Button>
         </div>
       </div>
-    </header>
+    </Header>
   );
 };

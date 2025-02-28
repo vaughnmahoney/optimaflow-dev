@@ -41,6 +41,7 @@ const WorkOrders = () => {
 
   return (
     <Layout
+      title="Work Orders"
       header={
         <WorkOrderHeader 
           onSearchChange={setSearchQuery}

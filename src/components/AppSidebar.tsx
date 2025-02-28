@@ -1,9 +1,8 @@
 
 import { useState, useEffect, useRef, KeyboardEvent } from "react";
 import { useLocation } from "react-router-dom";
-import { Menu, X, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { X, Search } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
-import { SidebarLogo } from "@/components/sidebar/SidebarLogo";
 import { SidebarProfile } from "@/components/sidebar/SidebarProfile";
 import { SidebarLogout } from "@/components/sidebar/SidebarLogout";
 import { SidebarToggleButton } from "@/components/sidebar/SidebarToggleButton";
@@ -111,25 +110,7 @@ export function AppSidebar() {
         aria-label="Main navigation"
         role="navigation"
       >
-        {/* Sidebar Header with Logo and Toggle */}
-        <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
-          {/* Logo - Hidden when collapsed */}
-          <div className={cn(
-            "transition-all duration-300", 
-            isCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100 flex-1"
-          )}>
-            <SidebarLogo />
-          </div>
-          
-          {/* Toggle Button */}
-          <SidebarToggleButton 
-            isCollapsed={isCollapsed} 
-            toggleSidebar={toggleSidebar} 
-            handleKeyboardNavigation={handleKeyboardNavigation} 
-          />
-        </div>
-        
-        {/* Profile Section */}
+        {/* Profile Section - Moved to top of sidebar */}
         <div className="px-3 py-4 border-b border-sidebar-border">
           <SidebarProfile isCollapsed={isCollapsed} />
         </div>
