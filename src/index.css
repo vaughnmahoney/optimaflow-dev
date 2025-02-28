@@ -103,7 +103,12 @@
 
 .main-content {
   padding-top: var(--header-height);
-  min-height: 100vh;
+}
+
+/* Fix for sidebar with header */
+.sidebar-with-header {
+  height: calc(100vh - var(--header-height));
+  top: var(--header-height);
 }
 
 /* Adjustments for fixed header layout */
