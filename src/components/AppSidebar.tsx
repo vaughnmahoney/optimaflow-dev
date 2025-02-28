@@ -21,7 +21,7 @@ export function AppSidebar() {
       } as React.CSSProperties}
     >
       <Sidebar
-        className="h-full border-r border-sidebar-border bg-sidebar overflow-y-auto"
+        className="h-full border-r border-sidebar-border bg-sidebar"
       >
         <SidebarHeader className="p-4 flex flex-col gap-6 border-b border-sidebar-border">
           <div className="flex items-center justify-between">
@@ -43,7 +43,7 @@ export function AppSidebar() {
           <SidebarProfile isCollapsed={isCollapsed} />
         </SidebarHeader>
 
-        <SidebarContent className="p-3">
+        <SidebarContent className="p-3 overflow-y-auto">
           <SidebarNavigation isCollapsed={isCollapsed} />
         </SidebarContent>
 
