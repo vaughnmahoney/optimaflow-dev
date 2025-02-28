@@ -1,13 +1,11 @@
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { WorkOrder } from "../types";
-import { ImageViewer } from "./modal/ImageViewer";
 import { NavigationFooter } from "./NavigationFooter";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ModalHeader } from "./components/ModalHeader";
-import { ActionButtons } from "./components/ActionButtons";
-import { TabsContainer } from "./components/TabsContainer";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface ImageViewModalProps {
   workOrder: WorkOrder | null;
@@ -28,13 +26,14 @@ export const ImageViewModal = ({
   onClose,
   onStatusUpdate,
   onNavigate,
-  onDownloadAll,
 }: ImageViewModalProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isUpdating, setIsUpdating] = useState(false);
   
-  const completionData = workOrder?.completion_response?.orders[0]?.data;
+  if (!workOrder) return null;
+
+  const completionData = workOrder?.completion_response?.orders?.[0]?.data;
   const images = completionData?.form?.images || [];
+  const driverName = workOrder.search_response?.scheduleInformation?.driverName || 'No Driver Assigned';
   
   const handlePrevious = () => {
     if (currentImageIndex > 0) {
@@ -66,99 +65,70 @@ export const ImageViewModal = ({
     }
   };
 
-  const handleStatusUpdate = async (status: string) => {
-    if (!workOrder || isUpdating) return;
-    
-    setIsUpdating(true);
-    try {
-      await onStatusUpdate?.(workOrder.id, status);
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      switch (e.key) {
-        case 'ArrowLeft':
-          if (e.altKey) {
-            handlePreviousOrder();
-          } else {
-            handlePrevious();
-          }
-          break;
-        case 'ArrowRight':
-          if (e.altKey) {
-            handleNextOrder();
-          } else {
-            handleNext();
-          }
-          break;
-        case 'Escape':
-          onClose();
-          break;
-        case 'a':
-          if (e.ctrlKey || e.metaKey) {
-            e.preventDefault();
-            handleStatusUpdate('approved');
-          }
-          break;
-        case 'f':
-          if (e.ctrlKey || e.metaKey) {
-            e.preventDefault();
-            handleStatusUpdate('flagged');
-          }
-          break;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, currentIndex, currentImageIndex, workOrders.length, images.length, isUpdating]);
-
-  if (!workOrder) return null;
-
-  const driverName = workOrder.search_response?.scheduleInformation?.driverName || 'No Driver Assigned';
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-screen-xl max-h-[90vh] p-0 flex flex-col">
-        <ModalHeader
-          orderNo={workOrder.order_no}
-          status={workOrder.status}
-          driverName={driverName}
-          onClose={onClose}
-        />
-        
-        <div className="flex-1 grid grid-cols-[2fr_3fr] min-h-0">
-          {/* Left Panel - Details */}
-          <div className="border-r bg-background flex flex-col min-h-0">
-            <TabsContainer workOrder={workOrder} />
-            <ActionButtons
-              workOrderId={workOrder.id}
-              hasImages={images.length > 0}
-              currentStatus={workOrder.status}
-              onStatusUpdate={onStatusUpdate}
-              onDownloadAll={onDownloadAll}
-            />
+      <DialogContent className="max-w-3xl p-0 h-[80vh] flex flex-col">
+        {/* Header */}
+        <div className="flex justify-between items-center p-4 border-b">
+          <div>
+            <h2 className="text-lg font-semibold">Order #{workOrder.order_no}</h2>
+            <p className="text-sm text-muted-foreground">Driver: {driverName}</p>
           </div>
-
-          {/* Right Panel - Image Viewer */}
-          <div className="bg-background/50 flex flex-col min-h-0">
-            <div className="flex-1 relative">
-              <ImageViewer
-                images={images}
-                currentImageIndex={currentImageIndex}
-                onPrevious={handlePrevious}
-                onNext={handleNext}
-              />
-            </div>
-          </div>
+          <Button variant="ghost" size="icon" onClick={onClose}>
+            <X className="h-4 w-4" />
+          </Button>
         </div>
-
-        {/* Navigation Footer */}
+        
+        {/* Image Viewer */}
+        <div className="flex-1 flex items-center justify-center bg-background/50 relative overflow-hidden">
+          {images.length > 0 ? (
+            <>
+              <img 
+                src={images[currentImageIndex]?.url} 
+                alt={`Service image ${currentImageIndex + 1}`}
+                className="max-h-full max-w-full object-contain"
+              />
+              
+              {/* Image navigation */}
+              <div className="absolute inset-x-0 bottom-4 flex justify-center space-x-2">
+                {images.map((_, idx) => (
+                  <button
+                    key={idx}
+                    className={`w-2 h-2 rounded-full ${
+                      idx === currentImageIndex ? 'bg-primary' : 'bg-gray-300'
+                    }`}
+                    onClick={() => setCurrentImageIndex(idx)}
+                  />
+                ))}
+              </div>
+              
+              {/* Previous/Next buttons */}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="absolute left-4 top-1/2 transform -translate-y-1/2"
+                onClick={handlePrevious}
+              >
+                <ChevronLeft className="h-8 w-8" />
+              </Button>
+              
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="absolute right-4 top-1/2 transform -translate-y-1/2"
+                onClick={handleNext}
+              >
+                <ChevronRight className="h-8 w-8" />
+              </Button>
+            </>
+          ) : (
+            <div className="text-center text-muted-foreground p-4">
+              No images available for this work order
+            </div>
+          )}
+        </div>
+        
+        {/* Footer */}
         <TooltipProvider>
           <NavigationFooter
             currentIndex={currentIndex}
@@ -170,4 +140,3 @@ export const ImageViewModal = ({
     </Dialog>
   );
 };
-
