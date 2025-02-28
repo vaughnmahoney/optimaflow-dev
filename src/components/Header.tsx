@@ -2,6 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Zap } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface HeaderProps {
   title?: string;
@@ -10,11 +11,12 @@ interface HeaderProps {
 
 export function Header({ title, children }: HeaderProps) {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   
   return (
-    <div className="w-full h-full flex items-center justify-between px-6">
+    <div className="w-full h-full flex flex-col sm:flex-row items-start sm:items-center sm:justify-between px-3 sm:px-6 py-2 sm:py-0 gap-2 sm:gap-0">
       {/* Left section: OptimaFlow logo and name */}
-      <div className="flex items-center gap-3 flex-shrink-0">
+      <div className="flex items-center gap-3 flex-shrink-0 w-full sm:w-auto">
         <SidebarTrigger className="mr-2 md:mr-0" />
         
         <div 
@@ -38,21 +40,24 @@ export function Header({ title, children }: HeaderProps) {
         {title && (
           <div className="hidden md:block h-8 w-px bg-gray-200 mx-2"></div>
         )}
+
+        {/* Title - Always visible, positioned appropriately for mobile/desktop */}
+        {title && (
+          <h1 className={`text-lg sm:text-xl font-bold ${isMobile ? 'ml-auto mr-2' : 'hidden md:block'}`}>
+            {title}
+          </h1>
+        )}
       </div>
       
-      {/* Center section: Page title */}
-      {title && (
+      {/* Center section: Page title - Only on desktop */}
+      {title && !isMobile && (
         <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 z-10 bg-background px-4">
           <h1 className="text-xl font-bold whitespace-nowrap">{title}</h1>
         </div>
       )}
       
-      {/* Right section: Could add user profile, notifications, etc. here */}
-      <div className="flex items-center gap-2 flex-shrink-0 flex-grow-0 ml-auto">
-        {/* Mobile page title (shows when center title is hidden) */}
-        {title && (
-          <h1 className="md:hidden text-lg font-semibold">{title}</h1>
-        )}
+      {/* Right section: Contains search, import, etc. */}
+      <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto sm:ml-auto">
         {children}
       </div>
     </div>

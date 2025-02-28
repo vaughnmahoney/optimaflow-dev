@@ -2,6 +2,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Check, Flag, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface StatusFilterCardsProps {
   statusFilter: string | null;
@@ -12,6 +13,8 @@ export const StatusFilterCards = ({
   statusFilter,
   onStatusFilterChange,
 }: StatusFilterCardsProps) => {
+  const isMobile = useIsMobile();
+  
   const statuses = [
     { 
       label: "Approved", 
@@ -43,7 +46,7 @@ export const StatusFilterCards = ({
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mb-4">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 w-full mb-2 sm:mb-4">
       {statuses.map((status) => {
         const isActive = statusFilter === status.value;
         
@@ -53,7 +56,7 @@ export const StatusFilterCards = ({
             className={cn(
               "cursor-pointer transition-all overflow-hidden group shadow-sm",
               isActive 
-                ? `ring-2 ring-offset-2 ${status.ringColor}` 
+                ? `ring-2 ring-offset-1 sm:ring-offset-2 ${status.ringColor}` 
                 : `hover:shadow-md ${status.hoverColor}`
             )}
             onClick={() => onStatusFilterChange(
@@ -68,20 +71,20 @@ export const StatusFilterCards = ({
               aria-hidden="true"
             />
             <CardContent className={cn(
-              "p-3 flex items-center justify-between transition-colors",
+              "p-2 sm:p-3 flex items-center justify-between transition-colors",
               isActive ? `${status.color} text-white` : "bg-white"
             )}>
               <div className="flex items-center gap-2">
                 <status.icon 
-                  size={18} 
+                  size={isMobile ? 16 : 18} 
                   className={isActive ? "text-white" : status.textColor} 
                 />
-                <h3 className="font-medium">{status.label}</h3>
+                <h3 className={`font-medium ${isMobile ? 'text-sm' : ''}`}>{status.label}</h3>
               </div>
               
-              {/* Could add dynamic counts here in the future */}
+              {/* Count badges */}
               <div className={cn(
-                "w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium",
+                "w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-xs font-medium",
                 isActive ? "bg-white text-gray-800" : `bg-gray-100 ${status.textColor}`
               )}>
                 0

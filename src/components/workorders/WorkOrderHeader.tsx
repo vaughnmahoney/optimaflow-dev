@@ -6,6 +6,7 @@ import { Search, Import, RefreshCw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Header } from "@/components/Header";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface WorkOrderHeaderProps {
   onSearchChange: (value: string) => void;
@@ -22,6 +23,7 @@ export const WorkOrderHeader = ({
   const [importValue, setImportValue] = useState("");
   const [isImporting, setIsImporting] = useState(false);
   const queryClient = useQueryClient();
+  const isMobile = useIsMobile();
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -65,9 +67,9 @@ export const WorkOrderHeader = ({
 
   return (
     <Header title="Work Orders">
-      <div className="flex items-center gap-4 w-full max-w-2xl">
+      <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 sm:gap-4 w-full max-w-2xl">
         {/* Search field with icon */}
-        <div className="relative flex-1 min-w-[200px]">
+        <div className="relative flex-1 min-w-0 w-full">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
           <Input
             type="text"
@@ -78,25 +80,26 @@ export const WorkOrderHeader = ({
           />
         </div>
         
-        <div className="flex flex-row gap-3 flex-shrink-0">
+        <div className={`flex ${isMobile ? 'w-full' : 'flex-row'} gap-2 ${isMobile ? 'mt-2' : ''}`}>
           {/* Import section with better visual grouping */}
-          <div className="relative flex items-center">
+          <div className={`relative flex items-center ${isMobile ? 'flex-1' : ''}`}>
             <Input
               type="text"
               placeholder="Import Order#"
               value={importValue}
               onChange={(e) => setImportValue(e.target.value)}
               onKeyPress={handleKeyPress}
-              className="w-44 bg-gray-50 border-gray-200"
+              className={`${isMobile ? 'w-full' : 'w-44'} bg-gray-50 border-gray-200`}
             />
             <Button 
-              className="ml-2 whitespace-nowrap"
+              className={`${isMobile ? 'ml-1' : 'ml-2'} whitespace-nowrap`}
               onClick={handleImport}
               disabled={isImporting}
               variant="default"
+              size={isMobile ? "sm" : "default"}
             >
-              <Import className="h-4 w-4 mr-2" />
-              Import
+              <Import className="h-4 w-4 mr-1" />
+              {!isMobile && "Import"}
             </Button>
           </div>
 
