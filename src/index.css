@@ -26,6 +26,9 @@
     --ring: 224 71.4% 4.1%;
     --radius: 0.5rem;
 
+    /* Header height variable */
+    --header-height: 4rem;
+
     /* Sidebar specific colors */
     --sidebar: 220 100% 100%;
     --sidebar-hover: 220 13% 95%;
@@ -90,4 +93,20 @@
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+}
+
+/* Header and Layout adjustments */
+.page-header {
+  height: var(--header-height);
+  z-index: 40;
+}
+
+.main-content {
+  padding-top: var(--header-height);
+}
+
+/* Fix for sidebar with header */
+.sidebar-with-header {
+  height: calc(100vh - var(--header-height));
+  top: var(--header-height);
 }
