@@ -13,11 +13,11 @@ export function AppSidebar() {
 
   return (
     <Sidebar
-      className={`fixed top-[var(--header-height)] left-0 bottom-0 z-40 border-r border-sidebar-border bg-sidebar transition-all duration-300 ease-in-out overflow-hidden ${
+      className={`fixed top-[var(--header-height)] left-0 bottom-0 z-40 border-r border-sidebar-border bg-sidebar transition-all duration-300 ease-in-out ${
         isCollapsed ? 'w-[4.5rem]' : 'w-64'
       }`}
     >
-      <div className="h-full flex flex-col overflow-hidden">
+      <div className="h-full flex flex-col">
         <SidebarHeader className="p-4 flex flex-col gap-6 border-b border-sidebar-border">
           <div className="flex items-center justify-between">
             <div className={`transition-opacity duration-300 ${isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100 flex-1'}`}>

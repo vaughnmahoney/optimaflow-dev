@@ -18,12 +18,12 @@ export const Layout = ({ children, header }: LayoutProps) => {
             {header}
           </div>
         )}
-        <div className="flex pt-[var(--header-height)]">
+        <div className="flex">
           {/* Sidebar */}
           <AppSidebar />
           {/* Main content - this is the only part that should scroll */}
-          <main className="flex-1 ml-[4.5rem] md:ml-64 transition-all duration-300">
-            <div className="container mx-auto px-6 py-8 min-h-screen">
+          <main className="flex-1 pt-[var(--header-height)] ml-[4.5rem] md:ml-64 transition-all duration-300">
+            <div className="container mx-auto px-6 py-8">
               {children}
             </div>
           </main>
