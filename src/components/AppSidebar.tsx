@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useSidebar } from "@/components/ui/sidebar";
 import { Menu, ChevronLeft } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
 import { SidebarLogo } from "@/components/sidebar/SidebarLogo";
@@ -8,11 +8,8 @@ import { SidebarLogout } from "@/components/sidebar/SidebarLogout";
 import { SidebarProfile } from "@/components/sidebar/SidebarProfile";
 
 export function AppSidebar() {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-
-  const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed);
-  };
+  const { state, toggleSidebar } = useSidebar();
+  const isCollapsed = state === "collapsed";
 
   return (
     <Sidebar
