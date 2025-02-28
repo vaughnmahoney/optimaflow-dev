@@ -41,9 +41,9 @@ export function Header({ title, children }: HeaderProps) {
           <div className="hidden md:block h-8 w-px bg-gray-200 mx-2"></div>
         )}
 
-        {/* Title - Mobile only shows when center title is hidden */}
-        {title && isMobile && (
-          <h1 className="text-lg sm:text-xl font-bold ml-auto mr-2">
+        {/* Title - Always visible, positioned appropriately for mobile/desktop */}
+        {title && (
+          <h1 className={`text-lg sm:text-xl font-bold ${isMobile ? 'ml-auto mr-2' : 'hidden md:block'}`}>
             {title}
           </h1>
         )}
