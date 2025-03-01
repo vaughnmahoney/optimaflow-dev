@@ -21,8 +21,8 @@ export const NavigationControls = ({
       <div className="p-4 border-t bg-white dark:bg-gray-950">
         <div className="flex justify-between items-center">
           <Button
-            variant="ghost"
-            className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+            variant="outline"
+            className="flex items-center gap-2 px-4 py-2 border-gray-300"
             onClick={onPreviousOrder}
             disabled={currentIndex <= 0}
           >
@@ -35,8 +35,8 @@ export const NavigationControls = ({
           </span>
           
           <Button
-            variant="ghost"
-            className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+            variant="outline"
+            className="flex items-center gap-2 px-4 py-2 border-gray-300"
             onClick={onNextOrder}
             disabled={currentIndex >= totalOrders - 1}
           >
