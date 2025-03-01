@@ -1,15 +1,13 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { WorkOrder } from "../types";
 import { ModalHeader } from "./components/ModalHeader";
-import { QuickInfo } from "./components/QuickInfo";
-import { OrderDetails } from "./components/OrderDetails";
-import { ImageViewer } from "./components/ImageViewer";
-import { ImageThumbnails } from "./components/ImageThumbnails";
+import { ModalContent } from "./components/ModalContent";
 import { ModalFooter } from "./components/ModalFooter";
 import { NavigationControls } from "./components/NavigationControls";
 import { getStatusBorderColor } from "./utils/modalUtils";
+import { useWorkOrderNavigation } from "@/hooks/useWorkOrderNavigation";
 
 interface ImageViewModalProps {
   workOrder: WorkOrder | null;
@@ -32,132 +30,61 @@ export const ImageViewModal = ({
   onNavigate,
   onDownloadAll,
 }: ImageViewModalProps) => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isImageExpanded, setIsImageExpanded] = useState(false);
   
-  // Reset image index when work order changes
-  useEffect(() => {
-    setCurrentImageIndex(0);
-  }, [workOrder?.id]);
+  const {
+    currentWorkOrder,
+    currentIndex: navIndex,
+    currentImageIndex,
+    setCurrentImageIndex,
+    handlePreviousOrder,
+    handleNextOrder,
+    handleSetOrder
+  } = useWorkOrderNavigation({
+    workOrders,
+    initialWorkOrderId: workOrder?.id || null,
+    isOpen,
+    onClose
+  });
   
-  // Add keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isOpen) return;
-      
-      switch (e.key) {
-        case "ArrowLeft":
-          if (e.altKey) {
-            handlePreviousOrder();
-          } else {
-            handlePrevious();
-          }
-          break;
-        case "ArrowRight":
-          if (e.altKey) {
-            handleNextOrder();
-          } else {
-            handleNext();
-          }
-          break;
-        case "Escape":
-          onClose();
-          break;
-      }
-    };
-    
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, currentImageIndex, currentIndex, workOrder]);
-  
-  if (!workOrder) return null;
-
-  const completionData = workOrder?.completion_response?.orders?.[0]?.data;
-  const images = completionData?.form?.images || [];
-  
-  const handlePrevious = () => {
-    if (currentImageIndex > 0) {
-      setCurrentImageIndex(prev => prev - 1);
-    } else if (images.length > 0) {
-      setCurrentImageIndex(images.length - 1);
-    }
-  };
-  
-  const handleNext = () => {
-    if (currentImageIndex < images.length - 1) {
-      setCurrentImageIndex(prev => prev + 1);
-    } else if (images.length > 0) {
-      setCurrentImageIndex(0);
-    }
-  };
-
-  const handlePreviousOrder = () => {
-    if (currentIndex > 0) {
-      onNavigate(currentIndex - 1);
-      setCurrentImageIndex(0);
-    }
-  };
-
-  const handleNextOrder = () => {
-    if (currentIndex < workOrders.length - 1) {
-      onNavigate(currentIndex + 1);
-      setCurrentImageIndex(0);
-    }
-  };
+  if (!currentWorkOrder) return null;
 
   const toggleImageExpand = () => {
     setIsImageExpanded(!isImageExpanded);
   };
 
+  // Get images from the work order
+  const completionData = currentWorkOrder?.completion_response?.orders?.[0]?.data;
+  const images = completionData?.form?.images || [];
+  
   // Status color for border
-  const statusBorderColor = getStatusBorderColor(workOrder.status || "pending_review");
+  const statusBorderColor = getStatusBorderColor(currentWorkOrder.status || "pending_review");
+
+  // Sync navigation with parent component
+  const handleNavigate = (index: number) => {
+    handleSetOrder(index);
+    onNavigate(index);
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className={`max-w-6xl p-0 h-[90vh] flex flex-col rounded-lg overflow-hidden border-t-4 ${statusBorderColor}`}>
         {/* Header with order info */}
-        <ModalHeader workOrder={workOrder} onClose={onClose} />
+        <ModalHeader workOrder={currentWorkOrder} onClose={onClose} />
         
-        {/* Main content area - Two column layout */}
-        <div className="flex flex-1 overflow-hidden">
-          {/* Left side - Image viewer with vertical thumbnails */}
-          <div className={`flex flex-row ${isImageExpanded ? 'w-full' : 'w-3/5'} border-r`}>
-            {/* Vertical thumbnail strip - Only show when not expanded */}
-            {!isImageExpanded && (
-              <ImageThumbnails 
-                images={images} 
-                currentImageIndex={currentImageIndex} 
-                setCurrentImageIndex={setCurrentImageIndex} 
-              />
-            )}
-            
-            {/* Main image container */}
-            <div className="flex-1 relative flex">
-              <ImageViewer 
-                images={images}
-                currentImageIndex={currentImageIndex}
-                setCurrentImageIndex={setCurrentImageIndex}
-                isImageExpanded={isImageExpanded}
-                toggleImageExpand={toggleImageExpand}
-              />
-            </div>
-          </div>
-          
-          {/* Right side - Details panel */}
-          {!isImageExpanded && (
-            <div className="w-2/5 flex flex-col overflow-hidden">
-              {/* Quick info section */}
-              <QuickInfo workOrder={workOrder} />
-              
-              {/* Tabs for Details, Notes, Signature */}
-              <OrderDetails workOrder={workOrder} />
-            </div>
-          )}
-        </div>
+        {/* Main content area */}
+        <ModalContent
+          workOrder={currentWorkOrder}
+          images={images}
+          currentImageIndex={currentImageIndex}
+          setCurrentImageIndex={setCurrentImageIndex}
+          isImageExpanded={isImageExpanded}
+          toggleImageExpand={toggleImageExpand}
+        />
         
         {/* Action buttons */}
         <ModalFooter 
-          workOrderId={workOrder.id} 
+          workOrderId={currentWorkOrder.id} 
           onStatusUpdate={onStatusUpdate} 
           onDownloadAll={onDownloadAll}
           hasImages={images.length > 0}
@@ -165,7 +92,7 @@ export const ImageViewModal = ({
         
         {/* Navigation Footer */}
         <NavigationControls 
-          currentIndex={currentIndex}
+          currentIndex={navIndex}
           totalOrders={workOrders.length}
           onPreviousOrder={handlePreviousOrder}
           onNextOrder={handleNextOrder}
