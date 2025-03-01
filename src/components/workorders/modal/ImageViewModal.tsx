@@ -14,7 +14,8 @@ import {
   Check, 
   Flag,
   Maximize2,
-  Minimize2
+  Minimize2,
+  Link
 } from "lucide-react";
 import { format } from "date-fns";
 import { WorkOrder } from "../types";
@@ -22,6 +23,7 @@ import { NavigationFooter } from "./NavigationFooter";
 import { OrderDetailsTab } from "./tabs/OrderDetailsTab";
 import { NotesTab } from "./tabs/NotesTab";
 import { SignatureTab } from "./tabs/SignatureTab";
+import { StatusBadge } from "../StatusBadge";
 import { Card } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
@@ -138,17 +140,38 @@ export const ImageViewModal = ({
     setIsImageExpanded(!isImageExpanded);
   };
 
+  // Get status for styling
+  const getOrderStatus = () => {
+    return workOrder.status || "pending_review";
+  };
+
+  // Status color for border
+  const getStatusBorderColor = () => {
+    switch (getOrderStatus()) {
+      case "approved":
+        return "border-green-500";
+      case "flagged":
+        return "border-red-500";
+      case "pending_review":
+      default:
+        return "border-yellow-500";
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl p-0 h-[90vh] flex flex-col rounded-lg overflow-hidden">
+      <DialogContent className={`max-w-6xl p-0 h-[90vh] flex flex-col rounded-lg overflow-hidden border-t-4 ${getStatusBorderColor()}`}>
         {/* Header with order info */}
-        <div className="flex justify-between items-center p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 border-b">
+        <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-950 border-b">
           <div className="flex items-center space-x-4">
-            <div className="p-2 bg-primary/10 rounded-full">
-              <User className="h-5 w-5 text-primary" />
+            <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full">
+              <User className="h-5 w-5 text-gray-600 dark:text-gray-300" />
             </div>
-            <div>
-              <h2 className="text-lg font-semibold">Order #{workOrder.order_no}</h2>
+            <div className="text-left">
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-semibold">Order #{workOrder.order_no}</h2>
+                <StatusBadge status={getOrderStatus()} />
+              </div>
               <p className="text-sm text-muted-foreground">
                 Driver: {driverName}
               </p>
@@ -171,8 +194,8 @@ export const ImageViewModal = ({
                     key={idx}
                     className={`relative h-16 w-16 flex-shrink-0 cursor-pointer transition-all duration-200 ${
                       idx === currentImageIndex 
-                        ? 'ring-2 ring-primary ring-offset-1 shadow-md scale-105' 
-                        : 'ring-1 ring-gray-200 hover:ring-gray-300 opacity-80 hover:opacity-100'
+                        ? 'border-l-2 border-l-primary shadow-sm scale-[1.02]' 
+                        : 'border border-gray-200 dark:border-gray-700 opacity-70 hover:opacity-100'
                     } rounded-md overflow-hidden`}
                     onClick={() => setCurrentImageIndex(idx)}
                   >
@@ -187,7 +210,7 @@ export const ImageViewModal = ({
             )}
             
             {/* Main image container */}
-            <div className="flex-1 relative flex items-center justify-center bg-black/5 dark:bg-black/20 overflow-hidden">
+            <div className="flex-1 relative flex items-center justify-center bg-gray-100 dark:bg-gray-800 overflow-hidden">
               {images.length > 0 ? (
                 <>
                   <img 
@@ -199,34 +222,34 @@ export const ImageViewModal = ({
                   
                   {/* Previous/Next buttons */}
                   <Button 
-                    variant="ghost" 
+                    variant="secondary" 
                     size="icon" 
-                    className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 rounded-full shadow-md"
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 rounded-full shadow-md"
                     onClick={handlePrevious}
                   >
                     <ChevronLeft className="h-6 w-6" />
                   </Button>
                   
                   <Button 
-                    variant="ghost" 
+                    variant="secondary" 
                     size="icon" 
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 rounded-full shadow-md"
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 rounded-full shadow-md"
                     onClick={handleNext}
                   >
                     <ChevronRight className="h-6 w-6" />
                   </Button>
                   
                   {/* Image counter */}
-                  <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+                  <div className="absolute top-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium">
                     {currentImageIndex + 1} / {images.length}
                   </div>
                   
                   {/* Expand/Collapse button */}
                   <Button
-                    variant="ghost"
+                    variant="secondary"
                     size="icon"
                     onClick={toggleImageExpand}
-                    className="absolute top-4 left-4 bg-black/50 text-white rounded-full p-1.5"
+                    className="absolute top-4 left-4 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 rounded-full shadow-md"
                   >
                     {isImageExpanded ? (
                       <Minimize2 className="h-4 w-4" />
@@ -251,7 +274,7 @@ export const ImageViewModal = ({
           {!isImageExpanded && (
             <div className="w-2/5 flex flex-col overflow-hidden">
               {/* Quick info section */}
-              <div className="p-4 border-b bg-gray-50 dark:bg-gray-900/50">
+              <div className="p-4 border-b bg-white dark:bg-gray-950">
                 <div className="space-y-3">
                   <div className="flex items-start gap-3">
                     <MapPin className="h-4 w-4 mt-0.5 text-gray-500" />
@@ -282,7 +305,7 @@ export const ImageViewModal = ({
               <div className="flex-1 overflow-y-auto p-0">
                 <Accordion type="single" collapsible defaultValue="details" className="w-full">
                   <AccordionItem value="details" className="border-b">
-                    <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-gray-100 dark:hover:bg-gray-800/50">
+                    <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-gray-50 dark:hover:bg-gray-900/50">
                       <span className="text-sm font-medium">Order Details</span>
                     </AccordionTrigger>
                     <AccordionContent className="px-4 pt-2 pb-4">
@@ -293,7 +316,7 @@ export const ImageViewModal = ({
                   </AccordionItem>
                   
                   <AccordionItem value="notes" className="border-b">
-                    <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-gray-100 dark:hover:bg-gray-800/50">
+                    <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-gray-50 dark:hover:bg-gray-900/50">
                       <span className="text-sm font-medium">Notes</span>
                     </AccordionTrigger>
                     <AccordionContent className="px-4 pt-2 pb-4">
@@ -304,7 +327,7 @@ export const ImageViewModal = ({
                   </AccordionItem>
                   
                   <AccordionItem value="signature" className="border-b">
-                    <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-gray-100 dark:hover:bg-gray-800/50">
+                    <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-gray-50 dark:hover:bg-gray-900/50">
                       <span className="text-sm font-medium">Signature</span>
                     </AccordionTrigger>
                     <AccordionContent className="px-4 pt-2 pb-4">
@@ -319,8 +342,8 @@ export const ImageViewModal = ({
           )}
         </div>
         
-        {/* Image actions */}
-        <div className="p-3 bg-gray-50 dark:bg-gray-800 border-t flex justify-between items-center">
+        {/* Action buttons */}
+        <div className="p-3 bg-white dark:bg-gray-950 border-t flex justify-between items-center">
           <div className="flex gap-2">
             {onStatusUpdate && (
               <>
