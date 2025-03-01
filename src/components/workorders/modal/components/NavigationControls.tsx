@@ -23,7 +23,7 @@ export const NavigationControls = ({
         <div className="flex justify-between items-center">
           <Button
             variant="outline"
-            className="flex items-center gap-2 px-4 py-2 text-gray-600 border-gray-200 hover:bg-gray-50 hover:text-gray-800 dark:text-gray-300 dark:hover:bg-gray-800 dark:border-gray-700"
+            className="flex items-center gap-2 px-4 py-2 text-gray-600 border-gray-200 hover:bg-gray-50 hover:text-gray-700 dark:text-gray-300 dark:hover:bg-gray-800 dark:border-gray-700 shadow-sm"
             onClick={onPreviousOrder}
             disabled={currentIndex <= 0}
           >
@@ -31,13 +31,13 @@ export const NavigationControls = ({
             Previous Order
           </Button>
           
-          <span className="text-sm text-muted-foreground font-medium px-3 py-1 bg-gray-50 dark:bg-gray-800 rounded-md">
+          <span className="text-sm text-muted-foreground font-medium px-3 py-1.5 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700">
             Order {currentIndex + 1} of {totalOrders}
           </span>
           
           <Button
             variant="outline"
-            className="flex items-center gap-2 px-4 py-2 text-gray-600 border-gray-200 hover:bg-gray-50 hover:text-gray-800 dark:text-gray-300 dark:hover:bg-gray-800 dark:border-gray-700"
+            className="flex items-center gap-2 px-4 py-2 text-gray-600 border-gray-200 hover:bg-gray-50 hover:text-gray-700 dark:text-gray-300 dark:hover:bg-gray-800 dark:border-gray-700 shadow-sm"
             onClick={onNextOrder}
             disabled={currentIndex >= totalOrders - 1}
           >
