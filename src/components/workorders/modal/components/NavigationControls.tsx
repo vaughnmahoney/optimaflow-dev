@@ -23,7 +23,7 @@ export const NavigationControls = ({
         <div className="flex justify-between items-center">
           <Button
             variant="outline"
-            className="flex items-center gap-2 px-4 py-2 text-gray-600 border-gray-200 hover:bg-gray-50 hover:text-gray-800 dark:text-gray-300 dark:hover:bg-gray-800 dark:border-gray-700"
+            className="flex items-center gap-2 px-4 py-2 text-gray-600 border-gray-200 bg-gray-50 hover:bg-gray-100 hover:text-gray-800 dark:text-gray-300 dark:hover:bg-gray-800 dark:border-gray-700"
             onClick={onPreviousOrder}
             disabled={currentIndex <= 0}
           >
@@ -37,7 +37,7 @@ export const NavigationControls = ({
           
           <Button
             variant="outline"
-            className="flex items-center gap-2 px-4 py-2 text-gray-600 border-gray-200 hover:bg-gray-50 hover:text-gray-800 dark:text-gray-300 dark:hover:bg-gray-800 dark:border-gray-700"
+            className="flex items-center gap-2 px-4 py-2 text-gray-600 border-gray-200 bg-gray-50 hover:bg-gray-100 hover:text-gray-800 dark:text-gray-300 dark:hover:bg-gray-800 dark:border-gray-700"
             onClick={onNextOrder}
             disabled={currentIndex >= totalOrders - 1}
           >
