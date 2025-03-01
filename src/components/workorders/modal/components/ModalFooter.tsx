@@ -22,7 +22,7 @@ export const ModalFooter = ({
           <>
             <Button 
               variant="custom"
-              className="bg-green-500 hover:bg-green-600 text-white"
+              className="bg-green-500 hover:bg-green-600 text-white font-medium rounded-md"
               onClick={() => onStatusUpdate(workOrderId, "approved")}
             >
               <Check className="mr-1 h-4 w-4" />
@@ -30,7 +30,7 @@ export const ModalFooter = ({
             </Button>
             <Button 
               variant="custom"
-              className="bg-red-500 hover:bg-red-600 text-white"
+              className="bg-red-500 hover:bg-red-600 text-white font-medium rounded-md"
               onClick={() => onStatusUpdate(workOrderId, "flagged")}
             >
               <Flag className="mr-1 h-4 w-4" />
@@ -42,8 +42,8 @@ export const ModalFooter = ({
       <div>
         {onDownloadAll && hasImages && (
           <Button 
-            variant="custom" 
-            className="bg-black hover:bg-black/80 text-white"
+            variant="outline"
+            className="border-gray-300 hover:bg-gray-100 text-gray-700 font-medium rounded-md"
             onClick={onDownloadAll}
           >
             <Download className="mr-1 h-4 w-4" />
