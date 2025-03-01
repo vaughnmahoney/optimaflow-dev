@@ -21,16 +21,16 @@ export const ModalFooter = ({
         {onStatusUpdate && (
           <>
             <Button 
-              variant="outline" 
-              className="bg-green-50 hover:bg-green-100 border-green-200 text-green-700 hover:text-green-800"
+              variant="custom"
+              className="bg-green-500 hover:bg-green-600 text-white"
               onClick={() => onStatusUpdate(workOrderId, "approved")}
             >
               <Check className="mr-1 h-4 w-4" />
               Approve
             </Button>
             <Button 
-              variant="outline"
-              className="bg-amber-50 hover:bg-amber-100 border-amber-200 text-amber-700 hover:text-amber-800"
+              variant="custom"
+              className="bg-red-500 hover:bg-red-600 text-white"
               onClick={() => onStatusUpdate(workOrderId, "flagged")}
             >
               <Flag className="mr-1 h-4 w-4" />
@@ -41,7 +41,11 @@ export const ModalFooter = ({
       </div>
       <div>
         {onDownloadAll && hasImages && (
-          <Button variant="outline" onClick={onDownloadAll}>
+          <Button 
+            variant="custom" 
+            className="bg-black hover:bg-black/80 text-white"
+            onClick={onDownloadAll}
+          >
             <Download className="mr-1 h-4 w-4" />
             Download All
           </Button>

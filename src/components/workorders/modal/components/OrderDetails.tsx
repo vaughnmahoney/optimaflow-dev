@@ -1,6 +1,5 @@
 
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Card } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OrderDetailsTab } from "../tabs/OrderDetailsTab";
 import { NotesTab } from "../tabs/NotesTab";
 import { SignatureTab } from "../tabs/SignatureTab";
@@ -19,49 +18,51 @@ export const OrderDetails = ({
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <div className="flex-1 overflow-y-auto border-t">
-        <Accordion type="single" collapsible defaultValue="details" className="w-full">
-          <AccordionItem value="details" className="border-b">
-            <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-gray-50 dark:hover:bg-gray-900/50">
-              <span className="text-sm font-medium">Order Details</span>
-            </AccordionTrigger>
-            <AccordionContent className="px-4 pt-2 pb-4">
-              <Card className="p-0 border-0 shadow-none">
-                <OrderDetailsTab workOrder={workOrder} />
-              </Card>
-            </AccordionContent>
-          </AccordionItem>
+      <Tabs defaultValue="details" className="flex-1 flex flex-col overflow-hidden">
+        <div className="bg-black text-white">
+          <TabsList className="w-full rounded-none h-12 bg-black">
+            <TabsTrigger 
+              value="details" 
+              className="flex-1 rounded-none text-white data-[state=active]:bg-black/80 data-[state=active]:text-white"
+            >
+              Order Details
+            </TabsTrigger>
+            <TabsTrigger 
+              value="notes" 
+              className="flex-1 rounded-none text-white data-[state=active]:bg-black/80 data-[state=active]:text-white"
+            >
+              Notes
+            </TabsTrigger>
+            <TabsTrigger 
+              value="signature" 
+              className="flex-1 rounded-none text-white data-[state=active]:bg-black/80 data-[state=active]:text-white"
+            >
+              Signature
+            </TabsTrigger>
+          </TabsList>
+        </div>
+
+        <div className="flex-1 overflow-auto">
+          <TabsContent value="details" className="m-0 h-full flex-1">
+            <OrderDetailsTab workOrder={workOrder} />
+          </TabsContent>
           
-          <AccordionItem value="notes" className="border-b">
-            <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-gray-50 dark:hover:bg-gray-900/50">
-              <span className="text-sm font-medium">Notes</span>
-            </AccordionTrigger>
-            <AccordionContent className="px-4 pt-2 pb-4">
-              <Card className="p-0 border-0 shadow-none">
-                <NotesTab workOrder={workOrder} />
-              </Card>
-            </AccordionContent>
-          </AccordionItem>
+          <TabsContent value="notes" className="m-0 h-full flex-1">
+            <NotesTab workOrder={workOrder} />
+          </TabsContent>
           
-          <AccordionItem value="signature" className="border-b">
-            <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-gray-50 dark:hover:bg-gray-900/50">
-              <span className="text-sm font-medium">Signature</span>
-            </AccordionTrigger>
-            <AccordionContent className="px-4 pt-2 pb-4">
-              <Card className="p-0 border-0 shadow-none">
-                <SignatureTab workOrder={workOrder} />
-              </Card>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-      </div>
+          <TabsContent value="signature" className="m-0 h-full flex-1">
+            <SignatureTab workOrder={workOrder} />
+          </TabsContent>
+        </div>
+      </Tabs>
       
       {/* Tracking URL */}
       {completionData?.tracking_url && (
         <div className="p-4 border-t">
           <Button
-            variant="outline" 
-            className="w-full text-left flex items-center gap-2"
+            variant="custom" 
+            className="w-full text-left flex items-center gap-2 bg-black hover:bg-black/80 text-white"
             onClick={() => window.open(completionData.tracking_url, '_blank')}
           >
             <Link className="h-4 w-4" />

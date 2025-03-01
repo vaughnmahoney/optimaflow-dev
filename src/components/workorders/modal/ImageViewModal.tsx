@@ -149,7 +149,7 @@ export const ImageViewModal = ({
               {/* Quick info section */}
               <QuickInfo workOrder={workOrder} />
               
-              {/* Order Details Accordion */}
+              {/* Tabs for Details, Notes, Signature */}
               <OrderDetails workOrder={workOrder} />
             </div>
           )}
