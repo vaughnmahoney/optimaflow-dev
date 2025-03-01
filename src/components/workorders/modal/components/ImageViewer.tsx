@@ -41,7 +41,7 @@ export const ImageViewer = ({
           <img 
             src={images[currentImageIndex]?.url} 
             alt={`Service image ${currentImageIndex + 1}`}
-            className="max-h-full max-w-full object-contain cursor-pointer transition-transform hover:scale-[1.01]"
+            className="max-h-full max-w-full object-contain cursor-pointer transition-transform hover:scale-[1.01] shadow-sm"
             onClick={toggleImageExpand}
           />
           
@@ -53,10 +53,11 @@ export const ImageViewer = ({
           {/* Previous/Next buttons */}
           <div className="absolute inset-y-0 left-0 flex items-center">
             <Button 
-              variant="ghost" 
+              variant="outline" 
               size="icon" 
-              className="h-10 w-10 rounded-full bg-white/80 hover:bg-white shadow-md ml-2"
+              className="h-10 w-10 rounded-full bg-white/90 hover:bg-white border-gray-200 text-gray-700 shadow-md ml-2"
               onClick={handlePrevious}
+              aria-label="Previous image"
             >
               <ChevronLeft className="h-6 w-6" />
             </Button>
@@ -64,10 +65,11 @@ export const ImageViewer = ({
           
           <div className="absolute inset-y-0 right-0 flex items-center">
             <Button 
-              variant="ghost" 
+              variant="outline" 
               size="icon" 
-              className="h-10 w-10 rounded-full bg-white/80 hover:bg-white shadow-md mr-2"
+              className="h-10 w-10 rounded-full bg-white/90 hover:bg-white border-gray-200 text-gray-700 shadow-md mr-2"
               onClick={handleNext}
+              aria-label="Next image"
             >
               <ChevronRight className="h-6 w-6" />
             </Button>
@@ -75,10 +77,11 @@ export const ImageViewer = ({
           
           {/* Expand/Collapse button */}
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
             onClick={toggleImageExpand}
-            className="absolute top-4 left-4 h-10 w-10 rounded-full bg-white/80 hover:bg-white shadow-md"
+            className="absolute top-4 left-4 h-10 w-10 rounded-full bg-white/90 hover:bg-white border-gray-200 text-gray-700 shadow-md"
+            aria-label={isImageExpanded ? "Minimize image" : "Maximize image"}
           >
             {isImageExpanded ? (
               <Minimize2 className="h-4 w-4" />
