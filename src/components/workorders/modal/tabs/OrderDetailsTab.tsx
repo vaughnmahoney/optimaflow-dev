@@ -12,7 +12,7 @@ export const OrderDetailsTab = ({
 }: OrderDetailsTabProps) => {
   return (
     <ScrollArea className="flex-1">
-      <div className="p-6 px-[8px]">
+      <div className="p-6">
         <OrderDetails workOrder={workOrder} />
       </div>
     </ScrollArea>
