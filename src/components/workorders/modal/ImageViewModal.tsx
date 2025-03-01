@@ -149,6 +149,21 @@ export const ImageViewModal = ({
               {/* Quick info section */}
               <QuickInfo workOrder={workOrder} />
               
+              {/* Custom styled tabs for Details, Notes, Signature */}
+              <div className="bg-gray-50 dark:bg-gray-900 border-t border-b">
+                <div className="flex justify-around">
+                  <button className="px-6 py-3 text-gray-700 hover:text-gray-900 font-medium text-sm border-b-2 border-black">
+                    Order Details
+                  </button>
+                  <button className="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm">
+                    Notes
+                  </button>
+                  <button className="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm">
+                    Signature
+                  </button>
+                </div>
+              </div>
+              
               {/* Tabs for Details, Notes, Signature */}
               <OrderDetails workOrder={workOrder} />
             </div>

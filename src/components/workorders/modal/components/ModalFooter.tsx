@@ -40,8 +40,7 @@ export const ModalFooter = ({
       <div>
         {onDownloadAll && hasImages && (
           <Button 
-            variant="outline"
-            className="border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-700 font-medium rounded-md transition-colors"
+            className="bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 rounded-md transition-colors shadow-sm"
             onClick={onDownloadAll}
           >
             <Download className="mr-1 h-4 w-4" />
