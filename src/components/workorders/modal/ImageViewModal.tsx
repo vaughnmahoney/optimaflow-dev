@@ -12,7 +12,9 @@ import {
   Clock, 
   Download, 
   Check, 
-  Flag 
+  Flag,
+  Maximize2,
+  Minimize2
 } from "lucide-react";
 import { format } from "date-fns";
 import { WorkOrder } from "../types";
@@ -159,8 +161,32 @@ export const ImageViewModal = ({
         
         {/* Main content area - Two column layout */}
         <div className="flex flex-1 overflow-hidden">
-          {/* Left side - Image viewer */}
-          <div className={`flex flex-col ${isImageExpanded ? 'w-full' : 'w-3/5'} border-r`}>
+          {/* Left side - Image viewer with vertical thumbnails */}
+          <div className={`flex flex-row ${isImageExpanded ? 'w-full' : 'w-3/5'} border-r`}>
+            {/* Vertical thumbnail strip - Only show when not expanded */}
+            {!isImageExpanded && images.length > 0 && (
+              <div className="w-20 h-full border-r overflow-y-auto p-2 bg-gray-50 dark:bg-gray-900/50 flex flex-col gap-2">
+                {images.map((image, idx) => (
+                  <div 
+                    key={idx}
+                    className={`relative h-16 w-16 flex-shrink-0 cursor-pointer transition-all duration-200 ${
+                      idx === currentImageIndex 
+                        ? 'ring-2 ring-primary ring-offset-1 shadow-md scale-105' 
+                        : 'ring-1 ring-gray-200 hover:ring-gray-300 opacity-80 hover:opacity-100'
+                    } rounded-md overflow-hidden`}
+                    onClick={() => setCurrentImageIndex(idx)}
+                  >
+                    <img 
+                      src={image.url} 
+                      alt={`Thumbnail ${idx + 1}`}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {/* Main image container */}
             <div className="flex-1 relative flex items-center justify-center bg-black/5 dark:bg-black/20 overflow-hidden">
               {images.length > 0 ? (
                 <>
@@ -194,6 +220,20 @@ export const ImageViewModal = ({
                   <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
                     {currentImageIndex + 1} / {images.length}
                   </div>
+                  
+                  {/* Expand/Collapse button */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={toggleImageExpand}
+                    className="absolute top-4 left-4 bg-black/50 text-white rounded-full p-1.5"
+                  >
+                    {isImageExpanded ? (
+                      <Minimize2 className="h-4 w-4" />
+                    ) : (
+                      <Maximize2 className="h-4 w-4" />
+                    )}
+                  </Button>
                 </>
               ) : (
                 <div className="text-center text-muted-foreground p-8 bg-gray-100 dark:bg-gray-800 rounded-lg">
@@ -204,63 +244,6 @@ export const ImageViewModal = ({
                   <p className="text-sm">This work order doesn't have any uploaded images.</p>
                 </div>
               )}
-            </div>
-            
-            {/* Image thumbnails */}
-            {!isImageExpanded && images.length > 0 && (
-              <div className="h-24 p-2 border-t flex items-center justify-start overflow-x-auto space-x-2 bg-background">
-                {images.map((image, idx) => (
-                  <div 
-                    key={idx}
-                    className={`relative h-20 w-20 flex-shrink-0 cursor-pointer transition-all duration-200 ${
-                      idx === currentImageIndex 
-                        ? 'ring-2 ring-primary ring-offset-2' 
-                        : 'ring-1 ring-gray-200 hover:ring-gray-300'
-                    } rounded-md overflow-hidden`}
-                    onClick={() => setCurrentImageIndex(idx)}
-                  >
-                    <img 
-                      src={image.url} 
-                      alt={`Thumbnail ${idx + 1}`}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-            
-            {/* Image actions */}
-            <div className="p-3 bg-gray-50 dark:bg-gray-800 border-t flex justify-between items-center">
-              <div className="flex gap-2">
-                {onStatusUpdate && (
-                  <>
-                    <Button 
-                      variant="outline" 
-                      className="bg-green-50 hover:bg-green-100 border-green-200 text-green-700 hover:text-green-800"
-                      onClick={() => onStatusUpdate(workOrder.id, "approved")}
-                    >
-                      <Check className="mr-1 h-4 w-4" />
-                      Approve
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      className="bg-amber-50 hover:bg-amber-100 border-amber-200 text-amber-700 hover:text-amber-800"
-                      onClick={() => onStatusUpdate(workOrder.id, "flagged")}
-                    >
-                      <Flag className="mr-1 h-4 w-4" />
-                      Flag for Review
-                    </Button>
-                  </>
-                )}
-              </div>
-              <div>
-                {onDownloadAll && images.length > 0 && (
-                  <Button variant="outline" onClick={onDownloadAll}>
-                    <Download className="mr-1 h-4 w-4" />
-                    Download All
-                  </Button>
-                )}
-              </div>
             </div>
           </div>
           
@@ -334,6 +317,40 @@ export const ImageViewModal = ({
               </div>
             </div>
           )}
+        </div>
+        
+        {/* Image actions */}
+        <div className="p-3 bg-gray-50 dark:bg-gray-800 border-t flex justify-between items-center">
+          <div className="flex gap-2">
+            {onStatusUpdate && (
+              <>
+                <Button 
+                  variant="outline" 
+                  className="bg-green-50 hover:bg-green-100 border-green-200 text-green-700 hover:text-green-800"
+                  onClick={() => onStatusUpdate(workOrder.id, "approved")}
+                >
+                  <Check className="mr-1 h-4 w-4" />
+                  Approve
+                </Button>
+                <Button 
+                  variant="outline"
+                  className="bg-amber-50 hover:bg-amber-100 border-amber-200 text-amber-700 hover:text-amber-800"
+                  onClick={() => onStatusUpdate(workOrder.id, "flagged")}
+                >
+                  <Flag className="mr-1 h-4 w-4" />
+                  Flag for Review
+                </Button>
+              </>
+            )}
+          </div>
+          <div>
+            {onDownloadAll && images.length > 0 && (
+              <Button variant="outline" onClick={onDownloadAll}>
+                <Download className="mr-1 h-4 w-4" />
+                Download All
+              </Button>
+            )}
+          </div>
         </div>
         
         {/* Navigation Footer */}
