@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Maximize2, Minimize2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Maximize2, Minimize2, ZoomIn, ZoomOut } from "lucide-react";
 
 interface ImageViewerProps {
   images: Array<{ url: string }>;
@@ -18,12 +18,16 @@ export const ImageViewer = ({
   isImageExpanded,
   toggleImageExpand,
 }: ImageViewerProps) => {
+  const [zoomLevel, setZoomLevel] = useState(1);
+  
   const handlePrevious = () => {
     if (currentImageIndex > 0) {
       setCurrentImageIndex(currentImageIndex - 1);
     } else if (images.length > 0) {
       setCurrentImageIndex(images.length - 1);
     }
+    // Reset zoom when changing images
+    setZoomLevel(1);
   };
   
   const handleNext = () => {
@@ -32,6 +36,16 @@ export const ImageViewer = ({
     } else if (images.length > 0) {
       setCurrentImageIndex(0);
     }
+    // Reset zoom when changing images
+    setZoomLevel(1);
+  };
+
+  const handleZoomIn = () => {
+    setZoomLevel(prev => Math.min(prev + 0.25, 3));
+  };
+
+  const handleZoomOut = () => {
+    setZoomLevel(prev => Math.max(prev - 0.25, 0.5));
   };
 
   return (
@@ -41,7 +55,8 @@ export const ImageViewer = ({
           <img 
             src={images[currentImageIndex]?.url} 
             alt={`Service image ${currentImageIndex + 1}`}
-            className="max-h-full max-w-full object-contain cursor-pointer transition-transform hover:scale-[1.01] shadow-sm"
+            className="max-h-full max-w-full object-contain cursor-pointer transition-transform"
+            style={{ transform: `scale(${zoomLevel})` }}
             onClick={toggleImageExpand}
           />
           
@@ -75,20 +90,56 @@ export const ImageViewer = ({
             </Button>
           </div>
           
-          {/* Expand/Collapse button */}
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={toggleImageExpand}
-            className="absolute top-4 left-4 h-10 w-10 rounded-full bg-white/90 hover:bg-white border-gray-200 text-gray-700 shadow-md"
-            aria-label={isImageExpanded ? "Minimize image" : "Maximize image"}
-          >
-            {isImageExpanded ? (
-              <Minimize2 className="h-4 w-4" />
-            ) : (
-              <Maximize2 className="h-4 w-4" />
+          {/* Control buttons */}
+          <div className="absolute top-4 left-4 flex gap-2">
+            {/* Expand/Collapse button */}
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={toggleImageExpand}
+              className="h-10 w-10 rounded-full bg-white/90 hover:bg-white border-gray-200 text-gray-700 shadow-md"
+              aria-label={isImageExpanded ? "Minimize image" : "Maximize image"}
+            >
+              {isImageExpanded ? (
+                <Minimize2 className="h-4 w-4" />
+              ) : (
+                <Maximize2 className="h-4 w-4" />
+              )}
+            </Button>
+            
+            {/* Zoom controls - only show when expanded */}
+            {isImageExpanded && (
+              <>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleZoomIn}
+                  className="h-10 w-10 rounded-full bg-white/90 hover:bg-white border-gray-200 text-gray-700 shadow-md"
+                  aria-label="Zoom in"
+                  disabled={zoomLevel >= 3}
+                >
+                  <ZoomIn className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleZoomOut}
+                  className="h-10 w-10 rounded-full bg-white/90 hover:bg-white border-gray-200 text-gray-700 shadow-md"
+                  aria-label="Zoom out"
+                  disabled={zoomLevel <= 0.5}
+                >
+                  <ZoomOut className="h-4 w-4" />
+                </Button>
+              </>
             )}
-          </Button>
+          </div>
+          
+          {/* Zoom indicator - only show when zoomed */}
+          {isImageExpanded && zoomLevel !== 1 && (
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium">
+              {Math.round(zoomLevel * 100)}%
+            </div>
+          )}
         </>
       ) : (
         <div className="text-center text-muted-foreground p-8 bg-gray-100 dark:bg-gray-800 rounded-lg">
