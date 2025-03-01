@@ -2,12 +2,20 @@
 import { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { WorkOrder, WorkOrderSearchResponse, WorkOrderCompletionResponse } from "@/components/workorders/types";
+import { 
+  WorkOrder, 
+  WorkOrderSearchResponse, 
+  WorkOrderCompletionResponse,
+  SortField,
+  SortDirection
+} from "@/components/workorders/types";
 import { toast } from "sonner";
 
 export const useWorkOrderData = () => {
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortField, setSortField] = useState<SortField>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const queryClient = useQueryClient();
 
   const { data: workOrders = [], isLoading, refetch } = useQuery({
@@ -173,6 +181,11 @@ export const useWorkOrderData = () => {
     }
   };
 
+  const handleSort = (field: SortField, direction: SortDirection) => {
+    setSortField(field);
+    setSortDirection(direction);
+  };
+
   return {
     data: workOrders,
     isLoading,
@@ -183,6 +196,9 @@ export const useWorkOrderData = () => {
     updateWorkOrderStatus,
     openImageViewer,
     deleteWorkOrder,
-    statusCounts
+    statusCounts,
+    sortField,
+    sortDirection,
+    setSort: handleSort
   };
 };

@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
@@ -68,16 +69,89 @@ TableRow.displayName = "TableRow"
 
 const TableHead = React.forwardRef<
   HTMLTableCellElement,
-  React.ThHTMLAttributes<HTMLTableCellElement>
->(({ className, ...props }, ref) => (
+  React.ThHTMLAttributes<HTMLTableCellElement> & {
+    sortable?: boolean;
+    sortDirection?: 'asc' | 'desc' | null;
+    onSort?: () => void;
+  }
+>(({ className, children, sortable, sortDirection, onSort, ...props }, ref) => (
   <th
     ref={ref}
     className={cn(
       "h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
+      sortable && "cursor-pointer select-none",
       className
     )}
+    onClick={sortable ? onSort : undefined}
     {...props}
-  />
+  >
+    {sortable ? (
+      <div className="flex items-center gap-1">
+        <span>{children}</span>
+        {sortDirection === 'asc' && (
+          <span className="text-primary">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="lucide lucide-arrow-up"
+            >
+              <path d="M12 19V5" />
+              <path d="m5 12 7-7 7 7" />
+            </svg>
+          </span>
+        )}
+        {sortDirection === 'desc' && (
+          <span className="text-primary">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="lucide lucide-arrow-down"
+            >
+              <path d="M12 5v14" />
+              <path d="m19 12-7 7-7-7" />
+            </svg>
+          </span>
+        )}
+        {sortDirection === null && (
+          <span className="text-muted-foreground/30">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="lucide lucide-arrow-up-down"
+            >
+              <path d="m21 16-4 4-4-4" />
+              <path d="M17 20V4" />
+              <path d="m3 8 4-4 4 4" />
+              <path d="M7 4v16" />
+            </svg>
+          </span>
+        )}
+      </div>
+    ) : (
+      children
+    )}
+  </th>
 ))
 TableHead.displayName = "TableHead"
 

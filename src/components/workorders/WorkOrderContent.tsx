@@ -2,6 +2,10 @@
 import { WorkOrderList } from "./WorkOrderList";
 import { WorkOrder } from "./types";
 
+// Define types for sorting
+type SortDirection = 'asc' | 'desc' | null;
+type SortField = 'order_no' | 'service_date' | 'driver' | 'location' | 'status' | null;
+
 interface WorkOrderContentProps {
   workOrders: WorkOrder[];
   isLoading: boolean;
@@ -19,6 +23,9 @@ interface WorkOrderContentProps {
     flagged: number;
     all?: number;
   };
+  sortField?: SortField;
+  sortDirection?: SortDirection;
+  onSort?: (field: SortField, direction: SortDirection) => void;
 }
 
 export const WorkOrderContent = ({
@@ -32,7 +39,10 @@ export const WorkOrderContent = ({
   searchQuery,
   onSearchChange,
   onOptimoRouteSearch,
-  statusCounts = { approved: 0, pending_review: 0, flagged: 0 }
+  statusCounts = { approved: 0, pending_review: 0, flagged: 0 },
+  sortField,
+  sortDirection,
+  onSort
 }: WorkOrderContentProps) => {
   return (
     <WorkOrderList
@@ -47,6 +57,9 @@ export const WorkOrderContent = ({
       onSearchChange={onSearchChange}
       onOptimoRouteSearch={onOptimoRouteSearch}
       statusCounts={statusCounts}
+      sortField={sortField}
+      sortDirection={sortDirection}
+      onSort={onSort}
     />
   );
 };

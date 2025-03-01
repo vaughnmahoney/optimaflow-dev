@@ -18,7 +18,10 @@ export const WorkOrderList = ({
   searchQuery,
   onSearchChange,
   onOptimoRouteSearch,
-  statusCounts
+  statusCounts,
+  sortField,
+  sortDirection,
+  onSort
 }: WorkOrderListProps) => {
   const [transformedData, setTransformedData] = useState<any>(null);
   const [searchResponse, setSearchResponse] = useState<any>(null);
@@ -66,6 +69,9 @@ export const WorkOrderList = ({
         onStatusUpdate={onStatusUpdate}
         onImageView={handleImageView}
         onDelete={onDelete}
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSort={onSort}
       />
 
       {currentWorkOrder && (

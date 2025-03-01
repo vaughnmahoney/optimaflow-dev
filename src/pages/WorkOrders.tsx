@@ -7,10 +7,16 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useWorkOrderData } from "@/hooks/useWorkOrderData";
 import { useQueryClient } from "@tanstack/react-query";
 
+// Define types for sorting
+type SortDirection = 'asc' | 'desc' | null;
+type SortField = 'order_no' | 'service_date' | 'driver' | 'location' | 'status' | null;
+
 const WorkOrders = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortField, setSortField] = useState<SortField>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const queryClient = useQueryClient();
   
   const {
@@ -40,6 +46,11 @@ const WorkOrders = () => {
     }
   }, [location.pathname, navigate]);
 
+  const handleSort = (field: SortField, direction: SortDirection) => {
+    setSortField(field);
+    setSortDirection(direction);
+  };
+
   return (
     <Layout
       title="Work Orders"
@@ -64,6 +75,9 @@ const WorkOrders = () => {
           onSearchChange={searchWorkOrder}
           onOptimoRouteSearch={searchOptimoRoute}
           statusCounts={statusCounts}
+          sortField={sortField}
+          sortDirection={sortDirection}
+          onSort={handleSort}
         />
       </div>
     </Layout>

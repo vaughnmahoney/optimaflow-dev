@@ -1,79 +1,64 @@
 
-import { Json } from "@/integrations/supabase/types";
+import { ReactNode } from "react";
 
-export interface WorkOrderLocation {
+// Define types for sorting
+export type SortDirection = 'asc' | 'desc' | null;
+export type SortField = 'order_no' | 'service_date' | 'driver' | 'location' | 'status' | null;
+
+export interface Location {
+  locationId?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
   name?: string;
   locationName?: string;
-  address?: string;
-  locationNo?: string;
-  latitude?: number;
-  longitude?: number;
-  notes?: string;
-  valid?: boolean;
-}
-
-export interface WorkOrderDriver {
-  name: string;
-  id: string;
-}
-
-export interface WorkOrderSearchResponseData {
-  id: string;
-  date: string;
-  notes: string;
-  location: WorkOrderLocation;
-  type: string;
 }
 
 export interface WorkOrderSearchResponse {
-  id: string;
-  data: WorkOrderSearchResponseData;
-  scheduleInformation: WorkOrderScheduleInformation;
-}
-
-export interface WorkOrderScheduleInformation {
-  arrivalTimeDt?: string;
-  distance?: number;
-  driverName?: string;
-  driverSerial?: string;
-  scheduledAt?: string;
-  scheduledAtDt?: string;
-  stopNumber?: number;
-  travelTime?: number;
-}
-
-export interface WorkOrderFormData {
-  note?: string;
-  images?: Array<{ url: string }>;
-  signature?: {
-    url?: string;
-  };
-  driver_name?: string;
-}
-
-export interface WorkOrderTimeData {
-  utcTime: string;
-  localTime: string;
-  unixTimestamp: number;
-}
-
-export interface WorkOrderCompletionData {
-  endTime: WorkOrderTimeData;
-  startTime: WorkOrderTimeData;
-  form: WorkOrderFormData;
-  status: string;
-  tracking_url?: string;
-}
-
-export interface WorkOrderCompletionOrder {
-  data: WorkOrderCompletionData;
-  orderNo: string;
   success: boolean;
+  data: {
+    id: string;
+    order_no: string;
+    date: string;
+    timeWindow: string;
+    notes: string;
+    location: Location;
+    customer?: {
+      name: string;
+      phone: string;
+      email: string;
+    };
+  };
+  scheduleInformation?: {
+    status: string;
+    driverId: string;
+    driverName: string;
+    sequenceNum: number;
+    plannedArrival: string;
+    plannedDeparture: string;
+  };
 }
 
 export interface WorkOrderCompletionResponse {
-  orders: WorkOrderCompletionOrder[];
   success: boolean;
+  orders: Array<{
+    id: string;
+    data: {
+      form: {
+        images: Array<{
+          url: string;
+          type: string;
+          name: string;
+        }>;
+        signature?: {
+          url: string;
+          name: string;
+        };
+        note?: string;
+      };
+    };
+  }>;
 }
 
 export interface WorkOrder {
@@ -84,11 +69,7 @@ export interface WorkOrder {
   service_date?: string;
   service_notes?: string;
   tech_notes?: string;
-  notes?: string;
-  duration?: string;
-  lds?: string;
-  location?: WorkOrderLocation;
-  driver?: WorkOrderDriver;
+  location?: Location;
   has_images?: boolean;
   signature_url?: string;
   search_response?: WorkOrderSearchResponse;
@@ -98,18 +79,32 @@ export interface WorkOrder {
 export interface WorkOrderListProps {
   workOrders: WorkOrder[];
   isLoading: boolean;
-  onSearchChange: (value: string) => void;
-  onOptimoRouteSearch: (value: string) => void;
+  statusFilter: string | null;
   onStatusFilterChange: (value: string | null) => void;
   onStatusUpdate: (workOrderId: string, newStatus: string) => void;
   onImageView: (workOrderId: string) => void;
   onDelete: (workOrderId: string) => void;
   searchQuery: string;
-  statusFilter: string | null;
-  statusCounts: {
+  onSearchChange: (value: string) => void;
+  onOptimoRouteSearch: (value: string) => void;
+  statusCounts?: {
     approved: number;
     pending_review: number;
     flagged: number;
     all?: number;
   };
+  sortField?: SortField;
+  sortDirection?: SortDirection;
+  onSort?: (field: SortField, direction: SortDirection) => void;
+}
+
+export interface StatusFilterProps {
+  statusFilter: string | null;
+  onStatusFilterChange: (status: string | null) => void;
+}
+
+// Required to be exported but the data is handled within the debug component
+export interface DebugDisplayProps {
+  searchResponse?: any;
+  transformedData?: any;
 }

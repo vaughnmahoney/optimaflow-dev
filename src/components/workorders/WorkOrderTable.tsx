@@ -1,4 +1,5 @@
 
+import { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -19,19 +20,112 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+type SortDirection = 'asc' | 'desc' | null;
+type SortField = 'order_no' | 'service_date' | 'driver' | 'location' | 'status' | null;
+
 interface WorkOrderTableProps {
   workOrders: WorkOrder[];
   onStatusUpdate: (workOrderId: string, newStatus: string) => void;
   onImageView: (workOrderId: string) => void;
   onDelete: (workOrderId: string) => void;
+  sortField?: SortField;
+  sortDirection?: SortDirection;
+  onSort?: (field: SortField, direction: SortDirection) => void;
 }
 
 export const WorkOrderTable = ({ 
-  workOrders, 
+  workOrders: initialWorkOrders, 
   onStatusUpdate,
   onImageView,
-  onDelete
+  onDelete,
+  sortField: externalSortField,
+  sortDirection: externalSortDirection,
+  onSort: externalOnSort
 }: WorkOrderTableProps) => {
+  const [sortField, setSortField] = useState<SortField>(externalSortField || null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(externalSortDirection || null);
+  const [workOrders, setWorkOrders] = useState<WorkOrder[]>(initialWorkOrders);
+
+  useEffect(() => {
+    if (externalSortField !== undefined) {
+      setSortField(externalSortField);
+    }
+    if (externalSortDirection !== undefined) {
+      setSortDirection(externalSortDirection);
+    }
+  }, [externalSortField, externalSortDirection]);
+
+  useEffect(() => {
+    let sortedWorkOrders = [...initialWorkOrders];
+    
+    if (sortField && sortDirection) {
+      sortedWorkOrders.sort((a, b) => {
+        let valueA: any;
+        let valueB: any;
+        
+        switch (sortField) {
+          case 'order_no':
+            valueA = a.order_no || '';
+            valueB = b.order_no || '';
+            break;
+          case 'service_date':
+            valueA = a.service_date ? new Date(a.service_date).getTime() : 0;
+            valueB = b.service_date ? new Date(b.service_date).getTime() : 0;
+            break;
+          case 'driver':
+            valueA = getDriverName(a).toLowerCase();
+            valueB = getDriverName(b).toLowerCase();
+            break;
+          case 'location':
+            valueA = getLocationName(a).toLowerCase();
+            valueB = getLocationName(b).toLowerCase();
+            break;
+          case 'status':
+            valueA = a.status || '';
+            valueB = b.status || '';
+            break;
+          default:
+            return 0;
+        }
+        
+        // For strings, use localeCompare for proper string comparison
+        if (typeof valueA === 'string' && typeof valueB === 'string') {
+          return sortDirection === 'asc' 
+            ? valueA.localeCompare(valueB)
+            : valueB.localeCompare(valueA);
+        }
+        
+        // For numbers and dates (already converted to timestamps)
+        return sortDirection === 'asc' 
+          ? valueA - valueB 
+          : valueB - valueA;
+      });
+    }
+    
+    setWorkOrders(sortedWorkOrders);
+  }, [initialWorkOrders, sortField, sortDirection]);
+
+  const handleSort = (field: SortField) => {
+    let newDirection: SortDirection = null;
+    
+    if (field === sortField) {
+      // Cycle through: null -> asc -> desc -> null
+      if (sortDirection === null) newDirection = 'asc';
+      else if (sortDirection === 'asc') newDirection = 'desc';
+      else newDirection = null;
+    } else {
+      // New field, start with ascending
+      newDirection = 'asc';
+    }
+    
+    setSortField(newDirection === null ? null : field);
+    setSortDirection(newDirection);
+    
+    if (externalOnSort) {
+      externalOnSort(newDirection === null ? null : field, newDirection);
+    }
+  };
+
   const getLocationName = (order: WorkOrder): string => {
     if (!order.location) return 'N/A';
     return order.location.name || order.location.locationName || 'N/A';
@@ -46,11 +140,41 @@ export const WorkOrderTable = ({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Order #</TableHead>
-            <TableHead>Service Date</TableHead>
-            <TableHead>Driver</TableHead>
-            <TableHead>Location</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead 
+              sortable
+              sortDirection={sortField === 'order_no' ? sortDirection : null}
+              onSort={() => handleSort('order_no')}
+            >
+              Order #
+            </TableHead>
+            <TableHead 
+              sortable
+              sortDirection={sortField === 'service_date' ? sortDirection : null}
+              onSort={() => handleSort('service_date')}
+            >
+              Service Date
+            </TableHead>
+            <TableHead 
+              sortable
+              sortDirection={sortField === 'driver' ? sortDirection : null}
+              onSort={() => handleSort('driver')}
+            >
+              Driver
+            </TableHead>
+            <TableHead 
+              sortable
+              sortDirection={sortField === 'location' ? sortDirection : null}
+              onSort={() => handleSort('location')}
+            >
+              Location
+            </TableHead>
+            <TableHead 
+              sortable
+              sortDirection={sortField === 'status' ? sortDirection : null}
+              onSort={() => handleSort('status')}
+            >
+              Status
+            </TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
