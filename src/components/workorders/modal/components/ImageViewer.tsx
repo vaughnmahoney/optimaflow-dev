@@ -25,9 +25,13 @@ export const ImageViewer = ({
     zoomLevel,
     position,
     zoomModeEnabled,
+    isDragging,
     imageRef,
     toggleZoomMode,
     handleMouseMove,
+    handleMouseDown,
+    handleMouseUp,
+    handleMouseLeave,
     handleImageClick,
     resetZoomOnImageChange
   } = useImageZoom({ isImageExpanded });
@@ -70,15 +74,25 @@ export const ImageViewer = ({
               ref={imageRef}
               src={images[currentImageIndex]?.url} 
               alt={`Service image ${currentImageIndex + 1}`}
-              className="max-h-full max-w-full object-contain cursor-pointer transition-all duration-200"
+              className="max-h-full max-w-full object-contain transition-all duration-200"
               style={{ 
                 transform: `scale(${zoomLevel})`,
                 transformOrigin: "center center",
                 translate: `${position.x}px ${position.y}px`,
-                cursor: zoomModeEnabled ? (zoomLevel === 1 ? 'zoom-in' : 'zoom-out') : 'pointer'
+                cursor: zoomModeEnabled 
+                  ? (zoomLevel === 1 
+                    ? 'zoom-in' 
+                    : isDragging 
+                      ? 'grabbing' 
+                      : 'grab')
+                  : 'pointer'
               }}
               onClick={handleImageClick}
               onMouseMove={handleMouseMove}
+              onMouseDown={handleMouseDown}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseLeave}
+              draggable="false"
             />
           </div>
           

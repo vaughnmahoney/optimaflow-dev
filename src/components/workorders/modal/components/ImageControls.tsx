@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Maximize2, Minimize2, ZoomIn } from "lucide-react";
+import { ChevronLeft, ChevronRight, Maximize2, Minimize2, ZoomIn, Move } from "lucide-react";
 
 interface ImageControlsProps {
   imagesCount: number;
@@ -95,10 +95,18 @@ export const ImageControls = ({
         </div>
       )}
       
-      {/* Zoom mode indicator */}
+      {/* Zoom mode instruction */}
       {isImageExpanded && zoomModeEnabled && zoomLevel === 1 && (
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-500/80 text-white px-3 py-1 rounded-full text-sm font-medium">
           Click to zoom or use mouse wheel
+        </div>
+      )}
+      
+      {/* Drag instruction when zoomed in */}
+      {isImageExpanded && zoomModeEnabled && zoomLevel > 1 && (
+        <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 bg-blue-500/80 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
+          <Move className="h-3 w-3" />
+          <span>Drag to pan</span>
         </div>
       )}
     </>

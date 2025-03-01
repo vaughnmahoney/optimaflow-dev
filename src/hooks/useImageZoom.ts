@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 
 interface ZoomState {
@@ -6,6 +5,7 @@ interface ZoomState {
   position: { x: number; y: number };
   zoomModeEnabled: boolean;
   lastMousePosition: { x: number; y: number };
+  isDragging: boolean;
 }
 
 interface UseImageZoomProps {
@@ -17,6 +17,7 @@ export const useImageZoom = ({ isImageExpanded }: UseImageZoomProps) => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [zoomModeEnabled, setZoomModeEnabled] = useState(false);
   const [lastMousePosition, setLastMousePosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
   const imageRef = useRef<HTMLImageElement>(null);
 
   const resetZoom = () => {
@@ -39,11 +40,44 @@ export const useImageZoom = ({ isImageExpanded }: UseImageZoomProps) => {
     const imageRect = imageRef.current?.getBoundingClientRect();
     if (!imageRect) return;
     
-    // Store the current mouse position relative to the image
+    if (isDragging && zoomLevel > 1) {
+      // Calculate the movement delta
+      const deltaX = e.clientX - lastMousePosition.x;
+      const deltaY = e.clientY - lastMousePosition.y;
+      
+      // Update position based on the drag movement
+      setPosition({
+        x: position.x + deltaX,
+        y: position.y + deltaY
+      });
+    }
+    
+    // Store the current mouse position
     setLastMousePosition({
-      x: e.clientX - imageRect.left,
-      y: e.clientY - imageRect.top
+      x: e.clientX,
+      y: e.clientY
     });
+  };
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLImageElement>) => {
+    if (!zoomModeEnabled || !isImageExpanded || zoomLevel <= 1) return;
+    
+    setIsDragging(true);
+    setLastMousePosition({
+      x: e.clientX,
+      y: e.clientY
+    });
+    
+    // Prevent default browser drag behavior
+    e.preventDefault();
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
   };
 
   const handleZoomWheel = (e: WheelEvent) => {
@@ -54,13 +88,13 @@ export const useImageZoom = ({ isImageExpanded }: UseImageZoomProps) => {
     const imageRect = imageRef.current?.getBoundingClientRect();
     if (!imageRect) return;
     
-    // Calculate where the wheel event occurred as a percentage of the image dimensions
-    const mouseX = (e.clientX - imageRect.left) / imageRect.width;
-    const mouseY = (e.clientY - imageRect.top) / imageRect.height;
+    // Calculate where the cursor is within the image
+    const mouseX = e.clientX - imageRect.left;
+    const mouseY = e.clientY - imageRect.top;
     
     // Determine zoom change direction and amount
     const delta = e.deltaY < 0 ? 0.2 : -0.2;
-    const newZoomLevel = Math.max(1, Math.min(5, zoomLevel + delta));
+    const newZoomLevel = Math.max(1, Math.min(10, zoomLevel + delta));
     
     // If zooming out completely, reset position
     if (newZoomLevel === 1) {
@@ -68,25 +102,16 @@ export const useImageZoom = ({ isImageExpanded }: UseImageZoomProps) => {
       return;
     }
     
-    if (zoomLevel === 1 && newZoomLevel > 1) {
-      // Initial zoom in - center on mouse position
-      setPosition({
-        x: (0.5 - mouseX) * imageRect.width,
-        y: (0.5 - mouseY) * imageRect.height
-      });
-    } else if (newZoomLevel > 1) {
-      // Improved position calculation to maintain mouse point as zoom center
-      const scaleChange = newZoomLevel / zoomLevel;
-      
-      // Calculate new position to maintain mouse point as zoom center
-      setPosition({
-        x: (position.x + (e.clientX - imageRect.left - imageRect.width / 2)) * scaleChange - (e.clientX - imageRect.left - imageRect.width / 2),
-        y: (position.y + (e.clientY - imageRect.top - imageRect.height / 2)) * scaleChange - (e.clientY - imageRect.top - imageRect.height / 2)
-      });
-    }
+    // Calculate how the position should change to keep the cursor point stable
+    const scaleChange = newZoomLevel / zoomLevel;
+    const newPosition = {
+      x: mouseX - (mouseX - position.x) * scaleChange,
+      y: mouseY - (mouseY - position.y) * scaleChange,
+    };
     
-    // Update zoom level
+    // Update state
     setZoomLevel(newZoomLevel);
+    setPosition(newPosition);
   };
 
   const handleImageClick = (e: React.MouseEvent<HTMLImageElement>) => {
@@ -95,27 +120,26 @@ export const useImageZoom = ({ isImageExpanded }: UseImageZoomProps) => {
     // Only handle zoom if zoom mode is enabled
     if (!zoomModeEnabled) return false;
     
+    // Don't zoom on click if already dragging
+    if (isDragging) {
+      return true;
+    }
+    
     if (zoomLevel === 1) {
       const imageRect = imageRef.current?.getBoundingClientRect();
       if (!imageRect) return true;
       
-      // Calculate where the click occurred relative to the image center
-      const clickOffsetX = e.clientX - imageRect.left - (imageRect.width / 2);
-      const clickOffsetY = e.clientY - imageRect.top - (imageRect.height / 2);
+      // Get click position relative to image
+      const mouseX = e.clientX - imageRect.left;
+      const mouseY = e.clientY - imageRect.top;
       
       // Zoom in centered on the click position
       setZoomLevel(2);
       
-      // Calculate position offset to center the clicked point
+      // Calculate position to keep the clicked point centered
       setPosition({
-        x: -clickOffsetX,
-        y: -clickOffsetY
-      });
-      
-      // Store this position for further zoom operations
-      setLastMousePosition({
-        x: e.clientX - imageRect.left,
-        y: e.clientY - imageRect.top
+        x: mouseX - imageRect.width / 2,
+        y: mouseY - imageRect.height / 2
       });
     } else {
       // Reset zoom when clicking while already zoomed
@@ -138,6 +162,19 @@ export const useImageZoom = ({ isImageExpanded }: UseImageZoomProps) => {
     };
   }, [zoomModeEnabled, isImageExpanded, zoomLevel, position]);
 
+  // Set up global mouse event handlers for dragging
+  useEffect(() => {
+    const handleGlobalMouseUp = () => {
+      setIsDragging(false);
+    };
+    
+    window.addEventListener('mouseup', handleGlobalMouseUp);
+    
+    return () => {
+      window.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, []);
+
   // Reset zoom when changing images
   const resetZoomOnImageChange = () => {
     resetZoom();
@@ -147,9 +184,13 @@ export const useImageZoom = ({ isImageExpanded }: UseImageZoomProps) => {
     zoomLevel,
     position,
     zoomModeEnabled,
+    isDragging,
     imageRef,
     toggleZoomMode,
     handleMouseMove,
+    handleMouseDown,
+    handleMouseUp,
+    handleMouseLeave,
     handleImageClick,
     resetZoomOnImageChange
   };
