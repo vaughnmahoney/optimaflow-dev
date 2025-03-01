@@ -1,7 +1,6 @@
 
 import { Button } from "@/components/ui/button";
 import { Check, Download, Flag } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 
 interface ModalFooterProps {
   workOrderId: string;
@@ -22,16 +21,14 @@ export const ModalFooter = ({
         {onStatusUpdate && (
           <>
             <Button 
-              variant="custom"
-              className="bg-[#6CAE75]/90 hover:bg-[#6CAE75] text-white font-medium rounded-md transition-colors shadow-sm"
+              className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-md transition-colors shadow-sm"
               onClick={() => onStatusUpdate(workOrderId, "approved")}
             >
               <Check className="mr-1 h-4 w-4" />
               Approve
             </Button>
             <Button 
-              variant="custom"
-              className="bg-[#ea384c]/90 hover:bg-[#ea384c] text-white font-medium rounded-md transition-colors shadow-sm"
+              className="bg-rose-500 hover:bg-rose-600 text-white font-medium rounded-md transition-colors shadow-sm"
               onClick={() => onStatusUpdate(workOrderId, "flagged")}
             >
               <Flag className="mr-1 h-4 w-4" />
