@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Maximize2, Minimize2, ZoomIn, ZoomOut } from "lucide-react";
 
@@ -19,6 +19,9 @@ export const ImageViewer = ({
   toggleImageExpand,
 }: ImageViewerProps) => {
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const imageRef = useRef<HTMLImageElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   
   const handlePrevious = () => {
     if (currentImageIndex > 0) {
@@ -28,6 +31,7 @@ export const ImageViewer = ({
     }
     // Reset zoom when changing images
     setZoomLevel(1);
+    setPosition({ x: 0, y: 0 });
   };
   
   const handleNext = () => {
@@ -38,27 +42,83 @@ export const ImageViewer = ({
     }
     // Reset zoom when changing images
     setZoomLevel(1);
+    setPosition({ x: 0, y: 0 });
   };
 
   const handleZoomIn = () => {
-    setZoomLevel(prev => Math.min(prev + 0.25, 3));
+    if (zoomLevel >= 3) return;
+    
+    const newZoomLevel = Math.min(zoomLevel + 0.25, 3);
+    setZoomLevel(newZoomLevel);
   };
 
   const handleZoomOut = () => {
-    setZoomLevel(prev => Math.max(prev - 0.25, 0.5));
+    if (zoomLevel <= 0.5) return;
+    
+    const newZoomLevel = Math.max(zoomLevel - 0.25, 0.5);
+    setZoomLevel(newZoomLevel);
+    
+    // If we're returning to normal zoom, reset position
+    if (newZoomLevel === 1) {
+      setPosition({ x: 0, y: 0 });
+    }
+  };
+
+  // Handle image click to zoom at cursor position
+  const handleImageClick = (e: React.MouseEvent<HTMLImageElement>) => {
+    if (!isImageExpanded) {
+      toggleImageExpand();
+      return;
+    }
+    
+    if (zoomLevel === 1) {
+      const imageRect = imageRef.current?.getBoundingClientRect();
+      if (!imageRect) return;
+      
+      // Calculate where the click occurred as a percentage of the image dimensions
+      const clickX = (e.clientX - imageRect.left) / imageRect.width;
+      const clickY = (e.clientY - imageRect.top) / imageRect.height;
+      
+      // Zoom in centered on the click position
+      setZoomLevel(2);
+      setPosition({
+        x: (0.5 - clickX) * 100,
+        y: (0.5 - clickY) * 100
+      });
+    } else {
+      // Reset zoom when clicking while already zoomed
+      setZoomLevel(1);
+      setPosition({ x: 0, y: 0 });
+    }
   };
 
   return (
-    <div className="relative flex items-center justify-center bg-gray-100 dark:bg-gray-800 overflow-hidden h-full w-full">
+    <div 
+      ref={containerRef}
+      className="relative flex items-center justify-center bg-gray-100 dark:bg-gray-800 overflow-hidden h-full w-full"
+    >
       {images.length > 0 ? (
         <>
-          <img 
-            src={images[currentImageIndex]?.url} 
-            alt={`Service image ${currentImageIndex + 1}`}
-            className="max-h-full max-w-full object-contain cursor-pointer transition-transform"
-            style={{ transform: `scale(${zoomLevel})` }}
-            onClick={toggleImageExpand}
-          />
+          <div 
+            className="max-h-full max-w-full overflow-hidden flex items-center justify-center"
+            style={{ 
+              width: "100%", 
+              height: "100%",
+            }}
+          >
+            <img 
+              ref={imageRef}
+              src={images[currentImageIndex]?.url} 
+              alt={`Service image ${currentImageIndex + 1}`}
+              className="max-h-full max-w-full object-contain cursor-pointer transition-all duration-200"
+              style={{ 
+                transform: `scale(${zoomLevel})`,
+                transformOrigin: "center center",
+                translate: `${position.x}px ${position.y}px`,
+              }}
+              onClick={handleImageClick}
+            />
+          </div>
           
           {/* Image counter */}
           <div className="absolute top-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium">
