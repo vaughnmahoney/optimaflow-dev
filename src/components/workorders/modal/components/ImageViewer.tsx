@@ -1,7 +1,7 @@
 
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Maximize2, Minimize2, ZoomIn, ZoomOut } from "lucide-react";
+import { ChevronLeft, ChevronRight, Maximize2, Minimize2, ZoomIn } from "lucide-react";
 
 interface ImageViewerProps {
   images: Array<{ url: string }>;
@@ -20,6 +20,7 @@ export const ImageViewer = ({
 }: ImageViewerProps) => {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [zoomModeEnabled, setZoomModeEnabled] = useState(false);
   const imageRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -45,31 +46,26 @@ export const ImageViewer = ({
     setPosition({ x: 0, y: 0 });
   };
 
-  const handleZoomIn = () => {
-    if (zoomLevel >= 3) return;
+  const toggleZoomMode = () => {
+    // Toggle zoom mode on/off
+    setZoomModeEnabled(!zoomModeEnabled);
     
-    const newZoomLevel = Math.min(zoomLevel + 0.25, 3);
-    setZoomLevel(newZoomLevel);
-  };
-
-  const handleZoomOut = () => {
-    if (zoomLevel <= 0.5) return;
-    
-    const newZoomLevel = Math.max(zoomLevel - 0.25, 0.5);
-    setZoomLevel(newZoomLevel);
-    
-    // If we're returning to normal zoom, reset position
-    if (newZoomLevel === 1) {
+    // If turning off zoom mode, reset zoom
+    if (zoomModeEnabled) {
+      setZoomLevel(1);
       setPosition({ x: 0, y: 0 });
     }
   };
 
-  // Handle image click to zoom at cursor position
+  // Handle image click for zooming at cursor position
   const handleImageClick = (e: React.MouseEvent<HTMLImageElement>) => {
     if (!isImageExpanded) {
       toggleImageExpand();
       return;
     }
+    
+    // Only handle zoom if zoom mode is enabled
+    if (!zoomModeEnabled) return;
     
     if (zoomLevel === 1) {
       const imageRect = imageRef.current?.getBoundingClientRect();
@@ -81,9 +77,12 @@ export const ImageViewer = ({
       
       // Zoom in centered on the click position
       setZoomLevel(2);
+      
+      // Calculate position offset to center the clicked point
+      // The multiplier affects how much the image moves - adjusted for better precision
       setPosition({
-        x: (0.5 - clickX) * 100,
-        y: (0.5 - clickY) * 100
+        x: (0.5 - clickX) * imageRect.width,
+        y: (0.5 - clickY) * imageRect.height
       });
     } else {
       // Reset zoom when clicking while already zoomed
@@ -115,6 +114,7 @@ export const ImageViewer = ({
                 transform: `scale(${zoomLevel})`,
                 transformOrigin: "center center",
                 translate: `${position.x}px ${position.y}px`,
+                cursor: zoomModeEnabled ? (zoomLevel === 1 ? 'zoom-in' : 'zoom-out') : 'pointer'
               }}
               onClick={handleImageClick}
             />
@@ -167,30 +167,17 @@ export const ImageViewer = ({
               )}
             </Button>
             
-            {/* Zoom controls - only show when expanded */}
+            {/* Zoom toggle button - only show when expanded */}
             {isImageExpanded && (
-              <>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={handleZoomIn}
-                  className="h-10 w-10 rounded-full bg-white/90 hover:bg-white border-gray-200 text-gray-700 shadow-md"
-                  aria-label="Zoom in"
-                  disabled={zoomLevel >= 3}
-                >
-                  <ZoomIn className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={handleZoomOut}
-                  className="h-10 w-10 rounded-full bg-white/90 hover:bg-white border-gray-200 text-gray-700 shadow-md"
-                  aria-label="Zoom out"
-                  disabled={zoomLevel <= 0.5}
-                >
-                  <ZoomOut className="h-4 w-4" />
-                </Button>
-              </>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={toggleZoomMode}
+                className={`h-10 w-10 rounded-full bg-white/90 hover:bg-white border-gray-200 text-gray-700 shadow-md ${zoomModeEnabled ? 'bg-blue-100 border-blue-300' : ''}`}
+                aria-label={zoomModeEnabled ? "Disable zoom mode" : "Enable zoom mode"}
+              >
+                <ZoomIn className={`h-4 w-4 ${zoomModeEnabled ? 'text-blue-500' : ''}`} />
+              </Button>
             )}
           </div>
           
@@ -198,6 +185,13 @@ export const ImageViewer = ({
           {isImageExpanded && zoomLevel !== 1 && (
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium">
               {Math.round(zoomLevel * 100)}%
+            </div>
+          )}
+          
+          {/* Zoom mode indicator */}
+          {isImageExpanded && zoomModeEnabled && zoomLevel === 1 && (
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-500/80 text-white px-3 py-1 rounded-full text-sm font-medium">
+              Click to zoom
             </div>
           )}
         </>
