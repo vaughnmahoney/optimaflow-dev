@@ -1,31 +1,15 @@
 
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { 
-  X, 
-  ChevronLeft, 
-  ChevronRight, 
-  User, 
-  MapPin, 
-  Clock, 
-  Download, 
-  Check, 
-  Flag,
-  Maximize2,
-  Minimize2,
-  Link
-} from "lucide-react";
-import { format } from "date-fns";
 import { WorkOrder } from "../types";
-import { NavigationFooter } from "./NavigationFooter";
-import { OrderDetailsTab } from "./tabs/OrderDetailsTab";
-import { NotesTab } from "./tabs/NotesTab";
-import { SignatureTab } from "./tabs/SignatureTab";
-import { StatusBadge } from "../StatusBadge";
-import { Card } from "@/components/ui/card";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { ModalHeader } from "./components/ModalHeader";
+import { QuickInfo } from "./components/QuickInfo";
+import { OrderDetails } from "./components/OrderDetails";
+import { ImageViewer } from "./components/ImageViewer";
+import { ImageThumbnails } from "./components/ImageThumbnails";
+import { ModalFooter } from "./components/ModalFooter";
+import { NavigationControls } from "./components/NavigationControls";
+import { getStatusBorderColor } from "./utils/modalUtils";
 
 interface ImageViewModalProps {
   workOrder: WorkOrder | null;
@@ -84,27 +68,12 @@ export const ImageViewModal = ({
     
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, currentImageIndex, currentIndex]);
+  }, [isOpen, currentImageIndex, currentIndex, workOrder]);
   
   if (!workOrder) return null;
 
   const completionData = workOrder?.completion_response?.orders?.[0]?.data;
   const images = completionData?.form?.images || [];
-  const driverName = workOrder.search_response?.scheduleInformation?.driverName || 'No Driver Assigned';
-  const locationName = workOrder.location?.name || workOrder.location?.locationName || 'Unknown Location';
-  const address = workOrder.location?.address || 'No Address Available';
-  
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return 'N/A';
-    try {
-      return format(new Date(dateStr), "MMM d, yyyy h:mm a");
-    } catch {
-      return 'Invalid Date';
-    }
-  };
-
-  const startDate = completionData?.startTime?.localTime;
-  const endDate = completionData?.endTime?.localTime;
   
   const handlePrevious = () => {
     if (currentImageIndex > 0) {
@@ -140,331 +109,67 @@ export const ImageViewModal = ({
     setIsImageExpanded(!isImageExpanded);
   };
 
-  // Get status for styling
-  const getOrderStatus = () => {
-    return workOrder.status || "pending_review";
-  };
-
   // Status color for border
-  const getStatusBorderColor = () => {
-    switch (getOrderStatus()) {
-      case "approved":
-        return "border-green-500";
-      case "flagged":
-        return "border-red-500";
-      case "pending_review":
-      default:
-        return "border-yellow-500";
-    }
-  };
-
-  // Format display dates
-  const formatDisplayDate = (dateStr?: string) => {
-    if (!dateStr) return 'N/A';
-    try {
-      return format(new Date(dateStr), "MMM d, yyyy");
-    } catch {
-      return 'Invalid Date';
-    }
-  };
-
-  const formatDisplayTime = (dateStr?: string) => {
-    if (!dateStr) return 'N/A';
-    try {
-      return format(new Date(dateStr), "h:mm a");
-    } catch {
-      return 'Invalid Date';
-    }
-  };
-
-  // Calculate duration
-  const calculateDuration = () => {
-    if (!startDate || !endDate) return "N/A";
-    try {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      const diffInMinutes = Math.floor((end.getTime() - start.getTime()) / (1000 * 60));
-      const hours = Math.floor(diffInMinutes / 60);
-      const minutes = diffInMinutes % 60;
-      return `${hours}h ${minutes}m`;
-    } catch {
-      return "N/A";
-    }
-  };
+  const statusBorderColor = getStatusBorderColor(workOrder.status || "pending_review");
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`max-w-6xl p-0 h-[90vh] flex flex-col rounded-lg overflow-hidden border-t-4 ${getStatusBorderColor()}`}>
+      <DialogContent className={`max-w-6xl p-0 h-[90vh] flex flex-col rounded-lg overflow-hidden border-t-4 ${statusBorderColor}`}>
         {/* Header with order info */}
-        <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-950 border-b">
-          <div className="flex items-center space-x-4">
-            <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full">
-              <User className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-            </div>
-            <div className="text-left">
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold">Order #{workOrder.order_no}</h2>
-                <StatusBadge status={getOrderStatus()} />
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Driver: {driverName}
-              </p>
-            </div>
-          </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
+        <ModalHeader workOrder={workOrder} onClose={onClose} />
         
         {/* Main content area - Two column layout */}
         <div className="flex flex-1 overflow-hidden">
           {/* Left side - Image viewer with vertical thumbnails */}
           <div className={`flex flex-row ${isImageExpanded ? 'w-full' : 'w-3/5'} border-r`}>
             {/* Vertical thumbnail strip - Only show when not expanded */}
-            {!isImageExpanded && images.length > 0 && (
-              <div className="w-20 h-full border-r overflow-y-auto p-2 bg-gray-50 dark:bg-gray-900/50 flex flex-col gap-2">
-                {images.map((image, idx) => (
-                  <div 
-                    key={idx}
-                    className={`relative h-16 w-16 flex-shrink-0 cursor-pointer transition-all duration-200 ${
-                      idx === currentImageIndex 
-                        ? 'border-l-2 border-l-primary shadow-sm scale-[1.02]' 
-                        : 'border border-gray-200 dark:border-gray-700 opacity-70 hover:opacity-100'
-                    } rounded-md overflow-hidden`}
-                    onClick={() => setCurrentImageIndex(idx)}
-                  >
-                    <img 
-                      src={image.url} 
-                      alt={`Thumbnail ${idx + 1}`}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                ))}
-              </div>
+            {!isImageExpanded && (
+              <ImageThumbnails 
+                images={images} 
+                currentImageIndex={currentImageIndex} 
+                setCurrentImageIndex={setCurrentImageIndex} 
+              />
             )}
             
             {/* Main image container */}
-            <div className="flex-1 relative flex items-center justify-center bg-gray-100 dark:bg-gray-800 overflow-hidden">
-              {images.length > 0 ? (
-                <>
-                  <img 
-                    src={images[currentImageIndex]?.url} 
-                    alt={`Service image ${currentImageIndex + 1}`}
-                    className="max-h-full max-w-full object-contain cursor-pointer transition-transform hover:scale-[1.01]"
-                    onClick={toggleImageExpand}
-                  />
-                  
-                  {/* Image counter - Updated to match reference design */}
-                  <div className="absolute top-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium">
-                    {currentImageIndex + 1} / {images.length}
-                  </div>
-                  
-                  {/* Previous/Next buttons */}
-                  <div className="absolute inset-y-0 left-0 flex items-center">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-10 w-10 rounded-full bg-white/80 hover:bg-white shadow-md ml-2"
-                      onClick={handlePrevious}
-                    >
-                      <ChevronLeft className="h-6 w-6" />
-                    </Button>
-                  </div>
-                  
-                  <div className="absolute inset-y-0 right-0 flex items-center">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-10 w-10 rounded-full bg-white/80 hover:bg-white shadow-md mr-2"
-                      onClick={handleNext}
-                    >
-                      <ChevronRight className="h-6 w-6" />
-                    </Button>
-                  </div>
-                  
-                  {/* Expand/Collapse button */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={toggleImageExpand}
-                    className="absolute top-4 left-4 h-10 w-10 rounded-full bg-white/80 hover:bg-white shadow-md"
-                  >
-                    {isImageExpanded ? (
-                      <Minimize2 className="h-4 w-4" />
-                    ) : (
-                      <Maximize2 className="h-4 w-4" />
-                    )}
-                  </Button>
-                </>
-              ) : (
-                <div className="text-center text-muted-foreground p-8 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                  <div className="h-16 w-16 mx-auto mb-4 text-gray-400 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg">
-                    <X className="h-8 w-8" />
-                  </div>
-                  <p className="text-lg font-medium">No images available</p>
-                  <p className="text-sm">This work order doesn't have any uploaded images.</p>
-                </div>
-              )}
+            <div className="flex-1 relative flex">
+              <ImageViewer 
+                images={images}
+                currentImageIndex={currentImageIndex}
+                setCurrentImageIndex={setCurrentImageIndex}
+                isImageExpanded={isImageExpanded}
+                toggleImageExpand={toggleImageExpand}
+              />
             </div>
           </div>
           
           {/* Right side - Details panel */}
           {!isImageExpanded && (
             <div className="w-2/5 flex flex-col overflow-hidden">
-              {/* Quick info section - Updated to match reference design */}
-              <div className="p-4 space-y-4 bg-white dark:bg-gray-950">
-                <div className="flex items-center space-x-2">
-                  <MapPin className="h-4 w-4 text-gray-500" />
-                  <div className="flex-1">
-                    <h3 className="font-medium">{locationName}</h3>
-                    <p className="text-sm text-muted-foreground">{address}</p>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <Clock className="h-3.5 w-3.5 mr-1" />
-                      <span>Start Time</span>
-                    </div>
-                    <div>
-                      <p className="font-medium">{formatDisplayTime(startDate)}</p>
-                      <p className="text-xs text-muted-foreground">{formatDisplayDate(startDate)}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-1">
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <Clock className="h-3.5 w-3.5 mr-1" />
-                      <span>End Time</span>
-                    </div>
-                    <div>
-                      <p className="font-medium">{formatDisplayTime(endDate)}</p>
-                      <p className="text-xs text-muted-foreground">{formatDisplayDate(endDate)}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              {/* Quick info section */}
+              <QuickInfo workOrder={workOrder} />
               
               {/* Order Details Accordion */}
-              <div className="flex-1 overflow-y-auto border-t">
-                <Accordion type="single" collapsible defaultValue="details" className="w-full">
-                  <AccordionItem value="details" className="border-b">
-                    <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-gray-50 dark:hover:bg-gray-900/50">
-                      <span className="text-sm font-medium">Order Details</span>
-                    </AccordionTrigger>
-                    <AccordionContent className="px-4 pt-2 pb-4">
-                      <Card className="p-0 border-0 shadow-none">
-                        <OrderDetailsTab workOrder={workOrder} />
-                      </Card>
-                    </AccordionContent>
-                  </AccordionItem>
-                  
-                  <AccordionItem value="notes" className="border-b">
-                    <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-gray-50 dark:hover:bg-gray-900/50">
-                      <span className="text-sm font-medium">Notes</span>
-                    </AccordionTrigger>
-                    <AccordionContent className="px-4 pt-2 pb-4">
-                      <Card className="p-0 border-0 shadow-none">
-                        <NotesTab workOrder={workOrder} />
-                      </Card>
-                    </AccordionContent>
-                  </AccordionItem>
-                  
-                  <AccordionItem value="signature" className="border-b">
-                    <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-gray-50 dark:hover:bg-gray-900/50">
-                      <span className="text-sm font-medium">Signature</span>
-                    </AccordionTrigger>
-                    <AccordionContent className="px-4 pt-2 pb-4">
-                      <Card className="p-0 border-0 shadow-none">
-                        <SignatureTab workOrder={workOrder} />
-                      </Card>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-              </div>
-              
-              {/* Tracking URL */}
-              {completionData?.tracking_url && (
-                <div className="p-4 border-t">
-                  <Button
-                    variant="outline" 
-                    className="w-full text-left flex items-center gap-2"
-                    onClick={() => window.open(completionData.tracking_url, '_blank')}
-                  >
-                    <Link className="h-4 w-4" />
-                    View Tracking URL
-                  </Button>
-                </div>
-              )}
+              <OrderDetails workOrder={workOrder} />
             </div>
           )}
         </div>
         
-        {/* Action buttons - Updated to match reference design */}
-        <div className="p-3 bg-white dark:bg-gray-950 border-t flex justify-between items-center">
-          <div className="flex gap-2">
-            {onStatusUpdate && (
-              <>
-                <Button 
-                  variant="outline" 
-                  className="bg-green-50 hover:bg-green-100 border-green-200 text-green-700 hover:text-green-800"
-                  onClick={() => onStatusUpdate(workOrder.id, "approved")}
-                >
-                  <Check className="mr-1 h-4 w-4" />
-                  Approve
-                </Button>
-                <Button 
-                  variant="outline"
-                  className="bg-amber-50 hover:bg-amber-100 border-amber-200 text-amber-700 hover:text-amber-800"
-                  onClick={() => onStatusUpdate(workOrder.id, "flagged")}
-                >
-                  <Flag className="mr-1 h-4 w-4" />
-                  Flag for Review
-                </Button>
-              </>
-            )}
-          </div>
-          <div>
-            {onDownloadAll && images.length > 0 && (
-              <Button variant="outline" onClick={onDownloadAll}>
-                <Download className="mr-1 h-4 w-4" />
-                Download All
-              </Button>
-            )}
-          </div>
-        </div>
+        {/* Action buttons */}
+        <ModalFooter 
+          workOrderId={workOrder.id} 
+          onStatusUpdate={onStatusUpdate} 
+          onDownloadAll={onDownloadAll}
+          hasImages={images.length > 0}
+        />
         
-        {/* Navigation Footer - Updated to match reference design */}
-        <TooltipProvider>
-          <div className="p-4 border-t bg-white dark:bg-gray-950">
-            <div className="flex justify-between items-center">
-              <Button
-                variant="ghost"
-                className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800"
-                onClick={handlePreviousOrder}
-                disabled={currentIndex <= 0}
-              >
-                <ChevronLeft className="h-4 w-4" />
-                Previous Order
-              </Button>
-              
-              <span className="text-sm text-muted-foreground">
-                Order {currentIndex + 1} of {workOrders.length}
-              </span>
-              
-              <Button
-                variant="ghost"
-                className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800"
-                onClick={handleNextOrder}
-                disabled={currentIndex >= workOrders.length - 1}
-              >
-                Next Order
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </TooltipProvider>
+        {/* Navigation Footer */}
+        <NavigationControls 
+          currentIndex={currentIndex}
+          totalOrders={workOrders.length}
+          onPreviousOrder={handlePreviousOrder}
+          onNextOrder={handleNextOrder}
+        />
       </DialogContent>
     </Dialog>
   );

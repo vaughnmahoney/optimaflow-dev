@@ -1,44 +1,39 @@
+
+import { User, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Flag, Clock, X } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { StatusBadge } from "../../StatusBadge";
+import { WorkOrder } from "../../types";
+
 interface ModalHeaderProps {
-  orderNo: string;
-  status: string;
-  driverName?: string;
+  workOrder: WorkOrder;
   onClose: () => void;
 }
-export const ModalHeader = ({
-  orderNo,
-  status,
-  driverName,
-  onClose
+
+export const ModalHeader = ({ 
+  workOrder, 
+  onClose 
 }: ModalHeaderProps) => {
-  const getStatusIcon = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case 'approved':
-        return <CheckCircle className="h-6 w-6 text-green-500" />;
-      case 'flagged':
-        return <Flag className="h-6 w-6 text-red-500" />;
-      default:
-        return <Clock className="h-6 w-6 text-yellow-500" />;
-    }
-  };
-  return <div className="p-6 border-b w-full mx-0 my-0 py-[10px]">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h2 className="text-2xl font-semibold">
-            #{orderNo}
-          </h2>
-          {getStatusIcon(status || 'pending')}
+  const driverName = workOrder.search_response?.scheduleInformation?.driverName || 'No Driver Assigned';
+
+  return (
+    <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-950 border-b">
+      <div className="flex items-center space-x-4">
+        <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full">
+          <User className="h-5 w-5 text-gray-600 dark:text-gray-300" />
         </div>
-        <div className="flex items-center gap-6">
-          {driverName && <div className="text-right font-medium">
-              {driverName}
-            </div>}
-          <Button variant="ghost" size="icon" onClick={onClose} className="mx-0 px-0 text-right">
-            <X className="h-5 w-4" />
-          </Button>
+        <div className="text-left">
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-semibold">Order #{workOrder.order_no}</h2>
+            <StatusBadge status={workOrder.status || "pending_review"} />
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Driver: {driverName}
+          </p>
         </div>
       </div>
-    </div>;
+      <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+        <X className="h-4 w-4" />
+      </Button>
+    </div>
+  );
 };
