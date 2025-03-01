@@ -1,3 +1,4 @@
+
 import { WorkOrder } from "../../types";
 import { Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,9 @@ export const OrderDetails = ({ workOrder }: OrderDetailsProps) => {
     }).format(date);
   };
   
+  // Safe data retrieval with fallbacks
+  const formData = completionData?.form || {};
+  
   return (
     <div className="flex-1 overflow-y-auto p-4">
       <div className="space-y-6">
@@ -36,7 +40,7 @@ export const OrderDetails = ({ workOrder }: OrderDetailsProps) => {
                 Order Date:
               </span>
               <span className="text-gray-600 dark:text-gray-400">
-                {formatDate(completionData?.form?.order_date)}
+                {formatDate(workOrder.service_date || "")}
               </span>
             </div>
             
@@ -45,7 +49,7 @@ export const OrderDetails = ({ workOrder }: OrderDetailsProps) => {
                 Customer Name:
               </span>
               <span className="text-gray-600 dark:text-gray-400">
-                {completionData?.form?.customer_name}
+                {workOrder.location?.name || "N/A"}
               </span>
             </div>
             
@@ -54,7 +58,8 @@ export const OrderDetails = ({ workOrder }: OrderDetailsProps) => {
                 Customer Email:
               </span>
               <span className="text-gray-600 dark:text-gray-400">
-                {completionData?.form?.customer_email}
+                {/* Fallback to N/A if customer email is not available */}
+                {"N/A"}
               </span>
             </div>
             
@@ -63,7 +68,8 @@ export const OrderDetails = ({ workOrder }: OrderDetailsProps) => {
                 Customer Phone:
               </span>
               <span className="text-gray-600 dark:text-gray-400">
-                {completionData?.form?.customer_phone}
+                {/* Fallback to N/A if customer phone is not available */}
+                {"N/A"}
               </span>
             </div>
             
@@ -72,7 +78,7 @@ export const OrderDetails = ({ workOrder }: OrderDetailsProps) => {
                 Service Address:
               </span>
               <span className="text-gray-600 dark:text-gray-400">
-                {completionData?.form?.service_address}
+                {workOrder.location?.address || "N/A"}
               </span>
             </div>
             
@@ -81,7 +87,8 @@ export const OrderDetails = ({ workOrder }: OrderDetailsProps) => {
                 City:
               </span>
               <span className="text-gray-600 dark:text-gray-400">
-                {completionData?.form?.city}
+                {/* Extract city from address if available */}
+                {workOrder.location?.address?.split(',')[1]?.trim() || "N/A"}
               </span>
             </div>
             
@@ -90,7 +97,8 @@ export const OrderDetails = ({ workOrder }: OrderDetailsProps) => {
                 State:
               </span>
               <span className="text-gray-600 dark:text-gray-400">
-                {completionData?.form?.state}
+                {/* Extract state from address if available */}
+                {workOrder.location?.address?.split(',')[2]?.trim()?.split(' ')[0] || "N/A"}
               </span>
             </div>
             
@@ -99,7 +107,8 @@ export const OrderDetails = ({ workOrder }: OrderDetailsProps) => {
                 Postal Code:
               </span>
               <span className="text-gray-600 dark:text-gray-400">
-                {completionData?.form?.postal_code}
+                {/* Extract postal code from address if available */}
+                {workOrder.location?.address?.split(',')[2]?.trim()?.split(' ')[1] || "N/A"}
               </span>
             </div>
           </div>

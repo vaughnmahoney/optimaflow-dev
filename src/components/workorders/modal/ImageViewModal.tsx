@@ -10,6 +10,8 @@ import { ImageThumbnails } from "./components/ImageThumbnails";
 import { ModalFooter } from "./components/ModalFooter";
 import { NavigationControls } from "./components/NavigationControls";
 import { getStatusBorderColor } from "./utils/modalUtils";
+import { NotesTab } from "./tabs/NotesTab";
+import { SignatureTab } from "./tabs/SignatureTab";
 
 interface ImageViewModalProps {
   workOrder: WorkOrder | null;
@@ -34,6 +36,7 @@ export const ImageViewModal = ({
 }: ImageViewModalProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isImageExpanded, setIsImageExpanded] = useState(false);
+  const [activeTab, setActiveTab] = useState("details");
   
   // Reset image index when work order changes
   useEffect(() => {
@@ -149,23 +152,40 @@ export const ImageViewModal = ({
               {/* Quick info section */}
               <QuickInfo workOrder={workOrder} />
               
-              {/* Custom styled tabs for Details, Notes, Signature */}
+              {/* Tabs for Details, Notes, Signature */}
               <div className="bg-gray-50 dark:bg-gray-900 border-t border-b">
                 <div className="flex justify-around">
-                  <button className="px-6 py-3 text-gray-700 hover:text-gray-900 font-medium text-sm border-b-2 border-black">
+                  <button 
+                    className={`px-6 py-3 font-medium text-sm ${activeTab === 'details' 
+                      ? 'text-gray-700 border-b-2 border-black' 
+                      : 'text-gray-500 hover:text-gray-700'}`}
+                    onClick={() => setActiveTab('details')}
+                  >
                     Order Details
                   </button>
-                  <button className="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm">
+                  <button 
+                    className={`px-6 py-3 font-medium text-sm ${activeTab === 'notes' 
+                      ? 'text-gray-700 border-b-2 border-black' 
+                      : 'text-gray-500 hover:text-gray-700'}`}
+                    onClick={() => setActiveTab('notes')}
+                  >
                     Notes
                   </button>
-                  <button className="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm">
+                  <button 
+                    className={`px-6 py-3 font-medium text-sm ${activeTab === 'signature' 
+                      ? 'text-gray-700 border-b-2 border-black' 
+                      : 'text-gray-500 hover:text-gray-700'}`}
+                    onClick={() => setActiveTab('signature')}
+                  >
                     Signature
                   </button>
                 </div>
               </div>
               
-              {/* Tabs for Details, Notes, Signature */}
-              <OrderDetails workOrder={workOrder} />
+              {/* Tab content */}
+              {activeTab === 'details' && <OrderDetails workOrder={workOrder} />}
+              {activeTab === 'notes' && <NotesTab workOrder={workOrder} />}
+              {activeTab === 'signature' && <SignatureTab workOrder={workOrder} />}
             </div>
           )}
         </div>
