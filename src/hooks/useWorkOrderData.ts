@@ -1,3 +1,4 @@
+
 import { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,6 +48,7 @@ export const useWorkOrderData = () => {
     }
   });
 
+  // Calculate status counts from the work orders data
   const statusCounts = useMemo(() => {
     const counts = {
       approved: 0,
@@ -55,6 +57,7 @@ export const useWorkOrderData = () => {
       all: 0
     };
     
+    // Query all work orders to get accurate counts
     const fetchStatusCounts = async () => {
       const { data, error } = await supabase
         .from("work_orders")
@@ -73,6 +76,7 @@ export const useWorkOrderData = () => {
       return counts;
     };
     
+    // Initialize counts from current workOrders array
     if (workOrders) {
       workOrders.forEach(order => {
         if (order.status && counts[order.status] !== undefined) {
@@ -81,6 +85,7 @@ export const useWorkOrderData = () => {
       });
     }
     
+    // Fetch accurate counts if we're filtering
     if (statusFilter) {
       fetchStatusCounts().then(newCounts => {
         Object.keys(counts).forEach(key => {
@@ -111,7 +116,9 @@ export const useWorkOrderData = () => {
 
       if (data.success && data.workOrderId) {
         toast.success('Order imported successfully');
+        // Refetch work orders to show the newly imported one
         refetch();
+        // Update the badge count as well
         queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
       } else {
         toast.error(data.error || 'Failed to import order');
@@ -133,6 +140,7 @@ export const useWorkOrderData = () => {
 
       toast.success(`Status updated to ${newStatus}`);
       
+      // Immediately refetch work orders and the badge count
       refetch();
       queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
     } catch (error) {
@@ -142,6 +150,7 @@ export const useWorkOrderData = () => {
   };
 
   const openImageViewer = (workOrderId: string) => {
+    // Implementation would depend on how the image viewer is rendered
     console.log(`Opening images for work order: ${workOrderId}`);
   };
 
@@ -156,6 +165,7 @@ export const useWorkOrderData = () => {
 
       toast.success('Work order deleted');
       refetch();
+      // Also update the badge count
       queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
     } catch (error) {
       console.error('Delete error:', error);
