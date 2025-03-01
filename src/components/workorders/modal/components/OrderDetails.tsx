@@ -19,23 +19,23 @@ export const OrderDetails = ({
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       <Tabs defaultValue="details" className="flex-1 flex flex-col overflow-hidden">
-        <div className="bg-black text-white">
-          <TabsList className="w-full rounded-none h-12 bg-black">
+        <div className="bg-gray-100">
+          <TabsList className="w-full rounded-none h-12 bg-gray-100">
             <TabsTrigger 
               value="details" 
-              className="flex-1 rounded-none text-white data-[state=active]:bg-black/80 data-[state=active]:text-white"
+              className="flex-1 rounded-none text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900"
             >
               Order Details
             </TabsTrigger>
             <TabsTrigger 
               value="notes" 
-              className="flex-1 rounded-none text-white data-[state=active]:bg-black/80 data-[state=active]:text-white"
+              className="flex-1 rounded-none text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900"
             >
               Notes
             </TabsTrigger>
             <TabsTrigger 
               value="signature" 
-              className="flex-1 rounded-none text-white data-[state=active]:bg-black/80 data-[state=active]:text-white"
+              className="flex-1 rounded-none text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900"
             >
               Signature
             </TabsTrigger>
@@ -61,8 +61,8 @@ export const OrderDetails = ({
       {completionData?.tracking_url && (
         <div className="p-4 border-t">
           <Button
-            variant="custom" 
-            className="w-full text-left flex items-center gap-2 bg-black hover:bg-black/80 text-white"
+            variant="outline" 
+            className="w-full text-left flex items-center gap-2 bg-gray-50 hover:bg-gray-100 text-gray-700 border-gray-200"
             onClick={() => window.open(completionData.tracking_url, '_blank')}
           >
             <Link className="h-4 w-4" />
