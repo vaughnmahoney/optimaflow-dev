@@ -10,6 +10,9 @@ interface OrderDetailsTabProps {
 
 export const OrderDetailsTab = ({ workOrder }: OrderDetailsTabProps) => {
   const completionData = workOrder.completion_response?.orders[0]?.data;
+  const driverName = workOrder.driver?.name || workOrder.search_response?.scheduleInformation?.driverName || 'Not assigned';
+  const startTime = completionData?.startTime?.localTime || '';
+  const endTime = completionData?.endTime?.localTime || '';
 
   return (
     <ScrollArea className="flex-1">
@@ -18,7 +21,7 @@ export const OrderDetailsTab = ({ workOrder }: OrderDetailsTabProps) => {
           <div className="space-y-3 text-sm">
             <p>
               <span className="text-muted-foreground">Driver: </span>
-              {workOrder.search_response?.scheduleInformation?.driverName || 'Not assigned'}
+              {driverName}
             </p>
             <p>
               <span className="text-muted-foreground">Location: </span>
@@ -30,26 +33,23 @@ export const OrderDetailsTab = ({ workOrder }: OrderDetailsTabProps) => {
             </p>
             <p>
               <span className="text-muted-foreground">Start Date: </span>
-              {formatDate(completionData?.startTime?.localTime || '')}
+              {formatDate(startTime)}
             </p>
             <p>
               <span className="text-muted-foreground">Start Time: </span>
-              {formatDate(completionData?.startTime?.localTime || '', "h:mm a")}
+              {formatDate(startTime, "h:mm a")}
             </p>
             <p>
               <span className="text-muted-foreground">End Date: </span>
-              {formatDate(completionData?.endTime?.localTime || '')}
+              {formatDate(endTime)}
             </p>
             <p>
               <span className="text-muted-foreground">End Time: </span>
-              {formatDate(completionData?.endTime?.localTime || '', "h:mm a")}
+              {formatDate(endTime, "h:mm a")}
             </p>
             <p>
               <span className="text-muted-foreground">Duration: </span>
-              {calculateDuration(
-                completionData?.startTime?.localTime,
-                completionData?.endTime?.localTime
-              )}
+              {workOrder.duration || calculateDuration(startTime, endTime)}
             </p>
             <p>
               <span className="text-muted-foreground">LDS: </span>

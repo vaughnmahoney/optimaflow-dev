@@ -38,6 +38,14 @@ export const useWorkOrderData = () => {
         const searchResponse = order.search_response as unknown as WorkOrderSearchResponse;
         const completionResponse = order.completion_response as unknown as WorkOrderCompletionResponse;
         
+        // Create driver object from searchResponse if available
+        const driver = searchResponse?.scheduleInformation?.driverName 
+          ? { 
+              id: searchResponse.scheduleInformation.driverId,
+              name: searchResponse.scheduleInformation.driverName 
+            } 
+          : undefined;
+        
         return {
           id: order.id,
           order_no: order.order_no || 'N/A',
@@ -46,7 +54,11 @@ export const useWorkOrderData = () => {
           service_date: searchResponse?.data?.date,
           service_notes: searchResponse?.data?.notes,
           tech_notes: completionResponse?.orders?.[0]?.data?.form?.note,
+          notes: order.notes,
           location: searchResponse?.data?.location,
+          driver: driver,
+          duration: order.duration,
+          lds: order.lds,
           has_images: Boolean(completionResponse?.orders?.[0]?.data?.form?.images?.length),
           signature_url: completionResponse?.orders?.[0]?.data?.form?.signature?.url,
           search_response: searchResponse,

@@ -15,6 +15,11 @@ export interface Location {
   locationName?: string;
 }
 
+export interface Driver {
+  id?: string;
+  name?: string;
+}
+
 export interface WorkOrderSearchResponse {
   success: boolean;
   data: {
@@ -57,6 +62,13 @@ export interface WorkOrderCompletionResponse {
         };
         note?: string;
       };
+      startTime?: {
+        localTime: string;
+      };
+      endTime?: {
+        localTime: string;
+      };
+      tracking_url?: string;
     };
   }>;
 }
@@ -69,7 +81,11 @@ export interface WorkOrder {
   service_date?: string;
   service_notes?: string;
   tech_notes?: string;
+  notes?: string;
   location?: Location;
+  driver?: Driver;
+  duration?: string;
+  lds?: string;
   has_images?: boolean;
   signature_url?: string;
   search_response?: WorkOrderSearchResponse;
