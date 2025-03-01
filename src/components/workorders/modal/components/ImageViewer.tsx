@@ -1,5 +1,4 @@
-
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Maximize2, Minimize2, ZoomIn } from "lucide-react";
 
@@ -56,6 +55,64 @@ export const ImageViewer = ({
       setPosition({ x: 0, y: 0 });
     }
   };
+
+  // Handle mouse wheel events for zooming
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      if (!zoomModeEnabled || !isImageExpanded) return;
+      
+      e.preventDefault();
+      
+      const imageRect = imageRef.current?.getBoundingClientRect();
+      if (!imageRect) return;
+      
+      // Calculate where the wheel event occurred as a percentage of the image dimensions
+      const mouseX = (e.clientX - imageRect.left) / imageRect.width;
+      const mouseY = (e.clientY - imageRect.top) / imageRect.height;
+      
+      // Determine zoom change direction and amount
+      const delta = e.deltaY < 0 ? 0.2 : -0.2;
+      const newZoomLevel = Math.max(1, Math.min(5, zoomLevel + delta));
+      
+      // If zooming out completely, reset position
+      if (newZoomLevel === 1) {
+        setZoomLevel(1);
+        setPosition({ x: 0, y: 0 });
+        return;
+      }
+      
+      if (zoomLevel === 1 && newZoomLevel > 1) {
+        // Initial zoom in - center on mouse position
+        setPosition({
+          x: (0.5 - mouseX) * imageRect.width,
+          y: (0.5 - mouseY) * imageRect.height
+        });
+      } else if (newZoomLevel > 1) {
+        // Adjust position to keep mouse point relatively fixed
+        const scaleChange = newZoomLevel / zoomLevel;
+        
+        // Calculate new position to maintain mouse point as zoom center
+        setPosition({
+          x: position.x * scaleChange + (1 - scaleChange) * (imageRect.width / 2 - (e.clientX - imageRect.left)),
+          y: position.y * scaleChange + (1 - scaleChange) * (imageRect.height / 2 - (e.clientY - imageRect.top))
+        });
+      }
+      
+      // Update zoom level
+      setZoomLevel(newZoomLevel);
+    };
+    
+    const imageElement = imageRef.current;
+    if (imageElement && zoomModeEnabled) {
+      imageElement.addEventListener('wheel', handleWheel, { passive: false });
+    }
+    
+    return () => {
+      if (imageElement) {
+        imageElement.removeEventListener('wheel', handleWheel);
+      }
+    };
+  }, [zoomModeEnabled, isImageExpanded, zoomLevel, position]);
 
   // Handle image click for zooming at cursor position
   const handleImageClick = (e: React.MouseEvent<HTMLImageElement>) => {
@@ -191,7 +248,7 @@ export const ImageViewer = ({
           {/* Zoom mode indicator */}
           {isImageExpanded && zoomModeEnabled && zoomLevel === 1 && (
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-500/80 text-white px-3 py-1 rounded-full text-sm font-medium">
-              Click to zoom
+              Click to zoom or use mouse wheel
             </div>
           )}
         </>
