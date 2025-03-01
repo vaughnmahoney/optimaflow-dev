@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Maximize2, Minimize2, ZoomIn } from "lucide-react";
@@ -20,6 +21,7 @@ export const ImageViewer = ({
   const [zoomLevel, setZoomLevel] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [zoomModeEnabled, setZoomModeEnabled] = useState(false);
+  const [lastMousePosition, setLastMousePosition] = useState({ x: 0, y: 0 });
   const imageRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -56,6 +58,20 @@ export const ImageViewer = ({
     }
   };
 
+  // Track mouse position on the image for continuous zooming reference
+  const handleMouseMove = (e: React.MouseEvent<HTMLImageElement>) => {
+    if (!zoomModeEnabled || !isImageExpanded) return;
+    
+    const imageRect = imageRef.current?.getBoundingClientRect();
+    if (!imageRect) return;
+    
+    // Store the current mouse position relative to the image
+    setLastMousePosition({
+      x: e.clientX - imageRect.left,
+      y: e.clientY - imageRect.top
+    });
+  };
+
   // Handle mouse wheel events for zooming
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
@@ -88,13 +104,14 @@ export const ImageViewer = ({
           y: (0.5 - mouseY) * imageRect.height
         });
       } else if (newZoomLevel > 1) {
-        // Adjust position to keep mouse point relatively fixed
+        // Improved position calculation to maintain mouse point as zoom center
         const scaleChange = newZoomLevel / zoomLevel;
         
         // Calculate new position to maintain mouse point as zoom center
+        // The improved formula better maintains the cursor position as the focal point
         setPosition({
-          x: position.x * scaleChange + (1 - scaleChange) * (imageRect.width / 2 - (e.clientX - imageRect.left)),
-          y: position.y * scaleChange + (1 - scaleChange) * (imageRect.height / 2 - (e.clientY - imageRect.top))
+          x: (position.x + (e.clientX - imageRect.left - imageRect.width / 2)) * scaleChange - (e.clientX - imageRect.left - imageRect.width / 2),
+          y: (position.y + (e.clientY - imageRect.top - imageRect.height / 2)) * scaleChange - (e.clientY - imageRect.top - imageRect.height / 2)
         });
       }
       
@@ -128,9 +145,9 @@ export const ImageViewer = ({
       const imageRect = imageRef.current?.getBoundingClientRect();
       if (!imageRect) return;
       
-      // Calculate where the click occurred as a percentage of the image dimensions
-      const clickX = (e.clientX - imageRect.left) / imageRect.width;
-      const clickY = (e.clientY - imageRect.top) / imageRect.height;
+      // Calculate where the click occurred relative to the image center
+      const clickOffsetX = e.clientX - imageRect.left - (imageRect.width / 2);
+      const clickOffsetY = e.clientY - imageRect.top - (imageRect.height / 2);
       
       // Zoom in centered on the click position
       setZoomLevel(2);
@@ -138,8 +155,14 @@ export const ImageViewer = ({
       // Calculate position offset to center the clicked point
       // The multiplier affects how much the image moves - adjusted for better precision
       setPosition({
-        x: (0.5 - clickX) * imageRect.width,
-        y: (0.5 - clickY) * imageRect.height
+        x: -clickOffsetX,
+        y: -clickOffsetY
+      });
+      
+      // Store this position for further zoom operations
+      setLastMousePosition({
+        x: e.clientX - imageRect.left,
+        y: e.clientY - imageRect.top
       });
     } else {
       // Reset zoom when clicking while already zoomed
@@ -174,6 +197,7 @@ export const ImageViewer = ({
                 cursor: zoomModeEnabled ? (zoomLevel === 1 ? 'zoom-in' : 'zoom-out') : 'pointer'
               }}
               onClick={handleImageClick}
+              onMouseMove={handleMouseMove}
             />
           </div>
           
