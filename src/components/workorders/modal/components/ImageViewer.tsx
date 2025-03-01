@@ -41,12 +41,12 @@ export const ImageViewer = ({
           <img 
             src={images[currentImageIndex]?.url} 
             alt={`Service image ${currentImageIndex + 1}`}
-            className="max-h-full max-w-full object-contain cursor-pointer transition-transform hover:scale-[1.01] shadow-md"
+            className="max-h-full max-w-full object-contain cursor-pointer transition-transform hover:scale-[1.01] shadow-sm"
             onClick={toggleImageExpand}
           />
           
           {/* Image counter */}
-          <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1.5 rounded-full text-sm font-medium border border-white/10">
+          <div className="absolute top-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium">
             {currentImageIndex + 1} / {images.length}
           </div>
           
@@ -55,7 +55,7 @@ export const ImageViewer = ({
             <Button 
               variant="outline" 
               size="icon" 
-              className="h-10 w-10 rounded-full bg-white/80 hover:bg-white border-gray-200 text-gray-600 shadow-sm ml-2"
+              className="h-10 w-10 rounded-full bg-white/90 hover:bg-white border-gray-200 text-gray-700 shadow-md ml-2"
               onClick={handlePrevious}
               aria-label="Previous image"
             >
@@ -67,7 +67,7 @@ export const ImageViewer = ({
             <Button 
               variant="outline" 
               size="icon" 
-              className="h-10 w-10 rounded-full bg-white/80 hover:bg-white border-gray-200 text-gray-600 shadow-sm mr-2"
+              className="h-10 w-10 rounded-full bg-white/90 hover:bg-white border-gray-200 text-gray-700 shadow-md mr-2"
               onClick={handleNext}
               aria-label="Next image"
             >
@@ -80,7 +80,7 @@ export const ImageViewer = ({
             variant="outline"
             size="icon"
             onClick={toggleImageExpand}
-            className="absolute top-4 left-4 h-9 w-9 rounded-full bg-white/80 hover:bg-white border-gray-200 text-gray-600 shadow-sm"
+            className="absolute top-4 left-4 h-10 w-10 rounded-full bg-white/90 hover:bg-white border-gray-200 text-gray-700 shadow-md"
             aria-label={isImageExpanded ? "Minimize image" : "Maximize image"}
           >
             {isImageExpanded ? (

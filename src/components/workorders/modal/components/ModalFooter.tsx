@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Check, Download, Flag } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 interface ModalFooterProps {
   workOrderId: string;
@@ -16,19 +17,21 @@ export const ModalFooter = ({
   hasImages
 }: ModalFooterProps) => {
   return (
-    <div className="p-4 bg-white dark:bg-gray-950 border-t flex justify-between items-center">
-      <div className="flex gap-3">
+    <div className="p-3 bg-white dark:bg-gray-950 border-t flex justify-between items-center">
+      <div className="flex gap-2">
         {onStatusUpdate && (
           <>
             <Button 
-              className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-md transition-colors shadow-sm"
+              variant="custom"
+              className="bg-[#6CAE75] hover:bg-[#5a9361] text-white font-medium rounded-md transition-colors"
               onClick={() => onStatusUpdate(workOrderId, "approved")}
             >
               <Check className="mr-1 h-4 w-4" />
               Approve
             </Button>
             <Button 
-              className="bg-rose-500 hover:bg-rose-600 text-white font-medium rounded-md transition-colors shadow-sm"
+              variant="custom"
+              className="bg-[#ea384c] hover:bg-[#d32f3f] text-white font-medium rounded-md transition-colors"
               onClick={() => onStatusUpdate(workOrderId, "flagged")}
             >
               <Flag className="mr-1 h-4 w-4" />
@@ -41,7 +44,7 @@ export const ModalFooter = ({
         {onDownloadAll && hasImages && (
           <Button 
             variant="outline"
-            className="bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 rounded-md transition-colors shadow-sm"
+            className="border-gray-300 text-gray-600 hover:bg-gray-50 hover:text-gray-800 font-medium rounded-md transition-colors"
             onClick={onDownloadAll}
           >
             <Download className="mr-1 h-4 w-4" />
