@@ -158,6 +158,40 @@ export const ImageViewModal = ({
     }
   };
 
+  // Format display dates
+  const formatDisplayDate = (dateStr?: string) => {
+    if (!dateStr) return 'N/A';
+    try {
+      return format(new Date(dateStr), "MMM d, yyyy");
+    } catch {
+      return 'Invalid Date';
+    }
+  };
+
+  const formatDisplayTime = (dateStr?: string) => {
+    if (!dateStr) return 'N/A';
+    try {
+      return format(new Date(dateStr), "h:mm a");
+    } catch {
+      return 'Invalid Date';
+    }
+  };
+
+  // Calculate duration
+  const calculateDuration = () => {
+    if (!startDate || !endDate) return "N/A";
+    try {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      const diffInMinutes = Math.floor((end.getTime() - start.getTime()) / (1000 * 60));
+      const hours = Math.floor(diffInMinutes / 60);
+      const minutes = diffInMinutes % 60;
+      return `${hours}h ${minutes}m`;
+    } catch {
+      return "N/A";
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className={`max-w-6xl p-0 h-[90vh] flex flex-col rounded-lg overflow-hidden border-t-4 ${getStatusBorderColor()}`}>
@@ -220,36 +254,40 @@ export const ImageViewModal = ({
                     onClick={toggleImageExpand}
                   />
                   
-                  {/* Previous/Next buttons */}
-                  <Button 
-                    variant="secondary" 
-                    size="icon" 
-                    className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 rounded-full shadow-md"
-                    onClick={handlePrevious}
-                  >
-                    <ChevronLeft className="h-6 w-6" />
-                  </Button>
-                  
-                  <Button 
-                    variant="secondary" 
-                    size="icon" 
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 rounded-full shadow-md"
-                    onClick={handleNext}
-                  >
-                    <ChevronRight className="h-6 w-6" />
-                  </Button>
-                  
-                  {/* Image counter */}
+                  {/* Image counter - Updated to match reference design */}
                   <div className="absolute top-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium">
                     {currentImageIndex + 1} / {images.length}
                   </div>
                   
+                  {/* Previous/Next buttons */}
+                  <div className="absolute inset-y-0 left-0 flex items-center">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-10 w-10 rounded-full bg-white/80 hover:bg-white shadow-md ml-2"
+                      onClick={handlePrevious}
+                    >
+                      <ChevronLeft className="h-6 w-6" />
+                    </Button>
+                  </div>
+                  
+                  <div className="absolute inset-y-0 right-0 flex items-center">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-10 w-10 rounded-full bg-white/80 hover:bg-white shadow-md mr-2"
+                      onClick={handleNext}
+                    >
+                      <ChevronRight className="h-6 w-6" />
+                    </Button>
+                  </div>
+                  
                   {/* Expand/Collapse button */}
                   <Button
-                    variant="secondary"
+                    variant="ghost"
                     size="icon"
                     onClick={toggleImageExpand}
-                    className="absolute top-4 left-4 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 rounded-full shadow-md"
+                    className="absolute top-4 left-4 h-10 w-10 rounded-full bg-white/80 hover:bg-white shadow-md"
                   >
                     {isImageExpanded ? (
                       <Minimize2 className="h-4 w-4" />
@@ -273,36 +311,43 @@ export const ImageViewModal = ({
           {/* Right side - Details panel */}
           {!isImageExpanded && (
             <div className="w-2/5 flex flex-col overflow-hidden">
-              {/* Quick info section */}
-              <div className="p-4 border-b bg-white dark:bg-gray-950">
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <MapPin className="h-4 w-4 mt-0.5 text-gray-500" />
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">{locationName}</p>
-                      <p className="text-xs text-muted-foreground">{address}</p>
+              {/* Quick info section - Updated to match reference design */}
+              <div className="p-4 space-y-4 bg-white dark:bg-gray-950">
+                <div className="flex items-center space-x-2">
+                  <MapPin className="h-4 w-4 text-gray-500" />
+                  <div className="flex-1">
+                    <h3 className="font-medium">{locationName}</h3>
+                    <p className="text-sm text-muted-foreground">{address}</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Clock className="h-3.5 w-3.5 mr-1" />
+                      <span>Start Time</span>
+                    </div>
+                    <div>
+                      <p className="font-medium">{formatDisplayTime(startDate)}</p>
+                      <p className="text-xs text-muted-foreground">{formatDisplayDate(startDate)}</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <Clock className="h-4 w-4 mt-0.5 text-gray-500" />
-                    <div className="flex-1">
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div>
-                          <p className="font-medium">Start Time</p>
-                          <p className="text-muted-foreground">{formatDate(startDate)}</p>
-                        </div>
-                        <div>
-                          <p className="font-medium">End Time</p>
-                          <p className="text-muted-foreground">{formatDate(endDate)}</p>
-                        </div>
-                      </div>
+                  
+                  <div className="space-y-1">
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Clock className="h-3.5 w-3.5 mr-1" />
+                      <span>End Time</span>
+                    </div>
+                    <div>
+                      <p className="font-medium">{formatDisplayTime(endDate)}</p>
+                      <p className="text-xs text-muted-foreground">{formatDisplayDate(endDate)}</p>
                     </div>
                   </div>
                 </div>
               </div>
               
-              {/* Accordion sections */}
-              <div className="flex-1 overflow-y-auto p-0">
+              {/* Order Details Accordion */}
+              <div className="flex-1 overflow-y-auto border-t">
                 <Accordion type="single" collapsible defaultValue="details" className="w-full">
                   <AccordionItem value="details" className="border-b">
                     <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-gray-50 dark:hover:bg-gray-900/50">
@@ -338,11 +383,25 @@ export const ImageViewModal = ({
                   </AccordionItem>
                 </Accordion>
               </div>
+              
+              {/* Tracking URL */}
+              {completionData?.tracking_url && (
+                <div className="p-4 border-t">
+                  <Button
+                    variant="outline" 
+                    className="w-full text-left flex items-center gap-2"
+                    onClick={() => window.open(completionData.tracking_url, '_blank')}
+                  >
+                    <Link className="h-4 w-4" />
+                    View Tracking URL
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </div>
         
-        {/* Action buttons */}
+        {/* Action buttons - Updated to match reference design */}
         <div className="p-3 bg-white dark:bg-gray-950 border-t flex justify-between items-center">
           <div className="flex gap-2">
             {onStatusUpdate && (
@@ -376,13 +435,35 @@ export const ImageViewModal = ({
           </div>
         </div>
         
-        {/* Navigation Footer */}
+        {/* Navigation Footer - Updated to match reference design */}
         <TooltipProvider>
-          <NavigationFooter
-            currentIndex={currentIndex}
-            totalItems={workOrders.length}
-            onNavigate={onNavigate}
-          />
+          <div className="p-4 border-t bg-white dark:bg-gray-950">
+            <div className="flex justify-between items-center">
+              <Button
+                variant="ghost"
+                className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+                onClick={handlePreviousOrder}
+                disabled={currentIndex <= 0}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Previous Order
+              </Button>
+              
+              <span className="text-sm text-muted-foreground">
+                Order {currentIndex + 1} of {workOrders.length}
+              </span>
+              
+              <Button
+                variant="ghost"
+                className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+                onClick={handleNextOrder}
+                disabled={currentIndex >= workOrders.length - 1}
+              >
+                Next Order
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </TooltipProvider>
       </DialogContent>
     </Dialog>
