@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { WorkOrder } from "../../types";
@@ -18,6 +18,11 @@ export const QcNotesSheet = ({ workOrder }: QcNotesSheetProps) => {
   const [isSaving, setIsSaving] = useState(false);
   const { updateWorkOrderQcNotes } = useWorkOrderMutations();
   const [isOpen, setIsOpen] = useState(false);
+  
+  // Reset qcNotes when the workOrder changes
+  useEffect(() => {
+    setQcNotes(workOrder.qc_notes || "");
+  }, [workOrder.id, workOrder.qc_notes]);
 
   const handleSaveQcNotes = async () => {
     setIsSaving(true);
