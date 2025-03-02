@@ -9,10 +9,12 @@ import { Button } from "@/components/ui/button";
 
 interface OrderDetailsProps {
   workOrder: WorkOrder;
+  onSaveQcNotes?: (workOrderId: string, notes: string) => Promise<void>;
 }
 
 export const OrderDetails = ({
-  workOrder
+  workOrder,
+  onSaveQcNotes
 }: OrderDetailsProps) => {
   const completionData = workOrder.completion_response?.orders[0]?.data;
   const trackingUrl = completionData?.tracking_url;
@@ -40,7 +42,10 @@ export const OrderDetails = ({
           </TabsContent>
           
           <TabsContent value="notes" className="m-0 h-full flex-1">
-            <NotesTab workOrder={workOrder} />
+            <NotesTab 
+              workOrder={workOrder} 
+              onSaveQcNotes={onSaveQcNotes}
+            />
           </TabsContent>
           
           <TabsContent value="signature" className="m-0 h-full flex-1">

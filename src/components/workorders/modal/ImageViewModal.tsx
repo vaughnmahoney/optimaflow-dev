@@ -1,26 +1,31 @@
 
-import { useState } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import React, { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { WorkOrder } from "../types";
 import { ModalHeader } from "./components/ModalHeader";
 import { ModalContent } from "./components/ModalContent";
 import { ModalFooter } from "./components/ModalFooter";
 import { NavigationControls } from "./components/NavigationControls";
-import { getStatusBorderColor } from "./utils/modalUtils";
-import { useWorkOrderNavigation } from "@/hooks/useWorkOrderNavigation";
+import { useImageNavigation } from "@/hooks/useImageNavigation";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface ImageViewModalProps {
-  workOrder: WorkOrder | null;
+  workOrder: WorkOrder;
   workOrders: WorkOrder[];
   currentIndex: number;
   isOpen: boolean;
   onClose: () => void;
-  onStatusUpdate?: (workOrderId: string, status: string) => void;
+  onStatusUpdate: (workOrderId: string, newStatus: string) => void;
   onNavigate: (index: number) => void;
-  onDownloadAll?: () => void;
 }
 
-export const ImageViewModal = ({
+export const ImageViewModal: React.FC<ImageViewModalProps> = ({
   workOrder,
   workOrders,
   currentIndex,
@@ -28,75 +33,101 @@ export const ImageViewModal = ({
   onClose,
   onStatusUpdate,
   onNavigate,
-  onDownloadAll,
-}: ImageViewModalProps) => {
+}) => {
   const [isImageExpanded, setIsImageExpanded] = useState(false);
+  const images = workOrder?.completion_response?.orders[0]?.data?.form?.images || [];
   
   const {
-    currentWorkOrder,
-    currentIndex: navIndex,
     currentImageIndex,
     setCurrentImageIndex,
-    handlePreviousOrder,
-    handleNextOrder,
-    handleSetOrder
-  } = useWorkOrderNavigation({
-    workOrders,
-    initialWorkOrderId: workOrder?.id || null,
-    isOpen,
-    onClose
-  });
-  
-  if (!currentWorkOrder) return null;
+    handlePreviousImage,
+    handleNextImage,
+  } = useImageNavigation(images);
+
+  // Reset state when changing work orders
+  useEffect(() => {
+    setCurrentImageIndex(0);
+    setIsImageExpanded(false);
+  }, [workOrder?.id, setCurrentImageIndex]);
 
   const toggleImageExpand = () => {
     setIsImageExpanded(!isImageExpanded);
   };
 
-  // Get images from the work order
-  const completionData = currentWorkOrder?.completion_response?.orders?.[0]?.data;
-  const images = completionData?.form?.images || [];
-  
-  // Status color for border
-  const statusBorderColor = getStatusBorderColor(currentWorkOrder.status || "pending_review");
+  const handlePreviousOrder = () => {
+    if (currentIndex > 0) {
+      onNavigate(currentIndex - 1);
+    }
+  };
 
-  // Sync navigation with parent component
-  const handleNavigate = (index: number) => {
-    handleSetOrder(index);
-    onNavigate(index);
+  const handleNextOrder = () => {
+    if (currentIndex < workOrders.length - 1) {
+      onNavigate(currentIndex + 1);
+    }
+  };
+
+  const saveQcNotes = async (workOrderId: string, notes: string) => {
+    try {
+      const { error } = await supabase
+        .from('work_orders')
+        .update({ qc_notes: notes })
+        .eq('id', workOrderId);
+      
+      if (error) throw error;
+      
+      // Update the local work order with the new notes
+      const updatedWorkOrder = { ...workOrder, qc_notes: notes };
+      const updatedWorkOrders = [...workOrders];
+      updatedWorkOrders[currentIndex] = updatedWorkOrder;
+      
+      return;
+    } catch (error) {
+      console.error("Error saving QC notes:", error);
+      throw error;
+    }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`max-w-6xl p-0 h-[90vh] flex flex-col rounded-lg overflow-hidden border-t-4 ${statusBorderColor}`}>
-        {/* Header with order info */}
-        <ModalHeader workOrder={currentWorkOrder} onClose={onClose} />
-        
-        {/* Main content area */}
-        <ModalContent
-          workOrder={currentWorkOrder}
-          images={images}
-          currentImageIndex={currentImageIndex}
-          setCurrentImageIndex={setCurrentImageIndex}
-          isImageExpanded={isImageExpanded}
-          toggleImageExpand={toggleImageExpand}
-        />
-        
-        {/* Action buttons */}
-        <ModalFooter 
-          workOrderId={currentWorkOrder.id} 
-          onStatusUpdate={onStatusUpdate} 
-          onDownloadAll={onDownloadAll}
-          hasImages={images.length > 0}
-        />
-        
-        {/* Navigation Footer */}
-        <NavigationControls 
-          currentIndex={navIndex}
-          totalOrders={workOrders.length}
-          onPreviousOrder={handlePreviousOrder}
-          onNextOrder={handleNextOrder}
-        />
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-[90vw] max-h-[90vh] h-[90vh] p-0">
+        <div className="flex flex-col h-full">
+          {/* Header */}
+          <DialogHeader className="py-2 px-4 border-b">
+            <DialogTitle>
+              <ModalHeader workOrder={workOrder} expanded={isImageExpanded} />
+            </DialogTitle>
+          </DialogHeader>
+
+          {/* Main content */}
+          <ModalContent
+            workOrder={workOrder}
+            images={images}
+            currentImageIndex={currentImageIndex}
+            setCurrentImageIndex={setCurrentImageIndex}
+            isImageExpanded={isImageExpanded}
+            toggleImageExpand={toggleImageExpand}
+            onSaveQcNotes={saveQcNotes}
+          />
+
+          {/* Footer */}
+          <ModalFooter
+            workOrder={workOrder}
+            onStatusUpdate={onStatusUpdate}
+            isImageExpanded={isImageExpanded}
+          />
+          
+          {/* Navigation controls */}
+          <NavigationControls 
+            currentIndex={currentIndex}
+            totalItems={workOrders.length}
+            onPrevious={handlePreviousOrder}
+            onNext={handleNextOrder}
+            currentImageIndex={currentImageIndex}
+            totalImages={images.length}
+            onPreviousImage={handlePreviousImage}
+            onNextImage={handleNextImage}
+          />
+        </div>
       </DialogContent>
     </Dialog>
   );

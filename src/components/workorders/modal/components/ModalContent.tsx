@@ -13,6 +13,7 @@ interface ModalContentProps {
   setCurrentImageIndex: (index: number) => void;
   isImageExpanded: boolean;
   toggleImageExpand: () => void;
+  onSaveQcNotes?: (workOrderId: string, notes: string) => Promise<void>;
 }
 
 export const ModalContent: React.FC<ModalContentProps> = ({
@@ -21,7 +22,8 @@ export const ModalContent: React.FC<ModalContentProps> = ({
   currentImageIndex,
   setCurrentImageIndex,
   isImageExpanded,
-  toggleImageExpand
+  toggleImageExpand,
+  onSaveQcNotes
 }) => {
   return (
     <div className="flex flex-1 overflow-hidden">
@@ -55,7 +57,10 @@ export const ModalContent: React.FC<ModalContentProps> = ({
           <QuickInfo workOrder={workOrder} />
           
           {/* Tabs for Details, Notes, Signature */}
-          <OrderDetails workOrder={workOrder} />
+          <OrderDetails 
+            workOrder={workOrder} 
+            onSaveQcNotes={onSaveQcNotes}
+          />
         </div>
       )}
     </div>
