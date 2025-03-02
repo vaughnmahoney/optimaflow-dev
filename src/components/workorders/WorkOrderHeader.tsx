@@ -1,8 +1,8 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Import, RefreshCw } from "lucide-react";
+import { Import, RefreshCw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Header } from "@/components/Header";
@@ -19,17 +19,10 @@ export const WorkOrderHeader = ({
   onOptimoRouteSearch, 
   searchQuery 
 }: WorkOrderHeaderProps) => {
-  const [searchValue, setSearchValue] = useState(searchQuery || "");
   const [importValue, setImportValue] = useState("");
   const [isImporting, setIsImporting] = useState(false);
   const queryClient = useQueryClient();
   const isMobile = useIsMobile();
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchValue(value);
-    onSearchChange(value);
-  };
 
   const handleImport = async () => {
     if (!importValue.trim()) return;
@@ -68,18 +61,6 @@ export const WorkOrderHeader = ({
   return (
     <Header title="Work Orders">
       <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 sm:gap-4 w-full max-w-2xl">
-        {/* Search field with icon */}
-        <div className="relative flex-1 min-w-0 w-full">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-          <Input
-            type="text"
-            placeholder="Search work order..."
-            value={searchValue}
-            onChange={handleSearchChange}
-            className="pl-10 w-full bg-gray-50 border-gray-200"
-          />
-        </div>
-        
         <div className={`flex ${isMobile ? 'w-full' : 'flex-row'} gap-2 ${isMobile ? 'mt-2' : ''}`}>
           {/* Import section with better visual grouping */}
           <div className={`relative flex items-center ${isMobile ? 'flex-1' : ''}`}>

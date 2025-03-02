@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { WorkOrder, WorkOrderFilters } from "@/components/workorders/types";
 import { transformWorkOrderData } from "@/utils/workOrderUtils";
-import { format } from "date-fns";
 
 /**
  * Hook to fetch work orders from Supabase with pagination and filtering
@@ -37,43 +36,20 @@ export const useWorkOrderFetch = (
         }
       }
       
-      // Apply date range filter
-      if (filters.dateRange.from || filters.dateRange.to) {
-        // We need to handle the dates differently for service_date filtering,
-        // as service_date is stored inside the search_response JSON
+      // Global text search across multiple fields
+      if (filters.searchQuery && filters.searchQuery.trim()) {
+        const searchTerm = filters.searchQuery.trim();
         
-        // For now, we'll filter on the timestamp field which is more reliable
-        if (filters.dateRange.from) {
-          const fromDate = format(filters.dateRange.from, 'yyyy-MM-dd');
-          query = query.gte('timestamp', `${fromDate}T00:00:00`);
-        }
-        
-        if (filters.dateRange.to) {
-          const toDate = format(filters.dateRange.to, 'yyyy-MM-dd');
-          query = query.lte('timestamp', `${toDate}T23:59:59`);
-        }
-      }
-      
-      // Apply driver filter - this is more complex as it's inside JSON
-      if (filters.driver) {
-        // Use contains operator to search inside the JSON for the driver ID
-        query = query.contains('search_response', { 
-          scheduleInformation: { 
-            driverId: filters.driver 
-          } 
-        });
-      }
-      
-      // Apply location filter - also inside JSON
-      if (filters.location) {
-        // For location, we'll check if the locationId or name contains the search term
-        query = query.or(`search_response->data->location->locationId.eq.${filters.location},search_response->data->location->name.eq.${filters.location}`);
-      }
-      
-      // Apply text search if provided
-      if (filters.searchQuery) {
+        // Use OR condition to search across multiple fields/columns
         query = query.or(
-          `order_no.ilike.%${filters.searchQuery}%,search_response->data->location->name.ilike.%${filters.searchQuery}%,search_response->scheduleInformation->driverName.ilike.%${filters.searchQuery}%`
+          `order_no.ilike.%${searchTerm}%,` +
+          `qc_notes.ilike.%${searchTerm}%,` +
+          `resolution_notes.ilike.%${searchTerm}%,` +
+          `search_response->data->location->name.ilike.%${searchTerm}%,` +
+          `search_response->data->location->locationId.ilike.%${searchTerm}%,` +
+          `search_response->scheduleInformation->driverName.ilike.%${searchTerm}%,` +
+          `search_response->scheduleInformation->driverId.ilike.%${searchTerm}%,` +
+          `search_response->data->service->serviceDate.ilike.%${searchTerm}%`
         );
       }
       
