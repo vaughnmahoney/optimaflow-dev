@@ -40,9 +40,9 @@ export const ImageViewModal: React.FC<ImageViewModalProps> = ({
   const {
     currentImageIndex,
     setCurrentImageIndex,
-    handlePrevious: handlePreviousImage,
-    handleNext: handleNextImage,
-  } = useImageNavigation(images.length);
+    handlePreviousImage,
+    handleNextImage,
+  } = useImageNavigation(images);
 
   // Reset state when changing work orders
   useEffect(() => {
@@ -75,11 +75,14 @@ export const ImageViewModal: React.FC<ImageViewModalProps> = ({
       
       if (error) throw error;
       
-      toast.success("QC notes saved successfully");
+      // Update the local work order with the new notes
+      const updatedWorkOrder = { ...workOrder, qc_notes: notes };
+      const updatedWorkOrders = [...workOrders];
+      updatedWorkOrders[currentIndex] = updatedWorkOrder;
+      
       return;
     } catch (error) {
       console.error("Error saving QC notes:", error);
-      toast.error("Failed to save QC notes");
       throw error;
     }
   };
@@ -91,7 +94,7 @@ export const ImageViewModal: React.FC<ImageViewModalProps> = ({
           {/* Header */}
           <DialogHeader className="py-2 px-4 border-b">
             <DialogTitle>
-              <ModalHeader workOrder={workOrder} isExpanded={isImageExpanded} />
+              <ModalHeader workOrder={workOrder} expanded={isImageExpanded} />
             </DialogTitle>
           </DialogHeader>
 
@@ -108,7 +111,7 @@ export const ImageViewModal: React.FC<ImageViewModalProps> = ({
 
           {/* Footer */}
           <ModalFooter
-            workOrderId={workOrder.id}
+            workOrder={workOrder}
             onStatusUpdate={onStatusUpdate}
             isImageExpanded={isImageExpanded}
           />
@@ -116,7 +119,7 @@ export const ImageViewModal: React.FC<ImageViewModalProps> = ({
           {/* Navigation controls */}
           <NavigationControls 
             currentIndex={currentIndex}
-            totalCount={workOrders.length}
+            totalItems={workOrders.length}
             onPrevious={handlePreviousOrder}
             onNext={handleNextOrder}
             currentImageIndex={currentImageIndex}

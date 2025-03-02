@@ -1,47 +1,64 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from "react";
 
-export const useImageNavigation = (totalImages: number) => {
+interface UseImageNavigationProps {
+  totalImages: number;
+  onPreviousWorkOrder: () => void;
+  onNextWorkOrder: () => void;
+  isTransitioning: boolean;
+}
+
+export const useImageNavigation = ({
+  totalImages,
+  onPreviousWorkOrder,
+  onNextWorkOrder,
+  isTransitioning
+}: UseImageNavigationProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const handlePrevious = () => {
-    if (isTransitioning || totalImages === 0) return;
+    if (isTransitioning) return;
     
-    setIsTransitioning(true);
-    
-    if (currentImageIndex > 0) {
-      setCurrentImageIndex(prev => prev - 1);
+    if (currentImageIndex === 0) {
+      onPreviousWorkOrder();
     } else {
-      setCurrentImageIndex(totalImages - 1);
+      setCurrentImageIndex((prev) => prev - 1);
     }
-    
-    setTimeout(() => {
-      setIsTransitioning(false);
-    }, 300);
   };
 
   const handleNext = () => {
-    if (isTransitioning || totalImages === 0) return;
+    if (isTransitioning) return;
     
-    setIsTransitioning(true);
-    
-    if (currentImageIndex < totalImages - 1) {
-      setCurrentImageIndex(prev => prev + 1);
+    if (currentImageIndex === totalImages - 1) {
+      onNextWorkOrder();
     } else {
-      setCurrentImageIndex(0);
+      setCurrentImageIndex((prev) => prev + 1);
     }
-    
-    setTimeout(() => {
-      setIsTransitioning(false);
-    }, 300);
   };
+
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (isTransitioning) return;
+      
+      switch (e.key) {
+        case "ArrowLeft":
+          handlePrevious();
+          break;
+        case "ArrowRight":
+          handleNext();
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [currentImageIndex, totalImages, isTransitioning]);
 
   return {
     currentImageIndex,
     setCurrentImageIndex,
     handlePrevious,
-    handleNext,
-    isTransitioning
+    handleNext
   };
 };

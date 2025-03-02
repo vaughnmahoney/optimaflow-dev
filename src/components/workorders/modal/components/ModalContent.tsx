@@ -8,7 +8,7 @@ import { OrderDetails } from "./OrderDetails";
 
 interface ModalContentProps {
   workOrder: WorkOrder;
-  images: Array<{ url: string; type?: string; name?: string }>;
+  images: Array<{ url: string }>;
   currentImageIndex: number;
   setCurrentImageIndex: (index: number) => void;
   isImageExpanded: boolean;
