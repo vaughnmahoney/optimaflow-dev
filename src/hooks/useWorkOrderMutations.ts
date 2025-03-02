@@ -38,13 +38,11 @@ export const useWorkOrderMutations = () => {
 
       if (error) throw error;
 
-      toast.success("QC notes updated successfully");
-      
       // Refetch work orders to update UI
       queryClient.invalidateQueries({ queryKey: ["workOrders"] });
     } catch (error) {
       console.error('QC notes update error:', error);
-      toast.error('Failed to update QC notes');
+      throw error; // We'll handle this in the component
     }
   };
 

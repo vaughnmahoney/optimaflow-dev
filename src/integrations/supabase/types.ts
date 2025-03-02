@@ -498,6 +498,7 @@ export type Database = {
           created_at: string | null
           id: string
           order_no: string | null
+          qc_notes: string | null
           search_response: Json | null
           status: string | null
           timestamp: string | null
@@ -508,6 +509,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           order_no?: string | null
+          qc_notes?: string | null
           search_response?: Json | null
           status?: string | null
           timestamp?: string | null
@@ -518,6 +520,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           order_no?: string | null
+          qc_notes?: string | null
           search_response?: Json | null
           status?: string | null
           timestamp?: string | null

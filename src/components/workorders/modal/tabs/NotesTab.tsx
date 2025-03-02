@@ -5,7 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { WorkOrder } from "../../types";
-import { supabase } from "@/integrations/supabase/client";
+import { useWorkOrderMutations } from "@/hooks/useWorkOrderMutations";
 import { toast } from "sonner";
 
 interface NotesTabProps {
@@ -18,16 +18,12 @@ export const NotesTab = ({
   const completionData = workOrder.completion_response?.orders[0]?.data;
   const [qcNotes, setQcNotes] = useState(workOrder.qc_notes || "");
   const [isSaving, setIsSaving] = useState(false);
+  const { updateWorkOrderQcNotes } = useWorkOrderMutations();
 
   const handleSaveQcNotes = async () => {
     setIsSaving(true);
     try {
-      const { error } = await supabase
-        .from("work_orders")
-        .update({ qc_notes: qcNotes })
-        .eq("id", workOrder.id);
-
-      if (error) throw error;
+      await updateWorkOrderQcNotes(workOrder.id, qcNotes);
       toast.success("QC notes saved successfully");
     } catch (error) {
       console.error("Error saving QC notes:", error);
