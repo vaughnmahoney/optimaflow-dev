@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { WorkOrder } from "@/components/workorders/types";
 
@@ -18,12 +17,13 @@ export const useWorkOrderNavigation = ({
   const [currentWorkOrderId, setCurrentWorkOrderId] = useState<string | null>(initialWorkOrderId);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
-  // Update currentWorkOrderId when initialWorkOrderId changes
+  // Reset state when modal opens/closes
   useEffect(() => {
-    if (initialWorkOrderId) {
+    if (isOpen && initialWorkOrderId) {
       setCurrentWorkOrderId(initialWorkOrderId);
+      setCurrentImageIndex(0);
     }
-  }, [initialWorkOrderId]);
+  }, [isOpen, initialWorkOrderId]);
   
   // Get the current work order and its index
   const currentWorkOrder = workOrders.find(wo => wo.id === currentWorkOrderId) || null;
