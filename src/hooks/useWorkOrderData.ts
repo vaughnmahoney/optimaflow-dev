@@ -54,11 +54,14 @@ export const useWorkOrderData = () => {
           service_date: searchResponse?.data?.date,
           service_notes: searchResponse?.data?.notes,
           tech_notes: completionResponse?.orders?.[0]?.data?.form?.note,
-          notes: order.notes,
+          // If notes exists in database use it, otherwise set to empty string
+          notes: order.notes || '',
           location: searchResponse?.data?.location,
           driver: driver,
-          duration: order.duration,
-          lds: order.lds,
+          // If duration exists in database use it, otherwise set to empty string
+          duration: order.duration || '',
+          // If lds exists in database use it, otherwise set to empty string
+          lds: order.lds || '',
           has_images: Boolean(completionResponse?.orders?.[0]?.data?.form?.images?.length),
           signature_url: completionResponse?.orders?.[0]?.data?.form?.signature?.url,
           search_response: searchResponse,
