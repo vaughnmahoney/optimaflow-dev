@@ -82,7 +82,6 @@ export interface WorkOrder {
   service_notes?: string;
   tech_notes?: string;
   notes?: string;
-  qc_notes?: string;
   location?: Location;
   driver?: Driver;
   duration?: string;

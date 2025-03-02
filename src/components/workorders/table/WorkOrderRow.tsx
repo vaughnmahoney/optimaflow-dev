@@ -1,7 +1,7 @@
 
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, MoreVertical, MessageSquare } from "lucide-react";
+import { Eye, MoreVertical } from "lucide-react";
 import { format } from "date-fns";
 import { StatusBadge } from "../StatusBadge";
 import { WorkOrder } from "../types";
@@ -12,8 +12,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ActionsMenu } from "./ActionsMenu";
-import { Tooltip } from "@/components/ui/tooltip";
-import { TooltipContent, TooltipProvider, TooltipTrigger } from "@radix-ui/react-tooltip";
 
 interface WorkOrderRowProps {
   workOrder: WorkOrder;
@@ -32,8 +30,6 @@ export const WorkOrderRow = ({ workOrder, onStatusUpdate, onImageView, onDelete 
     return order.search_response?.scheduleInformation?.driverName || 'No Driver Assigned';
   };
 
-  const hasQcNotes = workOrder.qc_notes && workOrder.qc_notes.trim().length > 0;
-
   return (
     <TableRow>
       <TableCell>{workOrder.order_no || 'N/A'}</TableCell>
@@ -47,23 +43,7 @@ export const WorkOrderRow = ({ workOrder, onStatusUpdate, onImageView, onDelete 
         {getLocationName(workOrder)}
       </TableCell>
       <TableCell>
-        <div className="flex items-center gap-2">
-          <StatusBadge status={workOrder.status || 'pending_review'} />
-          {hasQcNotes && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="inline-flex">
-                    <MessageSquare className="h-4 w-4 text-blue-500" />
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="px-2 py-1">Has QC Notes</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-        </div>
+        <StatusBadge status={workOrder.status || 'pending_review'} />
       </TableCell>
       <TableCell>
         <div className="flex items-center space-x-2">
