@@ -1,37 +1,42 @@
 
-import { format } from "date-fns";
+import { format, formatDistance } from "date-fns";
+import { Location } from "@/components/workorders/types";
 
-export const getStatusBorderColor = (status: string) => {
-  switch (status) {
-    case "approved":
-      return "border-green-500";
-    case "flagged":
-      return "border-red-500";
-    case "pending_review":
-    default:
-      return "border-yellow-500";
+// Format a date string with a specific format
+export const formatDate = (dateString?: string, formatStr: string = "MMM d, yyyy") => {
+  if (!dateString) return "N/A";
+  try {
+    return format(new Date(dateString), formatStr);
+  } catch (error) {
+    console.error("Error formatting date:", error);
+    return "Invalid Date";
   }
 };
 
-export const formatDate = (dateStr?: string, formatString: string = "EEEE, MMMM d, yyyy") => {
-  if (!dateStr) return 'N/A';
+// Calculate duration between two date strings
+export const calculateDuration = (startDateStr?: string, endDateStr?: string) => {
+  if (!startDateStr || !endDateStr) return "N/A";
+  
   try {
-    return format(new Date(dateStr), formatString);
-  } catch {
-    return 'Invalid Date';
-  }
-};
-
-export const calculateDuration = (startTime?: string, endTime?: string) => {
-  if (!startTime || !endTime) return "N/A";
-  try {
-    const start = new Date(startTime);
-    const end = new Date(endTime);
-    const diffInMinutes = Math.floor((end.getTime() - start.getTime()) / (1000 * 60));
-    const hours = Math.floor(diffInMinutes / 60);
-    const minutes = diffInMinutes % 60;
-    return `${hours}h ${minutes}m`;
-  } catch {
+    const startDate = new Date(startDateStr);
+    const endDate = new Date(endDateStr);
+    
+    return formatDistance(startDate, endDate, { addSuffix: false });
+  } catch (error) {
+    console.error("Error calculating duration:", error);
     return "N/A";
   }
+};
+
+// Format address from location object
+export const formatAddress = (location?: Location) => {
+  if (!location) return "";
+  
+  const addressParts = [];
+  if (location.address) addressParts.push(location.address);
+  if (location.city) addressParts.push(location.city);
+  if (location.state) addressParts.push(location.state);
+  if (location.zip) addressParts.push(location.zip);
+  
+  return addressParts.join(', ');
 };
