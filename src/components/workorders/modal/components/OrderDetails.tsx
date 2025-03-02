@@ -6,6 +6,7 @@ import { SignatureTab } from "../tabs/SignatureTab";
 import { WorkOrder } from "../../types";
 import { Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { QcNotesSheet } from "./QcNotesSheet";
 
 interface OrderDetailsProps {
   workOrder: WorkOrder;
@@ -49,19 +50,23 @@ export const OrderDetails = ({
         </div>
       </Tabs>
       
-      {/* Tracking URL */}
-      {trackingUrl && (
-        <div className="p-4 border-t">
+      {/* Footer with tracking URL and QC Notes */}
+      <div className="p-4 border-t flex items-center justify-between">
+        <QcNotesSheet workOrder={workOrder} />
+        
+        {trackingUrl ? (
           <Button 
             variant="outline" 
-            className="w-full text-left flex items-center gap-2 bg-gray-50 hover:bg-gray-100 text-gray-700 border-gray-200" 
+            className="text-left flex items-center gap-2 bg-gray-50 hover:bg-gray-100 text-gray-700 border-gray-200" 
             onClick={() => window.open(trackingUrl, '_blank')}
           >
             <Link className="h-4 w-4" />
             View Tracking URL
           </Button>
-        </div>
-      )}
+        ) : (
+          <div></div> // Empty div for spacing when no tracking URL
+        )}
+      </div>
     </div>
   );
 };
