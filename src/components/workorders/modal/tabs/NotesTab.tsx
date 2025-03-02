@@ -22,6 +22,13 @@ export const NotesTab = ({
   const completionData = workOrder.completion_response?.orders[0]?.data;
   const isFlagged = workOrder.status === "flagged";
   
+  // Load existing resolution notes if available
+  useEffect(() => {
+    if (workOrder.resolution_notes) {
+      setResolutionNotes(workOrder.resolution_notes);
+    }
+  }, [workOrder.resolution_notes]);
+  
   // Save resolution notes
   const handleSaveResolutionNotes = async () => {
     if (!resolutionNotes.trim()) return;

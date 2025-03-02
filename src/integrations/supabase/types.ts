@@ -499,6 +499,9 @@ export type Database = {
           id: string
           order_no: string | null
           qc_notes: string | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolver_id: string | null
           search_response: Json | null
           status: string | null
           timestamp: string | null
@@ -510,6 +513,9 @@ export type Database = {
           id?: string
           order_no?: string | null
           qc_notes?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolver_id?: string | null
           search_response?: Json | null
           status?: string | null
           timestamp?: string | null
@@ -521,6 +527,9 @@ export type Database = {
           id?: string
           order_no?: string | null
           qc_notes?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolver_id?: string | null
           search_response?: Json | null
           status?: string | null
           timestamp?: string | null
