@@ -26,6 +26,8 @@ export const transformWorkOrderData = (order: any): WorkOrder => {
     tech_notes: completionResponse?.orders?.[0]?.data?.form?.note,
     // If notes exists in database use it, otherwise set to empty string
     notes: order.notes || '',
+    // Include QC notes from database or empty string
+    qc_notes: order.qc_notes || '',
     location: searchResponse?.data?.location,
     driver: driver,
     // If duration exists in database use it, otherwise set to empty string

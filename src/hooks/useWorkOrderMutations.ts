@@ -29,6 +29,25 @@ export const useWorkOrderMutations = () => {
     }
   };
 
+  const updateWorkOrderQcNotes = async (workOrderId: string, qcNotes: string) => {
+    try {
+      const { error } = await supabase
+        .from('work_orders')
+        .update({ qc_notes: qcNotes })
+        .eq('id', workOrderId);
+
+      if (error) throw error;
+
+      toast.success("QC notes updated successfully");
+      
+      // Refetch work orders to update UI
+      queryClient.invalidateQueries({ queryKey: ["workOrders"] });
+    } catch (error) {
+      console.error('QC notes update error:', error);
+      toast.error('Failed to update QC notes');
+    }
+  };
+
   const deleteWorkOrder = async (workOrderId: string) => {
     try {
       const { error } = await supabase
@@ -49,6 +68,7 @@ export const useWorkOrderMutations = () => {
 
   return {
     updateWorkOrderStatus,
+    updateWorkOrderQcNotes,
     deleteWorkOrder
   };
 };

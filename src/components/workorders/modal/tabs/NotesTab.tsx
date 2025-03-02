@@ -1,7 +1,12 @@
 
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 import { WorkOrder } from "../../types";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface NotesTabProps {
   workOrder: WorkOrder;
@@ -11,6 +16,26 @@ export const NotesTab = ({
   workOrder
 }: NotesTabProps) => {
   const completionData = workOrder.completion_response?.orders[0]?.data;
+  const [qcNotes, setQcNotes] = useState(workOrder.qc_notes || "");
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSaveQcNotes = async () => {
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from("work_orders")
+        .update({ qc_notes: qcNotes })
+        .eq("id", workOrder.id);
+
+      if (error) throw error;
+      toast.success("QC notes saved successfully");
+    } catch (error) {
+      console.error("Error saving QC notes:", error);
+      toast.error("Failed to save QC notes");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <ScrollArea className="flex-1">
@@ -34,6 +59,25 @@ export const NotesTab = ({
           <p className="text-sm whitespace-pre-wrap">
             {workOrder.notes || 'No additional notes available'}
           </p>
+        </Card>
+
+        <Card className="p-4">
+          <h3 className="font-medium mb-2">QC Notes</h3>
+          <Textarea 
+            placeholder="Add QC notes here..."
+            className="min-h-[100px] mb-2"
+            value={qcNotes}
+            onChange={(e) => setQcNotes(e.target.value)}
+          />
+          <div className="flex justify-end">
+            <Button 
+              onClick={handleSaveQcNotes} 
+              disabled={isSaving}
+              size="sm"
+            >
+              {isSaving ? "Saving..." : "Save Notes"}
+            </Button>
+          </div>
         </Card>
       </div>
     </ScrollArea>
