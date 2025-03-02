@@ -31,24 +31,34 @@ export const transformWorkOrderData = (order: any): WorkOrder => {
   }
   
   // Create driver object from searchResponse if available
-  let driver = undefined;
+  let driver = null;
   let service_date = null;
   let service_notes = null;
   
-  if (searchResponse && searchResponse.scheduleInformation && searchResponse.scheduleInformation.driverName) {
-    driver = { 
-      id: searchResponse.scheduleInformation.driverId,
-      name: searchResponse.scheduleInformation.driverName 
-    };
-  }
-  
-  if (searchResponse && searchResponse.data) {
-    service_date = searchResponse.data.date;
-    service_notes = searchResponse.data.notes;
+  if (searchResponse && typeof searchResponse === 'object') {
+    if (searchResponse.scheduleInformation && typeof searchResponse.scheduleInformation === 'object') {
+      driver = { 
+        id: searchResponse.scheduleInformation.driverId,
+        name: searchResponse.scheduleInformation.driverName 
+      };
+    }
+    
+    if (searchResponse.data && typeof searchResponse.data === 'object') {
+      service_date = searchResponse.data.date;
+      service_notes = searchResponse.data.notes;
+    }
   }
   
   // Flag to check if the work order has images
   const has_images = !!(completionResponse?.orders?.[0]?.data?.form?.images?.length);
+  
+  // Create a location object with safe property access
+  let location = null;
+  if (searchResponse && typeof searchResponse === 'object' && 
+      searchResponse.data && typeof searchResponse.data === 'object' && 
+      searchResponse.data.location) {
+    location = searchResponse.data.location;
+  }
   
   return {
     id: order.id,
@@ -68,7 +78,7 @@ export const transformWorkOrderData = (order: any): WorkOrder => {
     resolved_at: order.resolved_at || null,
     // Include resolver ID (would be a user ID in a real app with auth)
     resolver_id: order.resolver_id || null,
-    location: searchResponse?.data?.location,
+    location: location,
     driver: driver,
     // If duration exists in database use it, otherwise set to empty string
     duration: order.duration || '',

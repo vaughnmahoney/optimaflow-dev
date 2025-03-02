@@ -6,8 +6,6 @@ import { DebugDataDisplay } from "./debug/DebugDataDisplay";
 import { WorkOrderTable } from "./table/WorkOrderTable";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { ImageViewModal } from "./modal/ImageViewModal";
-import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
 
 export const WorkOrderList = ({ 
   workOrders, 
@@ -31,7 +29,6 @@ export const WorkOrderList = ({
   const [searchResponse, setSearchResponse] = useState<any>(null);
   const [selectedWorkOrder, setSelectedWorkOrder] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
-  const [searchValue, setSearchValue] = useState(filters.searchQuery || "");
 
   if (isLoading) {
     return <LoadingSkeleton />;
@@ -64,26 +61,6 @@ export const WorkOrderList = ({
     });
   };
 
-  // Handle search input change
-  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchValue(value);
-  };
-
-  // Apply search filter when user stops typing
-  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      onSearchChange(searchValue);
-    }
-  };
-
-  // Debounced search
-  const handleSearchBlur = () => {
-    if (searchValue !== filters.searchQuery) {
-      onSearchChange(searchValue);
-    }
-  };
-
   return (
     <div className="space-y-4">
       <StatusFilterCards 
@@ -91,20 +68,6 @@ export const WorkOrderList = ({
         onStatusFilterChange={handleStatusFilterChange}
         statusCounts={statusCounts}
       />
-
-      {/* Global Search Bar */}
-      <div className="relative w-full max-w-2xl mb-6">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
-        <Input
-          type="text"
-          placeholder="Search anything (order #, driver, location, date...)..."
-          value={searchValue}
-          onChange={handleSearchInputChange}
-          onKeyDown={handleSearchKeyDown}
-          onBlur={handleSearchBlur}
-          className="pl-10 w-full h-12 text-base bg-white shadow-sm border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-20"
-        />
-      </div>
 
       <DebugDataDisplay 
         searchResponse={searchResponse}

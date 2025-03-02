@@ -40,12 +40,10 @@ export const useWorkOrderFetch = (
       if (filters.searchQuery && filters.searchQuery.trim()) {
         const searchTerm = filters.searchQuery.trim();
         
-        // Create OR conditions for text search
-        query = query.or(
-          `order_no.ilike.%${searchTerm}%,` +
-          `qc_notes.ilike.%${searchTerm}%,` +
-          `resolution_notes.ilike.%${searchTerm}%`
-        );
+        // Search only in the order_no field directly
+        // For driver names and location names, we need to use a different approach
+        // because they're in JSON fields
+        query = query.or(`order_no.ilike.%${searchTerm}%`);
       }
       
       // Apply sorting if provided
@@ -66,8 +64,33 @@ export const useWorkOrderFetch = (
 
       console.log("Fetched work orders:", data?.length);
 
+      // Get all data and then filter client-side for driver and location
+      const transformedData = data.map(transformWorkOrderData);
+      
+      // Apply client-side filtering for driver and location when there's a search term
+      let filteredData = transformedData;
+      if (filters.searchQuery && filters.searchQuery.trim()) {
+        const searchTerm = filters.searchQuery.trim().toLowerCase();
+        
+        filteredData = transformedData.filter(order => {
+          // Check driver name
+          const driverName = order.driver?.name?.toLowerCase() || '';
+          
+          // Check location name
+          const locationName = order.location?.name?.toLowerCase() || 
+                              order.location?.locationName?.toLowerCase() || '';
+          
+          // Return true if any field matches the search term
+          return (
+            order.order_no.toLowerCase().includes(searchTerm) ||
+            driverName.includes(searchTerm) ||
+            locationName.includes(searchTerm)
+          );
+        });
+      }
+
       return {
-        data: data.map(transformWorkOrderData),
+        data: filteredData,
         total: count || 0
       };
     }
