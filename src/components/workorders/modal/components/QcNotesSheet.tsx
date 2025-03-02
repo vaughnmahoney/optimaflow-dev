@@ -6,7 +6,8 @@ import { WorkOrder } from "../../types";
 import { useWorkOrderMutations } from "@/hooks/useWorkOrderMutations";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from "@/components/ui/sheet";
-import { StickyNote } from "lucide-react";
+import { StickyNote, CircleDot } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface QcNotesSheetProps {
   workOrder: WorkOrder;
@@ -32,12 +33,25 @@ export const QcNotesSheet = ({ workOrder }: QcNotesSheetProps) => {
     }
   };
 
+  // Check if there are existing notes
+  const hasNotes = workOrder.qc_notes && workOrder.qc_notes.trim().length > 0;
+
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
+        <Button 
+          variant={hasNotes ? "secondary" : "outline"} 
+          size="sm" 
+          className={`gap-2 relative ${hasNotes ? "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 hover:text-blue-800" : ""}`}
+        >
           <StickyNote className="h-4 w-4" />
           QC Notes
+          {hasNotes && (
+            <Badge 
+              variant="info" 
+              className="w-2 h-2 p-0 absolute -top-1 -right-1 flex items-center justify-center rounded-full"
+            />
+          )}
         </Button>
       </SheetTrigger>
       <SheetContent side="bottom" className="max-w-md mx-auto rounded-t-lg h-[400px]">
