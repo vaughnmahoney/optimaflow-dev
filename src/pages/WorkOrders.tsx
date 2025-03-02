@@ -1,3 +1,4 @@
+
 import { Layout } from "@/components/Layout";
 import { WorkOrderContent } from "@/components/workorders/WorkOrderContent";
 import { WorkOrderHeader } from "@/components/workorders/WorkOrderHeader";
@@ -25,7 +26,10 @@ const WorkOrders = () => {
     updateWorkOrderStatus,
     openImageViewer,
     deleteWorkOrder,
-    statusCounts
+    statusCounts,
+    pagination,
+    handlePageChange,
+    handlePageSizeChange
   } = useWorkOrderData();
 
   useEffect(() => {
@@ -72,6 +76,9 @@ const WorkOrders = () => {
           sortField={sortField}
           sortDirection={sortDirection}
           onSort={handleSort}
+          pagination={pagination}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
         />
       </div>
     </Layout>

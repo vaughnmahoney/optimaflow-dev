@@ -3,11 +3,12 @@ import {
   Table,
   TableBody,
 } from "@/components/ui/table";
-import { WorkOrder, SortDirection, SortField } from "../types";
+import { WorkOrder, SortDirection, SortField, PaginationState } from "../types";
 import { WorkOrderTableHeader } from "./TableHeader";
 import { WorkOrderRow } from "./WorkOrderRow";
 import { EmptyState } from "./EmptyState";
 import { useSortableTable } from "./useSortableTable";
+import { Pagination } from "./Pagination";
 
 interface WorkOrderTableProps {
   workOrders: WorkOrder[];
@@ -17,6 +18,9 @@ interface WorkOrderTableProps {
   sortField?: SortField;
   sortDirection?: SortDirection;
   onSort?: (field: SortField, direction: SortDirection) => void;
+  pagination?: PaginationState;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
 }
 
 export const WorkOrderTable = ({ 
@@ -26,7 +30,10 @@ export const WorkOrderTable = ({
   onDelete,
   sortField: externalSortField,
   sortDirection: externalSortDirection,
-  onSort: externalOnSort
+  onSort: externalOnSort,
+  pagination,
+  onPageChange,
+  onPageSizeChange
 }: WorkOrderTableProps) => {
   const { 
     workOrders, 
@@ -64,6 +71,14 @@ export const WorkOrderTable = ({
           )}
         </TableBody>
       </Table>
+      
+      {pagination && onPageChange && onPageSizeChange && (
+        <Pagination 
+          pagination={pagination}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
+        />
+      )}
     </div>
   );
 };

@@ -5,6 +5,13 @@ import { ReactNode } from "react";
 export type SortDirection = 'asc' | 'desc' | null;
 export type SortField = 'order_no' | 'service_date' | 'driver' | 'location' | 'status' | null;
 
+// Define pagination types
+export interface PaginationState {
+  page: number;
+  pageSize: number;
+  total: number;
+}
+
 export interface Location {
   locationId?: string;
   address?: string;
@@ -116,6 +123,9 @@ export interface WorkOrderListProps {
   sortField?: SortField;
   sortDirection?: SortDirection;
   onSort?: (field: SortField, direction: SortDirection) => void;
+  pagination?: PaginationState;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
 }
 
 export interface StatusFilterProps {

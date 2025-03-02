@@ -21,7 +21,10 @@ export const WorkOrderList = ({
   statusCounts,
   sortField,
   sortDirection,
-  onSort
+  onSort,
+  pagination,
+  onPageChange,
+  onPageSizeChange
 }: WorkOrderListProps) => {
   const [transformedData, setTransformedData] = useState<any>(null);
   const [searchResponse, setSearchResponse] = useState<any>(null);
@@ -72,6 +75,9 @@ export const WorkOrderList = ({
         sortField={sortField}
         sortDirection={sortDirection}
         onSort={onSort}
+        pagination={pagination}
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
       />
 
       {currentWorkOrder && (

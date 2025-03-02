@@ -1,6 +1,6 @@
 
 import { WorkOrderList } from "./WorkOrderList";
-import { WorkOrder, SortDirection, SortField } from "./types";
+import { WorkOrder, SortDirection, SortField, PaginationState } from "./types";
 
 interface WorkOrderContentProps {
   workOrders: WorkOrder[];
@@ -22,6 +22,9 @@ interface WorkOrderContentProps {
   sortField?: SortField;
   sortDirection?: SortDirection;
   onSort?: (field: SortField, direction: SortDirection) => void;
+  pagination?: PaginationState;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
 }
 
 export const WorkOrderContent = ({
@@ -38,7 +41,10 @@ export const WorkOrderContent = ({
   statusCounts = { approved: 0, pending_review: 0, flagged: 0 },
   sortField,
   sortDirection,
-  onSort
+  onSort,
+  pagination,
+  onPageChange,
+  onPageSizeChange
 }: WorkOrderContentProps) => {
   return (
     <WorkOrderList
@@ -56,6 +62,9 @@ export const WorkOrderContent = ({
       sortField={sortField}
       sortDirection={sortDirection}
       onSort={onSort}
+      pagination={pagination}
+      onPageChange={onPageChange}
+      onPageSizeChange={onPageSizeChange}
     />
   );
 };
