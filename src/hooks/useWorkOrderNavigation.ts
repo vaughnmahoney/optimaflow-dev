@@ -18,6 +18,13 @@ export const useWorkOrderNavigation = ({
   const [currentWorkOrderId, setCurrentWorkOrderId] = useState<string | null>(initialWorkOrderId);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
+  // Update currentWorkOrderId when initialWorkOrderId changes
+  useEffect(() => {
+    if (initialWorkOrderId) {
+      setCurrentWorkOrderId(initialWorkOrderId);
+    }
+  }, [initialWorkOrderId]);
+  
   // Get the current work order and its index
   const currentWorkOrder = workOrders.find(wo => wo.id === currentWorkOrderId) || null;
   const currentIndex = currentWorkOrder ? workOrders.findIndex(wo => wo.id === currentWorkOrder.id) : -1;
