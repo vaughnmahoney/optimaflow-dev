@@ -40,36 +40,17 @@ export const useWorkOrderFetch = (
       if (filters.searchQuery && filters.searchQuery.trim()) {
         const searchTerm = filters.searchQuery.trim();
         
-        // Use OR condition to search across multiple fields/columns
+        // Create OR conditions for text search
         query = query.or(
           `order_no.ilike.%${searchTerm}%,` +
           `qc_notes.ilike.%${searchTerm}%,` +
-          `resolution_notes.ilike.%${searchTerm}%,` +
-          `search_response->data->location->name.ilike.%${searchTerm}%,` +
-          `search_response->data->location->locationId.ilike.%${searchTerm}%,` +
-          `search_response->scheduleInformation->driverName.ilike.%${searchTerm}%,` +
-          `search_response->scheduleInformation->driverId.ilike.%${searchTerm}%,` +
-          `search_response->data->service->serviceDate.ilike.%${searchTerm}%`
+          `resolution_notes.ilike.%${searchTerm}%`
         );
       }
       
       // Apply sorting if provided
       if (sortField && sortDirection) {
-        // Special handling for fields that are inside JSON
-        if (sortField === 'driver') {
-          // For driver sorting, we'd use a raw query but Supabase doesn't support sorting on JSONB easily
-          // Fallback to ordering by timestamp
-          query = query.order("timestamp", { ascending: sortDirection === 'asc' });
-        } else if (sortField === 'location') {
-          // Similar issue with location
-          query = query.order("timestamp", { ascending: sortDirection === 'asc' });
-        } else if (sortField === 'service_date') {
-          // Similar issue with service_date
-          query = query.order("timestamp", { ascending: sortDirection === 'asc' });
-        } else {
-          // For normal fields we can sort directly
-          query = query.order(sortField, { ascending: sortDirection === 'asc' });
-        }
+        query = query.order(sortField, { ascending: sortDirection === 'asc' });
       } else {
         // Default sort by timestamp
         query = query.order("timestamp", { ascending: false });
@@ -82,6 +63,8 @@ export const useWorkOrderFetch = (
       const { data, error, count } = await query;
 
       if (error) throw error;
+
+      console.log("Fetched work orders:", data?.length);
 
       return {
         data: data.map(transformWorkOrderData),
