@@ -1,4 +1,3 @@
-
 import { Layout } from "@/components/Layout";
 import { WorkOrderContent } from "@/components/workorders/WorkOrderContent";
 import { WorkOrderHeader } from "@/components/workorders/WorkOrderHeader";
@@ -6,10 +5,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useWorkOrderData } from "@/hooks/useWorkOrderData";
 import { useQueryClient } from "@tanstack/react-query";
-
-// Define types for sorting
-type SortDirection = 'asc' | 'desc' | null;
-type SortField = 'order_no' | 'service_date' | 'driver' | 'location' | 'status' | null;
+import { SortDirection, SortField } from "@/components/workorders/types";
 
 const WorkOrders = () => {
   const navigate = useNavigate();
@@ -32,7 +28,6 @@ const WorkOrders = () => {
     statusCounts
   } = useWorkOrderData();
 
-  // Prefetch flagged count when we enter this page
   useEffect(() => {
     queryClient.prefetchQuery({ 
       queryKey: ["flaggedWorkOrdersCount"]
@@ -40,7 +35,6 @@ const WorkOrders = () => {
   }, [queryClient]);
 
   useEffect(() => {
-    // If we're on a work order detail route, redirect to the main list
     if (location.pathname.match(/\/work-orders\/[^/]+$/)) {
       navigate("/work-orders", { replace: true });
     }

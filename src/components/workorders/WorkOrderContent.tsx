@@ -1,10 +1,6 @@
 
 import { WorkOrderList } from "./WorkOrderList";
-import { WorkOrder } from "./types";
-
-// Define types for sorting
-type SortDirection = 'asc' | 'desc' | null;
-type SortField = 'order_no' | 'service_date' | 'driver' | 'location' | 'status' | null;
+import { WorkOrder, SortDirection, SortField } from "./types";
 
 interface WorkOrderContentProps {
   workOrders: WorkOrder[];

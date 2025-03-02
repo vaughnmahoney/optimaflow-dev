@@ -3,7 +3,7 @@ import { useState } from "react";
 import { WorkOrderListProps } from "./types";
 import { StatusFilterCards } from "./filters/StatusFilterCards";
 import { DebugDataDisplay } from "./debug/DebugDataDisplay";
-import { WorkOrderTable } from "./WorkOrderTable";
+import { WorkOrderTable } from "./table/WorkOrderTable";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { ImageViewModal } from "./modal/ImageViewModal";
 

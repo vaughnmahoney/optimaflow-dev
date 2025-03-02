@@ -3,14 +3,11 @@ import {
   Table,
   TableBody,
 } from "@/components/ui/table";
-import { WorkOrder } from "./types";
-import { WorkOrderTableHeader } from "./table/TableHeader";
-import { WorkOrderRow } from "./table/WorkOrderRow";
-import { EmptyState } from "./table/EmptyState";
-import { useSortableTable } from "./table/useSortableTable";
-
-// Import types
-import { SortDirection, SortField } from "./types";
+import { WorkOrder, SortDirection, SortField } from "../types";
+import { WorkOrderTableHeader } from "./TableHeader";
+import { WorkOrderRow } from "./WorkOrderRow";
+import { EmptyState } from "./EmptyState";
+import { useSortableTable } from "./useSortableTable";
 
 interface WorkOrderTableProps {
   workOrders: WorkOrder[];
