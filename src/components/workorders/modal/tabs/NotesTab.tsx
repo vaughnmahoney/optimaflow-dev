@@ -1,92 +1,66 @@
 
-import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { WorkOrder } from "../../types";
-import { Label } from "@/components/ui/label";
+import React, { useState } from "react";
+import { WorkOrder } from "@/components/workorders/types";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { Save } from "lucide-react";
 
 interface NotesTabProps {
   workOrder: WorkOrder;
   onSaveQcNotes?: (workOrderId: string, notes: string) => Promise<void>;
 }
 
-export const NotesTab = ({
-  workOrder,
-  onSaveQcNotes
-}: NotesTabProps) => {
-  const completionData = workOrder.completion_response?.orders[0]?.data;
-  const [qcNotes, setQcNotes] = useState(workOrder.qc_notes || '');
+export const NotesTab: React.FC<NotesTabProps> = ({ workOrder, onSaveQcNotes }) => {
+  const [qcNotes, setQcNotes] = useState(workOrder.qc_notes || "");
   const [isSaving, setIsSaving] = useState(false);
-
-  useEffect(() => {
-    setQcNotes(workOrder.qc_notes || '');
-  }, [workOrder.id, workOrder.qc_notes]);
-
-  const handleSaveNotes = async () => {
+  
+  const techNotes = workOrder?.completion_response?.orders?.[0]?.data?.form?.note || "No notes from technician";
+  
+  const handleSaveQcNotes = async () => {
     if (!onSaveQcNotes) return;
     
     setIsSaving(true);
     try {
       await onSaveQcNotes(workOrder.id, qcNotes);
-      toast.success("QC notes saved successfully");
     } catch (error) {
       console.error("Error saving QC notes:", error);
-      toast.error("Failed to save QC notes");
     } finally {
       setIsSaving(false);
     }
   };
-
+  
   return (
-    <ScrollArea className="flex-1">
-      <div className="p-6 space-y-6 py-[4px] px-0">
-        {/* QC Notes Input Section */}
-        <Card className="p-4">
-          <div className="space-y-3">
-            <Label htmlFor="qc-notes" className="font-medium">QC Notes</Label>
-            <Textarea 
-              id="qc-notes"
-              placeholder="Add QC review notes here..."
-              value={qcNotes}
-              onChange={(e) => setQcNotes(e.target.value)}
-              className="min-h-[100px]"
-            />
-            {onSaveQcNotes && (
-              <Button 
-                onClick={handleSaveNotes} 
-                disabled={isSaving}
-                size="sm"
-              >
-                {isSaving ? "Saving..." : "Save Notes"}
-              </Button>
-            )}
-          </div>
-        </Card>
-
-        <Card className="p-4 py-[16px]">
-          <h3 className="font-medium mb-2">Tech Notes</h3>
-          <p className="text-sm whitespace-pre-wrap">
-            {completionData?.form?.note || 'No tech notes available'}
-          </p>
-        </Card>
-
-        <Card className="p-4">
-          <h3 className="font-medium mb-2">Service Notes</h3>
-          <p className="text-sm whitespace-pre-wrap">
-            {workOrder.service_notes || 'No service notes available'}
-          </p>
-        </Card>
-
-        <Card className="p-4">
-          <h3 className="font-medium mb-2">Additional Notes</h3>
-          <p className="text-sm whitespace-pre-wrap">
-            {workOrder.notes || 'No additional notes available'}
-          </p>
-        </Card>
+    <div className="p-4 space-y-6 h-full overflow-y-auto">
+      {/* Technician Notes */}
+      <div>
+        <h3 className="font-medium text-sm mb-2 text-gray-700">Technician Notes:</h3>
+        <div className="bg-gray-50 p-3 rounded border text-sm">
+          {techNotes}
+        </div>
       </div>
-    </ScrollArea>
+      
+      {/* QC Notes */}
+      <div>
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="font-medium text-sm text-gray-700">QC Notes:</h3>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleSaveQcNotes}
+            disabled={isSaving}
+            className="h-7 px-2 text-xs"
+          >
+            <Save className="h-3 w-3 mr-1" />
+            Save Notes
+          </Button>
+        </div>
+        <Textarea
+          placeholder="Add quality control notes here..."
+          value={qcNotes}
+          onChange={(e) => setQcNotes(e.target.value)}
+          className="min-h-[100px] text-sm"
+        />
+      </div>
+    </div>
   );
 };
