@@ -2,7 +2,7 @@
 import { Layout } from "@/components/Layout";
 import { WorkOrderContent } from "@/components/workorders/WorkOrderContent";
 import { WorkOrderHeader } from "@/components/workorders/WorkOrderHeader";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useWorkOrderData } from "@/hooks/useWorkOrderData";
 import { useQueryClient } from "@tanstack/react-query";
@@ -11,22 +11,22 @@ import { SortDirection, SortField } from "@/components/workorders/types";
 const WorkOrders = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortField, setSortField] = useState<SortField>(null);
-  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const queryClient = useQueryClient();
   
   const {
     data: workOrders,
     isLoading, 
-    statusFilter, 
-    setStatusFilter,
+    filters,
+    setFilters,
     searchWorkOrder,
     searchOptimoRoute,
     updateWorkOrderStatus,
     openImageViewer,
     deleteWorkOrder,
     statusCounts,
+    sortField,
+    sortDirection,
+    setSort,
     pagination,
     handlePageChange,
     handlePageSizeChange
@@ -45,8 +45,7 @@ const WorkOrders = () => {
   }, [location.pathname, navigate]);
 
   const handleSort = (field: SortField, direction: SortDirection) => {
-    setSortField(field);
-    setSortDirection(direction);
+    setSort(field, direction);
   };
 
   return (
@@ -54,9 +53,9 @@ const WorkOrders = () => {
       title="Work Orders"
       header={
         <WorkOrderHeader 
-          onSearchChange={setSearchQuery}
+          onSearchChange={searchWorkOrder}
           onOptimoRouteSearch={searchOptimoRoute}
-          searchQuery={searchQuery}
+          searchQuery={filters.searchQuery}
         />
       }
     >
@@ -64,12 +63,11 @@ const WorkOrders = () => {
         <WorkOrderContent 
           workOrders={workOrders}
           isLoading={isLoading}
-          statusFilter={statusFilter}
-          onStatusFilterChange={setStatusFilter}
+          filters={filters}
+          onFiltersChange={setFilters}
           onStatusUpdate={updateWorkOrderStatus}
           onImageView={openImageViewer}
           onDelete={deleteWorkOrder}
-          searchQuery={searchQuery}
           onSearchChange={searchWorkOrder}
           onOptimoRouteSearch={searchOptimoRoute}
           statusCounts={statusCounts}

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { WorkOrderListProps } from "./types";
 import { StatusFilterCards } from "./filters/StatusFilterCards";
+import { AdvancedFilters } from "./filters/AdvancedFilters";
 import { DebugDataDisplay } from "./debug/DebugDataDisplay";
 import { WorkOrderTable } from "./table/WorkOrderTable";
 import { LoadingSkeleton } from "./LoadingSkeleton";
@@ -10,12 +11,11 @@ import { ImageViewModal } from "./modal/ImageViewModal";
 export const WorkOrderList = ({ 
   workOrders, 
   isLoading,
-  onStatusFilterChange,
+  filters,
+  onFiltersChange,
   onStatusUpdate,
   onImageView,
   onDelete,
-  statusFilter,
-  searchQuery,
   onSearchChange,
   onOptimoRouteSearch,
   statusCounts,
@@ -54,12 +54,25 @@ export const WorkOrderList = ({
     }
   };
 
+  // Handle status filter change
+  const handleStatusFilterChange = (status: string | null) => {
+    onFiltersChange({
+      ...filters,
+      status
+    });
+  };
+
   return (
     <div className="space-y-4">
       <StatusFilterCards 
-        statusFilter={statusFilter}
-        onStatusFilterChange={onStatusFilterChange}
+        statusFilter={filters.status}
+        onStatusFilterChange={handleStatusFilterChange}
         statusCounts={statusCounts}
+      />
+
+      <AdvancedFilters 
+        filters={filters}
+        onFiltersChange={onFiltersChange}
       />
 
       <DebugDataDisplay 

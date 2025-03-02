@@ -12,6 +12,18 @@ export interface PaginationState {
   total: number;
 }
 
+// Define filter types
+export interface WorkOrderFilters {
+  status: string | null;
+  dateRange: {
+    from: Date | null;
+    to: Date | null;
+  };
+  driver: string | null;
+  location: string | null;
+  searchQuery: string;
+}
+
 export interface Location {
   locationId?: string;
   address?: string;
@@ -106,12 +118,11 @@ export interface WorkOrder {
 export interface WorkOrderListProps {
   workOrders: WorkOrder[];
   isLoading: boolean;
-  statusFilter: string | null;
-  onStatusFilterChange: (value: string | null) => void;
+  filters: WorkOrderFilters;
+  onFiltersChange: (filters: WorkOrderFilters) => void;
   onStatusUpdate: (workOrderId: string, newStatus: string) => void;
   onImageView: (workOrderId: string) => void;
   onDelete: (workOrderId: string) => void;
-  searchQuery: string;
   onSearchChange: (value: string) => void;
   onOptimoRouteSearch: (value: string) => void;
   statusCounts?: {

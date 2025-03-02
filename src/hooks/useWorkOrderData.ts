@@ -1,14 +1,20 @@
 
 import { useState } from "react";
-import { SortField, SortDirection, PaginationState } from "@/components/workorders/types";
+import { SortField, SortDirection, PaginationState, WorkOrderFilters } from "@/components/workorders/types";
 import { useWorkOrderFetch } from "./useWorkOrderFetch";
 import { useWorkOrderStatusCounts } from "./useWorkOrderStatusCounts";
 import { useWorkOrderMutations } from "./useWorkOrderMutations";
 import { useWorkOrderImport } from "./useWorkOrderImport";
 
 export const useWorkOrderData = () => {
-  const [statusFilter, setStatusFilter] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [filters, setFilters] = useState<WorkOrderFilters>({
+    status: null,
+    dateRange: { from: null, to: null },
+    driver: null,
+    location: null,
+    searchQuery: ""
+  });
+  
   const [sortField, setSortField] = useState<SortField>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const [pagination, setPagination] = useState<PaginationState>({
@@ -17,9 +23,9 @@ export const useWorkOrderData = () => {
     total: 0
   });
 
-  // Fetch work orders with pagination
+  // Fetch work orders with pagination and filters
   const { data: workOrdersData = { data: [], total: 0 }, isLoading, refetch } = useWorkOrderFetch(
-    statusFilter, 
+    filters, 
     pagination.page, 
     pagination.pageSize,
     sortField,
@@ -36,14 +42,17 @@ export const useWorkOrderData = () => {
   }
   
   // Get status counts
-  const statusCounts = useWorkOrderStatusCounts(workOrders, statusFilter);
+  const statusCounts = useWorkOrderStatusCounts(workOrders, filters.status);
   
   // Import and mutation methods
   const { searchOptimoRoute } = useWorkOrderImport();
   const { updateWorkOrderStatus, deleteWorkOrder } = useWorkOrderMutations();
 
   const searchWorkOrder = (query: string) => {
-    setSearchQuery(query);
+    setFilters(prev => ({
+      ...prev,
+      searchQuery: query
+    }));
     // Reset to first page when searching
     handlePageChange(1);
   };
@@ -67,12 +76,18 @@ export const useWorkOrderData = () => {
   const handlePageSizeChange = (pageSize: number) => {
     setPagination(prev => ({ ...prev, pageSize, page: 1 }));
   };
+  
+  const handleFiltersChange = (newFilters: WorkOrderFilters) => {
+    setFilters(newFilters);
+    // Reset to first page when filters change
+    handlePageChange(1);
+  };
 
   return {
     data: workOrders,
     isLoading,
-    statusFilter,
-    setStatusFilter,
+    filters,
+    setFilters: handleFiltersChange,
     searchWorkOrder,
     searchOptimoRoute,
     updateWorkOrderStatus,
