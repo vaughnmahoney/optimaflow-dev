@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Check, Download, Flag } from "lucide-react";
+import { Check, Download, Flag, RotateCcw, ThumbsDown, ThumbsUp } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 interface ModalFooterProps {
@@ -8,18 +8,26 @@ interface ModalFooterProps {
   onStatusUpdate?: (workOrderId: string, status: string) => void;
   onDownloadAll?: () => void;
   hasImages: boolean;
+  status?: string;
+  onResolveFlag?: (workOrderId: string, resolution: string) => void;
 }
 
 export const ModalFooter = ({
   workOrderId,
   onStatusUpdate,
   onDownloadAll,
-  hasImages
+  hasImages,
+  status,
+  onResolveFlag
 }: ModalFooterProps) => {
+  // Determine if this order is in a flagged state
+  const isFlagged = status === "flagged";
+  
   return (
     <div className="p-3 bg-white dark:bg-gray-950 border-t flex justify-between items-center">
       <div className="flex gap-2">
-        {onStatusUpdate && (
+        {/* Show approve/flag buttons only for pending review orders */}
+        {onStatusUpdate && !isFlagged && (
           <>
             <Button 
               variant="custom"
@@ -36,6 +44,36 @@ export const ModalFooter = ({
             >
               <Flag className="mr-1 h-4 w-4" />
               Flag for Review
+            </Button>
+          </>
+        )}
+        
+        {/* Show resolution buttons only for flagged orders */}
+        {onResolveFlag && isFlagged && (
+          <>
+            <Button 
+              variant="custom"
+              className="bg-[#6CAE75] hover:bg-[#5a9361] text-white font-medium rounded-md transition-colors"
+              onClick={() => onResolveFlag(workOrderId, "approved")}
+            >
+              <ThumbsUp className="mr-1 h-4 w-4" />
+              Approve Despite Flag
+            </Button>
+            <Button 
+              variant="custom"
+              className="bg-[#ea384c] hover:bg-[#d32f3f] text-white font-medium rounded-md transition-colors"
+              onClick={() => onResolveFlag(workOrderId, "rejected")}
+            >
+              <ThumbsDown className="mr-1 h-4 w-4" />
+              Reject Order
+            </Button>
+            <Button 
+              variant="custom"
+              className="bg-[#f59e0b] hover:bg-[#d97706] text-white font-medium rounded-md transition-colors"
+              onClick={() => onResolveFlag(workOrderId, "followup")}
+            >
+              <RotateCcw className="mr-1 h-4 w-4" />
+              Request Follow-up
             </Button>
           </>
         )}

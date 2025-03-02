@@ -83,6 +83,9 @@ export interface WorkOrder {
   tech_notes?: string;
   notes?: string;
   qc_notes?: string;
+  resolution_notes?: string;
+  resolved_at?: string;
+  resolver_id?: string;
   location?: Location;
   driver?: Driver;
   duration?: string;

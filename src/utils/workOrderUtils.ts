@@ -28,6 +28,12 @@ export const transformWorkOrderData = (order: any): WorkOrder => {
     notes: order.notes || '',
     // Include QC notes from database or empty string
     qc_notes: order.qc_notes || '',
+    // Include resolution notes from database or empty string
+    resolution_notes: order.resolution_notes || '',
+    // Include resolution timestamp
+    resolved_at: order.resolved_at || null,
+    // Include resolver ID (would be a user ID in a real app with auth)
+    resolver_id: order.resolver_id || null,
     location: searchResponse?.data?.location,
     driver: driver,
     // If duration exists in database use it, otherwise set to empty string
@@ -53,8 +59,11 @@ export const calculateStatusCounts = (workOrders: WorkOrder[]) => {
   };
   
   workOrders.forEach(order => {
-    if (order.status && counts[order.status] !== undefined) {
-      counts[order.status]++;
+    // Count both "flagged" and "flagged_followup" as flagged for the status cards
+    const status = order.status === "flagged_followup" ? "flagged" : order.status;
+    
+    if (status && counts[status] !== undefined) {
+      counts[status]++;
     }
   });
   
