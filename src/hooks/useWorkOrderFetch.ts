@@ -41,8 +41,9 @@ export const useWorkOrderFetch = (
         query = query.ilike('order_no', `%${filters.orderNo}%`);
       }
       
-      // Apply sorting if provided and it's not on service_date
-      if (sortField && sortDirection && sortField !== 'service_date') {
+      // Apply sorting if provided and it's a direct database column (not driver, location, or service_date)
+      if (sortField && sortDirection && 
+          !['service_date', 'driver', 'location'].includes(sortField)) {
         query = query.order(sortField, { ascending: sortDirection === 'asc' });
       } else {
         // Default sort by timestamp
@@ -116,29 +117,53 @@ export const useWorkOrderFetch = (
         });
       }
       
-      // Apply sorting for service_date client-side if needed
-      if (sortField === 'service_date' && sortDirection) {
-        filteredData.sort((a, b) => {
-          const dateA = a.service_date ? new Date(a.service_date).getTime() : 0;
-          const dateB = b.service_date ? new Date(b.service_date).getTime() : 0;
-          
-          // Handle invalid dates
-          const validA = !isNaN(dateA);
-          const validB = !isNaN(dateB);
-          
-          // If one date is valid and the other isn't, the valid one comes first
-          if (validA && !validB) return sortDirection === 'asc' ? -1 : 1;
-          if (!validA && validB) return sortDirection === 'asc' ? 1 : -1;
-          // If both are invalid, they're considered equal
-          if (!validA && !validB) return 0;
-          
-          return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
-        });
+      // Apply client-side sorting for non-direct database columns
+      if (sortField && sortDirection) {
+        if (['service_date', 'driver', 'location'].includes(sortField)) {
+          filteredData.sort((a, b) => {
+            let valueA: any;
+            let valueB: any;
+            
+            if (sortField === 'service_date') {
+              const dateA = a.service_date ? new Date(a.service_date).getTime() : 0;
+              const dateB = b.service_date ? new Date(b.service_date).getTime() : 0;
+              
+              // Handle invalid dates
+              const validA = !isNaN(dateA);
+              const validB = !isNaN(dateB);
+              
+              // If one date is valid and the other isn't, the valid one comes first
+              if (validA && !validB) return sortDirection === 'asc' ? -1 : 1;
+              if (!validA && validB) return sortDirection === 'asc' ? 1 : -1;
+              // If both are invalid, they're considered equal
+              if (!validA && !validB) return 0;
+              
+              return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
+            } 
+            else if (sortField === 'driver') {
+              // Handle driver sorting
+              valueA = a.driver && typeof a.driver === 'object' && a.driver.name
+                ? a.driver.name.toLowerCase() : '';
+              valueB = b.driver && typeof b.driver === 'object' && b.driver.name
+                ? b.driver.name.toLowerCase() : '';
+            } 
+            else if (sortField === 'location') {
+              // Handle location sorting
+              valueA = a.location && typeof a.location === 'object' 
+                ? (a.location.name || a.location.locationName || '').toLowerCase() : '';
+              valueB = b.location && typeof b.location === 'object'
+                ? (b.location.name || b.location.locationName || '').toLowerCase() : '';
+            }
+            
+            // For string comparisons (driver and location)
+            return sortDirection === 'asc' 
+              ? valueA.localeCompare(valueB) 
+              : valueB.localeCompare(valueA);
+          });
+        }
       }
       
       // Calculate total count based on the filtered data
-      // For simplicity, we'll just use the filtered data length for pagination
-      // But we need to handle the case where we're showing a page beyond the filtered data
       const filteredTotal = filteredData.length;
       
       // Implement client-side pagination for the filtered results
