@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,6 +19,7 @@ import Integrations from "./pages/Integrations";
 import Calendar from "./pages/Calendar";
 import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
+import BulkOrdersTest from "./pages/BulkOrdersTest";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +34,7 @@ const App = () => (
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/landing" element={<Index />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/bulk-orders-test" element={<BulkOrdersTest />} />
             
             {/* Main application routes */}
             <Route
