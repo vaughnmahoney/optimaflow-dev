@@ -15,6 +15,7 @@ interface BulkOrdersResponse {
   error?: string;
   orders?: any[];
   totalCount?: number;
+  raw?: any;
 }
 
 const BulkOrdersTest = () => {
@@ -39,6 +40,8 @@ const BulkOrdersTest = () => {
       const formattedStartDate = format(startDate, "yyyy-MM-dd");
       const formattedEndDate = format(endDate, "yyyy-MM-dd");
 
+      console.log(`Calling edge function with dates: ${formattedStartDate} to ${formattedEndDate}`);
+
       // Call the edge function
       const { data, error } = await supabase.functions.invoke("bulk-get-orders", {
         body: {
@@ -53,8 +56,19 @@ const BulkOrdersTest = () => {
         setResponse({ error: error.message });
       } else {
         console.log("Bulk orders response:", data);
+        
+        // Add specific messaging if API returned success:false
+        if (data.raw && data.raw.success === false) {
+          if (data.raw.code) {
+            toast.warning(`API returned: ${data.raw.code}${data.raw.message ? ` - ${data.raw.message}` : ''}`);
+          } else {
+            toast.warning("API returned success:false without an error code");
+          }
+        } else {
+          toast.success(`Retrieved ${data.totalCount || 0} orders`);
+        }
+        
         setResponse(data);
-        toast.success(`Retrieved ${data.totalCount || 0} orders`);
       }
     } catch (error) {
       console.error("Exception fetching bulk orders:", error);
@@ -161,9 +175,11 @@ const BulkOrdersTest = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="bg-green-50 border border-green-200 rounded p-4 mb-4">
-                  <p className="font-medium text-green-800">
-                    Successfully retrieved data from OptimoRoute API
+                <div className={`border rounded p-4 mb-4 ${response.raw && response.raw.success === false ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200'}`}>
+                  <p className={`font-medium ${response.raw && response.raw.success === false ? 'text-yellow-800' : 'text-green-800'}`}>
+                    {response.raw && response.raw.success === false 
+                      ? `API Response: ${response.raw.code || 'Unknown error'} ${response.raw.message ? `- ${response.raw.message}` : ''}`
+                      : 'Successfully retrieved data from OptimoRoute API'}
                   </p>
                 </div>
                 

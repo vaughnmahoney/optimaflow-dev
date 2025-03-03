@@ -40,6 +40,17 @@ Deno.serve(async (req) => {
       );
     }
 
+    console.log('Preparing request to OptimoRoute API');
+    
+    // Create the request body according to OptimoRoute API docs
+    const requestBody = {
+      dateFrom: startDate,
+      dateTo: endDate,
+      orders: [] // Empty array to fetch all orders in the date range
+    };
+    
+    console.log('Request body:', JSON.stringify(requestBody));
+
     // Call OptimoRoute get_orders API with the proper request format
     // The API expects an "orders" array as per the documentation
     const bulkOrdersResponse = await fetch(
@@ -49,21 +60,41 @@ Deno.serve(async (req) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          dateFrom: startDate,
-          dateTo: endDate,
-          orders: [] // Empty array to fetch all orders in the date range
-        })
+        body: JSON.stringify(requestBody)
       }
     );
 
+    console.log(`OptimoRoute API responded with status: ${bulkOrdersResponse.status}`);
+
+    // Get the response text before trying to parse as JSON
+    // This helps with debugging if the response isn't valid JSON
+    const responseText = await bulkOrdersResponse.text();
+    console.log('Raw API response:', responseText);
+    
+    let data;
+    try {
+      // Now parse the text as JSON
+      data = JSON.parse(responseText);
+    } catch (jsonError) {
+      console.error('Failed to parse response as JSON:', jsonError);
+      return new Response(
+        JSON.stringify({
+          error: `Failed to parse OptimoRoute API response as JSON: ${responseText.substring(0, 200)}...`,
+          success: false
+        }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
     if (!bulkOrdersResponse.ok) {
-      const errorText = await bulkOrdersResponse.text();
-      console.error('OptimoRoute API error:', bulkOrdersResponse.status, errorText);
+      console.error('OptimoRoute API error:', bulkOrdersResponse.status, data);
       
       return new Response(
         JSON.stringify({
-          error: `OptimoRoute API Error (${bulkOrdersResponse.status}): ${errorText}`,
+          error: `OptimoRoute API Error (${bulkOrdersResponse.status}): ${data.message || responseText}`,
           success: false
         }),
         { 
@@ -72,9 +103,13 @@ Deno.serve(async (req) => {
         }
       );
     }
-
-    const data = await bulkOrdersResponse.json();
-    console.log('Bulk orders successful response');
+    
+    // Check if data indicates success but returned no orders
+    if (data.success === false) {
+      console.log('API returned success:false. Error code:', data.code, 'Message:', data.message);
+    } else {
+      console.log('API call successful, retrieved orders:', data.orders?.length || 0);
+    }
     
     return new Response(
       JSON.stringify({
