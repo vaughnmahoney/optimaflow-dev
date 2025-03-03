@@ -7,8 +7,8 @@ export interface BulkOrdersResponse {
   filteredCount?: number; // Count of filtered orders (completed with success)
   searchResponse?: any;
   completionResponse?: any;
-  paginationProgress?: PaginationProgress; // New field for tracking pagination progress
-  afterTag?: string; // Direct afterTag at the top level for consistency
+  paginationProgress?: PaginationProgress; // For tracking pagination progress
+  after_tag?: string; // Direct after_tag from API response (snake_case as per API docs)
 }
 
 export interface CompletionStatus {
@@ -22,5 +22,5 @@ export interface PaginationProgress {
   totalPages?: number;
   totalOrdersRetrieved: number;
   isComplete: boolean;
-  afterTag?: string; // afterTag stored in pagination progress
+  afterTag?: string; // We still use camelCase internally for consistency
 }

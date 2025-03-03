@@ -17,14 +17,15 @@ const BulkOrdersTest = () => {
   const [shouldContinueFetching, setShouldContinueFetching] = useState(false);
   const [allCollectedOrders, setAllCollectedOrders] = useState<any[]>([]);
 
-  // Effect to handle continued fetching with afterTag
+  // Effect to handle continued fetching with pagination
   useEffect(() => {
     const fetchNextPage = async () => {
-      if (!shouldContinueFetching || !response || !response.paginationProgress) return;
+      if (!shouldContinueFetching || !response) return;
       
-      // Check if we have an afterTag and pagination is not complete
-      const afterTag = response.paginationProgress.afterTag;
-      if (!afterTag || response.paginationProgress.isComplete) {
+      // Check if we have an after_tag (from API) or afterTag (from pagination progress)
+      const afterTag = response.after_tag || response.paginationProgress?.afterTag;
+      
+      if (!afterTag || (response.paginationProgress && response.paginationProgress.isComplete)) {
         setShouldContinueFetching(false);
         return;
       }
@@ -70,7 +71,7 @@ const BulkOrdersTest = () => {
       console.log(`${logMessage} with dates: ${formattedStartDate} to ${formattedEndDate}`);
       
       if (afterTag) {
-        console.log(`Continuing with afterTag: ${afterTag}`);
+        console.log(`Continuing with afterTag/after_tag: ${afterTag}`);
         console.log(`Previously collected orders: ${previousOrders.length}`);
       }
 
@@ -91,7 +92,7 @@ const BulkOrdersTest = () => {
           startDate: formattedStartDate,
           endDate: formattedEndDate,
           enablePagination: true,
-          afterTag: afterTag,
+          afterTag: afterTag,  // We'll pass the tag in the same format we received it
           allCollectedOrders: previousOrders
         }
       });
@@ -130,13 +131,15 @@ const BulkOrdersTest = () => {
           toast.warning(`Completion API returned: ${data.completionResponse.code || 'Unknown error'} - ${data.completionResponse.message || ''}`);
           setShouldContinueFetching(false);
         } else {
-          // Check if we need to continue fetching (has afterTag and isn't complete)
-          const hasContinuation = !!data.paginationProgress?.afterTag && !data.paginationProgress?.isComplete;
+          // Check if we need to continue fetching 
+          // Now checking both after_tag (from API) and afterTag (from paginationProgress)
+          const hasContinuation = !!(data.after_tag || 
+                                  (data.paginationProgress?.afterTag && !data.paginationProgress?.isComplete));
           
           if (hasContinuation) {
-            console.log(`More pages available. afterTag: ${data.paginationProgress.afterTag}`);
+            console.log(`More pages available. after_tag: ${data.after_tag || data.paginationProgress?.afterTag}`);
             // Update all collected orders for the next request
-            setAllCollectedOrders(filteredOrders);
+            setAllCollectedOrders(previousOrders.length > 0 ? [...previousOrders, ...filteredOrders] : filteredOrders);
             setShouldContinueFetching(true);
           } else {
             console.log("Final page reached or pagination complete");

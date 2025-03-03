@@ -67,6 +67,24 @@ Our `get-orders-with-completion` Edge Function handles this workflow automatical
 }
 ```
 
+### Pagination with after_tag
+The OptimoRoute API returns a maximum of 500 results per request. To retrieve more, pagination must be implemented using the `after_tag` parameter:
+
+```json
+{
+  "success": true,
+  "orders": [
+    // Order data...
+  ],
+  "after_tag": "gAAAAABjGMzYTPcM2QlRwp69tNXXU7asLhGUXJ0SfZZfieAbi37z73cmyfhaoSHWiT8sJX2HnvLjvDTrK3l9TySz0vfWEkuzx6OYOkS4Qc37smFa2Q0t7WE="
+}
+```
+
+**Important**: The API returns `after_tag` (snake_case) not `afterTag` (camelCase). When implementing pagination:
+1. Extract the `after_tag` value from the response
+2. Pass it as `after_tag` in the next request
+3. Repeat until no more `after_tag` is returned in the response
+
 ### Completion Details Response Structure
 ```json
 {
@@ -124,7 +142,9 @@ Request Body:
 ```json
 {
   "startDate": "2025-02-01",
-  "endDate": "2025-02-28"
+  "endDate": "2025-02-28", 
+  "enablePagination": true,
+  "afterTag": "gAAAAABjGMzYTPcM2QlRwp69tNXXU7asLhGUXJ0SfZZfieAbi37z73cmyfhaoSHWiT8s..." // Optional, for pagination
 }
 ```
 
@@ -133,28 +153,10 @@ Response:
 {
   "success": true,
   "orders": [
-    {
-      // Original search_orders data
-      "id": "85514ce8ac8b12ece36fdda246efc04e",
-      "data": { ... },
-      "scheduleInformation": { ... },
-      // Added completion details
-      "completionDetails": {
-        "data": {
-          "form": {
-            "images": [ ... ],
-            "signature": { ... }
-          },
-          "startTime": { ... },
-          "endTime": { ... }
-        },
-        "orderNo": "1313975",
-        "success": true
-      }
-    },
-    // More orders...
+    // Order data with completion details merged
   ],
   "totalCount": 25,
+  "after_tag": "gAAAAABjGMzYTPcM2QlRwp69tNXXU7asLhGUXJ0SfZZfieAbi37z73cmyfhaoSHWiT8s...", // For pagination
   "searchResponse": { ... },
   "completionResponse": { ... }
 }
@@ -324,6 +326,7 @@ interface WorkOrder {
 - Maximum 10 requests per second
 - 10,000 requests per day per endpoint
 - 5MB maximum payload size
+- Maximum 500 orders per request (use pagination with `after_tag` for more)
 
 ### Error Codes
 ```typescript

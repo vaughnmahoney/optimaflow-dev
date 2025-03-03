@@ -24,6 +24,11 @@ export const ApiResponseDisplay = ({ response }: ApiResponseDisplayProps) => {
           {!response.paginationProgress?.isComplete && response.paginationProgress?.totalOrdersRetrieved !== undefined && (
             ` (Retrieving data... ${response.paginationProgress.totalOrdersRetrieved} orders so far)`
           )}
+          {response.after_tag && (
+            <span className="block text-xs font-normal text-muted-foreground mt-1">
+              Pagination active: after_tag present
+            </span>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent>

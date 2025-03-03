@@ -1,4 +1,3 @@
-
 import { corsHeaders } from '../_shared/cors.ts';
 
 const optimoRouteApiKey = Deno.env.get('OPTIMOROUTE_API_KEY');
@@ -54,10 +53,10 @@ Deno.serve(async (req) => {
       includeScheduleInformation: true
     };
     
-    // Add afterTag for pagination if provided
+    // Add afterTag for pagination if provided - now correctly using after_tag
     if (afterTag) {
-      searchRequestBody.afterTag = afterTag;
-      console.log(`Including afterTag in request: ${afterTag}`);
+      searchRequestBody.after_tag = afterTag;
+      console.log(`Including after_tag in request: ${afterTag}`);
     }
     
     const searchResponse = await fetch(
@@ -90,7 +89,7 @@ Deno.serve(async (req) => {
     // Parse search response
     const searchData = await searchResponse.json();
     console.log(`Found ${searchData.orders?.length || 0} orders on current page`);
-    console.log(`After tag present: ${!!searchData.afterTag}`);
+    console.log(`After tag present: ${!!searchData.after_tag}`); // Use after_tag from API
     
     // If no orders found on this page, return what we've collected so far or empty result
     if (!searchData.orders || searchData.orders.length === 0) {
@@ -123,18 +122,20 @@ Deno.serve(async (req) => {
       console.log('No valid order numbers found in search results');
       
       // If we're using pagination and have previous results, continue the pagination
-      if (enablePagination && searchData.afterTag && allCollectedOrders.length > 0) {
+      // Now using after_tag from the API response
+      if (enablePagination && searchData.after_tag && allCollectedOrders.length > 0) {
         // Call ourselves again with the afterTag to get the next page
         return new Response(
           JSON.stringify({
             success: true,
             orders: allCollectedOrders,
             totalCount: allCollectedOrders.length,
+            after_tag: searchData.after_tag, // Include original after_tag from API
             paginationProgress: {
               currentPage: allCollectedOrders.length > 0 ? Math.ceil(allCollectedOrders.length / 500) + 1 : 1,
               totalOrdersRetrieved: allCollectedOrders.length,
               isComplete: false,
-              afterTag: searchData.afterTag
+              afterTag: searchData.after_tag // Also store in our internal camelCase format
             }
           }),
           { 
@@ -229,16 +230,18 @@ Deno.serve(async (req) => {
     console.log(`Successfully combined data: ${currentPageOrders.length} new orders, ${combinedOrders.length} total orders`);
     
     // Handle pagination if enabled and we have more pages
-    if (enablePagination && searchData.afterTag) {
+    // Now using after_tag from the API response
+    if (enablePagination && searchData.after_tag) {
       const currentPage = allCollectedOrders.length > 0 ? Math.ceil(allCollectedOrders.length / 500) + 1 : 1;
       console.log(`This is page ${currentPage}, more pages available. Returning progress information.`);
+      console.log(`API returned after_tag: ${searchData.after_tag}`);
       
       // Prepare pagination progress information
       const paginationProgress = {
         currentPage,
         totalOrdersRetrieved: combinedOrders.length,
         isComplete: false,
-        afterTag: searchData.afterTag
+        afterTag: searchData.after_tag // Store after_tag in our internal camelCase format
       };
       
       // Prepare response with pagination info
@@ -246,6 +249,7 @@ Deno.serve(async (req) => {
         success: true,
         orders: combinedOrders,
         totalCount: combinedOrders.length,
+        after_tag: searchData.after_tag, // Include original after_tag from API
         paginationProgress,
         searchResponse: searchData,
         completionResponse: completionData
