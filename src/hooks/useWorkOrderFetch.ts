@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { WorkOrder, WorkOrderFilters } from "@/components/workorders/types";
@@ -173,6 +172,8 @@ export const useWorkOrderFetch = (
         data: paginatedData,
         total: filteredTotal
       };
-    }
+    },
+    placeholderData: (previousData) => previousData,
+    keepPreviousData: true
   });
 };
