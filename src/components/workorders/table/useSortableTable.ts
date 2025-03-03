@@ -37,9 +37,30 @@ export const useSortableTable = (
             valueB = b.order_no || '';
             break;
           case 'service_date':
-            valueA = a.service_date ? new Date(a.service_date).getTime() : 0;
-            valueB = b.service_date ? new Date(b.service_date).getTime() : 0;
-            break;
+            // Improved date handling with validity checking
+            const dateA = a.service_date ? new Date(a.service_date) : null;
+            const dateB = b.service_date ? new Date(b.service_date) : null;
+            
+            // Check if dates are valid
+            const validA = dateA && !isNaN(dateA.getTime());
+            const validB = dateB && !isNaN(dateB.getTime());
+            
+            // If one date is valid and the other isn't, the valid one comes first
+            if (validA && !validB) return sortDirection === 'asc' ? -1 : 1;
+            if (!validA && validB) return sortDirection === 'asc' ? 1 : -1;
+            // If both are invalid, use alphabetical sorting on the raw strings
+            if (!validA && !validB) {
+              valueA = a.service_date || '';
+              valueB = b.service_date || '';
+              return sortDirection === 'asc' 
+                ? valueA.localeCompare(valueB)
+                : valueB.localeCompare(valueA);
+            }
+            
+            // If both dates are valid, compare timestamps
+            return sortDirection === 'asc' 
+              ? dateA!.getTime() - dateB!.getTime()
+              : dateB!.getTime() - dateA!.getTime();
           case 'driver':
             valueA = getDriverName(a).toLowerCase();
             valueB = getDriverName(b).toLowerCase();

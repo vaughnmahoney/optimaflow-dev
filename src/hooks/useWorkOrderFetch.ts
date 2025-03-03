@@ -36,21 +36,13 @@ export const useWorkOrderFetch = (
         }
       }
       
-      // Apply column-specific filters
+      // Apply column-specific filters that operate on actual database columns
       if (filters.orderNo) {
         query = query.ilike('order_no', `%${filters.orderNo}%`);
       }
-
-      if (filters.dateRange && filters.dateRange.from) {
-        query = query.gte('service_date', filters.dateRange.from.toISOString());
-      }
-
-      if (filters.dateRange && filters.dateRange.to) {
-        query = query.lte('service_date', filters.dateRange.to.toISOString());
-      }
       
-      // Apply sorting if provided
-      if (sortField && sortDirection) {
+      // Apply sorting if provided and it's not on service_date
+      if (sortField && sortDirection && sortField !== 'service_date') {
         query = query.order(sortField, { ascending: sortDirection === 'asc' });
       } else {
         // Default sort by timestamp
@@ -68,10 +60,10 @@ export const useWorkOrderFetch = (
       // Transform all data to proper WorkOrder objects
       const transformedOrders = data.map(transformWorkOrderData);
       
-      // Apply client-side filtering for driver and location 
-      // (these are stored as JSON and can't be queried directly in Supabase)
+      // Apply client-side filtering for fields stored within JSON
       let filteredData = transformedOrders;
       
+      // Filter by driver
       if (filters.driver) {
         const driverSearchTerm = filters.driver.toLowerCase();
         filteredData = filteredData.filter(order => {
@@ -82,6 +74,7 @@ export const useWorkOrderFetch = (
         });
       }
       
+      // Filter by location
       if (filters.location) {
         const locationSearchTerm = filters.location.toLowerCase();
         filteredData = filteredData.filter(order => {
@@ -93,9 +86,67 @@ export const useWorkOrderFetch = (
         });
       }
       
+      // Filter by service date (client-side since it's extracted from JSON)
+      if (filters.dateRange && (filters.dateRange.from || filters.dateRange.to)) {
+        filteredData = filteredData.filter(order => {
+          if (!order.service_date) return false;
+          
+          const orderDate = new Date(order.service_date);
+          
+          // Check if orderDate is valid
+          if (isNaN(orderDate.getTime())) return false;
+          
+          // Check "from" date if specified
+          if (filters.dateRange.from) {
+            const fromDate = new Date(filters.dateRange.from);
+            fromDate.setHours(0, 0, 0, 0);
+            
+            if (orderDate < fromDate) return false;
+          }
+          
+          // Check "to" date if specified
+          if (filters.dateRange.to) {
+            const toDate = new Date(filters.dateRange.to);
+            toDate.setHours(23, 59, 59, 999);
+            
+            if (orderDate > toDate) return false;
+          }
+          
+          return true;
+        });
+      }
+      
+      // Apply sorting for service_date client-side if needed
+      if (sortField === 'service_date' && sortDirection) {
+        filteredData.sort((a, b) => {
+          const dateA = a.service_date ? new Date(a.service_date).getTime() : 0;
+          const dateB = b.service_date ? new Date(b.service_date).getTime() : 0;
+          
+          // Handle invalid dates
+          const validA = !isNaN(dateA);
+          const validB = !isNaN(dateB);
+          
+          // If one date is valid and the other isn't, the valid one comes first
+          if (validA && !validB) return sortDirection === 'asc' ? -1 : 1;
+          if (!validA && validB) return sortDirection === 'asc' ? 1 : -1;
+          // If both are invalid, they're considered equal
+          if (!validA && !validB) return 0;
+          
+          return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
+        });
+      }
+      
+      // Calculate total count based on the filtered data
+      // For simplicity, we'll just use the filtered data length for pagination
+      // But we need to handle the case where we're showing a page beyond the filtered data
+      const filteredTotal = filteredData.length;
+      
+      // Implement client-side pagination for the filtered results
+      const paginatedData = filteredData.slice(0, pageSize);
+      
       return {
-        data: filteredData,
-        total: count || filteredData.length
+        data: paginatedData,
+        total: filteredTotal
       };
     }
   });

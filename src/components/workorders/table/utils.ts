@@ -6,7 +6,7 @@ export const isColumnFiltered = (column: string, filters: WorkOrderFilters): boo
     case 'order_no':
       return !!filters.orderNo;
     case 'service_date':
-      return !!(filters.dateRange.from || filters.dateRange.to);
+      return !!(filters.dateRange?.from || filters.dateRange?.to);
     case 'driver':
       return !!filters.driver;
     case 'location':
