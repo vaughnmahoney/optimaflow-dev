@@ -12,11 +12,11 @@ interface BulkOrdersResponse {
   raw?: any;
 }
 
-export const useBulkOrderImport = () => {
+export function useBulkOrderImport() {
   const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState<BulkOrdersResponse | null>(null);
 
-  const fetchBulkOrders = async (startDate: Date, endDate: Date) => {
+  const importOrders = async (startDate: Date, endDate: Date) => {
     if (!startDate || !endDate) {
       toast.error("Please select both start and end dates");
       return null;
@@ -30,7 +30,7 @@ export const useBulkOrderImport = () => {
       const formattedStartDate = format(startDate, "yyyy-MM-dd");
       const formattedEndDate = format(endDate, "yyyy-MM-dd");
 
-      console.log(`Calling edge function with dates: ${formattedStartDate} to ${formattedEndDate}`);
+      console.log(`Calling bulk-get-orders function with dates: ${formattedStartDate} to ${formattedEndDate}`);
 
       // Call the edge function
       const { data, error } = await supabase.functions.invoke("bulk-get-orders", {
@@ -45,7 +45,7 @@ export const useBulkOrderImport = () => {
         toast.error(`Error: ${error.message}`);
         setResponse({ error: error.message });
         return null;
-      } 
+      }
       
       console.log("Bulk orders response:", data);
       
@@ -72,30 +72,11 @@ export const useBulkOrderImport = () => {
     }
   };
 
-  const importBulkOrders = async (orders: any[]) => {
-    if (!orders || orders.length === 0) {
-      toast.error("No orders to import");
-      return;
-    }
-
-    setIsLoading(true);
-    
-    try {
-      // This would be implemented to actually save the orders to the database
-      // For now, just show a success message
-      toast.success(`Imported ${orders.length} orders`);
-    } catch (error) {
-      console.error("Failed to import orders:", error);
-      toast.error(`Failed to import orders: ${error instanceof Error ? error.message : String(error)}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return {
-    fetchBulkOrders,
-    importBulkOrders,
+    importOrders,
     isLoading,
     response
   };
-};
+}
+
+export default useBulkOrderImport;
