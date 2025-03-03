@@ -1,4 +1,5 @@
 
-import { ColumnFilterProps } from "../types";
+import { ColumnFilterProps as OriginalColumnFilterProps } from "../types";
 
-export { ColumnFilterProps };
+// Re-export using 'export type' for compatibility with isolatedModules
+export type { OriginalColumnFilterProps as ColumnFilterProps };
