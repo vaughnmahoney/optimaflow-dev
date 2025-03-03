@@ -20,13 +20,21 @@ OptimaFlow integrates with OptimoRoute to manage HVAC service work orders throug
 
 ### Edge Function Configuration
 ```typescript
-// search-optimoroute/index.ts
+// Constants for all OptimoRoute API calls
 const baseUrl = 'https://api.optimoroute.com/v1'
 const endpoints = {
   search: '/search_orders',
   completion: '/get_completion_details'
 }
 ```
+
+### Two-Step Fetching Process
+Due to OptimoRoute API design, we use a two-step process to get complete work order data:
+
+1. First, call `search_orders` to get basic order information and IDs by date range
+2. Then, call `get_completion_details` with the retrieved order numbers to get images, signatures, etc.
+
+Our `get-orders-with-completion` Edge Function handles this workflow automatically.
 
 ### Search Orders Response Structure
 ```json
@@ -93,7 +101,66 @@ const endpoints = {
 }
 ```
 
-## 3. Database Storage (Supabase)
+## 3. Edge Functions
+
+### `bulk-get-orders`
+This function calls the `search_orders` endpoint to retrieve basic order information by date range.
+
+Request Body:
+```json
+{
+  "startDate": "2025-02-01",
+  "endDate": "2025-02-28"
+}
+```
+
+### `get-orders-with-completion`
+This function implements the two-step workflow:
+1. First calls `search_orders` to get orders in the specified date range
+2. Then calls `get_completion_details` with those order numbers
+3. Combines both responses into a unified data structure
+
+Request Body:
+```json
+{
+  "startDate": "2025-02-01",
+  "endDate": "2025-02-28"
+}
+```
+
+Response:
+```json
+{
+  "success": true,
+  "orders": [
+    {
+      // Original search_orders data
+      "id": "85514ce8ac8b12ece36fdda246efc04e",
+      "data": { ... },
+      "scheduleInformation": { ... },
+      // Added completion details
+      "completionDetails": {
+        "data": {
+          "form": {
+            "images": [ ... ],
+            "signature": { ... }
+          },
+          "startTime": { ... },
+          "endTime": { ... }
+        },
+        "orderNo": "1313975",
+        "success": true
+      }
+    },
+    // More orders...
+  ],
+  "totalCount": 25,
+  "searchResponse": { ... },
+  "completionResponse": { ... }
+}
+```
+
+## 4. Database Storage (Supabase)
 
 ### Work Orders Table Schema
 ```sql
@@ -137,7 +204,7 @@ const STATUS_FLOW = {
 };
 ```
 
-## 4. Frontend Display Logic
+## 5. Frontend Display Logic
 
 ### Work Order List Component
 ```typescript
@@ -170,7 +237,7 @@ const getVariant = (status: string) => {
 };
 ```
 
-## 5. Common Issues & Solutions
+## 6. Common Issues & Solutions
 
 ### Data Retrieval Issues
 1. **Missing Images**
@@ -190,7 +257,7 @@ const getVariant = (status: string) => {
 4. Show success/error toast
 5. Update image modal if open
 
-## 6. Best Practices for Edits
+## 7. Best Practices for Edits
 
 ### DO NOT:
 - Modify the structure of completion_response or search_response JSONB
@@ -237,7 +304,7 @@ interface WorkOrder {
 }
 ```
 
-## 7. Required Validations
+## 8. Required Validations
 
 ### Before Deployment:
 1. Verify OptimoRoute API responses match expected structure
@@ -250,13 +317,6 @@ interface WorkOrder {
 - Monitor work order processing times
 - Track failed status updates
 - Log image loading failures
-
-## 8. Future Considerations
-
-1. Image optimization and caching
-2. Batch processing for large order volumes
-3. Automated status updates based on rules
-4. Enhanced error recovery mechanisms
 
 ## 9. OptimoRoute API Rate Limits
 

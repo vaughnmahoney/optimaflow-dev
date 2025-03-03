@@ -9,13 +9,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface BulkOrdersResponse {
   success?: boolean;
   error?: string;
   orders?: any[];
   totalCount?: number;
-  raw?: any;
+  searchResponse?: any;
+  completionResponse?: any;
 }
 
 const BulkOrdersTest = () => {
@@ -25,8 +27,9 @@ const BulkOrdersTest = () => {
   const [response, setResponse] = useState<BulkOrdersResponse | null>(null);
   const [openStartDate, setOpenStartDate] = useState(false);
   const [openEndDate, setOpenEndDate] = useState(false);
+  const [activeTab, setActiveTab] = useState("search-only");
 
-  const fetchBulkOrders = async () => {
+  const fetchOrders = async () => {
     if (!startDate || !endDate) {
       toast.error("Please select both start and end dates");
       return;
@@ -40,10 +43,21 @@ const BulkOrdersTest = () => {
       const formattedStartDate = format(startDate, "yyyy-MM-dd");
       const formattedEndDate = format(endDate, "yyyy-MM-dd");
 
-      console.log(`Calling edge function with dates: ${formattedStartDate} to ${formattedEndDate}`);
+      let endpoint;
+      let logMessage;
+      
+      if (activeTab === "search-only") {
+        endpoint = "bulk-get-orders";
+        logMessage = "Calling bulk-get-orders (search_orders only)";
+      } else {
+        endpoint = "get-orders-with-completion";
+        logMessage = "Calling get-orders-with-completion (search_orders + get_completion_details)";
+      }
+      
+      console.log(`${logMessage} with dates: ${formattedStartDate} to ${formattedEndDate}`);
 
-      // Call the edge function
-      const { data, error } = await supabase.functions.invoke("bulk-get-orders", {
+      // Call the selected edge function
+      const { data, error } = await supabase.functions.invoke(endpoint, {
         body: {
           startDate: formattedStartDate,
           endDate: formattedEndDate
@@ -51,19 +65,17 @@ const BulkOrdersTest = () => {
       });
 
       if (error) {
-        console.error("Error fetching bulk orders:", error);
+        console.error(`Error fetching orders:`, error);
         toast.error(`Error: ${error.message}`);
         setResponse({ error: error.message });
       } else {
-        console.log("Bulk orders response:", data);
+        console.log("API response:", data);
         
         // Add specific messaging if API returned success:false
-        if (data.raw && data.raw.success === false) {
-          if (data.raw.code) {
-            toast.warning(`API returned: ${data.raw.code}${data.raw.message ? ` - ${data.raw.message}` : ''}`);
-          } else {
-            toast.warning("API returned success:false without an error code");
-          }
+        if (data.searchResponse && data.searchResponse.success === false) {
+          toast.warning(`Search API returned: ${data.searchResponse.code || 'Unknown error'} - ${data.searchResponse.message || ''}`);
+        } else if (data.completionResponse && data.completionResponse.success === false) {
+          toast.warning(`Completion API returned: ${data.completionResponse.code || 'Unknown error'} - ${data.completionResponse.message || ''}`);
         } else {
           toast.success(`Retrieved ${data.totalCount || 0} orders`);
         }
@@ -71,7 +83,7 @@ const BulkOrdersTest = () => {
         setResponse(data);
       }
     } catch (error) {
-      console.error("Exception fetching bulk orders:", error);
+      console.error("Exception fetching orders:", error);
       toast.error(`Exception: ${error instanceof Error ? error.message : String(error)}`);
       setResponse({ error: String(error) });
     } finally {
@@ -88,6 +100,19 @@ const BulkOrdersTest = () => {
           <CardTitle>Test Parameters</CardTitle>
         </CardHeader>
         <CardContent>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="search-only">Search Only</TabsTrigger>
+              <TabsTrigger value="with-completion">With Completion Details</TabsTrigger>
+            </TabsList>
+            <TabsContent value="search-only" className="mt-2 text-sm text-muted-foreground">
+              Uses search_orders endpoint to retrieve basic order data by date range.
+            </TabsContent>
+            <TabsContent value="with-completion" className="mt-2 text-sm text-muted-foreground">
+              Uses search_orders + get_completion_details to retrieve full order data including images.
+            </TabsContent>
+          </Tabs>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="startDate">Start Date</Label>
@@ -144,16 +169,16 @@ const BulkOrdersTest = () => {
           
           <Button 
             className="mt-4" 
-            onClick={fetchBulkOrders} 
+            onClick={fetchOrders} 
             disabled={isLoading || !startDate || !endDate}
           >
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Fetching Orders...
+                {activeTab === "search-only" ? "Fetching Orders..." : "Fetching Orders with Completion Data..."}
               </>
             ) : (
-              "Fetch Bulk Orders"
+              activeTab === "search-only" ? "Fetch Orders" : "Fetch Orders with Completion Data"
             )}
           </Button>
         </CardContent>
@@ -175,10 +200,22 @@ const BulkOrdersTest = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className={`border rounded p-4 mb-4 ${response.raw && response.raw.success === false ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200'}`}>
-                  <p className={`font-medium ${response.raw && response.raw.success === false ? 'text-yellow-800' : 'text-green-800'}`}>
-                    {response.raw && response.raw.success === false 
-                      ? `API Response: ${response.raw.code || 'Unknown error'} ${response.raw.message ? `- ${response.raw.message}` : ''}`
+                <div className={`border rounded p-4 mb-4 ${
+                  (response.searchResponse && response.searchResponse.success === false) ||
+                  (response.completionResponse && response.completionResponse.success === false)
+                    ? 'bg-yellow-50 border-yellow-200' 
+                    : 'bg-green-50 border-green-200'
+                }`}>
+                  <p className={`font-medium ${
+                    (response.searchResponse && response.searchResponse.success === false) ||
+                    (response.completionResponse && response.completionResponse.success === false)
+                      ? 'text-yellow-800' 
+                      : 'text-green-800'
+                  }`}>
+                    {response.searchResponse && response.searchResponse.success === false 
+                      ? `Search API Response: ${response.searchResponse.code || 'Unknown error'} ${response.searchResponse.message ? `- ${response.searchResponse.message}` : ''}`
+                      : response.completionResponse && response.completionResponse.success === false
+                      ? `Completion API Response: ${response.completionResponse.code || 'Unknown error'} ${response.completionResponse.message ? `- ${response.completionResponse.message}` : ''}`
                       : 'Successfully retrieved data from OptimoRoute API'}
                   </p>
                 </div>
