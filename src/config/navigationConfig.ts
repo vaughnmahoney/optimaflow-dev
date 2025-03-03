@@ -2,11 +2,20 @@
 import {
   LayoutDashboard,
   ListChecks,
-  Calendar,
   Users,
-  Settings,
+  Calendar,
   ServerIcon,
+  Settings,
 } from "lucide-react"
+
+export const Icons = {
+  LayoutDashboard,
+  ListChecks,
+  Users,
+  Calendar,
+  ServerIcon,
+  Settings,
+}
 
 export interface NavItem {
   label: string
@@ -14,85 +23,50 @@ export interface NavItem {
   href: string
 }
 
-// Adding this export to fix the SidebarSubmenu error
-export interface NavigationItem {
-  label: string
-  icon: keyof typeof Icons
-  href: string
+export interface NavigationItem extends NavItem {
+  items?: NavItem[]
 }
 
-export interface NavSection {
-  label: string
-  items: NavItem[]
-}
-
-const Icons = {
-  LayoutDashboard,
-  ListChecks,
-  Calendar,
-  Users,
-  Settings,
-  ServerIcon,
-}
-
-export const navigationConfig: NavSection[] = [
+export const navigationConfig: NavigationItem[] = [
   {
-    label: "Main",
-    items: [
-      {
-        label: "Dashboard",
-        icon: "LayoutDashboard",
-        href: "/",
-      },
-    ],
+    label: "Dashboard",
+    icon: "LayoutDashboard",
+    href: "/dashboard",
   },
   {
     label: "Work Orders",
-    items: [
-      {
-        label: "Work Orders",
-        icon: "ListChecks",
-        href: "/work-orders",
-      },
-      {
-        label: "Calendar",
-        icon: "Calendar",
-        href: "/calendar",
-      },
-    ],
+    icon: "ListChecks",
+    href: "/work-orders",
   },
   {
     label: "Attendance",
-    items: [
-      {
-        label: "Technicians",
-        icon: "Users",
-        href: "/technicians",
-      },
-      {
-        label: "Attendance",
-        icon: "Calendar",
-        href: "/attendance",
-      },
-    ],
+    icon: "Users",
+    href: "/attendance",
+  },
+  {
+    label: "Calendar",
+    icon: "Calendar",
+    href: "/calendar",
+  },
+  {
+    label: "Storage",
+    icon: "ServerIcon",
+    href: "/storage",
   },
   {
     label: "Settings",
+    icon: "Settings",
+    href: "/settings",
     items: [
       {
-        label: "Settings",
-        icon: "Settings",
-        href: "/settings",
+        label: "Employees",
+        icon: "Users",
+        href: "/employees",
       },
-    ],
-  },
-  {
-    label: "OptimoRoute API Tests",
-    items: [
       {
-        label: "Bulk Orders Test",
+        label: "Integrations",
         icon: "ServerIcon",
-        href: "/bulk-orders-test",
+        href: "/integrations",
       },
     ],
   },
