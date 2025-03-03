@@ -2,9 +2,10 @@
 import { WorkOrder } from "@/components/workorders/types";
 import { TableCell, TableRow, Table, TableHeader, TableHead, TableBody } from "@/components/ui/table";
 import { format } from "date-fns";
-import { Eye } from "lucide-react";
+import { Eye, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/workorders/StatusBadge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface BulkOrdersTableProps {
   orders: WorkOrder[];
@@ -32,24 +33,57 @@ export const BulkOrdersTable = ({ orders, isLoading }: BulkOrdersTableProps) => 
     );
   }
 
+  // Helper function to safely get location name with fallbacks
   const getLocationName = (order: WorkOrder): string => {
     if (!order.location) return 'N/A';
     
-    if (typeof order.location === 'object' && order.location.name) {
-      return order.location.name;
+    if (typeof order.location === 'object') {
+      // Try all possible properties for location name
+      return order.location.name || 
+             order.location.locationName || 
+             order.location.location_name ||
+             'N/A';
+    }
+    
+    if (typeof order.location === 'string') {
+      return order.location;
     }
     
     return 'N/A';
   };
 
+  // Helper function to safely get driver name with fallbacks
   const getDriverName = (order: WorkOrder): string => {
     if (!order.driver) return 'No Driver';
     
-    if (typeof order.driver === 'object' && order.driver.name) {
-      return order.driver.name;
+    if (typeof order.driver === 'object') {
+      return order.driver.name || 'No Name';
+    }
+    
+    if (typeof order.driver === 'string') {
+      return order.driver;
     }
     
     return 'No Driver';
+  };
+
+  // Extract completion details (image count, signature status)
+  const getImageCount = (order: WorkOrder): number => {
+    if (!order.completion_response?.orders?.[0]?.data?.form?.images) {
+      return 0;
+    }
+    return order.completion_response.orders[0].data.form.images.length;
+  };
+
+  // Determine image status for display
+  const getImageStatus = (order: WorkOrder): { text: string, hasImages: boolean } => {
+    const imageCount = getImageCount(order);
+    
+    if (imageCount > 0) {
+      return { text: `${imageCount} images`, hasImages: true };
+    }
+    
+    return { text: "No", hasImages: false };
   };
 
   return (
@@ -61,37 +95,70 @@ export const BulkOrdersTable = ({ orders, isLoading }: BulkOrdersTableProps) => 
             <TableHead>Service Date</TableHead>
             <TableHead>Driver</TableHead>
             <TableHead>Location</TableHead>
-            <TableHead>Has Images</TableHead>
+            <TableHead>Images</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Details</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {orders.map((order) => (
-            <TableRow key={order.id}>
-              <TableCell>{order.order_no}</TableCell>
-              <TableCell>
-                {order.service_date ? format(new Date(order.service_date), "MMM d, yyyy") : "N/A"}
-              </TableCell>
-              <TableCell className="max-w-xs truncate">
-                {getDriverName(order)}
-              </TableCell>
-              <TableCell className="max-w-xs truncate">
-                {getLocationName(order)}
-              </TableCell>
-              <TableCell>
-                {order.has_images ? (
-                  <Button variant="ghost" size="icon" className="h-8 w-8" disabled>
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  "No"
-                )}
-              </TableCell>
-              <TableCell>
-                <StatusBadge status="imported" />
-              </TableCell>
-            </TableRow>
-          ))}
+          {orders.map((order) => {
+            const imageStatus = getImageStatus(order);
+            
+            return (
+              <TableRow key={order.id || order.order_no}>
+                <TableCell className="font-medium">{order.order_no}</TableCell>
+                <TableCell>
+                  {order.service_date ? format(new Date(order.service_date), "MMM d, yyyy") : "N/A"}
+                </TableCell>
+                <TableCell className="max-w-xs truncate">
+                  {getDriverName(order)}
+                </TableCell>
+                <TableCell className="max-w-xs truncate">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="cursor-help">{getLocationName(order)}</span>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p>{getLocationName(order)}</p>
+                        {order.location?.address && <p className="text-xs">{order.location.address}</p>}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </TableCell>
+                <TableCell>
+                  {imageStatus.hasImages ? (
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  ) : (
+                    imageStatus.text
+                  )}
+                </TableCell>
+                <TableCell>
+                  <StatusBadge status={order.status || "imported"} />
+                </TableCell>
+                <TableCell>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Info className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-sm" side="left">
+                        <div className="space-y-1 text-xs">
+                          <div><strong>Service Notes:</strong> {order.service_notes || "None"}</div>
+                          <div><strong>Tech Notes:</strong> {order.tech_notes || "None"}</div>
+                          <div><strong>Has Signature:</strong> {order.signature_url ? "Yes" : "No"}</div>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
       <div className="p-4 text-sm text-muted-foreground">

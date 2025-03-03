@@ -25,6 +25,8 @@ export const transformBulkOrderToWorkOrder = (order: any): WorkOrder => {
     serviceDate = searchData.scheduled_date;
   } else if (order.searchResponse?.scheduleInformation?.date) {
     serviceDate = order.searchResponse.scheduleInformation.date;
+  } else if (order.date) {
+    serviceDate = order.date;
   }
   
   // Extract driver information - check multiple possible paths
@@ -32,12 +34,14 @@ export const transformBulkOrderToWorkOrder = (order: any): WorkOrder => {
     order.searchResponse?.scheduleInformation?.driverId || 
     searchData.driver_id || 
     searchData.driverId || 
+    order.driverId ||
     '';
     
   const driverName = 
     order.searchResponse?.scheduleInformation?.driverName || 
     searchData.driver_name || 
-    searchData.driverName || 
+    searchData.driverName ||
+    order.driverName ||
     'No Driver';
   
   const driver = {
@@ -47,7 +51,7 @@ export const transformBulkOrderToWorkOrder = (order: any): WorkOrder => {
   
   // Extract location information - check multiple possible paths
   let locationName = 'N/A';
-  let locationObj = {};
+  let locationObj: any = {};
   
   if (searchData.location) {
     if (typeof searchData.location === 'object') {
@@ -63,19 +67,40 @@ export const transformBulkOrderToWorkOrder = (order: any): WorkOrder => {
     locationName = searchData.locationName;
   } else if (searchData.location_name) {
     locationName = searchData.location_name;
+  } else if (order.location) {
+    if (typeof order.location === 'object') {
+      locationObj = order.location;
+      locationName = order.location.name ||
+                     order.location.locationName ||
+                     order.location.location_name ||
+                     'N/A';
+    } else if (typeof order.location === 'string') {
+      locationName = order.location;
+    }
   }
   
+  // Collect additional location info
   const location = {
     ...locationObj,
-    name: locationName
+    name: locationName,
+    address: locationObj.address || searchData.address || order.address || null,
+    city: locationObj.city || searchData.city || order.city || null,
+    state: locationObj.state || searchData.state || order.state || null,
+    zip: locationObj.zip || searchData.zip || order.zip || null,
   };
   
   // Extract notes
-  const serviceNotes = searchData.notes || '';
-  const techNotes = completionForm.note || '';
+  const serviceNotes = searchData.notes || order.notes || '';
+  const techNotes = completionForm.note || completionData.note || '';
   
   // Extract image information
-  const hasImages = !!(completionForm.images && completionForm.images.length > 0);
+  const hasImages = !!(
+    completionForm.images && 
+    completionForm.images.length > 0
+  );
+  
+  // Handle signature information
+  const signatureUrl = completionForm.signature?.url || null;
   
   // Create a WorkOrder object from the data
   return {
@@ -92,11 +117,14 @@ export const transformBulkOrderToWorkOrder = (order: any): WorkOrder => {
     location,
     driver,
     has_images: hasImages,
-    signature_url: completionForm.signature?.url || null,
+    signature_url: signatureUrl,
     search_response: order.searchResponse || null,
     completion_response: {
       success: true,
-      orders: [{ id: order.id, data: completionData }]
+      orders: [{ 
+        id: order.id || order.orderId || '', 
+        data: completionData 
+      }]
     }
   };
 };
