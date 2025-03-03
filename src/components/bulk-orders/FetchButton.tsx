@@ -24,10 +24,14 @@ export const FetchButton = ({
       {isLoading ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          {activeTab === "search-only" ? "Fetching Orders..." : "Fetching Orders with Completion Data..."}
+          {activeTab === "search-only" 
+            ? "Fetching Orders..." 
+            : "Fetching Completed Orders..."}
         </>
       ) : (
-        activeTab === "search-only" ? "Fetch Orders" : "Fetch Orders with Completion Data"
+        activeTab === "search-only" 
+          ? "Fetch Orders" 
+          : "Fetch Completed Orders"
       )}
     </Button>
   );

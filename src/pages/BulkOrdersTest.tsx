@@ -56,16 +56,44 @@ const BulkOrdersTest = () => {
       } else {
         console.log("API response:", data);
         
+        // Filter orders with successful completion status 
+        // (only when we have completion data and are in the completion tab)
+        let filteredOrders = data.orders || [];
+        let filteredCount = 0;
+        
+        if (activeTab === "with-completion" && Array.isArray(data.orders)) {
+          filteredOrders = data.orders.filter(order => {
+            // Check if the order has completion details and status is success
+            return (
+              order.completionDetails && 
+              order.completionDetails.data && 
+              order.completionDetails.data.status === "success"
+            );
+          });
+          
+          filteredCount = filteredOrders.length;
+          console.log(`Filtered ${filteredCount} completed orders with success status`);
+        }
+        
         // Add specific messaging if API returned success:false
         if (data.searchResponse && data.searchResponse.success === false) {
           toast.warning(`Search API returned: ${data.searchResponse.code || 'Unknown error'} - ${data.searchResponse.message || ''}`);
         } else if (data.completionResponse && data.completionResponse.success === false) {
           toast.warning(`Completion API returned: ${data.completionResponse.code || 'Unknown error'} - ${data.completionResponse.message || ''}`);
         } else {
-          toast.success(`Retrieved ${data.totalCount || 0} orders`);
+          if (activeTab === "with-completion") {
+            toast.success(`Retrieved ${filteredCount} completed orders out of ${data.totalCount || 0} total orders`);
+          } else {
+            toast.success(`Retrieved ${data.totalCount || 0} orders`);
+          }
         }
         
-        setResponse(data);
+        // Set the filtered response
+        setResponse({
+          ...data,
+          orders: activeTab === "with-completion" ? filteredOrders : data.orders,
+          filteredCount: filteredCount,
+        });
       }
     } catch (error) {
       console.error("Exception fetching orders:", error);

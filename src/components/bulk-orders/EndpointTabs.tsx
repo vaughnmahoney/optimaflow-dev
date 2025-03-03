@@ -10,14 +10,14 @@ export const EndpointTabs = ({ activeTab, onTabChange }: EndpointTabsProps) => {
   return (
     <Tabs value={activeTab} onValueChange={onTabChange} className="mb-6">
       <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="search-only">Search Only</TabsTrigger>
-        <TabsTrigger value="with-completion">With Completion Details</TabsTrigger>
+        <TabsTrigger value="search-only">All Orders</TabsTrigger>
+        <TabsTrigger value="with-completion">Completed Orders Only</TabsTrigger>
       </TabsList>
       <TabsContent value="search-only" className="mt-2 text-sm text-muted-foreground">
-        Uses search_orders endpoint to retrieve basic order data by date range.
+        Uses search_orders endpoint to retrieve all orders by date range.
       </TabsContent>
       <TabsContent value="with-completion" className="mt-2 text-sm text-muted-foreground">
-        Uses search_orders + get_completion_details to retrieve full order data including images.
+        Uses search_orders + get_completion_details to retrieve and filter only successfully completed orders for QC review.
       </TabsContent>
     </Tabs>
   );

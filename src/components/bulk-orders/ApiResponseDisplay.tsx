@@ -14,7 +14,11 @@ export const ApiResponseDisplay = ({ response }: ApiResponseDisplayProps) => {
       <CardHeader>
         <CardTitle>
           API Response 
-          {response.totalCount !== undefined && ` (${response.totalCount} orders)`}
+          {response.filteredCount !== undefined && response.totalCount !== undefined ? (
+            ` (${response.filteredCount} completed orders of ${response.totalCount} total)`
+          ) : response.totalCount !== undefined ? (
+            ` (${response.totalCount} orders)`
+          ) : null}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -41,6 +45,8 @@ export const ApiResponseDisplay = ({ response }: ApiResponseDisplayProps) => {
                   ? `Search API Response: ${response.searchResponse.code || 'Unknown error'} ${response.searchResponse.message ? `- ${response.searchResponse.message}` : ''}`
                   : response.completionResponse && response.completionResponse.success === false
                   ? `Completion API Response: ${response.completionResponse.code || 'Unknown error'} ${response.completionResponse.message ? `- ${response.completionResponse.message}` : ''}`
+                  : response.filteredCount !== undefined 
+                  ? `Successfully retrieved ${response.filteredCount} completed orders with status "success" (filtered from ${response.totalCount} total orders)`
                   : 'Successfully retrieved data from OptimoRoute API'}
               </p>
             </div>
