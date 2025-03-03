@@ -11,8 +11,10 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { startDate, endDate } = await req.json();
+    const { startDate, endDate, enablePagination, afterTag, allCollectedOrders = [] } = await req.json();
     console.log(`Fetching orders with completion data from ${startDate} to ${endDate}`);
+    console.log(`Pagination enabled: ${enablePagination}, afterTag: ${afterTag || 'none'}`);
+    console.log(`Previously collected orders: ${allCollectedOrders.length}`);
     
     if (!startDate || !endDate) {
       return new Response(
@@ -43,7 +45,7 @@ Deno.serve(async (req) => {
     console.log('Step 1: Calling search_orders to get order numbers...');
     
     // STEP 1: Call search_orders to get all orders in date range
-    const searchRequestBody = {
+    const searchRequestBody: any = {
       dateRange: {
         from: startDate,
         to: endDate,
@@ -51,6 +53,12 @@ Deno.serve(async (req) => {
       includeOrderData: true,
       includeScheduleInformation: true
     };
+    
+    // Add afterTag for pagination if provided
+    if (afterTag) {
+      searchRequestBody.afterTag = afterTag;
+      console.log(`Including afterTag in request: ${afterTag}`);
+    }
     
     const searchResponse = await fetch(
       `${baseUrl}/search_orders?key=${optimoRouteApiKey}`,
@@ -81,15 +89,21 @@ Deno.serve(async (req) => {
 
     // Parse search response
     const searchData = await searchResponse.json();
-    console.log(`Found ${searchData.orders?.length || 0} orders in date range`);
+    console.log(`Found ${searchData.orders?.length || 0} orders on current page`);
+    console.log(`After tag present: ${!!searchData.afterTag}`);
     
-    // If no orders found, return empty result
+    // If no orders found on this page, return what we've collected so far or empty result
     if (!searchData.orders || searchData.orders.length === 0) {
       return new Response(
         JSON.stringify({
           success: true,
-          orders: [],
-          totalCount: 0
+          orders: allCollectedOrders,
+          totalCount: allCollectedOrders.length,
+          paginationProgress: {
+            currentPage: 1,
+            totalOrdersRetrieved: allCollectedOrders.length,
+            isComplete: true
+          }
         }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -107,12 +121,39 @@ Deno.serve(async (req) => {
     // Check if we have any valid order numbers
     if (orderNumbers.length === 0) {
       console.log('No valid order numbers found in search results');
+      
+      // If we're using pagination and have previous results, continue the pagination
+      if (enablePagination && searchData.afterTag && allCollectedOrders.length > 0) {
+        // Call ourselves again with the afterTag to get the next page
+        return new Response(
+          JSON.stringify({
+            success: true,
+            orders: allCollectedOrders,
+            totalCount: allCollectedOrders.length,
+            paginationProgress: {
+              currentPage: allCollectedOrders.length > 0 ? Math.ceil(allCollectedOrders.length / 500) + 1 : 1,
+              totalOrdersRetrieved: allCollectedOrders.length,
+              isComplete: false,
+              afterTag: searchData.afterTag
+            }
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+      
       return new Response(
         JSON.stringify({
           success: true,
           orders: searchData.orders, // Return search data even without completion details
           totalCount: searchData.orders.length,
-          completionDetails: null
+          completionDetails: null,
+          paginationProgress: {
+            currentPage: 1,
+            totalOrdersRetrieved: searchData.orders.length,
+            isComplete: true
+          }
         }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -173,7 +214,7 @@ Deno.serve(async (req) => {
     }
     
     // Merge search data with completion data
-    const combinedOrders = searchData.orders.map(searchOrder => {
+    const currentPageOrders = searchData.orders.map(searchOrder => {
       const orderNo = searchOrder.data?.orderNo;
       const completionInfo = orderNo ? completionMap.get(orderNo) : null;
       
@@ -183,23 +224,64 @@ Deno.serve(async (req) => {
       };
     });
 
-    // Prepare final response
-    const response = {
-      success: true,
-      orders: combinedOrders,
-      totalCount: combinedOrders.length,
-      searchResponse: searchData,
-      completionResponse: completionData
-    };
+    // Combine with previously collected orders if we're paginating
+    const combinedOrders = [...allCollectedOrders, ...currentPageOrders];
+    console.log(`Successfully combined data: ${currentPageOrders.length} new orders, ${combinedOrders.length} total orders`);
     
-    console.log(`Successfully combined data for ${combinedOrders.length} orders`);
-    
-    return new Response(
-      JSON.stringify(response),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    );
+    // Handle pagination if enabled and we have more pages
+    if (enablePagination && searchData.afterTag) {
+      const currentPage = allCollectedOrders.length > 0 ? Math.ceil(allCollectedOrders.length / 500) + 1 : 1;
+      console.log(`This is page ${currentPage}, more pages available. Returning progress information.`);
+      
+      // Prepare pagination progress information
+      const paginationProgress = {
+        currentPage,
+        totalOrdersRetrieved: combinedOrders.length,
+        isComplete: false,
+        afterTag: searchData.afterTag
+      };
+      
+      // Prepare response with pagination info
+      const response = {
+        success: true,
+        orders: combinedOrders,
+        totalCount: combinedOrders.length,
+        paginationProgress,
+        searchResponse: searchData,
+        completionResponse: completionData
+      };
+      
+      return new Response(
+        JSON.stringify(response),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    } else {
+      // This is the final page or we're not using pagination
+      console.log(`Final page reached or pagination not enabled. Returning complete results.`);
+      
+      // Prepare final response
+      const response = {
+        success: true,
+        orders: combinedOrders,
+        totalCount: combinedOrders.length,
+        paginationProgress: {
+          currentPage: allCollectedOrders.length > 0 ? Math.ceil(allCollectedOrders.length / 500) + 1 : 1,
+          totalOrdersRetrieved: combinedOrders.length,
+          isComplete: true
+        },
+        searchResponse: searchData,
+        completionResponse: completionData
+      };
+      
+      return new Response(
+        JSON.stringify(response),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
 
   } catch (error) {
     console.error('Error processing order request:', error);
@@ -212,7 +294,7 @@ Deno.serve(async (req) => {
       { 
         status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+        }
     );
   }
 });

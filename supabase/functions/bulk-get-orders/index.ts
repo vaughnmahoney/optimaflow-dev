@@ -11,8 +11,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { startDate, endDate } = await req.json();
+    const { startDate, endDate, enablePagination, afterTag } = await req.json();
     console.log(`Fetching bulk orders from ${startDate} to ${endDate}`);
+    console.log(`Pagination enabled: ${enablePagination}, afterTag: ${afterTag || 'none'}`);
     
     if (!startDate || !endDate) {
       return new Response(
@@ -43,7 +44,7 @@ Deno.serve(async (req) => {
     console.log('Preparing request to OptimoRoute API');
     
     // Create the request body according to OptimoRoute API docs for search_orders
-    const requestBody = {
+    const requestBody: any = {
       dateRange: {
         from: startDate,
         to: endDate,
@@ -51,6 +52,12 @@ Deno.serve(async (req) => {
       includeOrderData: true,
       includeScheduleInformation: true
     };
+    
+    // Add afterTag for pagination if provided
+    if (afterTag) {
+      requestBody.afterTag = afterTag;
+      console.log(`Including afterTag in request: ${afterTag}`);
+    }
     
     console.log('Request body:', JSON.stringify(requestBody));
 
@@ -71,7 +78,7 @@ Deno.serve(async (req) => {
     // Get the response text before trying to parse as JSON
     // This helps with debugging if the response isn't valid JSON
     const responseText = await bulkOrdersResponse.text();
-    console.log('Raw API response:', responseText);
+    console.log('Raw API response length:', responseText.length);
     
     let data;
     try {
@@ -111,19 +118,56 @@ Deno.serve(async (req) => {
       console.log('API returned success:false. Error code:', data.code, 'Message:', data.message);
     } else {
       console.log('API call successful, retrieved orders:', data.orders?.length || 0);
+      if (data.afterTag) {
+        console.log('After tag received for pagination:', data.afterTag);
+      } else {
+        console.log('No after tag in response, this is the last page');
+      }
     }
     
-    return new Response(
-      JSON.stringify({
-        success: true,
-        orders: data.orders || [],
-        totalCount: data.orders?.length || 0,
-        raw: data
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    );
+    // Handle pagination if enabled
+    if (enablePagination && data.afterTag && data.success !== false) {
+      // If we have an afterTag, indicate that more pages are available
+      const paginationInfo = {
+        hasMorePages: true,
+        afterTag: data.afterTag,
+        currentPageOrders: data.orders?.length || 0
+      };
+      
+      console.log(`Pagination info: more pages available, current page has ${paginationInfo.currentPageOrders} orders`);
+      
+      return new Response(
+        JSON.stringify({
+          success: true,
+          orders: data.orders || [],
+          totalCount: data.orders?.length || 0,
+          raw: data,
+          pagination: paginationInfo
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    } else {
+      // Final or only page of results
+      console.log('Returning final results (no pagination or last page)');
+      
+      return new Response(
+        JSON.stringify({
+          success: true,
+          orders: data.orders || [],
+          totalCount: data.orders?.length || 0,
+          raw: data,
+          pagination: {
+            hasMorePages: false,
+            currentPageOrders: data.orders?.length || 0
+          }
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
 
   } catch (error) {
     console.error('Error processing bulk orders request:', error);

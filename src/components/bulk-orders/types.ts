@@ -7,6 +7,7 @@ export interface BulkOrdersResponse {
   filteredCount?: number; // Count of filtered orders (completed with success)
   searchResponse?: any;
   completionResponse?: any;
+  paginationProgress?: PaginationProgress; // New field for tracking pagination progress
 }
 
 export interface CompletionStatus {
@@ -14,3 +15,10 @@ export interface CompletionStatus {
   timestamp?: string;
 }
 
+// New interface for tracking pagination progress
+export interface PaginationProgress {
+  currentPage: number;
+  totalPages?: number;
+  totalOrdersRetrieved: number;
+  isComplete: boolean;
+}

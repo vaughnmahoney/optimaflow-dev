@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { BulkOrdersForm } from "@/components/bulk-orders/BulkOrdersForm";
 import { ApiResponseDisplay } from "@/components/bulk-orders/ApiResponseDisplay";
 import { BulkOrdersResponse } from "@/components/bulk-orders/types";
+import { Progress } from "@/components/ui/progress";
 
 const BulkOrdersTest = () => {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
@@ -41,11 +42,21 @@ const BulkOrdersTest = () => {
       
       console.log(`${logMessage} with dates: ${formattedStartDate} to ${formattedEndDate}`);
 
-      // Call the selected edge function
+      // Initialize response with pagination progress
+      setResponse({
+        paginationProgress: {
+          currentPage: 1,
+          totalOrdersRetrieved: 0,
+          isComplete: false
+        }
+      });
+
+      // Call the selected edge function with pagination support
       const { data, error } = await supabase.functions.invoke(endpoint, {
         body: {
           startDate: formattedStartDate,
-          endDate: formattedEndDate
+          endDate: formattedEndDate,
+          enablePagination: true  // Signal that we want to paginate
         }
       });
 
@@ -118,6 +129,19 @@ const BulkOrdersTest = () => {
         isLoading={isLoading}
         onFetchOrders={fetchOrders}
       />
+      
+      {response?.paginationProgress && !response.paginationProgress.isComplete && isLoading && (
+        <div className="my-4 space-y-2">
+          <div className="flex justify-between text-sm">
+            <span>Fetching page {response.paginationProgress.currentPage}{response.paginationProgress.totalPages ? ` of ${response.paginationProgress.totalPages}` : ''}...</span>
+            <span>{response.paginationProgress.totalOrdersRetrieved} orders retrieved so far</span>
+          </div>
+          <Progress value={response.paginationProgress.totalPages 
+            ? (response.paginationProgress.currentPage / response.paginationProgress.totalPages) * 100 
+            : undefined} 
+          />
+        </div>
+      )}
       
       <ApiResponseDisplay response={response} />
     </div>
