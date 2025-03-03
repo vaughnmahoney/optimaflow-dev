@@ -35,7 +35,11 @@ export const WorkOrderTableHeader = ({
   
   const handleFilterChange = (column: string, value: any) => {
     onFilterChange(column, value);
-    setOpenPopover(null); // Close popover after applying filter
+    // Don't close popover immediately to allow for multiple selections
+  };
+  
+  const closePopover = () => {
+    setOpenPopover(null);
   };
   
   const isFiltered = (column: string) => {
@@ -72,6 +76,9 @@ export const WorkOrderTableHeader = ({
                   variant="ghost" 
                   size="icon" 
                   className={`h-6 w-6 ml-1 ${isFiltered('order_no') ? 'text-primary' : 'text-muted-foreground'}`}
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent sort trigger
+                  }}
                 >
                   <Filter className="h-3 w-3" />
                   {isFiltered('order_no') && (
@@ -84,7 +91,10 @@ export const WorkOrderTableHeader = ({
                   column="order_no" 
                   value={filters.orderNo} 
                   onChange={(value) => handleFilterChange('order_no', value)}
-                  onClear={() => onFilterClear('order_no')}
+                  onClear={() => {
+                    onFilterClear('order_no');
+                    closePopover();
+                  }}
                 />
               </PopoverContent>
             </Popover>
@@ -105,6 +115,9 @@ export const WorkOrderTableHeader = ({
                   variant="ghost" 
                   size="icon" 
                   className={`h-6 w-6 ml-1 ${isFiltered('service_date') ? 'text-primary' : 'text-muted-foreground'}`}
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent sort trigger
+                  }}
                 >
                   <Filter className="h-3 w-3" />
                   {isFiltered('service_date') && (
@@ -117,7 +130,10 @@ export const WorkOrderTableHeader = ({
                   column="service_date" 
                   value={filters.dateRange} 
                   onChange={(value) => handleFilterChange('service_date', value)}
-                  onClear={() => onFilterClear('service_date')}
+                  onClear={() => {
+                    onFilterClear('service_date');
+                    closePopover();
+                  }}
                 />
               </PopoverContent>
             </Popover>
@@ -138,6 +154,9 @@ export const WorkOrderTableHeader = ({
                   variant="ghost" 
                   size="icon" 
                   className={`h-6 w-6 ml-1 ${isFiltered('driver') ? 'text-primary' : 'text-muted-foreground'}`}
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent sort trigger
+                  }}
                 >
                   <Filter className="h-3 w-3" />
                   {isFiltered('driver') && (
@@ -150,7 +169,10 @@ export const WorkOrderTableHeader = ({
                   column="driver" 
                   value={filters.driver} 
                   onChange={(value) => handleFilterChange('driver', value)}
-                  onClear={() => onFilterClear('driver')}
+                  onClear={() => {
+                    onFilterClear('driver');
+                    closePopover();
+                  }}
                 />
               </PopoverContent>
             </Popover>
@@ -171,6 +193,9 @@ export const WorkOrderTableHeader = ({
                   variant="ghost" 
                   size="icon" 
                   className={`h-6 w-6 ml-1 ${isFiltered('location') ? 'text-primary' : 'text-muted-foreground'}`}
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent sort trigger
+                  }}
                 >
                   <Filter className="h-3 w-3" />
                   {isFiltered('location') && (
@@ -183,7 +208,10 @@ export const WorkOrderTableHeader = ({
                   column="location" 
                   value={filters.location} 
                   onChange={(value) => handleFilterChange('location', value)}
-                  onClear={() => onFilterClear('location')}
+                  onClear={() => {
+                    onFilterClear('location');
+                    closePopover();
+                  }}
                 />
               </PopoverContent>
             </Popover>
@@ -204,6 +232,9 @@ export const WorkOrderTableHeader = ({
                   variant="ghost" 
                   size="icon" 
                   className={`h-6 w-6 ml-1 ${isFiltered('status') ? 'text-primary' : 'text-muted-foreground'}`}
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent sort trigger
+                  }}
                 >
                   <Filter className="h-3 w-3" />
                   {isFiltered('status') && (
@@ -216,7 +247,10 @@ export const WorkOrderTableHeader = ({
                   column="status" 
                   value={filters.status} 
                   onChange={(value) => handleFilterChange('status', value)}
-                  onClear={() => onFilterClear('status')}
+                  onClear={() => {
+                    onFilterClear('status');
+                    closePopover();
+                  }}
                 />
               </PopoverContent>
             </Popover>

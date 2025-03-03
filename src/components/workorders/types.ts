@@ -131,7 +131,7 @@ export interface WorkOrderListProps {
   onStatusUpdate: (workOrderId: string, newStatus: string) => void;
   onImageView: (workOrderId: string) => void;
   onDelete: (workOrderId: string) => void;
-  onSearchChange: (value: string) => void;
+  onSearchChange?: (value: string) => void;
   onOptimoRouteSearch: (value: string) => void;
   statusCounts?: {
     approved: number;
@@ -145,6 +145,9 @@ export interface WorkOrderListProps {
   pagination?: PaginationState;
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (pageSize: number) => void;
+  onColumnFilterChange: (column: string, value: any) => void;
+  clearColumnFilter: (column: string) => void;
+  clearAllFilters: () => void;
 }
 
 export interface StatusFilterProps {
