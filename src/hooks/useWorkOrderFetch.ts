@@ -36,16 +36,6 @@ export const useWorkOrderFetch = (
         }
       }
       
-      // Global text search across multiple fields
-      if (filters.searchQuery && filters.searchQuery.trim()) {
-        const searchTerm = filters.searchQuery.trim();
-        
-        // Search only in the order_no field directly
-        // For driver names and location names, we need to use a different approach
-        // because they're in JSON fields
-        query = query.or(`order_no.ilike.%${searchTerm}%`);
-      }
-      
       // Apply sorting if provided
       if (sortField && sortDirection) {
         query = query.order(sortField, { ascending: sortDirection === 'asc' });
@@ -54,8 +44,11 @@ export const useWorkOrderFetch = (
         query = query.order("timestamp", { ascending: false });
       }
       
-      // Apply pagination
-      query = query.range(from, to);
+      // Apply pagination only if there's no search
+      // When searching, we need the full dataset to do client-side filtering
+      if (!filters.searchQuery || !filters.searchQuery.trim()) {
+        query = query.range(from, to);
+      }
       
       // Execute the query
       const { data, error, count } = await query;
@@ -64,29 +57,43 @@ export const useWorkOrderFetch = (
 
       console.log("Fetched work orders:", data?.length);
 
-      // Get all data and then filter client-side for driver and location
-      const transformedData = data.map(transformWorkOrderData);
+      // Transform all data to proper WorkOrder objects
+      const transformedOrders = data.map(transformWorkOrderData);
       
-      // Apply client-side filtering for driver and location when there's a search term
-      let filteredData = transformedData;
+      // Apply client-side filtering for text search
+      let filteredData = transformedOrders;
       if (filters.searchQuery && filters.searchQuery.trim()) {
         const searchTerm = filters.searchQuery.trim().toLowerCase();
         
-        filteredData = transformedData.filter(order => {
-          // Check driver name
-          const driverName = order.driver?.name?.toLowerCase() || '';
+        filteredData = transformedOrders.filter(order => {
+          // Check order number
+          const orderNo = order.order_no.toLowerCase();
           
-          // Check location name
-          const locationName = order.location?.name?.toLowerCase() || 
-                              order.location?.locationName?.toLowerCase() || '';
+          // Safe access to nested properties with type guards
+          let driverName = '';
+          if (order.driver && typeof order.driver === 'object' && order.driver.name) {
+            driverName = order.driver.name.toLowerCase();
+          }
+          
+          let locationName = '';
+          if (order.location && typeof order.location === 'object') {
+            locationName = (order.location.name || order.location.locationName || '').toLowerCase();
+          }
           
           // Return true if any field matches the search term
           return (
-            order.order_no.toLowerCase().includes(searchTerm) ||
+            orderNo.includes(searchTerm) ||
             driverName.includes(searchTerm) ||
             locationName.includes(searchTerm)
           );
         });
+        
+        // Apply pagination to filtered results
+        const paginatedData = filteredData.slice(from, to + 1);
+        return {
+          data: paginatedData,
+          total: filteredData.length
+        };
       }
 
       return {

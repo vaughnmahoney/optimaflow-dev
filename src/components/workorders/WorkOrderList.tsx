@@ -25,8 +25,8 @@ export const WorkOrderList = ({
   onPageChange,
   onPageSizeChange
 }: WorkOrderListProps) => {
-  const [transformedData, setTransformedData] = useState<any>(null);
   const [searchResponse, setSearchResponse] = useState<any>(null);
+  const [transformedData, setTransformedData] = useState<any>(null);
   const [selectedWorkOrder, setSelectedWorkOrder] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 

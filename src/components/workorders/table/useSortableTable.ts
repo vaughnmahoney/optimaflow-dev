@@ -101,7 +101,8 @@ export const useSortableTable = (
   };
 
   const getDriverName = (order: WorkOrder): string => {
-    return order.search_response?.scheduleInformation?.driverName || 'No Driver Assigned';
+    if (!order.driver) return 'No Driver Assigned';
+    return order.driver.name || 'No Driver Name';
   };
 
   return {

@@ -2,33 +2,31 @@
 import { WorkOrder, WorkOrderSearchResponse, WorkOrderCompletionResponse } from "@/components/workorders/types";
 
 /**
+ * Safely parses JSON data or returns the original if it's already an object
+ */
+const safelyParseJSON = (jsonData: any): any => {
+  if (!jsonData) return null;
+  
+  if (typeof jsonData === 'string') {
+    try {
+      return JSON.parse(jsonData);
+    } catch (error) {
+      console.error("Error parsing JSON:", error);
+      return null;
+    }
+  }
+  
+  // If it's already an object, return it as is
+  return jsonData;
+};
+
+/**
  * Transforms raw work order data from Supabase into the application's WorkOrder type
  */
 export const transformWorkOrderData = (order: any): WorkOrder => {
-  let searchResponse = null;
-  let completionResponse = null;
-  
-  try {
-    // Safely parse search_response if it exists and is a string
-    if (order.search_response) {
-      if (typeof order.search_response === 'string') {
-        searchResponse = JSON.parse(order.search_response);
-      } else {
-        searchResponse = order.search_response;
-      }
-    }
-    
-    // Safely parse completion_response if it exists and is a string
-    if (order.completion_response) {
-      if (typeof order.completion_response === 'string') {
-        completionResponse = JSON.parse(order.completion_response);
-      } else {
-        completionResponse = order.completion_response;
-      }
-    }
-  } catch (error) {
-    console.error("Error parsing JSON response:", error);
-  }
+  // Safely parse JSON fields if they're strings
+  const searchResponse = safelyParseJSON(order.search_response);
+  const completionResponse = safelyParseJSON(order.completion_response);
   
   // Create driver object from searchResponse if available
   let driver = null;
@@ -36,6 +34,7 @@ export const transformWorkOrderData = (order: any): WorkOrder => {
   let service_notes = null;
   
   if (searchResponse && typeof searchResponse === 'object') {
+    // Safely extract driver information
     if (searchResponse.scheduleInformation && typeof searchResponse.scheduleInformation === 'object') {
       driver = { 
         id: searchResponse.scheduleInformation.driverId,
@@ -43,6 +42,7 @@ export const transformWorkOrderData = (order: any): WorkOrder => {
       };
     }
     
+    // Safely extract service information
     if (searchResponse.data && typeof searchResponse.data === 'object') {
       service_date = searchResponse.data.date;
       service_notes = searchResponse.data.notes;

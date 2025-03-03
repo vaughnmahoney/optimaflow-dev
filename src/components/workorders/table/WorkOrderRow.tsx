@@ -1,16 +1,10 @@
 
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, MoreVertical } from "lucide-react";
+import { Eye } from "lucide-react";
 import { format } from "date-fns";
 import { StatusBadge } from "../StatusBadge";
 import { WorkOrder } from "../types";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { ActionsMenu } from "./ActionsMenu";
 
 interface WorkOrderRowProps {
@@ -27,7 +21,8 @@ export const WorkOrderRow = ({ workOrder, onStatusUpdate, onImageView, onDelete 
   };
 
   const getDriverName = (order: WorkOrder): string => {
-    return order.search_response?.scheduleInformation?.driverName || 'No Driver Assigned';
+    if (!order.driver) return 'No Driver Assigned';
+    return order.driver.name || 'No Driver Name';
   };
 
   return (
