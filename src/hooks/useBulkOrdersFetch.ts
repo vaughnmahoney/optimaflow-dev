@@ -4,6 +4,8 @@ import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { BulkOrdersResponse } from "@/components/bulk-orders/types";
+import { WorkOrder } from "@/components/workorders/types";
+import { transformBulkOrderToWorkOrder } from "@/components/bulk-orders/utils/transformBulkOrderData";
 
 export const useBulkOrdersFetch = () => {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
@@ -13,6 +15,7 @@ export const useBulkOrdersFetch = () => {
   const [activeTab, setActiveTab] = useState("search-only");
   const [shouldContinueFetching, setShouldContinueFetching] = useState(false);
   const [allCollectedOrders, setAllCollectedOrders] = useState<any[]>([]);
+  const [transformedOrders, setTransformedOrders] = useState<WorkOrder[]>([]);
 
   // Effect to handle continued fetching with pagination
   useEffect(() => {
@@ -34,6 +37,16 @@ export const useBulkOrdersFetch = () => {
       fetchNextPage();
     }
   }, [shouldContinueFetching, response, isLoading, allCollectedOrders]);
+
+  // Effect to transform orders when response changes
+  useEffect(() => {
+    if (response && response.orders && response.orders.length > 0) {
+      const workOrders = response.orders.map(transformBulkOrderToWorkOrder);
+      setTransformedOrders(workOrders);
+    } else {
+      setTransformedOrders([]);
+    }
+  }, [response]);
 
   const fetchOrders = async (afterTag?: string, previousOrders: any[] = []) => {
     if (!startDate || !endDate) {
@@ -129,7 +142,6 @@ export const useBulkOrdersFetch = () => {
           setShouldContinueFetching(false);
         } else {
           // Check if we need to continue fetching 
-          // Now checking both after_tag (from API) and afterTag (from paginationProgress)
           const hasContinuation = !!(data.after_tag || 
                                   (data.paginationProgress?.afterTag && !data.paginationProgress?.isComplete));
           
@@ -181,6 +193,7 @@ export const useBulkOrdersFetch = () => {
     setEndDate,
     isLoading,
     response,
+    transformedOrders,
     activeTab,
     setActiveTab,
     shouldContinueFetching,
