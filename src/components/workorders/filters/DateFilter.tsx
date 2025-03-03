@@ -13,18 +13,6 @@ export const DateFilter = ({ column, value, onChange, onClear }: ColumnFilterPro
     to: value?.to || null
   });
   
-  const handleDateSelect = (date: Date | null) => {
-    if (!dateRange.from) {
-      setDateRange({ from: date, to: null });
-    } else if (!dateRange.to && date && date > dateRange.from) {
-      setDateRange({ from: dateRange.from, to: date });
-      // Automatically apply when range is complete
-      onChange({ from: dateRange.from, to: date });
-    } else {
-      setDateRange({ from: date, to: null });
-    }
-  };
-  
   const handleClear = () => {
     setDateRange({ from: null, to: null });
     onClear();
@@ -62,14 +50,16 @@ export const DateFilter = ({ column, value, onChange, onClear }: ColumnFilterPro
             }}
             onSelect={(range) => {
               if (range) {
-                setDateRange({
+                const newRange = {
                   from: range.from || null,
                   to: range.to || null
-                });
-                onChange({
-                  from: range.from || null,
-                  to: range.to || null
-                });
+                };
+                setDateRange(newRange);
+                
+                // Only call onChange when we have a complete range or when clearing
+                if (newRange.from === null || (newRange.from && newRange.to)) {
+                  onChange(newRange);
+                }
               }
             }}
             initialFocus
