@@ -40,9 +40,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Call OptimoRoute bulk_get_orders API
+    // Call OptimoRoute get_orders API (corrected endpoint)
     const bulkOrdersResponse = await fetch(
-      `${baseUrl}/bulk_get_orders?key=${optimoRouteApiKey}`,
+      `${baseUrl}/get_orders?key=${optimoRouteApiKey}`,
       {
         method: 'POST',
         headers: {
