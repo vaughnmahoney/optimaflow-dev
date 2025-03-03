@@ -20,6 +20,7 @@ import Integrations from "./pages/Integrations";
 import Calendar from "./pages/Calendar";
 import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
+import BulkOrdersTest from "./pages/BulkOrdersTest";
 
 const queryClient = new QueryClient();
 
@@ -81,6 +82,15 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Attendance />
+                </ProtectedRoute>
+              }
+            />
+            {/* Add the test page route */}
+            <Route
+              path="/bulk-orders-test"
+              element={
+                <ProtectedRoute>
+                  <BulkOrdersTest />
                 </ProtectedRoute>
               }
             />

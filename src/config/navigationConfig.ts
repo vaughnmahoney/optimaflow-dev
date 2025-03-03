@@ -1,3 +1,4 @@
+
 import {
   LayoutDashboard,
   ListChecks,
@@ -8,6 +9,13 @@ import {
 } from "lucide-react"
 
 export interface NavItem {
+  label: string
+  icon: keyof typeof Icons
+  href: string
+}
+
+// Adding this export to fix the SidebarSubmenu error
+export interface NavigationItem {
   label: string
   icon: keyof typeof Icons
   href: string
