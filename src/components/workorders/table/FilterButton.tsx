@@ -6,17 +6,15 @@ import { PopoverTrigger } from "@/components/ui/popover";
 
 interface FilterButtonProps {
   isFiltered: boolean;
-  onClickHandler: (e: React.MouseEvent) => void;
 }
 
-export const FilterButton = ({ isFiltered, onClickHandler }: FilterButtonProps) => {
+export const FilterButton = ({ isFiltered }: FilterButtonProps) => {
   return (
     <PopoverTrigger asChild>
       <Button 
         variant="ghost" 
         size="icon" 
-        className={`h-6 w-6 ml-1 ${isFiltered ? 'text-primary' : 'text-muted-foreground'}`}
-        onClick={onClickHandler}
+        className={`h-6 w-6 ${isFiltered ? 'text-primary' : 'text-muted-foreground'}`}
       >
         <Filter className="h-3 w-3" />
         {isFiltered && (

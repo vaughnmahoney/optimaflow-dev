@@ -29,16 +29,14 @@ export const ColumnHeader = ({
   setOpenPopover
 }: ColumnHeaderProps) => {
   
-  // Prevent sorting when clicking on filter button
-  const handleFilterButtonClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent sort trigger
+  // Completely prevent sorting when clicking on filter button or popover
+  const handleFilterInteraction = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
   };
 
-  // Prevent sorting when opening/closing the popover
-  const handlePopoverChange = (open: boolean, e?: React.MouseEvent) => {
-    if (e) {
-      e.stopPropagation();
-    }
+  // Handle opening/closing the popover
+  const handlePopoverChange = (open: boolean) => {
     setOpenPopover(open ? column : null);
   };
 
@@ -51,22 +49,23 @@ export const ColumnHeader = ({
     >
       <div className="flex items-center">
         <span>{label}</span>
-        <Popover 
-          open={isPopoverOpen} 
-          onOpenChange={(open) => handlePopoverChange(open)}
-        >
-          <FilterButton 
-            isFiltered={isFiltered} 
-            onClickHandler={handleFilterButtonClick} 
-          />
-          <PopoverContent 
-            className="w-60 p-0" 
-            align="start" 
-            onClick={(e) => e.stopPropagation()}
+        {/* Wrap popover in a div that stops propagation */}
+        <div onClick={handleFilterInteraction} className="ml-1">
+          <Popover 
+            open={isPopoverOpen} 
+            onOpenChange={handlePopoverChange}
           >
-            {filterContent}
-          </PopoverContent>
-        </Popover>
+            <FilterButton 
+              isFiltered={isFiltered} 
+            />
+            <PopoverContent 
+              className="w-60 p-0" 
+              align="start"
+            >
+              {filterContent}
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
     </TableHead>
   );
