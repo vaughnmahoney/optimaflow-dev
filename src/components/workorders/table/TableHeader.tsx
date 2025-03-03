@@ -1,11 +1,10 @@
-
 import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { SortDirection, SortField } from "../types";
 import { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { TextFilter, DateFilter, StatusFilter, DriverFilter, LocationFilter } from "../filters/ColumnFilters";
+import { TextFilter, DateFilter, StatusFilter, DriverFilter, LocationFilter } from "../filters";
 import { Badge } from "@/components/ui/badge";
 
 interface WorkOrderTableHeaderProps {
