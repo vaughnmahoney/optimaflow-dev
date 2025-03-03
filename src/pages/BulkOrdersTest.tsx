@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -14,15 +14,42 @@ const BulkOrdersTest = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState<BulkOrdersResponse | null>(null);
   const [activeTab, setActiveTab] = useState("search-only");
+  const [shouldContinueFetching, setShouldContinueFetching] = useState(false);
+  const [allCollectedOrders, setAllCollectedOrders] = useState<any[]>([]);
 
-  const fetchOrders = async () => {
+  // Effect to handle continued fetching with afterTag
+  useEffect(() => {
+    const fetchNextPage = async () => {
+      if (!shouldContinueFetching || !response || !response.paginationProgress) return;
+      
+      // Check if we have an afterTag and pagination is not complete
+      const afterTag = response.paginationProgress.afterTag;
+      if (!afterTag || response.paginationProgress.isComplete) {
+        setShouldContinueFetching(false);
+        return;
+      }
+
+      await fetchOrders(afterTag, allCollectedOrders);
+    };
+
+    if (shouldContinueFetching && !isLoading) {
+      fetchNextPage();
+    }
+  }, [shouldContinueFetching, response, isLoading, allCollectedOrders]);
+
+  const fetchOrders = async (afterTag?: string, previousOrders: any[] = []) => {
     if (!startDate || !endDate) {
       toast.error("Please select both start and end dates");
       return;
     }
 
     setIsLoading(true);
-    setResponse(null);
+    
+    // Only reset response when starting a new fetch (no afterTag)
+    if (!afterTag) {
+      setResponse(null);
+      setAllCollectedOrders([]);
+    }
 
     try {
       // Format dates as ISO strings
@@ -41,22 +68,31 @@ const BulkOrdersTest = () => {
       }
       
       console.log(`${logMessage} with dates: ${formattedStartDate} to ${formattedEndDate}`);
+      
+      if (afterTag) {
+        console.log(`Continuing with afterTag: ${afterTag}`);
+        console.log(`Previously collected orders: ${previousOrders.length}`);
+      }
 
-      // Initialize response with pagination progress
-      setResponse({
-        paginationProgress: {
-          currentPage: 1,
-          totalOrdersRetrieved: 0,
-          isComplete: false
-        }
-      });
+      // Initialize or update response with pagination progress
+      if (!afterTag) {
+        setResponse({
+          paginationProgress: {
+            currentPage: 1,
+            totalOrdersRetrieved: 0,
+            isComplete: false
+          }
+        });
+      }
 
       // Call the selected edge function with pagination support
       const { data, error } = await supabase.functions.invoke(endpoint, {
         body: {
           startDate: formattedStartDate,
           endDate: formattedEndDate,
-          enablePagination: true  // Signal that we want to paginate
+          enablePagination: true,
+          afterTag: afterTag,
+          allCollectedOrders: previousOrders
         }
       });
 
@@ -64,11 +100,11 @@ const BulkOrdersTest = () => {
         console.error(`Error fetching orders:`, error);
         toast.error(`Error: ${error.message}`);
         setResponse({ error: error.message });
+        setShouldContinueFetching(false);
       } else {
         console.log("API response:", data);
         
-        // Filter orders with successful completion status 
-        // (only when we have completion data and are in the completion tab)
+        // Handle orders based on the active tab and completion status
         let filteredOrders = data.orders || [];
         let filteredCount = 0;
         
@@ -89,13 +125,29 @@ const BulkOrdersTest = () => {
         // Add specific messaging if API returned success:false
         if (data.searchResponse && data.searchResponse.success === false) {
           toast.warning(`Search API returned: ${data.searchResponse.code || 'Unknown error'} - ${data.searchResponse.message || ''}`);
+          setShouldContinueFetching(false);
         } else if (data.completionResponse && data.completionResponse.success === false) {
           toast.warning(`Completion API returned: ${data.completionResponse.code || 'Unknown error'} - ${data.completionResponse.message || ''}`);
+          setShouldContinueFetching(false);
         } else {
-          if (activeTab === "with-completion") {
-            toast.success(`Retrieved ${filteredCount} completed orders out of ${data.totalCount || 0} total orders`);
+          // Check if we need to continue fetching (has afterTag and isn't complete)
+          const hasContinuation = !!data.paginationProgress?.afterTag && !data.paginationProgress?.isComplete;
+          
+          if (hasContinuation) {
+            console.log(`More pages available. afterTag: ${data.paginationProgress.afterTag}`);
+            // Update all collected orders for the next request
+            setAllCollectedOrders(filteredOrders);
+            setShouldContinueFetching(true);
           } else {
-            toast.success(`Retrieved ${data.totalCount || 0} orders`);
+            console.log("Final page reached or pagination complete");
+            setShouldContinueFetching(false);
+            
+            // Display success message
+            if (activeTab === "with-completion") {
+              toast.success(`Retrieved ${filteredCount} completed orders out of ${data.totalCount || 0} total orders`);
+            } else {
+              toast.success(`Retrieved ${data.totalCount || 0} orders`);
+            }
           }
         }
         
@@ -110,9 +162,16 @@ const BulkOrdersTest = () => {
       console.error("Exception fetching orders:", error);
       toast.error(`Exception: ${error instanceof Error ? error.message : String(error)}`);
       setResponse({ error: String(error) });
+      setShouldContinueFetching(false);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Function to start the initial fetch
+  const handleFetchOrders = () => {
+    setShouldContinueFetching(false); // Reset this flag
+    fetchOrders(); // Start a fresh fetch without afterTag
   };
 
   return (
@@ -126,11 +185,11 @@ const BulkOrdersTest = () => {
         onEndDateChange={setEndDate}
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        isLoading={isLoading}
-        onFetchOrders={fetchOrders}
+        isLoading={isLoading || shouldContinueFetching}
+        onFetchOrders={handleFetchOrders}
       />
       
-      {response?.paginationProgress && !response.paginationProgress.isComplete && isLoading && (
+      {response?.paginationProgress && (isLoading || shouldContinueFetching) && (
         <div className="my-4 space-y-2">
           <div className="flex justify-between text-sm">
             <span>Fetching page {response.paginationProgress.currentPage}{response.paginationProgress.totalPages ? ` of ${response.paginationProgress.totalPages}` : ''}...</span>
