@@ -12,7 +12,7 @@ export const useWorkOrderData = () => {
     dateRange: { from: null, to: null },
     driver: null,
     location: null,
-    searchQuery: ""
+    orderNo: null
   });
   
   const [sortField, setSortField] = useState<SortField>(null);
@@ -48,12 +48,78 @@ export const useWorkOrderData = () => {
   const { searchOptimoRoute } = useWorkOrderImport();
   const { updateWorkOrderStatus, deleteWorkOrder } = useWorkOrderMutations();
 
-  const searchWorkOrder = (query: string) => {
-    setFilters(prev => ({
-      ...prev,
-      searchQuery: query
-    }));
-    // Reset to first page when searching
+  // Handle column filter changes
+  const handleColumnFilterChange = (column: string, value: any) => {
+    setFilters(prev => {
+      const newFilters = { ...prev };
+      
+      // Handle each column type specifically
+      switch (column) {
+        case 'order_no':
+          newFilters.orderNo = value;
+          break;
+        case 'service_date':
+          newFilters.dateRange = value;
+          break;
+        case 'driver':
+          newFilters.driver = value;
+          break;
+        case 'location':
+          newFilters.location = value;
+          break;
+        case 'status':
+          newFilters.status = value;
+          break;
+      }
+      
+      return newFilters;
+    });
+    
+    // Reset to first page when filters change
+    handlePageChange(1);
+  };
+
+  // Clear a specific column filter
+  const clearColumnFilter = (column: string) => {
+    setFilters(prev => {
+      const newFilters = { ...prev };
+      
+      switch (column) {
+        case 'order_no':
+          newFilters.orderNo = null;
+          break;
+        case 'service_date':
+          newFilters.dateRange = { from: null, to: null };
+          break;
+        case 'driver':
+          newFilters.driver = null;
+          break;
+        case 'location':
+          newFilters.location = null;
+          break;
+        case 'status':
+          newFilters.status = null;
+          break;
+      }
+      
+      return newFilters;
+    });
+    
+    // Reset to first page when filters are cleared
+    handlePageChange(1);
+  };
+
+  // Clear all filters
+  const clearAllFilters = () => {
+    setFilters({
+      status: null,
+      dateRange: { from: null, to: null },
+      driver: null,
+      location: null,
+      orderNo: null
+    });
+    
+    // Reset to first page when all filters are cleared
     handlePageChange(1);
   };
 
@@ -88,7 +154,9 @@ export const useWorkOrderData = () => {
     isLoading,
     filters,
     setFilters: handleFiltersChange,
-    searchWorkOrder,
+    onColumnFilterChange: handleColumnFilterChange,
+    clearColumnFilter,
+    clearAllFilters,
     searchOptimoRoute,
     updateWorkOrderStatus,
     openImageViewer,

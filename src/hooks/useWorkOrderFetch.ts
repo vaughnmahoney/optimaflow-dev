@@ -36,6 +36,19 @@ export const useWorkOrderFetch = (
         }
       }
       
+      // Apply column-specific filters
+      if (filters.orderNo) {
+        query = query.ilike('order_no', `%${filters.orderNo}%`);
+      }
+
+      if (filters.dateRange && filters.dateRange.from) {
+        query = query.gte('service_date', filters.dateRange.from.toISOString());
+      }
+
+      if (filters.dateRange && filters.dateRange.to) {
+        query = query.lte('service_date', filters.dateRange.to.toISOString());
+      }
+      
       // Apply sorting if provided
       if (sortField && sortDirection) {
         query = query.order(sortField, { ascending: sortDirection === 'asc' });
@@ -44,8 +57,9 @@ export const useWorkOrderFetch = (
         query = query.order("timestamp", { ascending: false });
       }
       
-      // Execute the query without pagination to get all data for text search
-      const { data, error, count } = await query;
+      // Execute the query with pagination
+      const { data, error, count } = await query
+        .range(from, to);
 
       if (error) throw error;
 
@@ -54,43 +68,34 @@ export const useWorkOrderFetch = (
       // Transform all data to proper WorkOrder objects
       const transformedOrders = data.map(transformWorkOrderData);
       
-      // Apply client-side filtering for text search
+      // Apply client-side filtering for driver and location 
+      // (these are stored as JSON and can't be queried directly in Supabase)
       let filteredData = transformedOrders;
-      if (filters.searchQuery && filters.searchQuery.trim()) {
-        const searchTerm = filters.searchQuery.trim().toLowerCase();
-        
-        filteredData = transformedOrders.filter(order => {
-          // Check order number (always a string field)
-          const orderNo = (order.order_no || '').toLowerCase();
-          
-          // Safe access to driver name with type checks
-          let driverName = '';
-          if (order.driver && typeof order.driver === 'object' && order.driver.name) {
-            driverName = order.driver.name.toLowerCase();
-          }
-          
-          // Safe access to location name with type checks
-          let locationName = '';
-          if (order.location && typeof order.location === 'object') {
-            locationName = ((order.location.name || order.location.locationName) || '').toLowerCase();
-          }
-          
-          // Return true if any field matches the search term
-          return (
-            orderNo.includes(searchTerm) ||
-            driverName.includes(searchTerm) ||
-            locationName.includes(searchTerm)
-          );
+      
+      if (filters.driver) {
+        const driverSearchTerm = filters.driver.toLowerCase();
+        filteredData = filteredData.filter(order => {
+          if (!order.driver) return false;
+          const driverName = typeof order.driver === 'object' && order.driver.name
+            ? order.driver.name.toLowerCase() : '';
+          return driverName.includes(driverSearchTerm);
         });
       }
       
-      // Apply pagination to filtered results
-      const totalCount = filteredData.length;
-      const paginatedData = filteredData.slice(from, to + 1);
+      if (filters.location) {
+        const locationSearchTerm = filters.location.toLowerCase();
+        filteredData = filteredData.filter(order => {
+          if (!order.location) return false;
+          if (typeof order.location !== 'object') return false;
+          
+          const locationName = (order.location.name || order.location.locationName || '').toLowerCase();
+          return locationName.includes(locationSearchTerm);
+        });
+      }
       
       return {
-        data: paginatedData,
-        total: totalCount
+        data: filteredData,
+        total: count || filteredData.length
       };
     }
   });

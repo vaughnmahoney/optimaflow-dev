@@ -18,7 +18,9 @@ const WorkOrders = () => {
     isLoading, 
     filters,
     setFilters,
-    searchWorkOrder,
+    onColumnFilterChange,
+    clearColumnFilter,
+    clearAllFilters,
     searchOptimoRoute,
     updateWorkOrderStatus,
     openImageViewer,
@@ -53,9 +55,7 @@ const WorkOrders = () => {
       title="Work Orders"
       header={
         <WorkOrderHeader 
-          onSearchChange={searchWorkOrder}
           onOptimoRouteSearch={searchOptimoRoute}
-          searchQuery={filters.searchQuery}
         />
       }
     >
@@ -68,7 +68,6 @@ const WorkOrders = () => {
           onStatusUpdate={updateWorkOrderStatus}
           onImageView={openImageViewer}
           onDelete={deleteWorkOrder}
-          onSearchChange={searchWorkOrder}
           onOptimoRouteSearch={searchOptimoRoute}
           statusCounts={statusCounts}
           sortField={sortField}
@@ -77,6 +76,9 @@ const WorkOrders = () => {
           pagination={pagination}
           onPageChange={handlePageChange}
           onPageSizeChange={handlePageSizeChange}
+          onColumnFilterChange={onColumnFilterChange}
+          clearColumnFilter={clearColumnFilter}
+          clearAllFilters={clearAllFilters}
         />
       </div>
     </Layout>

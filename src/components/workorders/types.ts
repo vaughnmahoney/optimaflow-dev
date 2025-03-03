@@ -21,7 +21,15 @@ export interface WorkOrderFilters {
   };
   driver: string | null;
   location: string | null;
-  searchQuery: string;
+  orderNo: string | null;
+  searchQuery?: string; // Keeping for backward compatibility but will deprecate
+}
+
+export interface ColumnFilterProps {
+  column: string;
+  value: any;
+  onChange: (value: any) => void;
+  onClear: () => void;
 }
 
 export interface Location {

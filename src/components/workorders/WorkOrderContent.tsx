@@ -10,7 +10,7 @@ interface WorkOrderContentProps {
   onStatusUpdate: (workOrderId: string, newStatus: string) => void;
   onImageView: (workOrderId: string) => void;
   onDelete: (workOrderId: string) => void;
-  onSearchChange: (value: string) => void;
+  onSearchChange?: (value: string) => void;
   onOptimoRouteSearch: (value: string) => void;
   statusCounts?: {
     approved: number;
@@ -24,6 +24,9 @@ interface WorkOrderContentProps {
   pagination?: PaginationState;
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (pageSize: number) => void;
+  onColumnFilterChange: (column: string, value: any) => void;
+  clearColumnFilter: (column: string) => void;
+  clearAllFilters: () => void;
 }
 
 export const WorkOrderContent = ({
@@ -42,7 +45,10 @@ export const WorkOrderContent = ({
   onSort,
   pagination,
   onPageChange,
-  onPageSizeChange
+  onPageSizeChange,
+  onColumnFilterChange,
+  clearColumnFilter,
+  clearAllFilters
 }: WorkOrderContentProps) => {
   return (
     <WorkOrderList
@@ -62,6 +68,9 @@ export const WorkOrderContent = ({
       pagination={pagination}
       onPageChange={onPageChange}
       onPageSizeChange={onPageSizeChange}
+      onColumnFilterChange={onColumnFilterChange}
+      clearColumnFilter={clearColumnFilter}
+      clearAllFilters={clearAllFilters}
     />
   );
 };

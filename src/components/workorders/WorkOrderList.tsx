@@ -23,7 +23,10 @@ export const WorkOrderList = ({
   onSort,
   pagination,
   onPageChange,
-  onPageSizeChange
+  onPageSizeChange,
+  onColumnFilterChange,
+  clearColumnFilter,
+  clearAllFilters
 }: WorkOrderListProps) => {
   const [searchResponse, setSearchResponse] = useState<any>(null);
   const [transformedData, setTransformedData] = useState<any>(null);
@@ -85,6 +88,10 @@ export const WorkOrderList = ({
         pagination={pagination}
         onPageChange={onPageChange}
         onPageSizeChange={onPageSizeChange}
+        filters={filters}
+        onColumnFilterChange={onColumnFilterChange}
+        onColumnFilterClear={clearColumnFilter}
+        onClearAllFilters={clearAllFilters}
       />
 
       {currentWorkOrder && (
