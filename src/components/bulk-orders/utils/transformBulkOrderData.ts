@@ -14,17 +14,61 @@ export const transformBulkOrderToWorkOrder = (order: any): WorkOrder => {
   const completionData = order.completionDetails?.data || {};
   const completionForm = completionData.form || {};
   
-  // Extract location information
-  const location = searchData.location || {};
+  // Get the order number
+  const orderNo = searchData.orderNumber || searchData.order_no || order.orderNumber || order.id || 'N/A';
   
-  // Extract driver information
+  // Extract service date - check multiple possible paths
+  let serviceDate = null;
+  if (searchData.date) {
+    serviceDate = searchData.date;
+  } else if (searchData.scheduled_date) {
+    serviceDate = searchData.scheduled_date;
+  } else if (order.searchResponse?.scheduleInformation?.date) {
+    serviceDate = order.searchResponse.scheduleInformation.date;
+  }
+  
+  // Extract driver information - check multiple possible paths
+  const driverId = 
+    order.searchResponse?.scheduleInformation?.driverId || 
+    searchData.driver_id || 
+    searchData.driverId || 
+    '';
+    
+  const driverName = 
+    order.searchResponse?.scheduleInformation?.driverName || 
+    searchData.driver_name || 
+    searchData.driverName || 
+    'No Driver';
+  
   const driver = {
-    id: order.searchResponse?.scheduleInformation?.driverId || '',
-    name: order.searchResponse?.scheduleInformation?.driverName || 'No Driver'
+    id: driverId,
+    name: driverName
   };
   
-  // Extract service date
-  const serviceDate = searchData.date || null;
+  // Extract location information - check multiple possible paths
+  let locationName = 'N/A';
+  let locationObj = {};
+  
+  if (searchData.location) {
+    if (typeof searchData.location === 'object') {
+      locationObj = searchData.location;
+      locationName = searchData.location.name || 
+                    searchData.location.locationName || 
+                    searchData.location.location_name || 
+                    'N/A';
+    } else if (typeof searchData.location === 'string') {
+      locationName = searchData.location;
+    }
+  } else if (searchData.locationName) {
+    locationName = searchData.locationName;
+  } else if (searchData.location_name) {
+    locationName = searchData.location_name;
+  }
+  
+  const location = {
+    ...locationObj,
+    name: locationName
+  };
   
   // Extract notes
   const serviceNotes = searchData.notes || '';
@@ -36,8 +80,8 @@ export const transformBulkOrderToWorkOrder = (order: any): WorkOrder => {
   // Create a WorkOrder object from the data
   return {
     id: order.id || order.orderId || `temp-${Math.random().toString(36).substring(2, 15)}`,
-    order_no: searchData.order_no || order.orderNumber || order.id || 'N/A',
-    status: 'pending_review', // Default status for imported orders
+    order_no: orderNo,
+    status: 'imported', // Set status as 'imported' for bulk imported orders
     timestamp: new Date().toISOString(),
     service_date: serviceDate,
     service_notes: serviceNotes,

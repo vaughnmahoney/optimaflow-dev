@@ -35,21 +35,21 @@ export const BulkOrdersTable = ({ orders, isLoading }: BulkOrdersTableProps) => 
   const getLocationName = (order: WorkOrder): string => {
     if (!order.location) return 'N/A';
     
-    if (typeof order.location === 'object') {
-      return order.location.name || order.location.locationName || 'N/A';
+    if (typeof order.location === 'object' && order.location.name) {
+      return order.location.name;
     }
     
     return 'N/A';
   };
 
   const getDriverName = (order: WorkOrder): string => {
-    if (!order.driver) return 'No Driver Assigned';
+    if (!order.driver) return 'No Driver';
     
     if (typeof order.driver === 'object' && order.driver.name) {
       return order.driver.name;
     }
     
-    return 'No Driver Name';
+    return 'No Driver';
   };
 
   return (
