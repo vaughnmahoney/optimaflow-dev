@@ -40,7 +40,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Call OptimoRoute get_orders API (corrected endpoint)
+    // Call OptimoRoute get_orders API with the proper request format
+    // The API expects an "orders" array as per the documentation
     const bulkOrdersResponse = await fetch(
       `${baseUrl}/get_orders?key=${optimoRouteApiKey}`,
       {
@@ -51,9 +52,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           dateFrom: startDate,
           dateTo: endDate,
-          includeOrderData: true,
-          includeScheduleInformation: true,
-          includeCompletionDetails: true
+          orders: [] // Empty array to fetch all orders in the date range
         })
       }
     );
