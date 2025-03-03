@@ -94,15 +94,25 @@ export const useSortableTable = (
     }
   };
 
-  // Helper functions for getting display values
+  // Helper functions for getting display values - using safe property access
   const getLocationName = (order: WorkOrder): string => {
     if (!order.location) return 'N/A';
-    return order.location.name || order.location.locationName || 'N/A';
+    
+    if (typeof order.location === 'object') {
+      return order.location.name || order.location.locationName || 'N/A';
+    }
+    
+    return 'N/A';
   };
 
   const getDriverName = (order: WorkOrder): string => {
     if (!order.driver) return 'No Driver Assigned';
-    return order.driver.name || 'No Driver Name';
+    
+    if (typeof order.driver === 'object' && order.driver.name) {
+      return order.driver.name;
+    }
+    
+    return 'No Driver Name';
   };
 
   return {

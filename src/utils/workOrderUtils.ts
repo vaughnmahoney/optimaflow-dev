@@ -50,12 +50,25 @@ export const transformWorkOrderData = (order: any): WorkOrder => {
   }
   
   // Flag to check if the work order has images
-  const has_images = !!(completionResponse?.orders?.[0]?.data?.form?.images?.length);
+  const has_images = !!(
+    completionResponse && 
+    typeof completionResponse === 'object' &&
+    completionResponse.orders && 
+    Array.isArray(completionResponse.orders) &&
+    completionResponse.orders[0] && 
+    completionResponse.orders[0].data && 
+    completionResponse.orders[0].data.form && 
+    completionResponse.orders[0].data.form.images && 
+    Array.isArray(completionResponse.orders[0].data.form.images) &&
+    completionResponse.orders[0].data.form.images.length > 0
+  );
   
   // Create a location object with safe property access
   let location = null;
-  if (searchResponse && typeof searchResponse === 'object' && 
-      searchResponse.data && typeof searchResponse.data === 'object' && 
+  if (searchResponse && 
+      typeof searchResponse === 'object' && 
+      searchResponse.data && 
+      typeof searchResponse.data === 'object' && 
       searchResponse.data.location) {
     location = searchResponse.data.location;
   }
@@ -67,7 +80,13 @@ export const transformWorkOrderData = (order: any): WorkOrder => {
     timestamp: order.timestamp || new Date().toISOString(),
     service_date: service_date,
     service_notes: service_notes,
-    tech_notes: completionResponse?.orders?.[0]?.data?.form?.note,
+    tech_notes: completionResponse && 
+                typeof completionResponse === 'object' && 
+                completionResponse.orders && 
+                completionResponse.orders[0] && 
+                completionResponse.orders[0].data && 
+                completionResponse.orders[0].data.form && 
+                completionResponse.orders[0].data.form.note,
     // If notes exists in database use it, otherwise set to empty string
     notes: order.notes || '',
     // Include QC notes from database or empty string
@@ -85,7 +104,14 @@ export const transformWorkOrderData = (order: any): WorkOrder => {
     // If lds exists in database use it, otherwise set to empty string
     lds: order.lds || '',
     has_images: has_images,
-    signature_url: completionResponse?.orders?.[0]?.data?.form?.signature?.url,
+    signature_url: completionResponse && 
+                  typeof completionResponse === 'object' && 
+                  completionResponse.orders && 
+                  completionResponse.orders[0] && 
+                  completionResponse.orders[0].data && 
+                  completionResponse.orders[0].data.form && 
+                  completionResponse.orders[0].data.form.signature && 
+                  completionResponse.orders[0].data.form.signature.url,
     search_response: searchResponse,
     completion_response: completionResponse
   };

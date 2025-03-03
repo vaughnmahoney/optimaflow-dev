@@ -44,13 +44,7 @@ export const useWorkOrderFetch = (
         query = query.order("timestamp", { ascending: false });
       }
       
-      // Apply pagination only if there's no search
-      // When searching, we need the full dataset to do client-side filtering
-      if (!filters.searchQuery || !filters.searchQuery.trim()) {
-        query = query.range(from, to);
-      }
-      
-      // Execute the query
+      // Execute the query without pagination to get all data for text search
       const { data, error, count } = await query;
 
       if (error) throw error;
@@ -66,18 +60,19 @@ export const useWorkOrderFetch = (
         const searchTerm = filters.searchQuery.trim().toLowerCase();
         
         filteredData = transformedOrders.filter(order => {
-          // Check order number
-          const orderNo = order.order_no.toLowerCase();
+          // Check order number (always a string field)
+          const orderNo = (order.order_no || '').toLowerCase();
           
-          // Safe access to nested properties with type guards
+          // Safe access to driver name with type checks
           let driverName = '';
           if (order.driver && typeof order.driver === 'object' && order.driver.name) {
             driverName = order.driver.name.toLowerCase();
           }
           
+          // Safe access to location name with type checks
           let locationName = '';
           if (order.location && typeof order.location === 'object') {
-            locationName = (order.location.name || order.location.locationName || '').toLowerCase();
+            locationName = ((order.location.name || order.location.locationName) || '').toLowerCase();
           }
           
           // Return true if any field matches the search term
@@ -87,18 +82,15 @@ export const useWorkOrderFetch = (
             locationName.includes(searchTerm)
           );
         });
-        
-        // Apply pagination to filtered results
-        const paginatedData = filteredData.slice(from, to + 1);
-        return {
-          data: paginatedData,
-          total: filteredData.length
-        };
       }
-
+      
+      // Apply pagination to filtered results
+      const totalCount = filteredData.length;
+      const paginatedData = filteredData.slice(from, to + 1);
+      
       return {
-        data: filteredData,
-        total: count || 0
+        data: paginatedData,
+        total: totalCount
       };
     }
   });
