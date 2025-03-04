@@ -22,40 +22,97 @@ export const handleOrdersResponse = ({
   collectedOrders: any[];
   shouldContinue: boolean;
 } => {
+  console.log("Processing API response:", {
+    hasOrders: !!data.orders,
+    ordersCount: data.orders?.length || 0,
+    totalCount: data.totalCount,
+    activeTab,
+    previousOrdersCount: previousOrders.length,
+    paginationProgress: data.paginationProgress
+  });
+  
   // Handle orders based on the active tab and completion status
   let filteredOrders = data.orders || [];
   let filteredCount = 0;
   
   if (activeTab === "with-completion" && Array.isArray(data.orders)) {
+    console.log("FILTER DEBUG - Sample orders before filtering:", data.orders.slice(0, 3).map(order => ({
+      id: order.id,
+      orderNo: order.order_no,
+      hasCompletionDetails: !!order.completionDetails,
+      completionSuccess: order.completionDetails?.success,
+      hasCompletionData: !!order.completionDetails?.data,
+      completionStatus: order.completionDetails?.data?.status,
+      hasStartTime: !!order.completionDetails?.data?.startTime,
+      hasEndTime: !!order.completionDetails?.data?.endTime,
+    })));
+    
     // Enhanced filtering logic based on API structure
+    let failedCheckCount = {
+      noCompletionDetails: 0,
+      completionNotSuccess: 0,
+      noCompletionData: 0,
+      invalidStatus: 0,
+      noStartOrEndTime: 0
+    };
+    
     filteredOrders = data.orders.filter(order => {
-      // Check if the order has a valid completionDetails section
-      return (
-        order.completionDetails && 
-        order.completionDetails.success === true &&
-        order.completionDetails.data && 
-        (
-          // Include orders with "success" status
-          order.completionDetails.data.status === "success" ||
-          // Also include orders with "failed" status but with details
-          order.completionDetails.data.status === "failed" 
-        ) &&
-        // Ensure it has start and end times (was actually attempted)
+      // Check if has completion details
+      if (!order.completionDetails) {
+        failedCheckCount.noCompletionDetails++;
+        return false;
+      }
+      
+      // Check if completion was successful
+      if (order.completionDetails.success !== true) {
+        failedCheckCount.completionNotSuccess++;
+        return false;
+      }
+      
+      // Check if has completion data
+      if (!order.completionDetails.data) {
+        failedCheckCount.noCompletionData++;
+        return false;
+      }
+      
+      // Check status
+      const hasValidStatus = (
+        order.completionDetails.data.status === "success" ||
+        order.completionDetails.data.status === "failed"
+      );
+      if (!hasValidStatus) {
+        failedCheckCount.invalidStatus++;
+        return false;
+      }
+      
+      // Check start and end times
+      const hasStartAndEndTimes = (
         order.completionDetails.data.startTime &&
         order.completionDetails.data.endTime
       );
+      if (!hasStartAndEndTimes) {
+        failedCheckCount.noStartOrEndTime++;
+        return false;
+      }
+      
+      return true;
     });
     
     filteredCount = filteredOrders.length;
     console.log(`Filtered ${filteredCount} completed orders (both success and failed statuses)`);
+    console.log("FILTER DEBUG - Failed checks:", failedCheckCount);
     
     // Log the first few orders for debugging
     if (filteredOrders.length > 0) {
-      console.log("First completed order sample:", {
+      console.log("FILTER DEBUG - First completed order sample:", {
         id: filteredOrders[0].id,
         status: filteredOrders[0].completionDetails?.data?.status,
-        hasTrackingUrl: !!filteredOrders[0].completionDetails?.data?.tracking_url
+        hasTrackingUrl: !!filteredOrders[0].completionDetails?.data?.tracking_url,
+        startTime: filteredOrders[0].completionDetails?.data?.startTime,
+        endTime: filteredOrders[0].completionDetails?.data?.endTime
       });
+    } else {
+      console.log("FILTER DEBUG - No orders passed the completion filters");
     }
   }
   
@@ -133,6 +190,7 @@ export const handleOrdersResponse = ({
  * Handles API errors
  */
 export const handleOrdersError = (error: string): BulkOrdersResponse => {
+  console.error(`Error handling order response: ${error}`);
   toast.error(`Error: ${error}`);
   return { error };
 };

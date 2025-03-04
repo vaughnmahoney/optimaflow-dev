@@ -36,9 +36,23 @@ Deno.serve(async (req) => {
     }
     
     const searchData = searchResult.data;
+    console.log("SEARCH API RESPONSE STRUCTURE:", JSON.stringify({
+      success: searchData.success,
+      ordersCount: searchData.orders?.length,
+      firstOrderSample: searchData.orders && searchData.orders.length > 0 ? {
+        id: searchData.orders[0].id,
+        orderNo: searchData.orders[0].orderNo,
+        date: searchData.orders[0].date,
+        hasDriver: !!searchData.orders[0].driver,
+        hasLocation: !!searchData.orders[0].location,
+        status: searchData.orders[0].status
+      } : null,
+      hasAfterTag: !!searchData.after_tag
+    }, null, 2));
     
     // If no orders found on this page, return what we've collected so far or empty result
     if (!searchData.orders || searchData.orders.length === 0) {
+      console.log("No orders found in search results, returning early");
       return formatSuccessResponse(
         allCollectedOrders, 
         [], 
@@ -50,6 +64,8 @@ Deno.serve(async (req) => {
 
     // STEP 2: Extract order numbers and prepare for get_completion_details
     const orderNumbers = extractOrderNumbers(searchData.orders);
+    console.log(`Extracted ${orderNumbers.length} order numbers from search results`);
+    console.log("Sample order numbers:", orderNumbers.slice(0, 3));
     
     // Check if we have any valid order numbers
     if (orderNumbers.length === 0) {
@@ -79,15 +95,46 @@ Deno.serve(async (req) => {
     // STEP 3: Call get_completion_details with the order numbers
     const completionResult = await fetchCompletionDetails(optimoRouteApiKey, orderNumbers);
     const completionData = completionResult.data;
+    
+    console.log("COMPLETION API RESPONSE STRUCTURE:", JSON.stringify({
+      success: completionResult.success,
+      hasData: !!completionData,
+      ordersCount: completionData?.orders?.length,
+      firstOrderSample: completionData?.orders && completionData.orders.length > 0 ? {
+        id: completionData.orders[0].id,
+        orderNo: completionData.orders[0].orderNo,
+        status: completionData.orders[0].status,
+        hasData: !!completionData.orders[0].data,
+        dataStatus: completionData.orders[0].data?.status,
+        hasStartTime: !!completionData.orders[0].data?.startTime,
+        hasEndTime: !!completionData.orders[0].data?.endTime,
+        hasTrackingUrl: !!completionData.orders[0].data?.tracking_url,
+        hasForm: !!completionData.orders[0].data?.form
+      } : null
+    }, null, 2));
 
     // STEP 4: Combine the data
     console.log('Combining search results with completion details...');
     
     // Create a map of orderNo to completion details for faster lookups
     const completionMap = createCompletionMap(completionData);
+    console.log(`Created completion map with ${Object.keys(completionMap).length} entries`);
     
     // Merge search data with completion data
     const currentPageOrders = mergeOrderData(searchData.orders, completionMap);
+    console.log("MERGED DATA STRUCTURE:", JSON.stringify({
+      mergedCount: currentPageOrders.length,
+      firstOrderSample: currentPageOrders.length > 0 ? {
+        id: currentPageOrders[0].id,
+        orderNo: currentPageOrders[0].orderNo,
+        hasSearch: !!currentPageOrders[0].searchResponse,
+        hasCompletion: !!currentPageOrders[0].completionDetails,
+        completionSuccess: currentPageOrders[0].completionDetails?.success,
+        completionDataStatus: currentPageOrders[0].completionDetails?.data?.status,
+        hasStartTime: !!currentPageOrders[0].completionDetails?.data?.startTime,
+        hasEndTime: !!currentPageOrders[0].completionDetails?.data?.endTime
+      } : null
+    }, null, 2));
 
     // Combine with previously collected orders if we're paginating
     const combinedOrders = [...allCollectedOrders, ...currentPageOrders];

@@ -11,16 +11,25 @@ export const logInputOrderStructure = (order: any): void => {
       data: order.searchResponse.data ? {
         orderNo: order.searchResponse.data.orderNo,
         date: order.searchResponse.data.date,
-        driverInfo: order.searchResponse.data.driver,
-        location: order.searchResponse.data.location,
+        driverInfo: order.searchResponse.data.driver ? {
+          id: order.searchResponse.data.driver.id,
+          name: order.searchResponse.data.driver.name
+        } : null,
+        location: order.searchResponse.data.location ? {
+          id: order.searchResponse.data.location.id,
+          name: order.searchResponse.data.location.name
+        } : null,
       } : null,
-      scheduleInformation: order.searchResponse.scheduleInformation
+      scheduleInformation: !!order.searchResponse.scheduleInformation
     } : null,
     completionDetails: order.completionDetails ? {
       success: order.completionDetails.success,
       orderNo: order.completionDetails.orderNo,
       status: order.completionDetails.data?.status,
-      hasTrackingUrl: !!order.completionDetails.data?.tracking_url
+      hasStartTime: !!order.completionDetails.data?.startTime,
+      hasEndTime: !!order.completionDetails.data?.endTime,
+      hasTrackingUrl: !!order.completionDetails.data?.tracking_url,
+      hasForm: !!order.completionDetails.data?.form
     } : null
   }, null, 2));
 };
@@ -52,9 +61,11 @@ export const logTransformOutput = (result: any): void => {
     id: result.id,
     order_no: result.order_no,
     status: result.status,
-    location: result.location.name,
-    driver: result.driver.name,
+    location: result.location?.name || "N/A",
+    driver: result.driver?.name || "N/A",
     hasImages: result.has_images,
-    hasTrackingUrl: !!result.tracking_url
+    hasTrackingUrl: !!result.tracking_url,
+    serviceDate: result.service_date,
+    completionStatus: result.completion_status
   });
 };

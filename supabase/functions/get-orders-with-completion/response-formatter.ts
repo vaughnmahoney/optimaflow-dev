@@ -9,6 +9,14 @@ export function formatSuccessResponse(
   completionData: any,
   isComplete: boolean
 ) {
+  console.log("Response formatter input:", {
+    combinedOrdersCount: combinedOrders.length,
+    allCollectedOrdersCount: allCollectedOrders.length,
+    searchDataOrdersCount: searchData.orders?.length,
+    completionDataOrdersCount: completionData?.orders?.length,
+    isComplete
+  });
+  
   // Deduplicate orders by order_no to prevent duplicate entries
   const orderMap = new Map();
   
@@ -19,15 +27,21 @@ export function formatSuccessResponse(
         orderMap.set(order.order_no, order);
       }
     });
+    console.log(`Added ${allCollectedOrders.length} previously collected orders to orderMap`);
   }
   
   // Then add new orders, overwriting any duplicates with the latest version
   if (Array.isArray(combinedOrders)) {
+    let overwrittenCount = 0;
     combinedOrders.forEach(order => {
       if (order.order_no) {
+        if (orderMap.has(order.order_no)) {
+          overwrittenCount++;
+        }
         orderMap.set(order.order_no, order);
       }
     });
+    console.log(`Added ${combinedOrders.length} new orders to orderMap, overwrote ${overwrittenCount} duplicates`);
   }
   
   // Convert the map back to an array
@@ -61,6 +75,14 @@ export function formatSuccessResponse(
     response.after_tag = searchData.after_tag;
   }
   
+  console.log("Final response structure:", {
+    success: response.success,
+    ordersCount: response.orders.length,
+    totalCount: response.totalCount,
+    paginationProgress: response.paginationProgress,
+    hasAfterTag: !!response.after_tag
+  });
+  
   return new Response(
     JSON.stringify(response),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -69,6 +91,7 @@ export function formatSuccessResponse(
 
 // Format error response
 export function formatErrorResponse(error: string, status: number = 500) {
+  console.error(`Formatting error response: ${error}, status: ${status}`);
   return new Response(
     JSON.stringify({ 
       error: error,
