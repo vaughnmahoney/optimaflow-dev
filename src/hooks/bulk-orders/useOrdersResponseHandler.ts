@@ -32,6 +32,27 @@ export const handleOrdersResponse = ({
     paginationProgress: data.paginationProgress
   });
   
+  // Add deeper debugging for raw data structure
+  if (data.orders && data.orders.length > 0) {
+    const firstOrder = data.orders[0];
+    console.log("RAW FIRST ORDER STRUCTURE:", JSON.stringify(firstOrder, null, 2));
+    console.log("First order keys at root level:", Object.keys(firstOrder));
+    
+    // Look for possible completion details location
+    if (firstOrder.completionDetails) {
+      console.log("completionDetails exists directly on order");
+    } else if (firstOrder.completion_details) {
+      console.log("completion_details (snake_case) exists directly on order");
+    } else {
+      console.log("No direct completion details found, scanning for likely fields...");
+      Object.keys(firstOrder).forEach(key => {
+        if (typeof firstOrder[key] === 'object' && firstOrder[key] !== null) {
+          console.log(`Checking object field "${key}", keys:`, Object.keys(firstOrder[key]));
+        }
+      });
+    }
+  }
+  
   // Log detailed API response structure for debugging
   logApiResponseStructure(data);
   
@@ -48,22 +69,31 @@ export const handleOrdersResponse = ({
         id: order.id,
         orderNo: order.order_no || order.orderNo,
         hasCompletionDetails: !!order.completionDetails,
-        completionSuccess: order.completionDetails?.success,
-        hasCompletionData: !!order.completionDetails?.data,
-        completionStatus: order.completionDetails?.data?.status,
-        hasStartTime: !!order.completionDetails?.data?.startTime,
-        hasEndTime: !!order.completionDetails?.data?.endTime,
+        hasCompletionResponse: !!order.completion_response, // Check snake_case version too
+        completionSuccess: order.completionDetails?.success || order.completion_response?.success,
+        hasCompletionData: !!order.completionDetails?.data || !!order.completion_response?.orders?.[0]?.data,
+        completionStatus: order.completionDetails?.data?.status || 
+                        order.completion_response?.orders?.[0]?.data?.status ||
+                        order.completionDetails?.orders?.[0]?.data?.status,
+        hasStartTime: !!order.completionDetails?.data?.startTime || 
+                    !!order.completion_response?.orders?.[0]?.data?.startTime ||
+                    !!order.completionDetails?.orders?.[0]?.data?.startTime,
+        hasEndTime: !!order.completionDetails?.data?.endTime || 
+                  !!order.completion_response?.orders?.[0]?.data?.endTime ||
+                  !!order.completionDetails?.orders?.[0]?.data?.endTime,
       })));
       
       // Log raw data structure for one order for debugging
       console.log("FILTER DEBUG - FIRST ORDER RAW STRUCTURE:", JSON.stringify({
         keys: Object.keys(data.orders[0]),
         completionDetailsKeys: data.orders[0].completionDetails ? Object.keys(data.orders[0].completionDetails) : [],
-        completionDataKeys: data.orders[0].completionDetails?.data ? Object.keys(data.orders[0].completionDetails.data) : []
+        completionResponseKeys: data.orders[0].completion_response ? Object.keys(data.orders[0].completion_response) : [],
+        completionDataKeys: data.orders[0].completionDetails?.data ? Object.keys(data.orders[0].completionDetails.data) : 
+                          data.orders[0].completion_response?.orders?.[0]?.data ? Object.keys(data.orders[0].completion_response.orders[0].data) : []
       }, null, 2));
     }
     
-    // Enhanced filtering logic with detailed failure tracking
+    // Enhanced filtering logic with detailed failure tracking and more flexible property paths
     let failedCheckCount = {
       noCompletionDetails: 0,
       completionNotSuccess: 0,
@@ -75,29 +105,45 @@ export const handleOrdersResponse = ({
     };
     
     filteredOrders = data.orders.filter(order => {
-      // Check if has completion details
-      if (!order.completionDetails) {
+      // Track completionDetails in either camelCase or snake_case
+      const completionDetails = order.completionDetails || order.completion_response;
+      
+      // Check if has any kind of completion details
+      if (!completionDetails) {
         failedCheckCount.noCompletionDetails++;
         logFilterDetails(order, false, "No completion details");
         return false;
       }
       
-      // Check if completion response was successful 
-      if (order.completionDetails.success !== true) {
+      // Look for completion data in different possible locations 
+      let completionData = null;
+      
+      // Direct data property
+      if (completionDetails.data) {
+        completionData = completionDetails.data;
+      } 
+      // Through orders array (first item)
+      else if (completionDetails.orders && completionDetails.orders.length > 0 && completionDetails.orders[0].data) {
+        completionData = completionDetails.orders[0].data;
+      }
+      
+      // Check if completion response was successful (any structure)
+      if (completionDetails.success !== true) {
         failedCheckCount.completionNotSuccess++;
         logFilterDetails(order, false, "Completion not successful");
         return false;
       }
       
-      // Check if has completion data
-      if (!order.completionDetails.data) {
+      // Check if has completion data in any format
+      if (!completionData) {
         failedCheckCount.noCompletionData++;
         logFilterDetails(order, false, "No completion data");
         return false;
       }
       
       // Get the status
-      const status = order.completionDetails.data.status;
+      const status = completionData.status;
+      console.log(`Order ${order.order_no || order.id} status: ${status}`);
       
       // Special case: if status is "scheduled", this is not a completed order yet
       if (status === "scheduled") {
@@ -115,10 +161,9 @@ export const handleOrdersResponse = ({
       }
       
       // For completed orders (success or failed), we need start and end times
-      const hasStartAndEndTimes = !!(
-        order.completionDetails.data.startTime &&
-        order.completionDetails.data.endTime
-      );
+      const hasStartTime = !!completionData.startTime || !!completionData.start_time;
+      const hasEndTime = !!completionData.endTime || !!completionData.end_time;
+      const hasStartAndEndTimes = hasStartTime && hasEndTime;
       
       if (!hasStartAndEndTimes) {
         failedCheckCount.noStartOrEndTime++;
@@ -140,9 +185,15 @@ export const handleOrdersResponse = ({
       console.log("FILTER DEBUG - First few filtered orders:", filteredOrders.slice(0, 3).map(order => ({
         id: order.id,
         orderNo: order.order_no || order.orderNo,
-        status: order.completionDetails?.data?.status,
-        hasStartTime: !!order.completionDetails?.data?.startTime,
-        hasEndTime: !!order.completionDetails?.data?.endTime
+        status: order.completionDetails?.data?.status || 
+                order.completion_response?.orders?.[0]?.data?.status ||
+                order.completionDetails?.orders?.[0]?.data?.status,
+        hasStartTime: !!order.completionDetails?.data?.startTime || 
+                    !!order.completion_response?.orders?.[0]?.data?.startTime ||
+                    !!order.completionDetails?.orders?.[0]?.data?.startTime,
+        hasEndTime: !!order.completionDetails?.data?.endTime || 
+                  !!order.completion_response?.orders?.[0]?.data?.endTime ||
+                  !!order.completionDetails?.orders?.[0]?.data?.endTime
       })));
     } else {
       console.log("FILTER DEBUG - No orders passed the completion filters");

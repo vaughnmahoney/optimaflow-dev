@@ -17,8 +17,22 @@ export const transformBulkOrderToWorkOrder = (order: any): WorkOrder => {
   // Handle search data (order details)
   const searchData = order.searchResponse?.data || {};
   
-  // Handle completion data with safe null checks
-  const completionData = order.completionDetails?.data || {};
+  // Handle completion data with safe null checks - checking both snake_case and camelCase versions
+  // Check for both camelCase and snake_case styles in the data structure
+  const completionDetails = order.completionDetails || order.completion_response || {};
+  
+  // Determine the correct path for completion data
+  let completionData = completionDetails.data;
+  
+  // If data isn't directly on completionDetails, check if it's in an orders array
+  if (!completionData && completionDetails.orders && completionDetails.orders.length > 0) {
+    completionData = completionDetails.orders[0].data;
+  }
+  
+  // Default to empty object if still not found
+  completionData = completionData || {};
+  
+  // Similarly handle form data which could be at different paths
   const completionForm = completionData.form || {};
   
   // Extract order number with fallbacks (handle both camelCase and snake_case)
@@ -35,10 +49,10 @@ export const transformBulkOrderToWorkOrder = (order: any): WorkOrder => {
   const location = extractLocationInfo(order, searchData);
   
   // Extract notes with better null checking
-  const serviceNotes = searchData.notes || order.notes || '';
+  const serviceNotes = extractNotes(order, searchData);
   const techNotes = completionForm.note || completionData.note || '';
   
-  // Extract completion information
+  // Extract completion information with the enhanced extractor
   const { hasImages, signatureUrl, trackingUrl, completionStatus } = 
     extractCompletionInfo(completionForm, completionData);
   
@@ -73,13 +87,7 @@ export const transformBulkOrderToWorkOrder = (order: any): WorkOrder => {
     tracking_url: trackingUrl,
     completion_status: completionStatus,
     search_response: order.searchResponse || null,
-    completion_response: order.completionDetails ? {
-      success: true,
-      orders: [{ 
-        id: id,
-        data: completionData 
-      }]
-    } : null
+    completion_response: order.completionDetails || order.completion_response || null
   };
   
   logTransformOutput(result);
