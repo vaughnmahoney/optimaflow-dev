@@ -51,37 +51,50 @@ export const transformBulkOrderToWorkOrder = (order: any): WorkOrder => {
     name: driverName
   };
   
-  // Extract location information - check multiple possible paths
+  // Enhanced location extraction - including deeper paths in the structure
+  // Properly handle nested location data in different possible formats
   let locationName = 'N/A';
   let locationObj: any = {};
   
+  // First try direct location object in searchData
   if (searchData.location) {
     if (typeof searchData.location === 'object') {
       locationObj = searchData.location;
       locationName = searchData.location.name || 
                     searchData.location.locationName || 
-                    searchData.location.location_name || 
                     'N/A';
     } else if (typeof searchData.location === 'string') {
       locationName = searchData.location;
     }
-  } else if (searchData.locationName) {
+  } 
+  // Try alternate location paths
+  else if (searchData.locationName) {
     locationName = searchData.locationName;
-  } else if (searchData.location_name) {
+  } 
+  else if (searchData.location_name) {
     locationName = searchData.location_name;
-  } else if (order.location) {
+  }
+  // Try location in the order root
+  else if (order.location) {
     if (typeof order.location === 'object') {
       locationObj = order.location;
       locationName = order.location.name ||
                      order.location.locationName ||
-                     order.location.location_name ||
                      'N/A';
     } else if (typeof order.location === 'string') {
       locationName = order.location;
     }
   }
+  // Try extracting location from customer data if available
+  else if (searchData.customer && typeof searchData.customer === 'object') {
+    locationName = searchData.customer.name || 'N/A';
+    // Check if customer object has location info
+    if (searchData.customer.location && typeof searchData.customer.location === 'object') {
+      locationObj = searchData.customer.location;
+    }
+  }
   
-  // Collect additional location info
+  // Build location object with all available details
   const location = {
     ...locationObj,
     name: locationName,

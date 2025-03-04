@@ -14,7 +14,6 @@ interface BulkOrdersTableProps {
 
 export const BulkOrdersTable = ({ orders, isLoading }: BulkOrdersTableProps) => {
   console.log("BulkOrdersTable received orders:", orders.length);
-  console.log("First order sample:", orders.length > 0 ? orders[0] : "No orders");
   
   if (isLoading) {
     return (
@@ -39,15 +38,10 @@ export const BulkOrdersTable = ({ orders, isLoading }: BulkOrdersTableProps) => 
 
   // Helper function to safely get location name with fallbacks
   const getLocationName = (order: WorkOrder): string => {
-    console.log("Location object:", order.location);
-    
     if (!order.location) return 'N/A';
     
     if (typeof order.location === 'object') {
-      // Try all possible properties for location name
-      return order.location.name || 
-             order.location.locationName || 
-             'N/A';
+      return order.location.name || 'N/A';
     }
     
     if (typeof order.location === 'string') {
