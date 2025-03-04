@@ -13,6 +13,9 @@ interface BulkOrdersTableProps {
 }
 
 export const BulkOrdersTable = ({ orders, isLoading }: BulkOrdersTableProps) => {
+  console.log("BulkOrdersTable received orders:", orders.length);
+  console.log("First order sample:", orders.length > 0 ? orders[0] : "No orders");
+  
   if (isLoading) {
     return (
       <div className="rounded-md border p-8">
@@ -24,6 +27,7 @@ export const BulkOrdersTable = ({ orders, isLoading }: BulkOrdersTableProps) => 
   }
 
   if (!orders || orders.length === 0) {
+    console.log("No orders found to display");
     return (
       <div className="rounded-md border p-8">
         <div className="flex justify-center">
@@ -35,13 +39,14 @@ export const BulkOrdersTable = ({ orders, isLoading }: BulkOrdersTableProps) => 
 
   // Helper function to safely get location name with fallbacks
   const getLocationName = (order: WorkOrder): string => {
+    console.log("Location object:", order.location);
+    
     if (!order.location) return 'N/A';
     
     if (typeof order.location === 'object') {
       // Try all possible properties for location name
       return order.location.name || 
              order.location.locationName || 
-             order.location.location_name ||
              'N/A';
     }
     

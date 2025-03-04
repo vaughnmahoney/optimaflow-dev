@@ -7,6 +7,8 @@ import { WorkOrder } from "@/components/workorders/types";
  * @returns A formatted WorkOrder object
  */
 export const transformBulkOrderToWorkOrder = (order: any): WorkOrder => {
+  console.log("Transform input:", JSON.stringify(order).substring(0, 500) + "...");
+  
   // Handle search data (order details)
   const searchData = order.searchResponse?.data || {};
   
@@ -102,8 +104,7 @@ export const transformBulkOrderToWorkOrder = (order: any): WorkOrder => {
   // Handle signature information
   const signatureUrl = completionForm.signature?.url || null;
   
-  // Create a WorkOrder object from the data
-  return {
+  const result: WorkOrder = {
     id: order.id || order.orderId || `temp-${Math.random().toString(36).substring(2, 15)}`,
     order_no: orderNo,
     status: 'imported', // Set status as 'imported' for bulk imported orders
@@ -127,4 +128,14 @@ export const transformBulkOrderToWorkOrder = (order: any): WorkOrder => {
       }]
     }
   };
+  
+  console.log("Transform output:", {
+    id: result.id,
+    order_no: result.order_no,
+    location: result.location,
+    driver: result.driver,
+    hasImages: result.has_images
+  });
+  
+  return result;
 };

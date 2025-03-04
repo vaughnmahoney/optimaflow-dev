@@ -20,6 +20,9 @@ const BulkOrdersTest = () => {
     handleFetchOrders
   } = useBulkOrdersFetch();
 
+  console.log("BulkOrdersTest: transformedOrders.length =", transformedOrders.length);
+  console.log("BulkOrdersTest: isLoading =", isLoading, "shouldContinueFetching =", shouldContinueFetching);
+  
   const orderCount = response?.totalCount || transformedOrders.length;
   const filteredCount = response?.filteredCount || 0;
 
