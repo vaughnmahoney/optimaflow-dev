@@ -1,5 +1,9 @@
 
 import { WorkOrder } from "@/components/workorders/types";
+import { extractOrderNo, extractServiceDate, extractDriverInfo, extractNotes } from "./orderDataExtractors";
+import { extractLocationInfo } from "./locationDataExtractor";
+import { extractCompletionInfo } from "./completionDataExtractor";
+import { logInputOrderStructure, logOrderNumber, logCompletionDetails, logTransformOutput } from "./transformLoggers";
 
 /**
  * Transforms the bulk orders API response into the WorkOrder type structure
@@ -7,27 +11,8 @@ import { WorkOrder } from "@/components/workorders/types";
  * @returns A formatted WorkOrder object
  */
 export const transformBulkOrderToWorkOrder = (order: any): WorkOrder => {
-  // Enhanced logging - show more of the object structure
-  console.log("Transform input order structure:", JSON.stringify({
-    id: order.id,
-    orderNo: order.orderNo,
-    searchResponse: order.searchResponse ? {
-      success: order.searchResponse.success,
-      data: order.searchResponse.data ? {
-        orderNo: order.searchResponse.data.orderNo,
-        date: order.searchResponse.data.date,
-        driverInfo: order.searchResponse.data.driver,
-        location: order.searchResponse.data.location,
-      } : null,
-      scheduleInformation: order.searchResponse.scheduleInformation
-    } : null,
-    completionDetails: order.completionDetails ? {
-      success: order.completionDetails.success,
-      orderNo: order.completionDetails.orderNo,
-      status: order.completionDetails.data?.status,
-      hasTrackingUrl: !!order.completionDetails.data?.tracking_url
-    } : null
-  }, null, 2));
+  // Log input order structure for debugging
+  logInputOrderStructure(order);
   
   // Handle search data (order details)
   const searchData = order.searchResponse?.data || {};
@@ -36,136 +21,30 @@ export const transformBulkOrderToWorkOrder = (order: any): WorkOrder => {
   const completionData = order.completionDetails?.data || {};
   const completionForm = completionData.form || {};
   
-  // Get the order number - correct paths based on API structure
-  // Search for orderNo in the expected locations based on API docs
-  const orderNo = 
-    // From search_orders API (inside data object)
-    searchData.orderNo || 
-    // From search_orders when data structure is flattened
-    searchData.data?.orderNo || 
-    // From get_completion_details API
-    order.completionDetails?.orderNo || 
-    // Direct access from order (merged data)
-    order.orderNo || 
-    // Fallbacks
-    order.order_no || 
-    order.id || 
-    'N/A';
+  // Extract order number
+  const orderNo = extractOrderNo(order, searchData);
+  logOrderNumber(orderNo);
   
-  console.log("Found order number:", orderNo);
+  // Extract service date
+  const serviceDate = extractServiceDate(order, searchData);
   
-  // Extract service date - check multiple possible paths
-  let serviceDate = null;
-  if (searchData.date) {
-    serviceDate = searchData.date;
-  } else if (searchData.scheduled_date) {
-    serviceDate = searchData.scheduled_date;
-  } else if (order.searchResponse?.scheduleInformation?.date) {
-    serviceDate = order.searchResponse.scheduleInformation.date;
-  } else if (order.date) {
-    serviceDate = order.date;
-  }
+  // Extract driver information
+  const driver = extractDriverInfo(order, searchData);
   
-  // Extract driver information - check multiple possible paths
-  const driverId = 
-    order.searchResponse?.scheduleInformation?.driverId || 
-    searchData.driver_id || 
-    searchData.driverId || 
-    order.driverId ||
-    '';
-    
-  const driverName = 
-    order.searchResponse?.scheduleInformation?.driverName || 
-    searchData.driver_name || 
-    searchData.driverName ||
-    order.driverName ||
-    'No Driver';
+  // Extract location information
+  const location = extractLocationInfo(order, searchData);
   
-  const driver = {
-    id: driverId,
-    name: driverName
-  };
-  
-  // Enhanced location extraction - including deeper paths in the structure
-  // Properly handle nested location data in different possible formats
-  let locationName = 'N/A';
-  let locationObj: any = {};
-  
-  // First try direct location object in searchData
-  if (searchData.location) {
-    if (typeof searchData.location === 'object') {
-      locationObj = searchData.location;
-      locationName = searchData.location.name || 
-                    searchData.location.locationName || 
-                    'N/A';
-    } else if (typeof searchData.location === 'string') {
-      locationName = searchData.location;
-    }
-  } 
-  // Try alternate location paths
-  else if (searchData.locationName) {
-    locationName = searchData.locationName;
-  } 
-  else if (searchData.location_name) {
-    locationName = searchData.location_name;
-  }
-  // Try location in the order root
-  else if (order.location) {
-    if (typeof order.location === 'object') {
-      locationObj = order.location;
-      locationName = order.location.name ||
-                     order.location.locationName ||
-                     'N/A';
-    } else if (typeof order.location === 'string') {
-      locationName = order.location;
-    }
-  }
-  // Try extracting location from customer data if available
-  else if (searchData.customer && typeof searchData.customer === 'object') {
-    locationName = searchData.customer.name || 'N/A';
-    // Check if customer object has location info
-    if (searchData.customer.location && typeof searchData.customer.location === 'object') {
-      locationObj = searchData.customer.location;
-    }
-  }
-  
-  // Build location object with all available details
-  const location = {
-    ...locationObj,
-    name: locationName,
-    address: locationObj.address || searchData.address || order.address || null,
-    city: locationObj.city || searchData.city || order.city || null,
-    state: locationObj.state || searchData.state || order.state || null,
-    zip: locationObj.zip || searchData.zip || order.zip || null,
-  };
-  
-  // Extract notes
+  // Extract notes - fix missing order parameter
   const serviceNotes = searchData.notes || order.notes || '';
   const techNotes = completionForm.note || completionData.note || '';
   
-  // Extract image information
-  const hasImages = !!(
-    completionForm.images && 
-    completionForm.images.length > 0
-  );
+  // Extract completion information
+  const { hasImages, signatureUrl, trackingUrl, completionStatus } = 
+    extractCompletionInfo(completionForm, completionData);
   
-  // Handle signature information
-  const signatureUrl = completionForm.signature?.url || null;
-  
-  // Extract tracking URL
-  const trackingUrl = completionData.tracking_url || null;
-  
-  // Extract completion status
-  const completionStatus = completionData.status || null;
-  
-  // Enhanced logging for completion details
+  // Log completion details for debugging
   if (completionData) {
-    console.log(`Order ${orderNo} completion details:`, {
-      status: completionStatus,
-      hasTrackingUrl: !!trackingUrl,
-      hasSignature: !!signatureUrl,
-      hasImages
-    });
+    logCompletionDetails(orderNo, completionStatus, trackingUrl, signatureUrl, hasImages);
   }
 
   const result: WorkOrder = {
@@ -196,15 +75,7 @@ export const transformBulkOrderToWorkOrder = (order: any): WorkOrder => {
     }
   };
   
-  console.log("Transform output:", {
-    id: result.id,
-    order_no: result.order_no,
-    status: result.status,
-    location: result.location.name,
-    driver: result.driver.name,
-    hasImages: result.has_images,
-    hasTrackingUrl: !!result.tracking_url
-  });
+  logTransformOutput(result);
   
   return result;
 };
