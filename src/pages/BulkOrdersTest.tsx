@@ -5,6 +5,7 @@ import { useBulkOrdersFetch } from "@/hooks/useBulkOrdersFetch";
 import { Layout } from "@/components/Layout";
 import { WorkOrderContent } from "@/components/workorders/WorkOrderContent";
 import { useBulkOrderWorkOrders } from "@/hooks/useBulkOrderWorkOrders";
+import { SortDirection, SortField } from "@/components/workorders/types";
 
 const BulkOrdersTest = () => {
   const {

@@ -267,9 +267,11 @@ export const useBulkOrderWorkOrders = (
     // This is handled by the WorkOrderList component internally
   };
 
+  // Format return values to match useWorkOrderData
   return {
     workOrders: paginatedOrders,
-    allWorkOrders: orders, // The full list (for download, etc)
+    data: paginatedOrders, // Add this to match useWorkOrderData
+    allWorkOrders: orders, // Keep for reference
     isLoading,
     filters,
     setFilters: handleFiltersChange,
@@ -285,6 +287,7 @@ export const useBulkOrderWorkOrders = (
     setSort: handleSort,
     pagination,
     handlePageChange,
-    handlePageSizeChange
+    handlePageSizeChange,
+    refetch: () => {} // Empty function to match useWorkOrderData interface
   };
 };
