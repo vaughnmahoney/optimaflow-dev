@@ -1,11 +1,12 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { BulkOrdersResponse } from "@/components/bulk-orders/types";
 import { fetchOrders } from "./bulk-orders/useOrdersApi";
-import { handleOrdersResponse, handleOrdersError } from "./bulk-orders/useOrdersResponseHandler";
-import { useOrdersPagination } from "./bulk-orders/useOrdersPagination";
 import { useOrdersTransformer } from "./bulk-orders/useOrdersTransformer";
+import { filterCompletedOrders } from "@/components/bulk-orders/utils/filteringUtils";
+import { WorkOrder } from "@/components/workorders/types";
+import { mergeOrders } from "@/components/bulk-orders/utils/deduplicationUtils";
 
 export const useBulkOrdersFetch = () => {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
@@ -13,40 +14,68 @@ export const useBulkOrdersFetch = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState<BulkOrdersResponse | null>(null);
   const [activeTab, setActiveTab] = useState("search-only");
+  const [shouldContinueFetching, setShouldContinueFetching] = useState(false);
+  const [allCollectedOrders, setAllCollectedOrders] = useState<any[]>([]);
+  const [filteredOrders, setFilteredOrders] = useState<WorkOrder[]>([]);
 
-  // Use our custom hooks for pagination and transformation
-  const {
-    shouldContinueFetching,
-    setShouldContinueFetching,
-    allCollectedOrders,
-    setAllCollectedOrders
-  } = useOrdersPagination({ response, isLoading });
+  // Use our transformer hook
+  const { 
+    transformedOrders, 
+    isTransforming,
+    transformStats 
+  } = useOrdersTransformer(response, activeTab);
 
-  const { transformedOrders } = useOrdersTransformer(response);
+  // Effect to handle filtering of transformed orders
+  useEffect(() => {
+    if (activeTab === "with-completion" && transformedOrders.length > 0) {
+      const filtered = filterCompletedOrders(transformedOrders);
+      setFilteredOrders(filtered);
+    } else {
+      setFilteredOrders(transformedOrders);
+    }
+  }, [transformedOrders, activeTab]);
+
+  // Effect to merge new transformed orders with previously collected ones
+  useEffect(() => {
+    if (transformedOrders.length > 0 && shouldContinueFetching) {
+      // Merge with previously collected orders
+      const merged = mergeOrders(allCollectedOrders, transformedOrders);
+      setAllCollectedOrders(merged);
+    } else if (transformedOrders.length > 0 && !shouldContinueFetching) {
+      // For initial fetch or when pagination is complete
+      setAllCollectedOrders(transformedOrders);
+    }
+  }, [transformedOrders, shouldContinueFetching]);
 
   // Effect to handle continued fetching with pagination
-  const fetchNextPage = async () => {
-    if (!shouldContinueFetching || !response || isLoading) return;
-    
-    // Check if we have an after_tag (from API) or afterTag (from pagination progress)
-    const afterTag = response.after_tag || response.paginationProgress?.afterTag;
-    
-    console.log("Fetch next page check:", {
-      shouldContinueFetching,
-      afterTag,
-      isComplete: response.paginationProgress?.isComplete,
-      collectedOrdersCount: allCollectedOrders.length
-    });
-    
-    if (!afterTag || (response.paginationProgress && response.paginationProgress.isComplete)) {
-      console.log("Stopping pagination: no afterTag or pagination is complete");
-      setShouldContinueFetching(false);
-      return;
-    }
+  useEffect(() => {
+    const fetchNextPage = async () => {
+      if (!shouldContinueFetching || !response || isLoading || isTransforming) return;
+      
+      // Check if we have an after_tag (from API) or afterTag (from pagination progress)
+      const afterTag = response.after_tag || response.paginationProgress?.afterTag;
+      
+      console.log("Fetch next page check:", {
+        shouldContinueFetching,
+        afterTag,
+        isComplete: response.paginationProgress?.isComplete,
+        collectedOrdersCount: allCollectedOrders.length
+      });
+      
+      if (!afterTag || (response.paginationProgress && response.paginationProgress.isComplete)) {
+        console.log("Stopping pagination: no afterTag or pagination is complete");
+        setShouldContinueFetching(false);
+        return;
+      }
 
-    console.log(`Fetching next page with afterTag: ${afterTag}, collected orders: ${allCollectedOrders.length}`);
-    await fetchOrdersData(afterTag, allCollectedOrders);
-  };
+      console.log(`Fetching next page with afterTag: ${afterTag}, collected orders: ${allCollectedOrders.length}`);
+      await fetchOrdersData(afterTag, allCollectedOrders);
+    };
+
+    if (shouldContinueFetching && !isLoading && !isTransforming) {
+      fetchNextPage();
+    }
+  }, [shouldContinueFetching, response, isLoading, isTransforming, allCollectedOrders]);
 
   // Function to fetch orders with optional pagination parameters
   const fetchOrdersData = async (afterTag?: string, previousOrders: any[] = []) => {
@@ -70,18 +99,7 @@ export const useBulkOrdersFetch = () => {
       console.log("Starting new fetch, resetting response and collected orders");
       setResponse(null);
       setAllCollectedOrders([]);
-    }
-
-    // Initialize or update response with pagination progress
-    if (!afterTag) {
-      console.log("Initializing response with pagination progress");
-      setResponse({
-        paginationProgress: {
-          currentPage: 1,
-          totalOrdersRetrieved: 0,
-          isComplete: false
-        }
-      });
+      setFilteredOrders([]);
     }
 
     // Call the orders API
@@ -100,36 +118,30 @@ export const useBulkOrdersFetch = () => {
     // Handle error case
     if (error || !data) {
       console.error("API call returned error:", error);
-      setResponse(handleOrdersError(error || "Unknown error"));
+      toast.error(`Error: ${error || "Unknown error"}`);
       setShouldContinueFetching(false);
       return;
     }
 
-    console.log("API call successful, data received:", {
-      hasOrders: !!data.orders,
-      ordersCount: data.orders?.length || 0,
-      success: data.success,
-      hasAfterTag: !!data.after_tag,
-      hasPaginationProgress: !!data.paginationProgress
-    });
-
-    // Process the response
-    const { updatedResponse, collectedOrders, shouldContinue } = handleOrdersResponse({
-      data,
-      activeTab,
-      previousOrders,
-      setShouldContinueFetching
-    });
-
-    console.log("Response processed:", {
-      updatedOrdersCount: updatedResponse.orders?.length || 0,
-      collectedOrdersCount: collectedOrders.length,
-      shouldContinueFetching: shouldContinue
-    });
-
-    setResponse(updatedResponse);
-    setAllCollectedOrders(collectedOrders);
-    setShouldContinueFetching(shouldContinue);
+    // Update response and check if we need to continue fetching
+    setResponse(data);
+    
+    // Check if there are more pages to fetch
+    const hasMorePages = data.after_tag || 
+                       (data.paginationProgress && !data.paginationProgress.isComplete);
+    
+    setShouldContinueFetching(hasMorePages);
+    
+    // Display success message if this is the last page
+    if (!hasMorePages) {
+      if (activeTab === "with-completion") {
+        const filteredCount = data.filteredCount || 0;
+        const totalCount = data.totalCount || 0;
+        toast.success(`Retrieved ${filteredCount} completed orders out of ${totalCount} total orders`);
+      } else {
+        toast.success(`Retrieved ${data.totalCount || 0} orders`);
+      }
+    }
   };
 
   // Function to start the initial fetch
@@ -143,11 +155,12 @@ export const useBulkOrdersFetch = () => {
     fetchOrdersData(); // Start a fresh fetch without afterTag
   };
 
-  // When shouldContinueFetching changes to true, fetch the next page
-  if (shouldContinueFetching && !isLoading) {
-    console.log("Auto-triggering next page fetch due to shouldContinueFetching flag");
-    fetchNextPage();
-  }
+  // Calculate the final orders to display: either all collected or current filtered
+  const displayOrders = shouldContinueFetching || response?.paginationProgress?.isComplete
+    ? activeTab === "with-completion" 
+      ? filterCompletedOrders(allCollectedOrders)
+      : allCollectedOrders
+    : filteredOrders;
 
   return {
     startDate,
@@ -155,11 +168,13 @@ export const useBulkOrdersFetch = () => {
     endDate,
     setEndDate,
     isLoading,
+    isProcessing: isLoading || isTransforming,
     response,
-    transformedOrders,
+    transformedOrders: displayOrders,
     activeTab,
     setActiveTab,
     shouldContinueFetching,
-    handleFetchOrders
+    handleFetchOrders,
+    transformStats
   };
 };

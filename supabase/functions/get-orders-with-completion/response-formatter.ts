@@ -54,58 +54,13 @@ export function formatSuccessResponse(
     }, null, 2));
   }
   
-  // Log combined order structure for debugging
-  console.log("COMBINED ORDER STRUCTURE:", JSON.stringify({
-    ordersCount: combinedOrders.length,
-    firstOrderSample: combinedOrders.length > 0 ? {
-      id: combinedOrders[0].id,
-      orderNo: combinedOrders[0].orderNo,
-      hasSearchResponse: !!combinedOrders[0].searchResponse,
-      hasCompletionDetails: !!combinedOrders[0].completionDetails,
-      keys: Object.keys(combinedOrders[0]),
-      searchResponseKeys: combinedOrders[0].searchResponse ? Object.keys(combinedOrders[0].searchResponse) : [],
-      completionDetailsKeys: combinedOrders[0].completionDetails ? Object.keys(combinedOrders[0].completionDetails) : []
-    } : null
-  }, null, 2));
-  
-  // Deduplicate orders by order_no to prevent duplicate entries
-  const orderMap = new Map();
-  
-  // First add all previously collected orders to the map
-  if (Array.isArray(allCollectedOrders)) {
-    allCollectedOrders.forEach(order => {
-      if (order.order_no) {
-        orderMap.set(order.order_no, order);
-      }
-    });
-    console.log(`Added ${allCollectedOrders.length} previously collected orders to orderMap`);
-  }
-  
-  // Then add new orders, overwriting any duplicates with the latest version
-  if (Array.isArray(combinedOrders)) {
-    let overwrittenCount = 0;
-    combinedOrders.forEach(order => {
-      if (order.order_no) {
-        if (orderMap.has(order.order_no)) {
-          overwrittenCount++;
-        }
-        orderMap.set(order.order_no, order);
-      }
-    });
-    console.log(`Added ${combinedOrders.length} new orders to orderMap, overwrote ${overwrittenCount} duplicates`);
-  }
-  
-  // Convert the map back to an array
-  const deduplicatedOrders = Array.from(orderMap.values());
-  console.log(`Deduplicated ${combinedOrders.length} orders to ${deduplicatedOrders.length} unique orders`);
-  
+  // Prepare pagination progress information
   const currentPage = allCollectedOrders.length > 0 ? 
     Math.ceil(allCollectedOrders.length / 500) + 1 : 1;
   
-  // Prepare pagination progress information
   const paginationProgress = {
     currentPage,
-    totalOrdersRetrieved: deduplicatedOrders.length,
+    totalOrdersRetrieved: combinedOrders.length,
     isComplete,
     // Store after_tag in our internal camelCase format if present
     afterTag: searchData.after_tag || undefined
@@ -114,8 +69,8 @@ export function formatSuccessResponse(
   // Prepare response
   const response = {
     success: true,
-    orders: deduplicatedOrders,
-    totalCount: deduplicatedOrders.length,
+    orders: combinedOrders,
+    totalCount: combinedOrders.length,
     paginationProgress,
     searchResponse: searchData,
     completionResponse: completionData

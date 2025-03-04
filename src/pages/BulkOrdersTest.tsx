@@ -5,7 +5,8 @@ import { useBulkOrdersFetch } from "@/hooks/useBulkOrdersFetch";
 import { Layout } from "@/components/Layout";
 import { WorkOrderContent } from "@/components/workorders/WorkOrderContent";
 import { useBulkOrderWorkOrders } from "@/hooks/useBulkOrderWorkOrders";
-import { SortDirection, SortField } from "@/components/workorders/types";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Info } from "lucide-react";
 
 const BulkOrdersTest = () => {
   const {
@@ -14,12 +15,14 @@ const BulkOrdersTest = () => {
     endDate,
     setEndDate,
     isLoading,
+    isProcessing,
     response,
     transformedOrders,
     activeTab,
     setActiveTab,
     shouldContinueFetching,
-    handleFetchOrders
+    handleFetchOrders,
+    transformStats
   } = useBulkOrdersFetch();
 
   // Use our adapter hook to prepare data for WorkOrderContent
@@ -40,7 +43,7 @@ const BulkOrdersTest = () => {
     pagination,
     handlePageChange,
     handlePageSizeChange
-  } = useBulkOrderWorkOrders(transformedOrders, isLoading || shouldContinueFetching);
+  } = useBulkOrderWorkOrders(transformedOrders, isProcessing || shouldContinueFetching);
   
   console.log("BulkOrdersTest: transformedOrders.length =", transformedOrders.length);
   console.log("BulkOrdersTest: filtered workOrders.length =", workOrders.length);
@@ -66,7 +69,7 @@ const BulkOrdersTest = () => {
             onEndDateChange={setEndDate}
             activeTab={activeTab}
             onTabChange={setActiveTab}
-            isLoading={isLoading || shouldContinueFetching}
+            isLoading={isProcessing || shouldContinueFetching}
             onFetchOrders={handleFetchOrders}
           />
         </div>
@@ -76,6 +79,19 @@ const BulkOrdersTest = () => {
           isLoading={isLoading} 
           shouldContinueFetching={shouldContinueFetching} 
         />
+        
+        {transformStats.inputCount > 0 && (
+          <Alert className="bg-blue-50 border-blue-200">
+            <Info className="h-4 w-4" />
+            <AlertTitle>Processing Information</AlertTitle>
+            <AlertDescription>
+              Processed {transformStats.inputCount} orders in {transformStats.elapsedTime}ms.
+              {transformStats.uniqueCount < transformStats.transformedCount && (
+                ` Found ${transformStats.transformedCount - transformStats.uniqueCount} duplicate orders.`
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
         
         {response && (
           <div className="bg-white rounded-lg shadow">
@@ -94,7 +110,7 @@ const BulkOrdersTest = () => {
             <div className="p-4">
               <WorkOrderContent
                 workOrders={workOrders}
-                isLoading={isLoading || shouldContinueFetching}
+                isLoading={isProcessing || shouldContinueFetching}
                 filters={filters}
                 onFiltersChange={setFilters}
                 onStatusUpdate={updateWorkOrderStatus}
