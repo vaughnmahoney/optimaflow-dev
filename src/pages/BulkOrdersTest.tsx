@@ -1,9 +1,10 @@
 
 import { BulkOrdersForm } from "@/components/bulk-orders/BulkOrdersForm";
 import { FetchProgressBar } from "@/components/bulk-orders/FetchProgressBar";
-import { BulkOrdersTable } from "@/components/bulk-orders/BulkOrdersTable";
 import { useBulkOrdersFetch } from "@/hooks/useBulkOrdersFetch";
 import { Layout } from "@/components/Layout";
+import { WorkOrderContent } from "@/components/workorders/WorkOrderContent";
+import { useBulkOrderWorkOrders } from "@/hooks/useBulkOrderWorkOrders";
 
 const BulkOrdersTest = () => {
   const {
@@ -20,19 +21,39 @@ const BulkOrdersTest = () => {
     handleFetchOrders
   } = useBulkOrdersFetch();
 
-  console.log("BulkOrdersTest: transformedOrders.length =", transformedOrders.length);
-  console.log("BulkOrdersTest: isLoading =", isLoading, "shouldContinueFetching =", shouldContinueFetching);
+  // Use our adapter hook to prepare data for WorkOrderContent
+  const {
+    workOrders,
+    filters,
+    setFilters,
+    onColumnFilterChange,
+    clearColumnFilter,
+    clearAllFilters,
+    updateWorkOrderStatus,
+    openImageViewer,
+    deleteWorkOrder,
+    statusCounts,
+    sortField,
+    sortDirection,
+    setSort,
+    pagination,
+    handlePageChange,
+    handlePageSizeChange
+  } = useBulkOrderWorkOrders(transformedOrders, isLoading || shouldContinueFetching);
   
-  // Add debug logging for the first raw order response if available
-  if (response?.orders && response.orders.length > 0) {
-    console.log("Raw order example (first order):", response.orders[0]);
-  }
+  console.log("BulkOrdersTest: transformedOrders.length =", transformedOrders.length);
+  console.log("BulkOrdersTest: filtered workOrders.length =", workOrders.length);
   
   const orderCount = response?.totalCount || transformedOrders.length;
   const filteredCount = response?.filteredCount || 0;
 
+  // Placeholder function since we don't need OptimoRoute search in the bulk view
+  const handleOptimoRouteSearch = (value: string) => {
+    console.log('OptimoRoute search not implemented in bulk view:', value);
+  };
+
   return (
-    <Layout title="Bulk Orders Test">
+    <Layout title="Bulk Orders Import">
       <div className="space-y-6">
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-xl font-medium mb-4">Bulk Orders Retrieval</h2>
@@ -69,10 +90,28 @@ const BulkOrdersTest = () => {
               </p>
             </div>
             
-            <BulkOrdersTable 
-              orders={transformedOrders} 
-              isLoading={isLoading || shouldContinueFetching} 
-            />
+            <div className="p-4">
+              <WorkOrderContent
+                workOrders={workOrders}
+                isLoading={isLoading || shouldContinueFetching}
+                filters={filters}
+                onFiltersChange={setFilters}
+                onStatusUpdate={updateWorkOrderStatus}
+                onImageView={openImageViewer}
+                onDelete={deleteWorkOrder}
+                onOptimoRouteSearch={handleOptimoRouteSearch}
+                statusCounts={statusCounts}
+                sortField={sortField}
+                sortDirection={sortDirection}
+                onSort={setSort}
+                pagination={pagination}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
+                onColumnFilterChange={onColumnFilterChange}
+                clearColumnFilter={clearColumnFilter}
+                clearAllFilters={clearAllFilters}
+              />
+            </div>
           </div>
         )}
       </div>
