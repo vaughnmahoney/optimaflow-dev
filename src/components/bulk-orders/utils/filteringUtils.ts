@@ -25,6 +25,12 @@ export const filterCompletedOrders = (orders: WorkOrder[]): WorkOrder[] => {
   };
   
   const filteredOrders = orders.filter(order => {
+    // Default to completed if status is already set
+    if (order.status === 'completed' || order.status === 'approved') {
+      stats.passed++;
+      return true;
+    }
+    
     // Skip if no completion response
     if (!order.completion_response) {
       stats.noCompletionResponse++;
@@ -41,7 +47,7 @@ export const filterCompletedOrders = (orders: WorkOrder[]): WorkOrder[] => {
     }
     
     // Check completion status
-    const status = order.completion_status;
+    const status = order.completion_status || order.status;
     
     // Skip orders that are still scheduled
     if (status === "scheduled") {
@@ -50,7 +56,9 @@ export const filterCompletedOrders = (orders: WorkOrder[]): WorkOrder[] => {
     }
     
     // Check for valid status (success or failed)
-    const hasValidStatus = status === "success" || status === "failed";
+    const hasValidStatus = status === "success" || status === "failed" || 
+                          status === "completed" || status === "flagged" || 
+                          status === "approved" || status === "rejected";
     if (!hasValidStatus) {
       stats.invalidStatus++;
       return false;
@@ -60,8 +68,8 @@ export const filterCompletedOrders = (orders: WorkOrder[]): WorkOrder[] => {
     const completionData = getCompletionData(completionResponse);
     
     if (completionData) {
-      const hasStartTime = !!completionData.startTime || !!completionData.start_time;
-      const hasEndTime = !!completionData.endTime || !!completionData.end_time;
+      const hasStartTime = !!(completionData.startTime || completionData.start_time);
+      const hasEndTime = !!(completionData.endTime || completionData.end_time);
       
       if (!hasStartTime || !hasEndTime) {
         stats.noTimeInfo++;

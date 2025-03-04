@@ -49,7 +49,9 @@ const BulkOrdersTest = () => {
   console.log("BulkOrdersTest: filtered workOrders.length =", workOrders.length);
   
   const orderCount = response?.totalCount || transformedOrders.length;
-  const filteredCount = response?.filteredCount || 0;
+  const filteredCount = activeTab === "with-completion" 
+    ? workOrders.length 
+    : response?.filteredCount || 0;
 
   // Placeholder function since we don't need OptimoRoute search in the bulk view
   const handleOptimoRouteSearch = (value: string) => {
@@ -93,11 +95,11 @@ const BulkOrdersTest = () => {
           </Alert>
         )}
         
-        {response && (
+        {(transformedOrders.length > 0 || response) && (
           <div className="bg-white rounded-lg shadow">
             <div className="p-4 border-b">
               <h3 className="text-lg font-medium">
-                Orders {response.paginationProgress?.isComplete ? "(Complete)" : "(In Progress)"}
+                Orders {response?.paginationProgress?.isComplete ? "(Complete)" : "(In Progress)"}
               </h3>
               <p className="text-sm text-muted-foreground">
                 {activeTab === "with-completion" 
