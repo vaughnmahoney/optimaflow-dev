@@ -2,7 +2,7 @@
 import { WorkOrder } from "@/components/workorders/types";
 import { TableCell, TableRow, Table, TableHeader, TableHead, TableBody } from "@/components/ui/table";
 import { format } from "date-fns";
-import { Eye, Info } from "lucide-react";
+import { Eye, ExternalLink, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/workorders/StatusBadge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -85,6 +85,13 @@ export const BulkOrdersTable = ({ orders, isLoading }: BulkOrdersTableProps) => 
     return { text: "No", hasImages: false };
   };
 
+  // Handle opening the tracking URL
+  const openTrackingUrl = (url: string) => {
+    if (url) {
+      window.open(url, '_blank');
+    }
+  };
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -96,12 +103,14 @@ export const BulkOrdersTable = ({ orders, isLoading }: BulkOrdersTableProps) => 
             <TableHead>Location</TableHead>
             <TableHead>Images</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Tracking</TableHead>
             <TableHead>Details</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {orders.map((order) => {
             const imageStatus = getImageStatus(order);
+            const completionStatus = order.completion_status || 'unknown';
             
             return (
               <TableRow key={order.id || order.order_no}>
@@ -136,6 +145,25 @@ export const BulkOrdersTable = ({ orders, isLoading }: BulkOrdersTableProps) => 
                 </TableCell>
                 <TableCell>
                   <StatusBadge status={order.status || "imported"} />
+                  {completionStatus !== "unknown" && (
+                    <span className="ml-2 text-xs text-muted-foreground">
+                      ({completionStatus})
+                    </span>
+                  )}
+                </TableCell>
+                <TableCell>
+                  {order.tracking_url ? (
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8 text-blue-500"
+                      onClick={() => openTrackingUrl(order.tracking_url as string)}
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">None</span>
+                  )}
                 </TableCell>
                 <TableCell>
                   <TooltipProvider>
@@ -150,6 +178,7 @@ export const BulkOrdersTable = ({ orders, isLoading }: BulkOrdersTableProps) => 
                           <div><strong>Service Notes:</strong> {order.service_notes || "None"}</div>
                           <div><strong>Tech Notes:</strong> {order.tech_notes || "None"}</div>
                           <div><strong>Has Signature:</strong> {order.signature_url ? "Yes" : "No"}</div>
+                          <div><strong>Status:</strong> {completionStatus}</div>
                         </div>
                       </TooltipContent>
                     </Tooltip>

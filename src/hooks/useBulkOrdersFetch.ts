@@ -120,17 +120,36 @@ export const useBulkOrdersFetch = () => {
         let filteredCount = 0;
         
         if (activeTab === "with-completion" && Array.isArray(data.orders)) {
+          // Enhanced filtering logic based on API structure
           filteredOrders = data.orders.filter(order => {
-            // Check if the order has completion details and status is success
+            // Check if the order has a valid completionDetails section
             return (
               order.completionDetails && 
+              order.completionDetails.success === true &&
               order.completionDetails.data && 
-              order.completionDetails.data.status === "success"
+              (
+                // Include orders with "success" status
+                order.completionDetails.data.status === "success" ||
+                // Also include orders with "failed" status but with details
+                order.completionDetails.data.status === "failed" 
+              ) &&
+              // Ensure it has start and end times (was actually attempted)
+              order.completionDetails.data.startTime &&
+              order.completionDetails.data.endTime
             );
           });
           
           filteredCount = filteredOrders.length;
-          console.log(`Filtered ${filteredCount} completed orders with success status`);
+          console.log(`Filtered ${filteredCount} completed orders (both success and failed statuses)`);
+          
+          // Log the first few orders for debugging
+          if (filteredOrders.length > 0) {
+            console.log("First completed order sample:", {
+              id: filteredOrders[0].id,
+              status: filteredOrders[0].completionDetails?.data?.status,
+              hasTrackingUrl: !!filteredOrders[0].completionDetails?.data?.tracking_url
+            });
+          }
         }
         
         // Add specific messaging if API returned success:false

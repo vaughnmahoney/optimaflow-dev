@@ -24,7 +24,8 @@ export const transformBulkOrderToWorkOrder = (order: any): WorkOrder => {
     completionDetails: order.completionDetails ? {
       success: order.completionDetails.success,
       orderNo: order.completionDetails.orderNo,
-      status: order.completionDetails.data?.status
+      status: order.completionDetails.data?.status,
+      hasTrackingUrl: !!order.completionDetails.data?.tracking_url
     } : null
   }, null, 2));
   
@@ -151,10 +152,27 @@ export const transformBulkOrderToWorkOrder = (order: any): WorkOrder => {
   // Handle signature information
   const signatureUrl = completionForm.signature?.url || null;
   
+  // Extract tracking URL
+  const trackingUrl = completionData.tracking_url || null;
+  
+  // Extract completion status
+  const completionStatus = completionData.status || null;
+  
+  // Enhanced logging for completion details
+  if (completionData) {
+    console.log(`Order ${orderNo} completion details:`, {
+      status: completionStatus,
+      hasTrackingUrl: !!trackingUrl,
+      hasSignature: !!signatureUrl,
+      hasImages
+    });
+  }
+
   const result: WorkOrder = {
     id: order.id || order.orderId || `temp-${Math.random().toString(36).substring(2, 15)}`,
     order_no: orderNo,
-    status: 'imported', // Set status as 'imported' for bulk imported orders
+    status: completionStatus === 'success' ? 'completed' : 
+            completionStatus === 'failed' ? 'rejected' : 'imported',
     timestamp: new Date().toISOString(),
     service_date: serviceDate,
     service_notes: serviceNotes,
@@ -166,6 +184,8 @@ export const transformBulkOrderToWorkOrder = (order: any): WorkOrder => {
     driver,
     has_images: hasImages,
     signature_url: signatureUrl,
+    tracking_url: trackingUrl,
+    completion_status: completionStatus,
     search_response: order.searchResponse || null,
     completion_response: {
       success: true,
@@ -179,9 +199,11 @@ export const transformBulkOrderToWorkOrder = (order: any): WorkOrder => {
   console.log("Transform output:", {
     id: result.id,
     order_no: result.order_no,
+    status: result.status,
     location: result.location.name,
     driver: result.driver.name,
-    hasImages: result.has_images
+    hasImages: result.has_images,
+    hasTrackingUrl: !!result.tracking_url
   });
   
   return result;
