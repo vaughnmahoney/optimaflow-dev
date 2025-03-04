@@ -1,4 +1,3 @@
-
 import { ReactNode } from "react";
 
 // Define types for sorting
@@ -121,6 +120,8 @@ export interface WorkOrder {
   signature_url?: string;
   search_response?: WorkOrderSearchResponse;
   completion_response?: WorkOrderCompletionResponse;
+  tracking_url?: string;
+  completion_status?: string;
 }
 
 export interface WorkOrderListProps {
