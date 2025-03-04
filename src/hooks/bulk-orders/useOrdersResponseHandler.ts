@@ -94,9 +94,37 @@ export const handleOrdersResponse = ({
     filteredCount: filteredCount,
   };
   
+  // Deduplicate collected orders by order_no
+  let mergedOrders: any[] = [];
+  
+  if (previousOrders.length > 0) {
+    // Create a map to deduplicate orders by order_no
+    const orderMap = new Map();
+    
+    // Add previous orders to the map
+    previousOrders.forEach(order => {
+      if (order.order_no) {
+        orderMap.set(order.order_no, order);
+      }
+    });
+    
+    // Add or update with new orders
+    filteredOrders.forEach(order => {
+      if (order.order_no) {
+        orderMap.set(order.order_no, order);
+      }
+    });
+    
+    // Convert the map back to an array
+    mergedOrders = Array.from(orderMap.values());
+    console.log(`Deduplicated client-side: ${previousOrders.length} + ${filteredOrders.length} = ${mergedOrders.length} unique orders`);
+  } else {
+    mergedOrders = filteredOrders;
+  }
+  
   return {
     updatedResponse,
-    collectedOrders: previousOrders.length > 0 ? [...previousOrders, ...filteredOrders] : filteredOrders,
+    collectedOrders: mergedOrders,
     shouldContinue
   };
 };

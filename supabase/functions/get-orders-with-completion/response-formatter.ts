@@ -9,13 +9,38 @@ export function formatSuccessResponse(
   completionData: any,
   isComplete: boolean
 ) {
+  // Deduplicate orders by order_no to prevent duplicate entries
+  const orderMap = new Map();
+  
+  // First add all previously collected orders to the map
+  if (Array.isArray(allCollectedOrders)) {
+    allCollectedOrders.forEach(order => {
+      if (order.order_no) {
+        orderMap.set(order.order_no, order);
+      }
+    });
+  }
+  
+  // Then add new orders, overwriting any duplicates with the latest version
+  if (Array.isArray(combinedOrders)) {
+    combinedOrders.forEach(order => {
+      if (order.order_no) {
+        orderMap.set(order.order_no, order);
+      }
+    });
+  }
+  
+  // Convert the map back to an array
+  const deduplicatedOrders = Array.from(orderMap.values());
+  console.log(`Deduplicated ${combinedOrders.length} orders to ${deduplicatedOrders.length} unique orders`);
+  
   const currentPage = allCollectedOrders.length > 0 ? 
     Math.ceil(allCollectedOrders.length / 500) + 1 : 1;
   
   // Prepare pagination progress information
   const paginationProgress = {
     currentPage,
-    totalOrdersRetrieved: combinedOrders.length,
+    totalOrdersRetrieved: deduplicatedOrders.length,
     isComplete,
     // Store after_tag in our internal camelCase format if present
     afterTag: searchData.after_tag || undefined
@@ -24,8 +49,8 @@ export function formatSuccessResponse(
   // Prepare response
   const response = {
     success: true,
-    orders: combinedOrders,
-    totalCount: combinedOrders.length,
+    orders: deduplicatedOrders,
+    totalCount: deduplicatedOrders.length,
     paginationProgress,
     searchResponse: searchData,
     completionResponse: completionData
