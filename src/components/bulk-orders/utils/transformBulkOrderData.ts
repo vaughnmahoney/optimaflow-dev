@@ -17,11 +17,11 @@ export const transformBulkOrderToWorkOrder = (order: any): WorkOrder => {
   // Handle search data (order details)
   const searchData = order.searchResponse?.data || {};
   
-  // Handle completion data
+  // Handle completion data with safe null checks
   const completionData = order.completionDetails?.data || {};
   const completionForm = completionData.form || {};
   
-  // Extract order number
+  // Extract order number with fallbacks (handle both camelCase and snake_case)
   const orderNo = extractOrderNo(order, searchData);
   logOrderNumber(orderNo);
   
@@ -34,7 +34,7 @@ export const transformBulkOrderToWorkOrder = (order: any): WorkOrder => {
   // Extract location information
   const location = extractLocationInfo(order, searchData);
   
-  // Extract notes - fix missing order parameter
+  // Extract notes with better null checking
   const serviceNotes = searchData.notes || order.notes || '';
   const techNotes = completionForm.note || completionData.note || '';
   
@@ -47,11 +47,18 @@ export const transformBulkOrderToWorkOrder = (order: any): WorkOrder => {
     logCompletionDetails(orderNo, completionStatus, trackingUrl, signatureUrl, hasImages);
   }
 
+  // Generate a unique ID if one doesn't exist
+  const id = order.id || order.orderId || `temp-${Math.random().toString(36).substring(2, 15)}`;
+  
+  // Generate a status based on completion status
+  const status = !completionStatus ? 'imported' :
+                completionStatus === 'success' ? 'completed' :
+                completionStatus === 'failed' ? 'rejected' : 'imported';
+
   const result: WorkOrder = {
-    id: order.id || order.orderId || `temp-${Math.random().toString(36).substring(2, 15)}`,
+    id,
     order_no: orderNo,
-    status: completionStatus === 'success' ? 'completed' : 
-            completionStatus === 'failed' ? 'rejected' : 'imported',
+    status,
     timestamp: new Date().toISOString(),
     service_date: serviceDate,
     service_notes: serviceNotes,
@@ -66,13 +73,13 @@ export const transformBulkOrderToWorkOrder = (order: any): WorkOrder => {
     tracking_url: trackingUrl,
     completion_status: completionStatus,
     search_response: order.searchResponse || null,
-    completion_response: {
+    completion_response: order.completionDetails ? {
       success: true,
       orders: [{ 
-        id: order.id || order.orderId || '', 
+        id: id,
         data: completionData 
       }]
-    }
+    } : null
   };
   
   logTransformOutput(result);

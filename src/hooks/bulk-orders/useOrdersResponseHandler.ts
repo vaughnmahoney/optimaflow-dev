@@ -40,33 +40,38 @@ export const handleOrdersResponse = ({
   let filteredCount = 0;
   
   if (activeTab === "with-completion" && Array.isArray(data.orders)) {
-    console.log("FILTER DEBUG - Sample orders before filtering:", data.orders.slice(0, 3).map(order => ({
-      id: order.id,
-      orderNo: order.order_no,
-      hasCompletionDetails: !!order.completionDetails,
-      completionSuccess: order.completionDetails?.success,
-      hasCompletionData: !!order.completionDetails?.data,
-      completionStatus: order.completionDetails?.data?.status,
-      hasStartTime: !!order.completionDetails?.data?.startTime,
-      hasEndTime: !!order.completionDetails?.data?.endTime,
-    })));
+    console.log("FILTER DEBUG - Starting filtering with", data.orders.length, "orders");
     
-    // Log raw data structure for debugging
+    // Sample some orders before filtering
     if (data.orders.length > 0) {
-      console.log("FIRST ORDER RAW STRUCTURE:", JSON.stringify({
+      console.log("FILTER DEBUG - Sample orders before filtering:", data.orders.slice(0, 3).map(order => ({
+        id: order.id,
+        orderNo: order.order_no || order.orderNo,
+        hasCompletionDetails: !!order.completionDetails,
+        completionSuccess: order.completionDetails?.success,
+        hasCompletionData: !!order.completionDetails?.data,
+        completionStatus: order.completionDetails?.data?.status,
+        hasStartTime: !!order.completionDetails?.data?.startTime,
+        hasEndTime: !!order.completionDetails?.data?.endTime,
+      })));
+      
+      // Log raw data structure for one order for debugging
+      console.log("FILTER DEBUG - FIRST ORDER RAW STRUCTURE:", JSON.stringify({
         keys: Object.keys(data.orders[0]),
         completionDetailsKeys: data.orders[0].completionDetails ? Object.keys(data.orders[0].completionDetails) : [],
         completionDataKeys: data.orders[0].completionDetails?.data ? Object.keys(data.orders[0].completionDetails.data) : []
       }, null, 2));
     }
     
-    // Enhanced filtering logic based on API structure
+    // Enhanced filtering logic with detailed failure tracking
     let failedCheckCount = {
       noCompletionDetails: 0,
       completionNotSuccess: 0,
       noCompletionData: 0,
       invalidStatus: 0,
-      noStartOrEndTime: 0
+      noStartOrEndTime: 0,
+      scheduledStatus: 0,
+      passedAllChecks: 0
     };
     
     filteredOrders = data.orders.filter(order => {
@@ -77,7 +82,7 @@ export const handleOrdersResponse = ({
         return false;
       }
       
-      // Check if completion was successful
+      // Check if completion response was successful 
       if (order.completionDetails.success !== true) {
         failedCheckCount.completionNotSuccess++;
         logFilterDetails(order, false, "Completion not successful");
@@ -91,45 +96,54 @@ export const handleOrdersResponse = ({
         return false;
       }
       
-      // Check status
-      const hasValidStatus = (
-        order.completionDetails.data.status === "success" ||
-        order.completionDetails.data.status === "failed"
-      );
-      if (!hasValidStatus) {
-        failedCheckCount.invalidStatus++;
-        logFilterDetails(order, false, "Invalid completion status");
+      // Get the status
+      const status = order.completionDetails.data.status;
+      
+      // Special case: if status is "scheduled", this is not a completed order yet
+      if (status === "scheduled") {
+        failedCheckCount.scheduledStatus++;
+        logFilterDetails(order, false, "Status is 'scheduled' (not completed)");
         return false;
       }
       
-      // Check start and end times
-      const hasStartAndEndTimes = (
+      // Check for valid status (success or failed)
+      const hasValidStatus = status === "success" || status === "failed";
+      if (!hasValidStatus) {
+        failedCheckCount.invalidStatus++;
+        logFilterDetails(order, false, "Invalid completion status: " + status);
+        return false;
+      }
+      
+      // For completed orders (success or failed), we need start and end times
+      const hasStartAndEndTimes = !!(
         order.completionDetails.data.startTime &&
         order.completionDetails.data.endTime
       );
+      
       if (!hasStartAndEndTimes) {
         failedCheckCount.noStartOrEndTime++;
-        logFilterDetails(order, false, "Missing start or end time");
+        logFilterDetails(order, false, "Missing start or end time for completed order");
         return false;
       }
       
+      // All checks passed - this is a valid completed order (success or failed)
+      failedCheckCount.passedAllChecks++;
       return true;
     });
     
     filteredCount = filteredOrders.length;
-    console.log(`Filtered ${filteredCount} completed orders (both success and failed statuses)`);
-    console.log("FILTER DEBUG - Failed checks:", failedCheckCount);
+    console.log(`FILTER DEBUG - Filtered ${filteredCount} completed orders out of ${data.orders.length}`);
+    console.log("FILTER DEBUG - Filter results breakdown:", failedCheckCount);
     
-    // Log the first few orders for debugging
+    // Log the first few filtered orders for debugging
     if (filteredOrders.length > 0) {
-      console.log("FILTER DEBUG - First completed order sample:", {
-        id: filteredOrders[0].id,
-        status: filteredOrders[0].completionDetails?.data?.status,
-        hasTrackingUrl: !!filteredOrders[0].completionDetails?.data?.tracking_url,
-        startTime: filteredOrders[0].completionDetails?.data?.startTime,
-        endTime: filteredOrders[0].completionDetails?.data?.endTime,
-        rawData: JSON.stringify(filteredOrders[0], null, 2)
-      });
+      console.log("FILTER DEBUG - First few filtered orders:", filteredOrders.slice(0, 3).map(order => ({
+        id: order.id,
+        orderNo: order.order_no || order.orderNo,
+        status: order.completionDetails?.data?.status,
+        hasStartTime: !!order.completionDetails?.data?.startTime,
+        hasEndTime: !!order.completionDetails?.data?.endTime
+      })));
     } else {
       console.log("FILTER DEBUG - No orders passed the completion filters");
     }
@@ -179,15 +193,23 @@ export const handleOrdersResponse = ({
     
     // Add previous orders to the map
     previousOrders.forEach(order => {
-      if (order.order_no) {
-        orderMap.set(order.order_no, order);
+      const orderNo = order.order_no || order.orderNo;
+      if (orderNo) {
+        orderMap.set(orderNo, order);
+      } else if (order.id) {
+        // Fallback to using ID if no order number exists
+        orderMap.set(order.id, order);
       }
     });
     
     // Add or update with new orders
     filteredOrders.forEach(order => {
-      if (order.order_no) {
-        orderMap.set(order.order_no, order);
+      const orderNo = order.order_no || order.orderNo;
+      if (orderNo) {
+        orderMap.set(orderNo, order);
+      } else if (order.id) {
+        // Fallback to using ID if no order number exists
+        orderMap.set(order.id, order);
       }
     });
     

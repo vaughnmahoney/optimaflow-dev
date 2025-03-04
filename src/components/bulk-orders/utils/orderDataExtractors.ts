@@ -1,75 +1,83 @@
 
-import { WorkOrder } from "@/components/workorders/types";
-
 /**
- * Extracts order number from various possible locations in the order data
+ * Extracts order number from various possible locations in the data
  */
 export const extractOrderNo = (order: any, searchData: any): string => {
-  return (
-    // From search_orders API (inside data object)
-    searchData.orderNo || 
-    // From search_orders when data structure is flattened
-    searchData.data?.orderNo || 
-    // From get_completion_details API
-    order.completionDetails?.orderNo || 
-    // Direct access from order (merged data)
-    order.orderNo || 
-    // Fallbacks
-    order.order_no || 
-    order.id || 
-    'N/A'
-  );
+  // First try direct properties (handling both camelCase and snake_case)
+  if (order.order_no) return order.order_no;
+  if (order.orderNo) return order.orderNo;
+  
+  // Then check nested in searchData or completionDetails
+  if (searchData?.orderNo) return searchData.orderNo;
+  if (order.searchResponse?.data?.orderNo) return order.searchResponse.data.orderNo;
+  if (order.completionDetails?.orderNo) return order.completionDetails.orderNo;
+  
+  // Fallback to id if no order number found
+  return order.id || 'N/A';
 };
 
 /**
- * Extracts service date from various possible locations in the order data
+ * Extracts service date from various possible locations in the data
  */
-export const extractServiceDate = (order: any, searchData: any): string | null => {
-  if (searchData.date) {
-    return searchData.date;
-  } else if (searchData.scheduled_date) {
-    return searchData.scheduled_date;
-  } else if (order.searchResponse?.scheduleInformation?.date) {
-    return order.searchResponse.scheduleInformation.date;
-  } else if (order.date) {
-    return order.date;
+export const extractServiceDate = (order: any, searchData: any): string => {
+  // First check direct properties
+  if (order.service_date) return order.service_date;
+  
+  // Then check in search data
+  if (searchData?.date) return searchData.date;
+  if (order.searchResponse?.data?.date) return order.searchResponse.data.date;
+  
+  // Try to extract from completion data
+  if (order.completionDetails?.data?.startTime?.localTime) {
+    const localTime = order.completionDetails.data.startTime.localTime;
+    // Extract just the date part
+    return localTime.split('T')[0];
   }
+  
+  // Default to today's date if nothing found
+  return new Date().toISOString().split('T')[0];
+};
+
+/**
+ * Extracts driver information from various possible locations in the data
+ */
+export const extractDriverInfo = (order: any, searchData: any): { id: string; name: string; } | null => {
+  // First check direct driver property
+  if (order.driver) return order.driver;
+  
+  // Then check in searchData
+  if (searchData?.driver) return searchData.driver;
+  
+  // Check in search response
+  if (order.searchResponse?.data?.driver) return order.searchResponse.data.driver;
+  
+  // Check in schedule information
+  if (order.searchResponse?.scheduleInformation) {
+    const schedule = order.searchResponse.scheduleInformation;
+    if (schedule.driverName) {
+      return {
+        id: schedule.driverId || schedule.driverSerial || 'unknown',
+        name: schedule.driverName
+      };
+    }
+  }
+  
   return null;
 };
 
 /**
- * Extracts driver information from various possible locations in the order data
+ * Extracts notes from various possible locations in the data
  */
-export const extractDriverInfo = (order: any, searchData: any): { id: string, name: string } => {
-  const driverId = 
-    order.searchResponse?.scheduleInformation?.driverId || 
-    searchData.driver_id || 
-    searchData.driverId || 
-    order.driverId ||
-    '';
-    
-  const driverName = 
-    order.searchResponse?.scheduleInformation?.driverName || 
-    searchData.driver_name || 
-    searchData.driverName ||
-    order.driverName ||
-    'No Driver';
+export const extractNotes = (order: any, searchData: any): string => {
+  // Check in direct properties
+  if (order.notes) return order.notes;
   
-  return {
-    id: driverId,
-    name: driverName
-  };
-};
-
-/**
- * Extracts notes from various possible locations in the order data
- */
-export const extractNotes = (order: any, searchData: any, completionForm: any, completionData: any): { 
-  serviceNotes: string, 
-  techNotes: string 
-} => {
-  return {
-    serviceNotes: searchData.notes || order.notes || '',
-    techNotes: completionForm.note || completionData.note || ''
-  };
+  // Check in search data
+  if (searchData?.notes) return searchData.notes;
+  
+  // Check in completion data
+  if (order.completionDetails?.data?.form?.note) return order.completionDetails.data.form.note;
+  if (order.completionDetails?.data?.note) return order.completionDetails.data.note;
+  
+  return '';
 };

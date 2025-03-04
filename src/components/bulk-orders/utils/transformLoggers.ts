@@ -5,7 +5,7 @@
 export const logInputOrderStructure = (order: any): void => {
   console.log("Transform input order structure:", JSON.stringify({
     id: order.id,
-    orderNo: order.orderNo,
+    orderNo: order.orderNo || order.order_no,
     searchResponse: order.searchResponse ? {
       success: order.searchResponse.success,
       data: order.searchResponse.data ? {
@@ -34,7 +34,7 @@ export const logInputOrderStructure = (order: any): void => {
     // Add raw structure logging
     rawStructure: {
       hasId: !!order.id,
-      hasOrderNo: !!order.orderNo,
+      hasOrderNo: !!order.orderNo || !!order.order_no,
       hasSearchResponse: !!order.searchResponse,
       hasCompletionDetails: !!order.completionDetails,
       topLevelKeys: Object.keys(order)
@@ -110,7 +110,13 @@ export const logApiResponseStructure = (response: any): void => {
       orderNo: response.orders[0].orderNo || response.orders[0].order_no,
       hasSearchResponse: !!response.orders[0].searchResponse,
       hasCompletionDetails: !!response.orders[0].completionDetails,
-      keys: Object.keys(response.orders[0])
+      keys: Object.keys(response.orders[0]),
+      completionDetailsStructure: response.orders[0].completionDetails ? {
+        success: response.orders[0].completionDetails.success,
+        hasData: !!response.orders[0].completionDetails.data,
+        dataStatus: response.orders[0].completionDetails.data?.status,
+        dataKeys: response.orders[0].completionDetails.data ? Object.keys(response.orders[0].completionDetails.data) : []
+      } : null
     } : null
   }, null, 2));
 };
@@ -120,13 +126,16 @@ export const logApiResponseStructure = (response: any): void => {
  */
 export const logFilterDetails = (order: any, passedFilter: boolean, reason?: string): void => {
   if (!passedFilter) {
-    console.log(`Order ${order.orderNo || order.id} filtered out: ${reason}`, {
+    console.log(`Order ${order.orderNo || order.order_no || order.id} filtered out: ${reason}`, {
+      id: order.id,
+      orderNo: order.orderNo || order.order_no,
       hasCompletionDetails: !!order.completionDetails,
       completionSuccess: order.completionDetails?.success,
       hasCompletionData: !!order.completionDetails?.data,
       completionStatus: order.completionDetails?.data?.status,
       hasStartTime: !!order.completionDetails?.data?.startTime,
-      hasEndTime: !!order.completionDetails?.data?.endTime
+      hasEndTime: !!order.completionDetails?.data?.endTime,
+      dataKeys: order.completionDetails?.data ? Object.keys(order.completionDetails.data) : []
     });
   }
 };
