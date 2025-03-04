@@ -80,13 +80,15 @@ export async function fetchSearchOrders(apiKey: string, startDate: string, endDa
     console.log(`After tag present: ${!!data.after_tag}`);
     
     if (data.orders && data.orders.length > 0) {
+      // Log more detailed order structure for debugging
       console.log("First order sample:", JSON.stringify({
         id: data.orders[0].id,
-        orderNo: data.orders[0].orderNo,
-        date: data.orders[0].date,
-        hasDriver: !!data.orders[0].driver,
-        hasLocation: !!data.orders[0].location,
-        keys: Object.keys(data.orders[0])
+        orderNo: data.orders[0].data?.orderNo,
+        date: data.orders[0].data?.date,
+        hasDriver: !!data.orders[0].scheduleInformation?.driverName,
+        hasLocation: !!data.orders[0].data?.location,
+        dataKeys: data.orders[0].data ? Object.keys(data.orders[0].data) : [],
+        scheduleKeys: data.orders[0].scheduleInformation ? Object.keys(data.orders[0].scheduleInformation) : []
       }, null, 2));
     }
     

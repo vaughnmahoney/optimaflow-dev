@@ -10,6 +10,7 @@ export const endpoints = {
 
 /**
  * Extract order numbers from search results for use in completion API
+ * The OptimoRoute API nests orderNo under the data property
  */
 export function extractOrderNumbers(orders: any[]): string[] {
   if (!orders || orders.length === 0) {
@@ -17,8 +18,11 @@ export function extractOrderNumbers(orders: any[]): string[] {
   }
   
   return orders
-    .filter(order => order.orderNo)
-    .map(order => order.orderNo);
+    .filter(order => {
+      // Check if orderNo exists in data property (correct structure from API)
+      return order.data && order.data.orderNo;
+    })
+    .map(order => order.data.orderNo);
 }
 
 /**
@@ -49,7 +53,8 @@ export function mergeOrderData(orders: any[], completionMap: Record<string, any>
   }
   
   return orders.map(order => {
-    const orderNo = order.orderNo;
+    // Get orderNo from the correct location (inside data object)
+    const orderNo = order.data?.orderNo;
     const completionDetails = orderNo ? completionMap[orderNo] : null;
     
     return {

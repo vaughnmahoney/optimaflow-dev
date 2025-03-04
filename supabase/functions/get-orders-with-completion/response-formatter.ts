@@ -21,8 +21,13 @@ export function formatSuccessResponse(
     previouslyCollected: previousOrders.length
   };
   
-  console.log(`Formatting success response: ${totalOrders} total orders, ${ordersWithCompletion} with completion data`);
-  console.log(`Pagination complete: ${isComplete}`);
+  console.log("Response formatter input:", JSON.stringify({
+    combinedOrdersCount: orders.length,
+    allCollectedOrdersCount: previousOrders.length,
+    searchDataOrdersCount: searchData.orders?.length || 0,
+    completionDataOrdersCount: completionData?.orders?.length || 0,
+    isComplete
+  }, null, 2));
   
   return new Response(
     JSON.stringify({

@@ -4,6 +4,7 @@ import { baseUrl, endpoints } from "../_shared/optimoroute.ts";
 // Handle the get_completion_details API call
 export async function fetchCompletionDetails(apiKey: string, orderNumbers: string[]) {
   if (!orderNumbers || orderNumbers.length === 0) {
+    console.log("No order numbers provided for completion details");
     return {
       success: false,
       error: "No order numbers provided for completion details"
@@ -11,7 +12,7 @@ export async function fetchCompletionDetails(apiKey: string, orderNumbers: strin
   }
   
   console.log(`Calling get_completion_details for ${orderNumbers.length} orders`);
-  console.log("First few order numbers:", orderNumbers.slice(0, 3));
+  console.log("First few order numbers:", orderNumbers.slice(0, 5));
   
   try {
     console.log(`Making request to ${baseUrl}${endpoints.completion}`);
@@ -71,7 +72,8 @@ export async function fetchCompletionDetails(apiKey: string, orderNumbers: strin
       console.log("First completion sample:", JSON.stringify({
         orderNo: data.orders[0].orderNo,
         hasData: !!data.orders[0].data,
-        dataKeys: data.orders[0].data ? Object.keys(data.orders[0].data) : []
+        dataKeys: data.orders[0].data ? Object.keys(data.orders[0].data) : [],
+        status: data.orders[0].data?.status
       }, null, 2));
     }
     
