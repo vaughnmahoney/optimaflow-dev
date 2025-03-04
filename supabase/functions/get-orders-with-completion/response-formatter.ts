@@ -17,6 +17,57 @@ export function formatSuccessResponse(
     isComplete
   });
   
+  // Log detailed structure of searchData for debugging
+  console.log("SEARCH DATA STRUCTURE:", JSON.stringify({
+    success: searchData.success,
+    ordersCount: searchData.orders?.length,
+    firstOrderSample: searchData.orders && searchData.orders.length > 0 ? {
+      id: searchData.orders[0].id,
+      orderNo: searchData.orders[0].orderNo,
+      date: searchData.orders[0].date,
+      hasDriver: !!searchData.orders[0].driver,
+      hasLocation: !!searchData.orders[0].location,
+      status: searchData.orders[0].status,
+      keys: Object.keys(searchData.orders[0])
+    } : null,
+    hasAfterTag: !!searchData.after_tag,
+    afterTag: searchData.after_tag
+  }, null, 2));
+  
+  // Log detailed structure of completionData for debugging
+  if (completionData) {
+    console.log("COMPLETION DATA STRUCTURE:", JSON.stringify({
+      success: completionData.success,
+      ordersCount: completionData.orders?.length,
+      firstOrderSample: completionData.orders && completionData.orders.length > 0 ? {
+        id: completionData.orders[0].id,
+        orderNo: completionData.orders[0].orderNo,
+        status: completionData.orders[0].status,
+        hasData: !!completionData.orders[0].data,
+        dataKeys: completionData.orders[0].data ? Object.keys(completionData.orders[0].data) : [],
+        dataStatus: completionData.orders[0].data?.status,
+        hasStartTime: !!completionData.orders[0].data?.startTime,
+        hasEndTime: !!completionData.orders[0].data?.endTime,
+        hasTrackingUrl: !!completionData.orders[0].data?.tracking_url,
+        hasForm: !!completionData.orders[0].data?.form
+      } : null
+    }, null, 2));
+  }
+  
+  // Log combined order structure for debugging
+  console.log("COMBINED ORDER STRUCTURE:", JSON.stringify({
+    ordersCount: combinedOrders.length,
+    firstOrderSample: combinedOrders.length > 0 ? {
+      id: combinedOrders[0].id,
+      orderNo: combinedOrders[0].orderNo,
+      hasSearchResponse: !!combinedOrders[0].searchResponse,
+      hasCompletionDetails: !!combinedOrders[0].completionDetails,
+      keys: Object.keys(combinedOrders[0]),
+      searchResponseKeys: combinedOrders[0].searchResponse ? Object.keys(combinedOrders[0].searchResponse) : [],
+      completionDetailsKeys: combinedOrders[0].completionDetails ? Object.keys(combinedOrders[0].completionDetails) : []
+    } : null
+  }, null, 2));
+  
   // Deduplicate orders by order_no to prevent duplicate entries
   const orderMap = new Map();
   

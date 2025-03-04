@@ -30,7 +30,15 @@ export const logInputOrderStructure = (order: any): void => {
       hasEndTime: !!order.completionDetails.data?.endTime,
       hasTrackingUrl: !!order.completionDetails.data?.tracking_url,
       hasForm: !!order.completionDetails.data?.form
-    } : null
+    } : null,
+    // Add raw structure logging
+    rawStructure: {
+      hasId: !!order.id,
+      hasOrderNo: !!order.orderNo,
+      hasSearchResponse: !!order.searchResponse,
+      hasCompletionDetails: !!order.completionDetails,
+      topLevelKeys: Object.keys(order)
+    }
   }, null, 2));
 };
 
@@ -49,7 +57,9 @@ export const logCompletionDetails = (orderNo: string, completionStatus: string |
     status: completionStatus,
     hasTrackingUrl: !!trackingUrl,
     hasSignature: !!signatureUrl,
-    hasImages
+    hasImages,
+    // Add raw structure logging
+    rawStatus: completionStatus
   });
 };
 
@@ -66,6 +76,57 @@ export const logTransformOutput = (result: any): void => {
     hasImages: result.has_images,
     hasTrackingUrl: !!result.tracking_url,
     serviceDate: result.service_date,
-    completionStatus: result.completion_status
+    completionStatus: result.completion_status,
+    // Add full response structure for debugging
+    structure: {
+      hasSearchResponse: !!result.search_response,
+      hasCompletionResponse: !!result.completion_response,
+      completionResponseSuccess: result.completion_response?.success,
+      completionResponseHasOrders: Array.isArray(result.completion_response?.orders),
+      completionResponseOrdersCount: result.completion_response?.orders?.length || 0
+    }
   });
+};
+
+/**
+ * Logs the API response structure in detail
+ */
+export const logApiResponseStructure = (response: any): void => {
+  console.log("API Response Structure:", JSON.stringify({
+    success: response?.success,
+    hasOrders: !!response?.orders,
+    ordersCount: response?.orders?.length || 0,
+    totalCount: response?.totalCount || 0,
+    hasPaginationProgress: !!response?.paginationProgress,
+    paginationProgress: response?.paginationProgress,
+    hasAfterTag: !!response?.after_tag,
+    hasSearchResponse: !!response?.searchResponse,
+    hasCompletionResponse: !!response?.completionResponse,
+    searchResponseSuccess: response?.searchResponse?.success,
+    completionResponseSuccess: response?.completionResponse?.success,
+    // Sample the first order if available
+    firstOrderSample: response?.orders && response?.orders.length > 0 ? {
+      id: response.orders[0].id,
+      orderNo: response.orders[0].orderNo || response.orders[0].order_no,
+      hasSearchResponse: !!response.orders[0].searchResponse,
+      hasCompletionDetails: !!response.orders[0].completionDetails,
+      keys: Object.keys(response.orders[0])
+    } : null
+  }, null, 2));
+};
+
+/**
+ * Logs detailed filter criteria for debugging
+ */
+export const logFilterDetails = (order: any, passedFilter: boolean, reason?: string): void => {
+  if (!passedFilter) {
+    console.log(`Order ${order.orderNo || order.id} filtered out: ${reason}`, {
+      hasCompletionDetails: !!order.completionDetails,
+      completionSuccess: order.completionDetails?.success,
+      hasCompletionData: !!order.completionDetails?.data,
+      completionStatus: order.completionDetails?.data?.status,
+      hasStartTime: !!order.completionDetails?.data?.startTime,
+      hasEndTime: !!order.completionDetails?.data?.endTime
+    });
+  }
 };

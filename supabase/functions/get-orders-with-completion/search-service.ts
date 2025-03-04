@@ -23,7 +23,10 @@ export async function fetchSearchOrders(apiKey: string, startDate: string, endDa
     requestBody.after_tag = afterTag;
   }
   
+  console.log("Search API request body:", JSON.stringify(requestBody, null, 2));
+  
   try {
+    console.log(`Making request to ${baseUrl}${endpoints.search}`);
     const response = await fetch(
       `${baseUrl}${endpoints.search}?key=${apiKey}`,
       {
@@ -35,9 +38,19 @@ export async function fetchSearchOrders(apiKey: string, startDate: string, endDa
       }
     );
 
+    console.log(`Search API response status: ${response.status}`);
+    
     if (!response.ok) {
       const errorText = await response.text();
       console.error('OptimoRoute search_orders error:', response.status, errorText);
+      
+      try {
+        // Try to parse error as JSON
+        const errorJson = JSON.parse(errorText);
+        console.error('Parsed error JSON:', errorJson);
+      } catch (e) {
+        console.error('Error response is not valid JSON');
+      }
       
       return {
         success: false,
@@ -47,9 +60,35 @@ export async function fetchSearchOrders(apiKey: string, startDate: string, endDa
     }
 
     // Parse response
-    const data = await response.json();
+    const responseText = await response.text();
+    console.log(`Search API raw response length: ${responseText.length} chars`);
+    console.log("Search API raw response sample:", responseText.substring(0, 500) + "...");
+    
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      console.error("Failed to parse search API response as JSON:", e);
+      return {
+        success: false,
+        error: `Failed to parse search API response as JSON: ${e.message}`,
+        rawResponse: responseText.substring(0, 500)
+      };
+    }
+    
     console.log(`Found ${data.orders?.length || 0} orders on current page`);
     console.log(`After tag present: ${!!data.after_tag}`);
+    
+    if (data.orders && data.orders.length > 0) {
+      console.log("First order sample:", JSON.stringify({
+        id: data.orders[0].id,
+        orderNo: data.orders[0].orderNo,
+        date: data.orders[0].date,
+        hasDriver: !!data.orders[0].driver,
+        hasLocation: !!data.orders[0].location,
+        keys: Object.keys(data.orders[0])
+      }, null, 2));
+    }
     
     return { success: true, data };
   } catch (error) {

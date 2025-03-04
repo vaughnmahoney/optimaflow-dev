@@ -1,6 +1,7 @@
 
 import { toast } from "sonner";
 import { BulkOrdersResponse } from "@/components/bulk-orders/types";
+import { logApiResponseStructure, logFilterDetails } from "@/components/bulk-orders/utils/transformLoggers";
 
 interface HandleResponseParams {
   data: any;
@@ -31,6 +32,9 @@ export const handleOrdersResponse = ({
     paginationProgress: data.paginationProgress
   });
   
+  // Log detailed API response structure for debugging
+  logApiResponseStructure(data);
+  
   // Handle orders based on the active tab and completion status
   let filteredOrders = data.orders || [];
   let filteredCount = 0;
@@ -47,6 +51,15 @@ export const handleOrdersResponse = ({
       hasEndTime: !!order.completionDetails?.data?.endTime,
     })));
     
+    // Log raw data structure for debugging
+    if (data.orders.length > 0) {
+      console.log("FIRST ORDER RAW STRUCTURE:", JSON.stringify({
+        keys: Object.keys(data.orders[0]),
+        completionDetailsKeys: data.orders[0].completionDetails ? Object.keys(data.orders[0].completionDetails) : [],
+        completionDataKeys: data.orders[0].completionDetails?.data ? Object.keys(data.orders[0].completionDetails.data) : []
+      }, null, 2));
+    }
+    
     // Enhanced filtering logic based on API structure
     let failedCheckCount = {
       noCompletionDetails: 0,
@@ -60,18 +73,21 @@ export const handleOrdersResponse = ({
       // Check if has completion details
       if (!order.completionDetails) {
         failedCheckCount.noCompletionDetails++;
+        logFilterDetails(order, false, "No completion details");
         return false;
       }
       
       // Check if completion was successful
       if (order.completionDetails.success !== true) {
         failedCheckCount.completionNotSuccess++;
+        logFilterDetails(order, false, "Completion not successful");
         return false;
       }
       
       // Check if has completion data
       if (!order.completionDetails.data) {
         failedCheckCount.noCompletionData++;
+        logFilterDetails(order, false, "No completion data");
         return false;
       }
       
@@ -82,6 +98,7 @@ export const handleOrdersResponse = ({
       );
       if (!hasValidStatus) {
         failedCheckCount.invalidStatus++;
+        logFilterDetails(order, false, "Invalid completion status");
         return false;
       }
       
@@ -92,6 +109,7 @@ export const handleOrdersResponse = ({
       );
       if (!hasStartAndEndTimes) {
         failedCheckCount.noStartOrEndTime++;
+        logFilterDetails(order, false, "Missing start or end time");
         return false;
       }
       
@@ -109,7 +127,8 @@ export const handleOrdersResponse = ({
         status: filteredOrders[0].completionDetails?.data?.status,
         hasTrackingUrl: !!filteredOrders[0].completionDetails?.data?.tracking_url,
         startTime: filteredOrders[0].completionDetails?.data?.startTime,
-        endTime: filteredOrders[0].completionDetails?.data?.endTime
+        endTime: filteredOrders[0].completionDetails?.data?.endTime,
+        rawData: JSON.stringify(filteredOrders[0], null, 2)
       });
     } else {
       console.log("FILTER DEBUG - No orders passed the completion filters");
