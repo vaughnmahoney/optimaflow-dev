@@ -23,6 +23,11 @@ const BulkOrdersTest = () => {
   console.log("BulkOrdersTest: transformedOrders.length =", transformedOrders.length);
   console.log("BulkOrdersTest: isLoading =", isLoading, "shouldContinueFetching =", shouldContinueFetching);
   
+  // Add debug logging for the first raw order response if available
+  if (response?.orders && response.orders.length > 0) {
+    console.log("Raw order example (first order):", response.orders[0]);
+  }
+  
   const orderCount = response?.totalCount || transformedOrders.length;
   const filteredCount = response?.filteredCount || 0;
 

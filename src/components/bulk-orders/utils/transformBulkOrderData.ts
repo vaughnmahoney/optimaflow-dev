@@ -7,7 +7,26 @@ import { WorkOrder } from "@/components/workorders/types";
  * @returns A formatted WorkOrder object
  */
 export const transformBulkOrderToWorkOrder = (order: any): WorkOrder => {
-  console.log("Transform input:", JSON.stringify(order).substring(0, 500) + "...");
+  // Enhanced logging - show more of the object structure
+  console.log("Transform input order structure:", JSON.stringify({
+    id: order.id,
+    orderNo: order.orderNo,
+    searchResponse: order.searchResponse ? {
+      success: order.searchResponse.success,
+      data: order.searchResponse.data ? {
+        orderNo: order.searchResponse.data.orderNo,
+        date: order.searchResponse.data.date,
+        driverInfo: order.searchResponse.data.driver,
+        location: order.searchResponse.data.location,
+      } : null,
+      scheduleInformation: order.searchResponse.scheduleInformation
+    } : null,
+    completionDetails: order.completionDetails ? {
+      success: order.completionDetails.success,
+      orderNo: order.completionDetails.orderNo,
+      status: order.completionDetails.data?.status
+    } : null
+  }, null, 2));
   
   // Handle search data (order details)
   const searchData = order.searchResponse?.data || {};
@@ -16,8 +35,23 @@ export const transformBulkOrderToWorkOrder = (order: any): WorkOrder => {
   const completionData = order.completionDetails?.data || {};
   const completionForm = completionData.form || {};
   
-  // Get the order number
-  const orderNo = searchData.orderNumber || searchData.order_no || order.orderNumber || order.id || 'N/A';
+  // Get the order number - correct paths based on API structure
+  // Search for orderNo in the expected locations based on API docs
+  const orderNo = 
+    // From search_orders API (inside data object)
+    searchData.orderNo || 
+    // From search_orders when data structure is flattened
+    searchData.data?.orderNo || 
+    // From get_completion_details API
+    order.completionDetails?.orderNo || 
+    // Direct access from order (merged data)
+    order.orderNo || 
+    // Fallbacks
+    order.order_no || 
+    order.id || 
+    'N/A';
+  
+  console.log("Found order number:", orderNo);
   
   // Extract service date - check multiple possible paths
   let serviceDate = null;
@@ -145,8 +179,8 @@ export const transformBulkOrderToWorkOrder = (order: any): WorkOrder => {
   console.log("Transform output:", {
     id: result.id,
     order_no: result.order_no,
-    location: result.location,
-    driver: result.driver,
+    location: result.location.name,
+    driver: result.driver.name,
     hasImages: result.has_images
   });
   
