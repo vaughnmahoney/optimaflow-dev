@@ -72,7 +72,6 @@ Deno.serve(async (req) => {
     const orderNumbers = extractOrderNumbers(searchData.orders);
     console.log(`Extracted ${orderNumbers.length} order numbers from search results`);
     console.log("Sample order numbers:", orderNumbers.slice(0, 3));
-    console.log("All order numbers:", JSON.stringify(orderNumbers));
     
     // Check if we have any valid order numbers
     if (orderNumbers.length === 0) {

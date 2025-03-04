@@ -1,58 +1,62 @@
 
-// Shared utility functions for OptimoRoute API interactions
+// Shared OptimoRoute API utilities
 
-// API constants
 export const baseUrl = 'https://api.optimoroute.com/v1';
+
 export const endpoints = {
   search: '/search_orders',
   completion: '/get_completion_details'
 };
 
-// Error handling utilities
-export const API_ERROR_CODES = {
-  400: 'Invalid request parameters',
-  401: 'Authentication failed',
-  403: 'API key lacks permission',
-  404: 'Order not found',
-  429: 'Rate limit exceeded',
-  500: 'OptimoRoute server error'
-};
-
-// Extracts order numbers from search orders response
-export function extractOrderNumbers(orders) {
-  if (!orders || !Array.isArray(orders)) return [];
-  
-  return orders
-    .filter(order => order?.data?.orderNo) // Make sure orderNo exists
-    .map(order => ({ orderNo: order.data.orderNo }));
-}
-
-// Creates a map for quick completion lookups
-export function createCompletionMap(completionData) {
-  const completionMap = new Map();
-  
-  if (completionData && completionData.success && completionData.orders) {
-    completionData.orders.forEach(orderCompletion => {
-      if (orderCompletion.orderNo) {
-        completionMap.set(orderCompletion.orderNo, orderCompletion);
-      }
-    });
+/**
+ * Extract order numbers from search results for use in completion API
+ */
+export function extractOrderNumbers(orders: any[]): string[] {
+  if (!orders || orders.length === 0) {
+    return [];
   }
   
-  return completionMap;
+  return orders
+    .filter(order => order.orderNo)
+    .map(order => order.orderNo);
 }
 
-// Combines search results with completion details
-export function mergeOrderData(searchOrders, completionMap) {
-  if (!searchOrders || !Array.isArray(searchOrders)) return [];
+/**
+ * Create a map of orderNo to completion details for faster lookups
+ */
+export function createCompletionMap(completionData: any): Record<string, any> {
+  if (!completionData || !completionData.orders || !Array.isArray(completionData.orders)) {
+    return {};
+  }
   
-  return searchOrders.map(searchOrder => {
-    const orderNo = searchOrder.data?.orderNo;
-    const completionInfo = orderNo ? completionMap.get(orderNo) : null;
+  const map: Record<string, any> = {};
+  
+  completionData.orders.forEach((order: any) => {
+    if (order.orderNo) {
+      map[order.orderNo] = order;
+    }
+  });
+  
+  return map;
+}
+
+/**
+ * Merge search results with completion details
+ */
+export function mergeOrderData(orders: any[], completionMap: Record<string, any>): any[] {
+  if (!orders || orders.length === 0) {
+    return [];
+  }
+  
+  return orders.map(order => {
+    const orderNo = order.orderNo;
+    const completionDetails = orderNo ? completionMap[orderNo] : null;
     
     return {
-      ...searchOrder,
-      completionDetails: completionInfo || null
+      ...order,
+      completionDetails,
+      completion_response: completionDetails ? { success: true, orders: [completionDetails] } : null,
+      completion_status: completionDetails?.data?.status || null
     };
   });
 }

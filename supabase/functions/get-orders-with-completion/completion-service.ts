@@ -2,20 +2,16 @@
 import { baseUrl, endpoints } from "../_shared/optimoroute.ts";
 
 // Handle the get_completion_details API call
-export async function fetchCompletionDetails(apiKey: string, orderNumbers: { orderNo: string }[]) {
+export async function fetchCompletionDetails(apiKey: string, orderNumbers: string[]) {
   if (!orderNumbers || orderNumbers.length === 0) {
-    console.log('No valid order numbers to fetch completion details');
-    return { success: true, data: { orders: [] } };
+    return {
+      success: false,
+      error: "No order numbers provided for completion details"
+    };
   }
   
-  console.log(`Fetching completion details for ${orderNumbers.length} orders`);
-  console.log("First few order numbers:", orderNumbers.slice(0, 5).map(o => o.orderNo));
-  
-  const requestBody = {
-    orders: orderNumbers
-  };
-  
-  console.log("Completion API request body:", JSON.stringify(requestBody, null, 2));
+  console.log(`Calling get_completion_details for ${orderNumbers.length} orders`);
+  console.log("First few order numbers:", orderNumbers.slice(0, 3));
   
   try {
     console.log(`Making request to ${baseUrl}${endpoints.completion}`);
@@ -26,73 +22,60 @@ export async function fetchCompletionDetails(apiKey: string, orderNumbers: { ord
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify({
+          orderIds: orderNumbers
+        })
       }
     );
-
+    
     console.log(`Completion API response status: ${response.status}`);
     
-    // Get the raw response for potential error analysis
-    const responseText = await response.text();
-    console.log(`Completion API raw response length: ${responseText.length} chars`);
-    console.log("Completion API raw response sample:", responseText.substring(0, 500) + "...");
-    
-    let completionData;
-    try {
-      // Try to parse as JSON
-      completionData = JSON.parse(responseText);
-    } catch (jsonError) {
-      console.error('Failed to parse completion details response as JSON:', jsonError);
-      return { 
-        success: false, 
-        error: 'Invalid JSON response',
-        rawResponse: responseText.substring(0, 200)
-      };
-    }
-
     if (!response.ok) {
-      console.error('OptimoRoute get_completion_details error:', response.status, responseText);
+      const errorText = await response.text();
+      console.error('OptimoRoute get_completion_details error:', response.status, errorText);
       
       try {
-        // Try to parse error details
-        if (typeof completionData === 'object' && completionData !== null) {
-          console.error('Error details:', completionData);
-        }
+        // Try to parse error as JSON
+        const errorJson = JSON.parse(errorText);
+        console.error('Parsed error JSON:', errorJson);
       } catch (e) {
-        console.error('Error parsing error details');
+        console.error('Error response is not valid JSON');
       }
       
       return {
         success: false,
-        error: `API Error (${response.status}): ${responseText.substring(0, 200)}...`,
-        data: completionData
+        error: `OptimoRoute get_completion_details API Error (${response.status}): ${errorText}`,
+        status: response.status
       };
     }
-
-    console.log("Completion API success, orders found:", completionData.orders?.length || 0);
     
-    if (completionData.orders && completionData.orders.length > 0) {
-      console.log("First completion order sample:", JSON.stringify({
-        id: completionData.orders[0].id,
-        orderNo: completionData.orders[0].orderNo,
-        status: completionData.orders[0].status,
-        hasData: !!completionData.orders[0].data,
-        dataKeys: completionData.orders[0].data ? Object.keys(completionData.orders[0].data) : []
-      }, null, 2));
-      
-      if (completionData.orders[0].data) {
-        console.log("First completion order data sample:", JSON.stringify({
-          status: completionData.orders[0].data.status,
-          hasStartTime: !!completionData.orders[0].data.startTime,
-          hasEndTime: !!completionData.orders[0].data.endTime,
-          hasTrackingUrl: !!completionData.orders[0].data.tracking_url,
-          hasForm: !!completionData.orders[0].data.form,
-          formKeys: completionData.orders[0].data.form ? Object.keys(completionData.orders[0].data.form) : []
-        }, null, 2));
-      }
+    // Parse response
+    const responseText = await response.text();
+    console.log(`Completion API raw response length: ${responseText.length} chars`);
+    console.log("Completion API raw response sample:", responseText.substring(0, 500) + "...");
+    
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      console.error("Failed to parse completion API response as JSON:", e);
+      return {
+        success: false,
+        error: `Failed to parse completion API response as JSON: ${e.message}`,
+        rawResponse: responseText.substring(0, 500)
+      };
     }
     
-    return { success: true, data: completionData };
+    console.log(`Completion data received for ${data.orders?.length || 0} orders`);
+    if (data.orders && data.orders.length > 0) {
+      console.log("First completion sample:", JSON.stringify({
+        orderNo: data.orders[0].orderNo,
+        hasData: !!data.orders[0].data,
+        dataKeys: data.orders[0].data ? Object.keys(data.orders[0].data) : []
+      }, null, 2));
+    }
+    
+    return { success: true, data };
   } catch (error) {
     console.error('Error in fetchCompletionDetails:', error);
     return {
