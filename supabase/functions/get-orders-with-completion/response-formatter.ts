@@ -1,5 +1,5 @@
 
-import { corsHeaders } from "../../_shared/cors.ts";
+import { corsHeaders } from "../_shared/cors.ts";
 
 // Format successful response with pagination info
 export function formatSuccessResponse(
