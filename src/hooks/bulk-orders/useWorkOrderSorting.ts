@@ -9,8 +9,22 @@ export const sortWorkOrders = (
   sortField: SortField, 
   sortDirection: SortDirection
 ): WorkOrder[] => {
+  // Default sort - if no sort specified, sort by service_date descending (newest first)
   if (!sortField || !sortDirection) {
-    return [...orders];
+    return [...orders].sort((a, b) => {
+      const dateA = a.service_date ? new Date(a.service_date) : null;
+      const dateB = b.service_date ? new Date(b.service_date) : null;
+      
+      const validA = dateA && !isNaN(dateA.getTime());
+      const validB = dateB && !isNaN(dateB.getTime());
+      
+      if (validA && !validB) return -1; // Valid dates come first
+      if (!validA && validB) return 1;
+      if (!validA && !validB) return 0;
+      
+      // Sort descending by default (newest first)
+      return dateB!.getTime() - dateA!.getTime();
+    });
   }
   
   return [...orders].sort((a, b) => {

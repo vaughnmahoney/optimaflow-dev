@@ -89,6 +89,21 @@ export const useSortableTable = (
           ? valueA - valueB 
           : valueB - valueA;
       });
+    } else {
+      // Default sort if no sort criteria provided - sort by service_date descending
+      sortedWorkOrders.sort((a, b) => {
+        const dateA = a.service_date ? new Date(a.service_date) : null;
+        const dateB = b.service_date ? new Date(b.service_date) : null;
+        
+        const validA = dateA && !isNaN(dateA.getTime());
+        const validB = dateB && !isNaN(dateB.getTime());
+        
+        if (validA && !validB) return -1;
+        if (!validA && validB) return 1;
+        if (!validA && !validB) return 0;
+        
+        return dateB!.getTime() - dateA!.getTime();
+      });
     }
     
     setWorkOrders(sortedWorkOrders);
