@@ -6,7 +6,10 @@ import { Layout } from "@/components/Layout";
 import { WorkOrderContent } from "@/components/workorders/WorkOrderContent";
 import { useBulkOrderWorkOrders } from "@/hooks/useBulkOrderWorkOrders";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info } from "lucide-react";
+import { Info, AlertCircle } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const BulkOrdersTest = () => {
   const {
@@ -18,6 +21,7 @@ const BulkOrdersTest = () => {
     isProcessing,
     response,
     transformedOrders,
+    rawData,
     activeTab,
     setActiveTab,
     shouldContinueFetching,
@@ -58,6 +62,75 @@ const BulkOrdersTest = () => {
     console.log('OptimoRoute search not implemented in bulk view:', value);
   };
 
+  // Function to render raw orders data for debugging
+  const renderRawOrdersTable = () => {
+    if (!rawData || !rawData.orders || rawData.orders.length === 0) {
+      return (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>No raw data available</AlertTitle>
+          <AlertDescription>
+            Fetch some orders first to see the raw data.
+          </AlertDescription>
+        </Alert>
+      );
+    }
+
+    return (
+      <div className="overflow-auto max-h-[600px]">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Order #</TableHead>
+              <TableHead>Driver Name</TableHead>
+              <TableHead>Tracking URL</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Data Structure</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rawData.orders.map((order: any, index: number) => {
+              // Extract key fields from various possible locations
+              const orderNo = order.data?.orderNo || order.orderNo || order.id || `Unknown-${index}`;
+              const driverName = order.scheduleInformation?.driverName || 
+                                order.extracted?.driverName || 
+                                'N/A';
+              const trackingUrl = order.completionDetails?.data?.tracking_url || 
+                                 order.extracted?.tracking_url || 
+                                 'N/A';
+              const status = order.completion_status || 
+                           order.completionDetails?.data?.status || 
+                           'Unknown';
+              
+              return (
+                <TableRow key={index}>
+                  <TableCell className="font-medium">{orderNo}</TableCell>
+                  <TableCell>{driverName}</TableCell>
+                  <TableCell>
+                    {trackingUrl !== 'N/A' ? (
+                      <a href={trackingUrl} target="_blank" rel="noopener noreferrer" 
+                         className="text-blue-500 hover:underline">
+                        {trackingUrl.substring(0, 30)}...
+                      </a>
+                    ) : trackingUrl}
+                  </TableCell>
+                  <TableCell>{status}</TableCell>
+                  <TableCell>
+                    <div className="max-w-xs truncate">
+                      <pre className="text-xs">
+                        {JSON.stringify(order, null, 2).substring(0, 100)}...
+                      </pre>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
+    );
+  };
+
   return (
     <Layout title="Bulk Orders Import">
       <div className="space-y-6">
@@ -95,7 +168,7 @@ const BulkOrdersTest = () => {
           </Alert>
         )}
         
-        {(transformedOrders.length > 0 || response) && (
+        {(rawData?.orders?.length > 0 || response) && (
           <div className="bg-white rounded-lg shadow">
             <div className="p-4 border-b">
               <h3 className="text-lg font-medium">
@@ -103,33 +176,46 @@ const BulkOrdersTest = () => {
               </h3>
               <p className="text-sm text-muted-foreground">
                 {activeTab === "with-completion" 
-                  ? `Found ${filteredCount} completed orders out of ${orderCount} total orders`
+                  ? `Found ${rawData?.orders?.length || 0} orders with completion data out of ${orderCount} total orders`
                   : `Found ${orderCount} orders`
                 }
               </p>
             </div>
             
             <div className="p-4">
-              <WorkOrderContent
-                workOrders={workOrders}
-                isLoading={isProcessing || shouldContinueFetching}
-                filters={filters}
-                onFiltersChange={setFilters}
-                onStatusUpdate={updateWorkOrderStatus}
-                onImageView={openImageViewer}
-                onDelete={deleteWorkOrder}
-                onOptimoRouteSearch={handleOptimoRouteSearch}
-                statusCounts={statusCounts}
-                sortField={sortField}
-                sortDirection={sortDirection}
-                onSort={setSort}
-                pagination={pagination}
-                onPageChange={handlePageChange}
-                onPageSizeChange={handlePageSizeChange}
-                onColumnFilterChange={onColumnFilterChange}
-                clearColumnFilter={clearColumnFilter}
-                clearAllFilters={clearAllFilters}
-              />
+              <Tabs defaultValue="raw">
+                <TabsList className="mb-4">
+                  <TabsTrigger value="raw">Raw Data Display</TabsTrigger>
+                  <TabsTrigger value="transformed">Transformed Data</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="raw">
+                  {renderRawOrdersTable()}
+                </TabsContent>
+                
+                <TabsContent value="transformed">
+                  <WorkOrderContent
+                    workOrders={workOrders}
+                    isLoading={isProcessing || shouldContinueFetching}
+                    filters={filters}
+                    onFiltersChange={setFilters}
+                    onStatusUpdate={updateWorkOrderStatus}
+                    onImageView={openImageViewer}
+                    onDelete={deleteWorkOrder}
+                    onOptimoRouteSearch={handleOptimoRouteSearch}
+                    statusCounts={statusCounts}
+                    sortField={sortField}
+                    sortDirection={sortDirection}
+                    onSort={setSort}
+                    pagination={pagination}
+                    onPageChange={handlePageChange}
+                    onPageSizeChange={handlePageSizeChange}
+                    onColumnFilterChange={onColumnFilterChange}
+                    clearColumnFilter={clearColumnFilter}
+                    clearAllFilters={clearAllFilters}
+                  />
+                </TabsContent>
+              </Tabs>
             </div>
           </div>
         )}

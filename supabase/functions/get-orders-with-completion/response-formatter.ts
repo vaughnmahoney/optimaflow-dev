@@ -21,6 +21,22 @@ export function formatSuccessResponse(
     previouslyCollected: previousOrders.length
   };
   
+  // Add detailed logging of the first order to help with debugging
+  if (searchData.orders && searchData.orders.length > 0) {
+    console.log("First search order sample:", JSON.stringify(searchData.orders[0], null, 2).substring(0, 500) + "...");
+  }
+  
+  if (completionData && completionData.orders && completionData.orders.length > 0) {
+    console.log("First completion sample:", JSON.stringify(completionData.orders[0], null, 2).substring(0, 500) + "...");
+  }
+  
+  // Include raw data samples in the response for debugging
+  const rawDataSamples = {
+    searchSample: searchData.orders && searchData.orders.length > 0 ? searchData.orders[0] : null,
+    completionSample: completionData && completionData.orders && completionData.orders.length > 0 ? 
+      completionData.orders[0] : null
+  };
+  
   console.log("Response formatter input:", JSON.stringify({
     filteredOrdersCount: filteredOrders,
     totalOrdersCount: totalOrders,
@@ -42,7 +58,8 @@ export function formatSuccessResponse(
         unfilteredOrderCount: searchData.orders?.length || 0,
         filteredOrderCount: filteredOrders,
         completionDetailCount: completionData?.orders?.length || 0
-      }
+      },
+      rawDataSamples // Include raw data samples for debugging
     }),
     { 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

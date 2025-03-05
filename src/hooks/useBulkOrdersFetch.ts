@@ -12,9 +12,10 @@ export const useBulkOrdersFetch = () => {
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState<BulkOrdersResponse | null>(null);
-  const [activeTab, setActiveTab] = useState("search-only");
+  const [activeTab, setActiveTab] = useState("with-completion"); // Default to with-completion now
   const [shouldContinueFetching, setShouldContinueFetching] = useState(false);
   const [allCollectedOrders, setAllCollectedOrders] = useState<WorkOrder[]>([]);
+  const [rawData, setRawData] = useState<any>(null);
 
   // Use our transformer hook
   const { 
@@ -36,6 +37,17 @@ export const useBulkOrdersFetch = () => {
       setAllCollectedOrders(transformedOrders);
     }
   }, [transformedOrders, shouldContinueFetching]);
+
+  // Effect to extract raw data from response for debugging
+  useEffect(() => {
+    if (response && response.orders) {
+      setRawData({
+        orders: response.orders,
+        samples: response.rawDataSamples
+      });
+      console.log(`Set raw data with ${response.orders.length} orders`);
+    }
+  }, [response]);
 
   // Effect to handle continued fetching with pagination
   useEffect(() => {
@@ -89,9 +101,10 @@ export const useBulkOrdersFetch = () => {
       console.log("Starting new fetch, resetting response and collected orders");
       setResponse(null);
       setAllCollectedOrders([]);
+      setRawData(null);
     }
 
-    // Call the orders API
+    // Call the orders API - IMPORTANT: No longer filtering by status
     console.log("Calling fetchOrders API...");
     const { data, error } = await fetchOrders({
       startDate,
@@ -99,7 +112,7 @@ export const useBulkOrdersFetch = () => {
       activeTab,
       afterTag,
       previousOrders,
-      validStatuses: ['success', 'failed', 'rejected'] // These statuses match our requirements
+      validStatuses: ['success', 'failed', 'rejected', 'scheduled'] // Added 'scheduled' to catch more statuses
     });
 
     setIsLoading(false);
@@ -125,13 +138,7 @@ export const useBulkOrdersFetch = () => {
     
     // Display success message if this is the last page
     if (!hasMorePages) {
-      if (activeTab === "with-completion") {
-        const filteredCount = data.filteredCount || 0;
-        const totalCount = data.totalCount || 0;
-        toast.success(`Retrieved ${filteredCount} completed orders out of ${totalCount} total orders`);
-      } else {
-        toast.success(`Retrieved ${data.totalCount || 0} orders`);
-      }
+      toast.success(`Retrieved ${data.orders?.length || 0} orders`);
     }
   };
 
@@ -154,6 +161,7 @@ export const useBulkOrdersFetch = () => {
     isLoading,
     isProcessing: isLoading || isTransforming,
     response,
+    rawData,
     transformedOrders: allCollectedOrders,
     activeTab,
     setActiveTab,

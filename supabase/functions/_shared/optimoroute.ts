@@ -49,25 +49,39 @@ export function createCompletionMap(completionData: any): Record<string, any> {
     }
   });
   
+  console.log(`Created completion map with ${Object.keys(map).length} entries`);
+  
   return map;
 }
 
 /**
  * Merge search results with completion details
+ * Collect and log data from various locations to help with debugging
  */
 export function mergeOrderData(orders: any[], completionMap: Record<string, any>): any[] {
   if (!orders || orders.length === 0) {
     return [];
   }
   
+  console.log(`Merging ${orders.length} orders with completion details`);
+  
   return orders.map(order => {
     // Get orderNo from the correct location (inside data object)
     const orderNo = order.data?.orderNo;
     const completionDetails = orderNo ? completionMap[orderNo] : null;
     
+    // Extract key fields from different possible locations
+    const extractedData = {
+      orderNo: orderNo || order.orderNo || "Unknown",
+      tracking_url: completionDetails?.data?.tracking_url || null,
+      driverName: order.scheduleInformation?.driverName || null,
+      completionStatus: completionDetails?.data?.status || null
+    };
+    
     return {
       ...order,
       completionDetails,
+      extracted: extractedData,
       completion_response: completionDetails ? { success: true, orders: [completionDetails] } : null,
       completion_status: completionDetails?.data?.status || null
     };
@@ -75,8 +89,8 @@ export function mergeOrderData(orders: any[], completionMap: Record<string, any>
 }
 
 /**
- * Filter orders by completion status
- * This function is used to filter orders on the backend before sending to frontend
+ * DISABLED: No longer filters orders - returns all orders
+ * This is a temporary change to help with debugging
  */
 export function filterOrdersByStatus(orders: any[], validStatuses: string[] = ['success', 'failed', 'rejected']): any[] {
   if (!orders || !Array.isArray(orders)) {
@@ -84,47 +98,22 @@ export function filterOrdersByStatus(orders: any[], validStatuses: string[] = ['
     return [];
   }
   
-  console.log(`Filtering ${orders.length} orders by status, valid statuses: ${validStatuses.join(', ')}`);
+  console.log(`BYPASSING STATUS FILTERING: Returning all ${orders.length} orders unfiltered`);
+  console.log(`(Valid statuses would have been: ${validStatuses.join(', ')})`);
   
-  // Track filtration statistics for logging
-  const stats = {
-    noCompletionData: 0,
-    invalidStatus: 0,
-    passed: 0
-  };
-  
-  const filteredOrders = orders.filter(order => {
-    // Check if the order has completion data
-    if (!order.completion_response || !order.completionDetails || !order.completionDetails.data) {
-      stats.noCompletionData++;
-      return false;
-    }
-    
-    // Get the status from the appropriate location
+  // Log status data to help with debugging
+  const statusCounts: Record<string, number> = {};
+  orders.forEach(order => {
     const status = order.completion_status || 
-                  order.completionDetails.data.status || 
-                  order.completionDetails.status;
+                  order.completionDetails?.data?.status || 
+                  order.completionDetails?.status || 
+                  "unknown";
     
-    // If no status found, filter out
-    if (!status) {
-      stats.invalidStatus++;
-      return false;
-    }
-    
-    // Check if the status is in the valid statuses list
-    const isValidStatus = validStatuses.includes(status);
-    
-    if (isValidStatus) {
-      stats.passed++;
-    } else {
-      stats.invalidStatus++;
-    }
-    
-    return isValidStatus;
+    statusCounts[status] = (statusCounts[status] || 0) + 1;
   });
   
-  console.log(`Status filtering complete: ${orders.length} input orders, ${filteredOrders.length} filtered orders`);
-  console.log(`Status filtering stats: ${stats.passed} passed, ${stats.noCompletionData} no completion data, ${stats.invalidStatus} invalid status`);
+  console.log("Status distribution in data:", JSON.stringify(statusCounts, null, 2));
   
-  return filteredOrders;
+  // Return all orders without filtering
+  return orders;
 }
