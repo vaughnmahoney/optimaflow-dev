@@ -74,6 +74,15 @@ export const useBulkOrdersFetch = () => {
       return;
     }
 
+    // Log timezone information for debugging
+    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    console.log("Timezone info:", {
+      userTimezone,
+      browserOffset: new Date().getTimezoneOffset(),
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+    });
+    
     console.log("Fetch orders data:", {
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString(),

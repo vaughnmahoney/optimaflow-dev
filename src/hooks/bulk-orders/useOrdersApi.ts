@@ -1,7 +1,8 @@
 
-import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { format } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 import { BulkOrdersResponse } from "@/components/bulk-orders/types";
 
 interface FetchOrdersParams {
@@ -45,9 +46,11 @@ export const fetchOrders = async ({
       return { data: null, error: "Please select both start and end dates" };
     }
 
-    // Format dates as ISO strings
-    const formattedStartDate = format(startDate, "yyyy-MM-dd");
-    const formattedEndDate = format(endDate, "yyyy-MM-dd");
+    // Format dates properly using UTC timezone to avoid timezone issues
+    // This ensures that when a user selects a date like "2023-05-15", the API receives
+    // exactly that date in UTC, which helps with consistent filtering across timezones
+    const formattedStartDate = formatInTimeZone(startDate, 'UTC', 'yyyy-MM-dd');
+    const formattedEndDate = formatInTimeZone(endDate, 'UTC', 'yyyy-MM-dd');
 
     let endpoint;
     let logMessage;
@@ -61,6 +64,7 @@ export const fetchOrders = async ({
     }
     
     console.log(`${logMessage} with dates: ${formattedStartDate} to ${formattedEndDate}`);
+    console.log(`UTC conversion: ${startDate.toISOString()} -> ${formattedStartDate}, ${endDate.toISOString()} -> ${formattedEndDate}`);
     
     if (afterTag) {
       console.log(`Continuing with afterTag/after_tag: ${afterTag}`);
