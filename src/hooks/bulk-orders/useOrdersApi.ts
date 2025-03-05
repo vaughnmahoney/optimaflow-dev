@@ -15,6 +15,19 @@ interface FetchOrdersParams {
 
 /**
  * Makes the API call to fetch orders based on the active tab
+ * 
+ * IMPORTANT: The validStatuses parameter controls which order statuses are returned.
+ * OptimoRoute status values:
+ * - 'success' - Order was completed successfully
+ * - 'failed' - Driver failed to complete the order
+ * - 'rejected' - Order was rejected by the driver
+ * - 'scheduled' - Order has not been started yet
+ * - 'on_route' - Driver is on their way
+ * - 'servicing' - Order is being serviced
+ * - 'unscheduled' - Order not scheduled
+ * - 'cancelled' - Order cancelled by customer
+ * 
+ * For QC purposes, we typically only want: ['success', 'failed', 'rejected']
  */
 export const fetchOrders = async ({
   startDate,
