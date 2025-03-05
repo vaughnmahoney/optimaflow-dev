@@ -24,7 +24,7 @@ export async function fetchCompletionDetails(apiKey: string, orderNumbers: strin
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          orderIds: orderNumbers
+          orders: orderNumbers  // Changed from 'orderIds' to 'orders' to match API expectation
         })
       }
     );
