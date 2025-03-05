@@ -13,11 +13,11 @@ export const BulkOrdersForm = () => {
     setStartDate,
     endDate,
     setEndDate,
-    isProcessing,
+    isLoading,
     response,
     rawData,
     rawOrders,
-    originalOrders, // Get original orders count
+    originalOrders,
     activeTab,
     setActiveTab,
     shouldContinueFetching,
@@ -45,8 +45,9 @@ export const BulkOrdersForm = () => {
             
             <FetchButton
               onFetch={handleFetchOrders}
-              isDisabled={isProcessing || !startDate || !endDate}
-              isLoading={isProcessing}
+              isDisabled={isLoading || !startDate || !endDate}
+              isLoading={isLoading}
+              activeTab={activeTab}
             />
             
             {shouldContinueFetching && (
@@ -63,8 +64,8 @@ export const BulkOrdersForm = () => {
             <h2 className="text-xl font-semibold mb-4">Retrieved Orders</h2>
             <RawOrdersTable 
               orders={rawOrders} 
-              isLoading={isProcessing}
-              originalCount={originalOrders?.length} // Pass original count for deduplication stats
+              isLoading={isLoading}
+              originalCount={originalOrders?.length} 
             />
           </div>
         )}

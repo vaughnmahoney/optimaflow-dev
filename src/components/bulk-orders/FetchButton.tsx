@@ -4,22 +4,22 @@ import { Loader2 } from "lucide-react";
 
 interface FetchButtonProps {
   isLoading: boolean;
-  disabled: boolean;
-  onClick: () => void;
-  activeTab: string;
+  isDisabled: boolean;
+  onFetch: () => void;
+  activeTab?: string;
 }
 
 export const FetchButton = ({ 
   isLoading, 
-  disabled, 
-  onClick, 
-  activeTab 
+  isDisabled, 
+  onFetch,
+  activeTab = "with-completion"
 }: FetchButtonProps) => {
   return (
     <Button 
       className="mt-4" 
-      onClick={onClick} 
-      disabled={disabled}
+      onClick={onFetch} 
+      disabled={isDisabled}
     >
       {isLoading ? (
         <>
