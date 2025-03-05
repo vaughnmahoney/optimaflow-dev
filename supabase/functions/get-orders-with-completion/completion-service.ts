@@ -1,4 +1,3 @@
-
 import { baseUrl, endpoints } from "../_shared/optimoroute.ts";
 
 // Handle the get_completion_details API call
@@ -16,6 +15,10 @@ export async function fetchCompletionDetails(apiKey: string, orderNumbers: strin
   
   try {
     console.log(`Making request to ${baseUrl}${endpoints.completion}`);
+    
+    // Transform the order numbers into the format expected by the API
+    const formattedOrders = orderNumbers.map(orderNo => ({ orderNo }));
+    
     const response = await fetch(
       `${baseUrl}${endpoints.completion}?key=${apiKey}`,
       {
@@ -24,7 +27,7 @@ export async function fetchCompletionDetails(apiKey: string, orderNumbers: strin
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          orders: orderNumbers  // Changed from 'orderIds' to 'orders' to match API expectation
+          orders: formattedOrders  // Send array of objects with orderNo property
         })
       }
     );
