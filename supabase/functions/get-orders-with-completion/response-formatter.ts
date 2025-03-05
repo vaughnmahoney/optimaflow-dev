@@ -30,7 +30,7 @@ export function formatSuccessResponse(
     console.log("First completion sample:", JSON.stringify(completionData.orders[0], null, 2).substring(0, 500) + "...");
   }
   
-  // Include raw data samples in the response for debugging
+  // Include complete raw data samples in the response for debugging
   const rawDataSamples = {
     searchSample: searchData.orders && searchData.orders.length > 0 ? searchData.orders[0] : null,
     completionSample: completionData && completionData.orders && completionData.orders.length > 0 ? 
@@ -59,7 +59,7 @@ export function formatSuccessResponse(
         filteredOrderCount: filteredOrders,
         completionDetailCount: completionData?.orders?.length || 0
       },
-      rawDataSamples // Include raw data samples for debugging
+      rawDataSamples // Include complete raw data samples for debugging
     }),
     { 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

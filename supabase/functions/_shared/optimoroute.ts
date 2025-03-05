@@ -89,8 +89,7 @@ export function mergeOrderData(orders: any[], completionMap: Record<string, any>
 }
 
 /**
- * DISABLED: No longer filters orders - returns all orders
- * This is a temporary change to help with debugging
+ * Returns all orders without filtering by status
  */
 export function filterOrdersByStatus(orders: any[], validStatuses: string[] = ['success', 'failed', 'rejected']): any[] {
   if (!orders || !Array.isArray(orders)) {
@@ -98,8 +97,8 @@ export function filterOrdersByStatus(orders: any[], validStatuses: string[] = ['
     return [];
   }
   
-  console.log(`BYPASSING STATUS FILTERING: Returning all ${orders.length} orders unfiltered`);
-  console.log(`(Valid statuses would have been: ${validStatuses.join(', ')})`);
+  console.log(`RETURNING ALL ORDERS: ${orders.length} orders without status filtering`);
+  console.log(`(Ignoring validStatuses: ${validStatuses.join(', ')})`);
   
   // Log status data to help with debugging
   const statusCounts: Record<string, number> = {};

@@ -3,42 +3,18 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { BulkOrdersResponse } from "@/components/bulk-orders/types";
 import { fetchOrders } from "./bulk-orders/useOrdersApi";
-import { useOrdersTransformer } from "./bulk-orders/useOrdersTransformer";
-import { WorkOrder } from "@/components/workorders/types";
-import { mergeOrders } from "@/components/bulk-orders/utils/deduplicationUtils";
 
 export const useBulkOrdersFetch = () => {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState<BulkOrdersResponse | null>(null);
-  const [activeTab, setActiveTab] = useState("with-completion"); // Default to with-completion now
+  const [activeTab, setActiveTab] = useState("with-completion"); // Default to with-completion
   const [shouldContinueFetching, setShouldContinueFetching] = useState(false);
-  const [allCollectedOrders, setAllCollectedOrders] = useState<WorkOrder[]>([]);
+  const [allCollectedOrders, setAllCollectedOrders] = useState<any[]>([]);
   const [rawData, setRawData] = useState<any>(null);
 
-  // Use our transformer hook
-  const { 
-    transformedOrders, 
-    isTransforming,
-    transformStats 
-  } = useOrdersTransformer(response, activeTab);
-
-  // Effect to merge new transformed orders with previously collected ones
-  useEffect(() => {
-    if (transformedOrders.length > 0 && shouldContinueFetching) {
-      // Merge with previously collected orders
-      const merged = mergeOrders(allCollectedOrders, transformedOrders);
-      console.log(`Merged ${allCollectedOrders.length} existing + ${transformedOrders.length} new = ${merged.length} total orders`);
-      setAllCollectedOrders(merged);
-    } else if (transformedOrders.length > 0 && !shouldContinueFetching) {
-      // For initial fetch or when pagination is complete
-      console.log(`Setting ${transformedOrders.length} transformed orders as all collected orders (non-paginating)`);
-      setAllCollectedOrders(transformedOrders);
-    }
-  }, [transformedOrders, shouldContinueFetching]);
-
-  // Effect to extract raw data from response for debugging
+  // Effect to extract raw data from response for debugging and display
   useEffect(() => {
     if (response && response.orders) {
       setRawData({
@@ -46,13 +22,25 @@ export const useBulkOrdersFetch = () => {
         samples: response.rawDataSamples
       });
       console.log(`Set raw data with ${response.orders.length} orders`);
+      
+      // Append to collected orders if paginating
+      if (shouldContinueFetching) {
+        setAllCollectedOrders(prev => {
+          const combined = [...prev, ...response.orders];
+          console.log(`Combined ${prev.length} existing orders with ${response.orders.length} new orders = ${combined.length} total`);
+          return combined;
+        });
+      } else {
+        // For initial fetch or when pagination is complete, just set directly
+        setAllCollectedOrders(response.orders);
+      }
     }
-  }, [response]);
+  }, [response, shouldContinueFetching]);
 
   // Effect to handle continued fetching with pagination
   useEffect(() => {
     const fetchNextPage = async () => {
-      if (!shouldContinueFetching || !response || isLoading || isTransforming) return;
+      if (!shouldContinueFetching || !response || isLoading) return;
       
       // Check if we have an after_tag (from API) or afterTag (from pagination progress)
       const afterTag = response.after_tag || (response.paginationProgress?.afterTag ?? undefined);
@@ -74,13 +62,13 @@ export const useBulkOrdersFetch = () => {
       await fetchOrdersData(afterTag, allCollectedOrders);
     };
 
-    if (shouldContinueFetching && !isLoading && !isTransforming) {
+    if (shouldContinueFetching && !isLoading) {
       fetchNextPage();
     }
-  }, [shouldContinueFetching, response, isLoading, isTransforming, allCollectedOrders]);
+  }, [shouldContinueFetching, response, isLoading, allCollectedOrders]);
 
   // Function to fetch orders with optional pagination parameters
-  const fetchOrdersData = async (afterTag?: string, previousOrders: WorkOrder[] = []) => {
+  const fetchOrdersData = async (afterTag?: string, previousOrders: any[] = []) => {
     if (!startDate || !endDate) {
       toast.error("Please select both start and end dates");
       return;
@@ -104,7 +92,7 @@ export const useBulkOrdersFetch = () => {
       setRawData(null);
     }
 
-    // Call the orders API - IMPORTANT: No longer filtering by status
+    // Call the orders API - pass all statuses to get everything
     console.log("Calling fetchOrders API...");
     const { data, error } = await fetchOrders({
       startDate,
@@ -112,7 +100,7 @@ export const useBulkOrdersFetch = () => {
       activeTab,
       afterTag,
       previousOrders,
-      validStatuses: ['success', 'failed', 'rejected', 'scheduled'] // Added 'scheduled' to catch more statuses
+      validStatuses: ['success', 'failed', 'rejected', 'scheduled', 'unfinished', 'pending', 'imported']
     });
 
     setIsLoading(false);
@@ -131,7 +119,7 @@ export const useBulkOrdersFetch = () => {
     
     // Check if there are more pages to fetch
     const hasMorePages = !!(data.after_tag || 
-                       (data.paginationProgress && data.paginationProgress.isComplete === false));
+                      (data.paginationProgress && data.paginationProgress.isComplete === false));
     
     console.log(`Setting shouldContinueFetching to: ${hasMorePages} based on API response`);
     setShouldContinueFetching(hasMorePages);
@@ -159,14 +147,13 @@ export const useBulkOrdersFetch = () => {
     endDate,
     setEndDate,
     isLoading,
-    isProcessing: isLoading || isTransforming,
+    isProcessing: isLoading,
     response,
     rawData,
-    transformedOrders: allCollectedOrders,
+    rawOrders: allCollectedOrders, // Direct access to raw orders
     activeTab,
     setActiveTab,
     shouldContinueFetching,
     handleFetchOrders,
-    transformStats
   };
 };
