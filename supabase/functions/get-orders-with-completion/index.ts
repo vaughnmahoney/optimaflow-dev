@@ -1,6 +1,6 @@
 
 import { corsHeaders } from '../_shared/cors.ts';
-import { extractOrderNumbers, createCompletionMap, mergeOrderData } from '../_shared/optimoroute.ts';
+import { extractOrderNumbers, extractFilteredOrderNumbers, createCompletionMap, mergeOrderData } from '../_shared/optimoroute.ts';
 import { fetchSearchOrders } from './search-service.ts';
 import { fetchCompletionDetails } from './completion-service.ts';
 import { formatSuccessResponse, formatErrorResponse } from './response-formatter.ts';
@@ -14,10 +14,11 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { startDate, endDate, enablePagination, afterTag, allCollectedOrders = [] } = await req.json();
+    const { startDate, endDate, enablePagination, afterTag, allCollectedOrders = [], validStatuses = ['success', 'failed', 'rejected'] } = await req.json();
     console.log(`Fetching orders with completion data from ${startDate} to ${endDate}`);
     console.log(`Pagination enabled: ${enablePagination}, afterTag: ${afterTag || 'none'}`);
     console.log(`Previously collected orders: ${allCollectedOrders.length}`);
+    console.log(`Filtering orders by statuses: ${validStatuses.join(', ')}`);
     
     // Validate required inputs
     if (!startDate || !endDate) {
@@ -67,15 +68,15 @@ Deno.serve(async (req) => {
       );
     }
 
-    // STEP 2: Extract order numbers and prepare for get_completion_details
-    console.log("STEP 2: Extracting order numbers for completion details...");
-    const orderNumbers = extractOrderNumbers(searchData.orders);
-    console.log(`Extracted ${orderNumbers.length} order numbers from search results`);
-    console.log("Sample order numbers:", orderNumbers.slice(0, 3));
+    // STEP 2: Extract order numbers and filter by valid statuses
+    console.log("STEP 2: Extracting and filtering order numbers by status...");
+    const orderNumbers = extractFilteredOrderNumbers(searchData.orders, validStatuses);
+    console.log(`Extracted ${orderNumbers.length} order numbers after filtering by status`);
+    console.log("Sample filtered order numbers:", orderNumbers.slice(0, 3));
     
-    // Check if we have any valid order numbers
+    // Check if we have any valid order numbers after filtering
     if (orderNumbers.length === 0) {
-      console.log('No valid order numbers found in search results');
+      console.log('No orders with valid statuses found in search results');
       
       // If we're using pagination and have previous results, continue the pagination
       if (enablePagination && searchData.after_tag && allCollectedOrders.length > 0) {
@@ -99,8 +100,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    // STEP 3: Call get_completion_details with the order numbers
-    console.log("STEP 3: Calling get_completion_details API...");
+    // STEP 3: Call get_completion_details with the filtered order numbers
+    console.log("STEP 3: Calling get_completion_details API with filtered orders...");
     const completionResult = await fetchCompletionDetails(optimoRouteApiKey, orderNumbers);
     
     if (!completionResult.success) {

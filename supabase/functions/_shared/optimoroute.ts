@@ -26,6 +26,37 @@ export function extractOrderNumbers(orders: any[]): string[] {
 }
 
 /**
+ * Extract order numbers from search results but only for orders with specific statuses
+ * This optimizes API calls by only requesting completion details for relevant orders
+ */
+export function extractFilteredOrderNumbers(orders: any[], validStatuses: string[] = ['success', 'failed', 'rejected']): string[] {
+  if (!orders || orders.length === 0) {
+    return [];
+  }
+  
+  console.log(`Filtering orders by status: ${validStatuses.join(', ')}`);
+  
+  const filteredOrders = orders.filter(order => {
+    // First check if order has the necessary data structure
+    if (!order.data || !order.data.orderNo) {
+      return false;
+    }
+    
+    // Then check if status is in the valid statuses list
+    // Status can be in different locations depending on the API response structure
+    const status = order.data.status || 
+                  order.scheduleInformation?.status || 
+                  order.status;
+    
+    return status && validStatuses.includes(status);
+  });
+  
+  console.log(`Filtered ${orders.length} orders down to ${filteredOrders.length} orders with valid statuses`);
+  
+  return filteredOrders.map(order => order.data.orderNo);
+}
+
+/**
  * Create a map of orderNo to completion details for faster lookups
  */
 export function createCompletionMap(completionData: any): Record<string, any> {

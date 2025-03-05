@@ -10,6 +10,7 @@ interface FetchOrdersParams {
   activeTab: string;
   afterTag?: string;
   previousOrders?: any[];
+  validStatuses?: string[];
 }
 
 /**
@@ -20,7 +21,8 @@ export const fetchOrders = async ({
   endDate,
   activeTab,
   afterTag,
-  previousOrders = []
+  previousOrders = [],
+  validStatuses = ['success', 'failed', 'rejected']
 }: FetchOrdersParams): Promise<{
   data: BulkOrdersResponse | null;
   error: string | null;
@@ -59,7 +61,8 @@ export const fetchOrders = async ({
         endDate: formattedEndDate,
         enablePagination: true,
         afterTag: afterTag,
-        allCollectedOrders: previousOrders
+        allCollectedOrders: previousOrders,
+        validStatuses: validStatuses
       }
     });
 

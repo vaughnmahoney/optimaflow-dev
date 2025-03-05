@@ -36,7 +36,12 @@ export function formatSuccessResponse(
       totalCount: totalOrders,
       filteredCount: ordersWithCompletion,
       after_tag: searchData.after_tag || null,
-      paginationProgress
+      paginationProgress,
+      filteringMetadata: {
+        unfilteredOrderCount: searchData.orders?.length || 0,
+        filteredOrderCount: ordersWithCompletion,
+        completionDetailCount: completionData?.orders?.length || 0
+      }
     }),
     { 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
