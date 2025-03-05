@@ -92,15 +92,15 @@ export const useBulkOrdersFetch = () => {
       setRawData(null);
     }
 
-    // Call the orders API - pass all statuses to get everything
-    console.log("Calling fetchOrders API...");
+    // Call the orders API - now with only the three required statuses
+    console.log("Calling fetchOrders API with filtered status list...");
     const { data, error } = await fetchOrders({
       startDate,
       endDate,
       activeTab,
       afterTag,
       previousOrders,
-      validStatuses: ['success', 'failed', 'rejected', 'scheduled', 'unfinished', 'pending', 'imported']
+      validStatuses: ['success', 'failed', 'rejected'] // Only request these three statuses
     });
 
     setIsLoading(false);
