@@ -10,8 +10,8 @@ export function formatSuccessResponse(
   isComplete: boolean
 ) {
   // Calculate stats about the results
-  const totalOrders = orders.length;
-  const ordersWithCompletion = orders.filter(o => !!o.completion_response).length;
+  const totalOrders = searchData.orders?.length || 0;
+  const filteredOrders = orders.length;
   
   // Create pagination progress information
   const paginationProgress = {
@@ -22,8 +22,9 @@ export function formatSuccessResponse(
   };
   
   console.log("Response formatter input:", JSON.stringify({
-    combinedOrdersCount: orders.length,
-    allCollectedOrdersCount: previousOrders.length,
+    filteredOrdersCount: filteredOrders,
+    totalOrdersCount: totalOrders,
+    previousOrdersCount: previousOrders.length,
     searchDataOrdersCount: searchData.orders?.length || 0,
     completionDataOrdersCount: completionData?.orders?.length || 0,
     isComplete
@@ -34,12 +35,12 @@ export function formatSuccessResponse(
       success: true,
       orders,
       totalCount: totalOrders,
-      filteredCount: ordersWithCompletion,
+      filteredCount: filteredOrders,
       after_tag: searchData.after_tag || null,
       paginationProgress,
       filteringMetadata: {
         unfilteredOrderCount: searchData.orders?.length || 0,
-        filteredOrderCount: ordersWithCompletion,
+        filteredOrderCount: filteredOrders,
         completionDetailCount: completionData?.orders?.length || 0
       }
     }),

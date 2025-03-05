@@ -1,6 +1,6 @@
 
 import { corsHeaders } from '../_shared/cors.ts';
-import { extractOrderNumbers, createCompletionMap, mergeOrderData } from '../_shared/optimoroute.ts';
+import { extractOrderNumbers, createCompletionMap, mergeOrderData, filterOrdersByStatus } from '../_shared/optimoroute.ts';
 import { fetchSearchOrders } from './search-service.ts';
 import { fetchCompletionDetails } from './completion-service.ts';
 import { formatSuccessResponse, formatErrorResponse } from './response-formatter.ts';
@@ -103,12 +103,17 @@ Deno.serve(async (req) => {
     console.log(`Created completion map with ${Object.keys(completionMap).length} entries`);
     
     // Merge search data with completion data
-    const currentPageOrders = mergeOrderData(searchData.orders, completionMap);
-    console.log(`Successfully merged data for ${currentPageOrders.length} orders`);
+    const mergedOrders = mergeOrderData(searchData.orders, completionMap);
+    console.log(`Successfully merged data for ${mergedOrders.length} orders`);
     
-    // Combine with previously collected orders if we're paginating
-    const combinedOrders = [...allCollectedOrders, ...currentPageOrders];
-    console.log(`Combined with previous orders: ${combinedOrders.length} total orders`);
+    // STEP 5: Filter orders by status on the backend (NEW STEP)
+    console.log('STEP 5: Filtering orders by status on the backend...');
+    const filteredCurrentPageOrders = filterOrdersByStatus(mergedOrders, validStatuses);
+    console.log(`After status filtering: ${filteredCurrentPageOrders.length} orders remain`);
+    
+    // Combine with previously collected FILTERED orders if we're paginating
+    const combinedOrders = [...allCollectedOrders, ...filteredCurrentPageOrders];
+    console.log(`Combined with previous orders: ${combinedOrders.length} total filtered orders`);
     
     // Handle pagination if enabled and we have more pages
     const isComplete = !(enablePagination && searchData.after_tag);

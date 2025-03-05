@@ -27,7 +27,6 @@ export function extractOrderNumbers(orders: any[]): string[] {
 
 /**
  * Do not filter by status at this stage - pass all orders to completion API
- * Status filtering will be done after we have completion details
  */
 export function extractFilteredOrderNumbers(orders: any[]): string[] {
   console.log(`Extracting order numbers without status filtering from ${orders?.length || 0} orders`);
@@ -73,4 +72,59 @@ export function mergeOrderData(orders: any[], completionMap: Record<string, any>
       completion_status: completionDetails?.data?.status || null
     };
   });
+}
+
+/**
+ * Filter orders by completion status
+ * This function is used to filter orders on the backend before sending to frontend
+ */
+export function filterOrdersByStatus(orders: any[], validStatuses: string[] = ['success', 'failed', 'rejected']): any[] {
+  if (!orders || !Array.isArray(orders)) {
+    console.log("No orders to filter by status");
+    return [];
+  }
+  
+  console.log(`Filtering ${orders.length} orders by status, valid statuses: ${validStatuses.join(', ')}`);
+  
+  // Track filtration statistics for logging
+  const stats = {
+    noCompletionData: 0,
+    invalidStatus: 0,
+    passed: 0
+  };
+  
+  const filteredOrders = orders.filter(order => {
+    // Check if the order has completion data
+    if (!order.completion_response || !order.completionDetails || !order.completionDetails.data) {
+      stats.noCompletionData++;
+      return false;
+    }
+    
+    // Get the status from the appropriate location
+    const status = order.completion_status || 
+                  order.completionDetails.data.status || 
+                  order.completionDetails.status;
+    
+    // If no status found, filter out
+    if (!status) {
+      stats.invalidStatus++;
+      return false;
+    }
+    
+    // Check if the status is in the valid statuses list
+    const isValidStatus = validStatuses.includes(status);
+    
+    if (isValidStatus) {
+      stats.passed++;
+    } else {
+      stats.invalidStatus++;
+    }
+    
+    return isValidStatus;
+  });
+  
+  console.log(`Status filtering complete: ${orders.length} input orders, ${filteredOrders.length} filtered orders`);
+  console.log(`Status filtering stats: ${stats.passed} passed, ${stats.noCompletionData} no completion data, ${stats.invalidStatus} invalid status`);
+  
+  return filteredOrders;
 }

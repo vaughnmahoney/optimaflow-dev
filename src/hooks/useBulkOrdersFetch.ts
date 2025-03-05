@@ -4,7 +4,6 @@ import { toast } from "sonner";
 import { BulkOrdersResponse } from "@/components/bulk-orders/types";
 import { fetchOrders } from "./bulk-orders/useOrdersApi";
 import { useOrdersTransformer } from "./bulk-orders/useOrdersTransformer";
-import { filterCompletedOrders } from "@/components/bulk-orders/utils/filteringUtils";
 import { WorkOrder } from "@/components/workorders/types";
 import { mergeOrders } from "@/components/bulk-orders/utils/deduplicationUtils";
 
@@ -16,7 +15,6 @@ export const useBulkOrdersFetch = () => {
   const [activeTab, setActiveTab] = useState("search-only");
   const [shouldContinueFetching, setShouldContinueFetching] = useState(false);
   const [allCollectedOrders, setAllCollectedOrders] = useState<WorkOrder[]>([]);
-  const [filteredOrders, setFilteredOrders] = useState<WorkOrder[]>([]);
 
   // Use our transformer hook
   const { 
@@ -24,18 +22,6 @@ export const useBulkOrdersFetch = () => {
     isTransforming,
     transformStats 
   } = useOrdersTransformer(response, activeTab);
-
-  // Effect to handle filtering of transformed orders
-  useEffect(() => {
-    console.log(`Processing ${transformedOrders.length} transformed orders for active tab: ${activeTab}`);
-    if (activeTab === "with-completion" && transformedOrders.length > 0) {
-      const filtered = filterCompletedOrders(transformedOrders);
-      console.log(`Filtered ${transformedOrders.length} orders down to ${filtered.length} completed orders`);
-      setFilteredOrders(filtered);
-    } else {
-      setFilteredOrders(transformedOrders);
-    }
-  }, [transformedOrders, activeTab]);
 
   // Effect to merge new transformed orders with previously collected ones
   useEffect(() => {
@@ -103,7 +89,6 @@ export const useBulkOrdersFetch = () => {
       console.log("Starting new fetch, resetting response and collected orders");
       setResponse(null);
       setAllCollectedOrders([]);
-      setFilteredOrders([]);
     }
 
     // Call the orders API
@@ -113,7 +98,8 @@ export const useBulkOrdersFetch = () => {
       endDate,
       activeTab,
       afterTag,
-      previousOrders
+      previousOrders,
+      validStatuses: ['success', 'failed', 'rejected'] // These statuses match our requirements
     });
 
     setIsLoading(false);
@@ -160,15 +146,6 @@ export const useBulkOrdersFetch = () => {
     fetchOrdersData(); // Start a fresh fetch without afterTag
   };
 
-  // Calculate the final orders to display: either all collected or current filtered
-  const displayOrders = shouldContinueFetching || (response?.paginationProgress?.isComplete === true)
-    ? activeTab === "with-completion" 
-      ? filterCompletedOrders(allCollectedOrders)
-      : allCollectedOrders
-    : filteredOrders;
-
-  console.log(`Final display orders count: ${displayOrders.length} (from collection of ${allCollectedOrders.length} orders)`);
-
   return {
     startDate,
     setStartDate,
@@ -177,7 +154,7 @@ export const useBulkOrdersFetch = () => {
     isLoading,
     isProcessing: isLoading || isTransforming,
     response,
-    transformedOrders: displayOrders,
+    transformedOrders: allCollectedOrders,
     activeTab,
     setActiveTab,
     shouldContinueFetching,

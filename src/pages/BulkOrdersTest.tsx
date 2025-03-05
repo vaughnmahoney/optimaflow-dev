@@ -50,7 +50,7 @@ const BulkOrdersTest = () => {
   
   const orderCount = response?.totalCount || transformedOrders.length;
   const filteredCount = activeTab === "with-completion" 
-    ? workOrders.length 
+    ? response?.filteredCount || transformedOrders.length
     : response?.filteredCount || 0;
 
   // Placeholder function since we don't need OptimoRoute search in the bulk view
