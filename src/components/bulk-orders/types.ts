@@ -9,6 +9,10 @@ export interface BulkOrdersResponse {
   completionResponse?: any;
   paginationProgress?: PaginationProgress; // For tracking pagination progress
   after_tag?: string; // Direct after_tag from API response (snake_case as per API docs)
+  rawDataSamples?: { // Add this property to fix the build error
+    searchSample?: any;
+    completionSample?: any;
+  };
 }
 
 export interface CompletionStatus {

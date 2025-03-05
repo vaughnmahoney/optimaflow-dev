@@ -2,6 +2,7 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { RawJsonViewer } from "./RawJsonViewer";
 import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
 
 interface RawOrdersTableProps {
   orders: any[];
@@ -19,14 +20,15 @@ export const RawOrdersTable = ({ orders, isLoading }: RawOrdersTableProps) => {
 
   // Extract basic info to display in the table
   const getOrderNo = (order: any) => {
-    return order.order_no || order.orderNo || 
-           (order.data && order.data.orderNo) || 
+    return order.order_no || 
+           order.data?.orderNo || 
+           (order.completionDetails && order.completionDetails.orderNo) ||
            'N/A';
   };
 
   const getServiceDate = (order: any) => {
     const date = order.service_date || 
-                 (order.data && order.data.date) ||
+                 order.data?.date ||
                  (order.searchResponse && order.searchResponse.data && order.searchResponse.data.date) ||
                  null;
     
@@ -58,9 +60,35 @@ export const RawOrdersTable = ({ orders, isLoading }: RawOrdersTableProps) => {
   };
 
   const getStatus = (order: any) => {
-    return order.status || 
-           (order.completionDetails && order.completionDetails.data && order.completionDetails.data.status) || 
-           'N/A';
+    // Look for status in different possible locations
+    const status = order.status || 
+                  order.completion_status ||
+                  (order.completionDetails && order.completionDetails.data && order.completionDetails.data.status) || 
+                  (order.extracted && order.extracted.completionStatus) ||
+                  'N/A';
+    
+    return status;
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch(status.toLowerCase()) {
+      case 'success':
+        return <Badge className="bg-green-500">Success</Badge>;
+      case 'failed':
+        return <Badge className="bg-red-500">Failed</Badge>;
+      case 'scheduled':
+        return <Badge className="bg-blue-500">Scheduled</Badge>;
+      case 'pending':
+        return <Badge className="bg-yellow-500">Pending</Badge>;
+      case 'rejected':
+        return <Badge className="bg-red-700">Rejected</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  const hasImages = (order: any) => {
+    return !!(order.completionDetails?.data?.form?.images?.length > 0);
   };
 
   return (
@@ -72,21 +100,34 @@ export const RawOrdersTable = ({ orders, isLoading }: RawOrdersTableProps) => {
             <TableHead>Date</TableHead>
             <TableHead>Driver</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead className="text-center">Images</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {orders.map((order, index) => (
-            <TableRow key={index}>
-              <TableCell>{getOrderNo(order)}</TableCell>
-              <TableCell>{getServiceDate(order)}</TableCell>
-              <TableCell>{getDriverName(order)}</TableCell>
-              <TableCell>{getStatus(order)}</TableCell>
-              <TableCell>
-                <RawJsonViewer data={order} />
-              </TableCell>
-            </TableRow>
-          ))}
+          {orders.map((order, index) => {
+            const status = getStatus(order);
+            return (
+              <TableRow key={index}>
+                <TableCell className="font-medium">{getOrderNo(order)}</TableCell>
+                <TableCell>{getServiceDate(order)}</TableCell>
+                <TableCell>{getDriverName(order)}</TableCell>
+                <TableCell>{getStatusBadge(status)}</TableCell>
+                <TableCell className="text-center">
+                  {hasImages(order) ? (
+                    <Badge variant="outline" className="bg-slate-100">
+                      {order.completionDetails?.data?.form?.images?.length || 0}
+                    </Badge>
+                  ) : (
+                    <span className="text-sm text-gray-400">None</span>
+                  )}
+                </TableCell>
+                <TableCell className="text-right">
+                  <RawJsonViewer data={order} />
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>
