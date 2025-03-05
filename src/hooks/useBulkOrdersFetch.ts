@@ -4,6 +4,39 @@ import { toast } from "sonner";
 import { BulkOrdersResponse } from "@/components/bulk-orders/types";
 import { fetchOrders } from "./bulk-orders/useOrdersApi";
 
+/**
+ * Deduplicates orders based on the orderNo property
+ * @param orders Array of orders that may contain duplicates
+ * @returns Array of unique orders
+ */
+const deduplicateOrders = (orders: any[]): any[] => {
+  if (!orders || orders.length === 0) return [];
+  
+  console.log(`Deduplicating ${orders.length} orders...`);
+  
+  // Use a Map to track unique orders by orderNo
+  const uniqueOrders = new Map();
+  
+  orders.forEach(order => {
+    // Find orderNo in different possible locations
+    const orderNo = 
+      order.data?.orderNo || 
+      order.orderNo || 
+      order.completionDetails?.orderNo ||
+      order.extracted?.orderNo ||
+      null;
+    
+    if (orderNo && !uniqueOrders.has(orderNo)) {
+      uniqueOrders.set(orderNo, order);
+    }
+  });
+  
+  const result = Array.from(uniqueOrders.values());
+  console.log(`After deduplication: ${result.length} unique orders (removed ${orders.length - result.length} duplicates)`);
+  
+  return result;
+};
+
 export const useBulkOrdersFetch = () => {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
@@ -13,6 +46,8 @@ export const useBulkOrdersFetch = () => {
   const [shouldContinueFetching, setShouldContinueFetching] = useState(false);
   const [allCollectedOrders, setAllCollectedOrders] = useState<any[]>([]);
   const [rawData, setRawData] = useState<any>(null);
+  // Add a state for deduplicated orders
+  const [deduplicatedOrders, setDeduplicatedOrders] = useState<any[]>([]);
 
   // Effect to extract raw data from response for debugging and display
   useEffect(() => {
@@ -36,6 +71,22 @@ export const useBulkOrdersFetch = () => {
       }
     }
   }, [response, shouldContinueFetching]);
+
+  // NEW EFFECT: Add deduplication after all orders are collected
+  useEffect(() => {
+    if (allCollectedOrders.length > 0) {
+      // Apply deduplication
+      const uniqueOrders = deduplicateOrders(allCollectedOrders);
+      setDeduplicatedOrders(uniqueOrders);
+      
+      // Log the deduplication results
+      console.log(`Original order count: ${allCollectedOrders.length}`);
+      console.log(`Deduplicated order count: ${uniqueOrders.length}`);
+      console.log(`Removed ${allCollectedOrders.length - uniqueOrders.length} duplicate entries`);
+    } else {
+      setDeduplicatedOrders([]);
+    }
+  }, [allCollectedOrders]);
 
   // Effect to handle continued fetching with pagination
   useEffect(() => {
@@ -99,6 +150,7 @@ export const useBulkOrdersFetch = () => {
       setResponse(null);
       setAllCollectedOrders([]);
       setRawData(null);
+      setDeduplicatedOrders([]); // Reset deduplicated orders as well
     }
 
     // Call the orders API - now with only the three required statuses
@@ -159,7 +211,8 @@ export const useBulkOrdersFetch = () => {
     isProcessing: isLoading,
     response,
     rawData,
-    rawOrders: allCollectedOrders, // Direct access to raw orders
+    rawOrders: deduplicatedOrders, // Use deduplicated orders instead of allCollectedOrders
+    originalOrders: allCollectedOrders, // Keep original orders available for debugging
     activeTab,
     setActiveTab,
     shouldContinueFetching,

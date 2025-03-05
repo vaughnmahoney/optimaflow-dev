@@ -7,9 +7,10 @@ import { Badge } from "@/components/ui/badge";
 interface RawOrdersTableProps {
   orders: any[];
   isLoading: boolean;
+  originalCount?: number; // Add optional prop for original count
 }
 
-export const RawOrdersTable = ({ orders, isLoading }: RawOrdersTableProps) => {
+export const RawOrdersTable = ({ orders, isLoading, originalCount }: RawOrdersTableProps) => {
   if (isLoading) {
     return <div className="py-8 text-center">Loading orders...</div>;
   }
@@ -20,15 +21,15 @@ export const RawOrdersTable = ({ orders, isLoading }: RawOrdersTableProps) => {
 
   // Extract basic info to display in the table
   const getOrderNo = (order: any) => {
-    return order.order_no || 
-           order.data?.orderNo || 
+    return order.data?.orderNo || 
+           order.orderNo || 
            (order.completionDetails && order.completionDetails.orderNo) ||
            'N/A';
   };
 
   const getServiceDate = (order: any) => {
-    const date = order.service_date || 
-                 order.data?.date ||
+    const date = order.data?.date ||
+                 order.service_date || 
                  (order.searchResponse && order.searchResponse.data && order.searchResponse.data.date) ||
                  null;
     
@@ -92,44 +93,56 @@ export const RawOrdersTable = ({ orders, isLoading }: RawOrdersTableProps) => {
   };
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Order #</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Driver</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-center">Images</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {orders.map((order, index) => {
-            const status = getStatus(order);
-            return (
-              <TableRow key={index}>
-                <TableCell className="font-medium">{getOrderNo(order)}</TableCell>
-                <TableCell>{getServiceDate(order)}</TableCell>
-                <TableCell>{getDriverName(order)}</TableCell>
-                <TableCell>{getStatusBadge(status)}</TableCell>
-                <TableCell className="text-center">
-                  {hasImages(order) ? (
-                    <Badge variant="outline" className="bg-slate-100">
-                      {order.completionDetails?.data?.form?.images?.length || 0}
-                    </Badge>
-                  ) : (
-                    <span className="text-sm text-gray-400">None</span>
-                  )}
-                </TableCell>
-                <TableCell className="text-right">
-                  <RawJsonViewer data={order} />
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+    <div className="space-y-4">
+      {/* Show deduplication stats if originalCount is provided */}
+      {originalCount !== undefined && originalCount !== orders.length && (
+        <div className="text-sm text-muted-foreground bg-slate-50 p-2 rounded border">
+          <span className="font-medium">Deduplication applied:</span> Showing {orders.length} unique orders from {originalCount} total entries.
+          <span className="ml-2 text-green-600">
+            ({originalCount - orders.length} duplicates removed)
+          </span>
+        </div>
+      )}
+      
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Order #</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead>Driver</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-center">Images</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {orders.map((order, index) => {
+              const status = getStatus(order);
+              return (
+                <TableRow key={index}>
+                  <TableCell className="font-medium">{getOrderNo(order)}</TableCell>
+                  <TableCell>{getServiceDate(order)}</TableCell>
+                  <TableCell>{getDriverName(order)}</TableCell>
+                  <TableCell>{getStatusBadge(status)}</TableCell>
+                  <TableCell className="text-center">
+                    {hasImages(order) ? (
+                      <Badge variant="outline" className="bg-slate-100">
+                        {order.completionDetails?.data?.form?.images?.length || 0}
+                      </Badge>
+                    ) : (
+                      <span className="text-sm text-gray-400">None</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <RawJsonViewer data={order} />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };

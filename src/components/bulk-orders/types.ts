@@ -13,6 +13,11 @@ export interface BulkOrdersResponse {
     searchSample?: any;
     completionSample?: any;
   };
+  deduplicationStats?: {
+    originalCount: number;
+    uniqueCount: number;
+    removedCount: number;
+  };
 }
 
 export interface CompletionStatus {
