@@ -1,4 +1,3 @@
-
 // Shared OptimoRoute API utilities
 
 export const baseUrl = 'https://api.optimoroute.com/v1';
@@ -89,7 +88,8 @@ export function mergeOrderData(orders: any[], completionMap: Record<string, any>
 }
 
 /**
- * Returns all orders without filtering by status
+ * Filters orders by status values provided in validStatuses
+ * Checks for status in multiple possible locations within the order object
  */
 export function filterOrdersByStatus(orders: any[], validStatuses: string[] = ['success', 'failed', 'rejected']): any[] {
   if (!orders || !Array.isArray(orders)) {
@@ -97,22 +97,28 @@ export function filterOrdersByStatus(orders: any[], validStatuses: string[] = ['
     return [];
   }
   
-  console.log(`RETURNING ALL ORDERS: ${orders.length} orders without status filtering`);
-  console.log(`(Ignoring validStatuses: ${validStatuses.join(', ')})`);
+  console.log(`Filtering ${orders.length} orders by status: ${validStatuses.join(', ')}`);
   
-  // Log status data to help with debugging
+  // Track status distribution for logging
   const statusCounts: Record<string, number> = {};
-  orders.forEach(order => {
-    const status = order.completion_status || 
-                  order.completionDetails?.data?.status || 
-                  order.completionDetails?.status || 
-                  "unknown";
+  const filteredOrders = orders.filter(order => {
+    // Look for status in multiple possible locations
+    const status = 
+      order.completion_status || 
+      order.completionDetails?.data?.status || 
+      order.extracted?.completionStatus ||
+      (order.completion_response?.orders?.[0]?.data?.status) ||
+      "unknown";
     
+    // Count statuses for logging
     statusCounts[status] = (statusCounts[status] || 0) + 1;
+    
+    // Keep only orders with status in validStatuses array
+    return validStatuses.includes(status.toLowerCase());
   });
   
   console.log("Status distribution in data:", JSON.stringify(statusCounts, null, 2));
+  console.log(`After filtering: ${filteredOrders.length} of ${orders.length} orders match valid statuses`);
   
-  // Return all orders without filtering
-  return orders;
+  return filteredOrders;
 }
