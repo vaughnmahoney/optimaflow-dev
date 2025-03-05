@@ -1,6 +1,6 @@
 
 import { corsHeaders } from '../_shared/cors.ts';
-import { extractOrderNumbers, extractFilteredOrderNumbers, createCompletionMap, mergeOrderData } from '../_shared/optimoroute.ts';
+import { extractOrderNumbers, createCompletionMap, mergeOrderData } from '../_shared/optimoroute.ts';
 import { fetchSearchOrders } from './search-service.ts';
 import { fetchCompletionDetails } from './completion-service.ts';
 import { formatSuccessResponse, formatErrorResponse } from './response-formatter.ts';
@@ -39,22 +39,7 @@ Deno.serve(async (req) => {
     }
     
     const searchData = searchResult.data;
-    console.log("SEARCH API RESPONSE STRUCTURE:", JSON.stringify({
-      success: searchData.success,
-      ordersCount: searchData.orders?.length,
-      firstOrderSample: searchData.orders && searchData.orders.length > 0 ? {
-        id: searchData.orders[0].id,
-        orderNo: searchData.orders[0].orderNo,
-        date: searchData.orders[0].date,
-        hasDriver: !!searchData.orders[0].driver,
-        hasLocation: !!searchData.orders[0].location,
-        status: searchData.orders[0].status,
-        keys: Object.keys(searchData.orders[0])
-      } : null,
-      hasAfterTag: !!searchData.after_tag,
-      afterTag: searchData.after_tag,
-      fullResponse: searchData
-    }, null, 2));
+    console.log(`Search API returned ${searchData.orders?.length || 0} orders`);
     
     // If no orders found on this page, return what we've collected so far or empty result
     if (!searchData.orders || searchData.orders.length === 0) {
@@ -68,19 +53,17 @@ Deno.serve(async (req) => {
       );
     }
 
-    // STEP 2: Extract order numbers and filter by valid statuses
-    console.log("STEP 2: Extracting and filtering order numbers by status...");
-    const orderNumbers = extractFilteredOrderNumbers(searchData.orders, validStatuses);
-    console.log(`Extracted ${orderNumbers.length} order numbers after filtering by status`);
-    console.log("Sample filtered order numbers:", orderNumbers.slice(0, 3));
+    // STEP 2: Extract order numbers for all orders (no status filtering)
+    console.log("STEP 2: Extracting order numbers...");
+    const orderNumbers = extractOrderNumbers(searchData.orders);
+    console.log(`Extracted ${orderNumbers.length} order numbers`);
     
-    // Check if we have any valid order numbers after filtering
+    // Check if we have any order numbers
     if (orderNumbers.length === 0) {
-      console.log('No orders with valid statuses found in search results');
+      console.log('No valid order numbers found in search results');
       
       // If we're using pagination and have previous results, continue the pagination
       if (enablePagination && searchData.after_tag && allCollectedOrders.length > 0) {
-        // Call ourselves again with the afterTag to get the next page
         console.log("No valid order numbers but pagination enabled, continuing...");
         return formatSuccessResponse(
           allCollectedOrders,
@@ -100,8 +83,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    // STEP 3: Call get_completion_details with the filtered order numbers
-    console.log("STEP 3: Calling get_completion_details API with filtered orders...");
+    // STEP 3: Call get_completion_details with all order numbers
+    console.log("STEP 3: Calling get_completion_details API...");
     const completionResult = await fetchCompletionDetails(optimoRouteApiKey, orderNumbers);
     
     if (!completionResult.success) {
@@ -110,26 +93,8 @@ Deno.serve(async (req) => {
     }
     
     const completionData = completionResult.data;
+    console.log(`Got completion details for ${completionData?.orders?.length || 0} orders`);
     
-    console.log("COMPLETION API RESPONSE STRUCTURE:", JSON.stringify({
-      success: completionResult.success,
-      hasData: !!completionData,
-      ordersCount: completionData?.orders?.length,
-      firstOrderSample: completionData?.orders && completionData.orders.length > 0 ? {
-        id: completionData.orders[0].id,
-        orderNo: completionData.orders[0].orderNo,
-        status: completionData.orders[0].status,
-        hasData: !!completionData.orders[0].data,
-        dataStatus: completionData.orders[0].data?.status,
-        hasStartTime: !!completionData.orders[0].data?.startTime,
-        hasEndTime: !!completionData.orders[0].data?.endTime,
-        hasTrackingUrl: !!completionData.orders[0].data?.tracking_url,
-        hasForm: !!completionData.orders[0].data?.form,
-        dataKeys: completionData.orders[0].data ? Object.keys(completionData.orders[0].data) : []
-      } : null,
-      fullResponse: completionData
-    }, null, 2));
-
     // STEP 4: Combine the data
     console.log('STEP 4: Combining search results with completion details...');
     
@@ -139,25 +104,11 @@ Deno.serve(async (req) => {
     
     // Merge search data with completion data
     const currentPageOrders = mergeOrderData(searchData.orders, completionMap);
-    console.log("MERGED DATA STRUCTURE:", JSON.stringify({
-      mergedCount: currentPageOrders.length,
-      firstOrderSample: currentPageOrders.length > 0 ? {
-        id: currentPageOrders[0].id,
-        orderNo: currentPageOrders[0].orderNo,
-        hasSearch: !!currentPageOrders[0].searchResponse,
-        hasCompletion: !!currentPageOrders[0].completionDetails,
-        completionSuccess: currentPageOrders[0].completionDetails?.success,
-        completionDataStatus: currentPageOrders[0].completionDetails?.data?.status,
-        hasStartTime: !!currentPageOrders[0].completionDetails?.data?.startTime,
-        hasEndTime: !!currentPageOrders[0].completionDetails?.data?.endTime,
-        keys: Object.keys(currentPageOrders[0])
-      } : null,
-      allKeys: currentPageOrders.length > 0 ? Object.keys(currentPageOrders[0]) : []
-    }, null, 2));
-
+    console.log(`Successfully merged data for ${currentPageOrders.length} orders`);
+    
     // Combine with previously collected orders if we're paginating
     const combinedOrders = [...allCollectedOrders, ...currentPageOrders];
-    console.log(`Successfully combined data: ${currentPageOrders.length} new orders, ${combinedOrders.length} total orders`);
+    console.log(`Combined with previous orders: ${combinedOrders.length} total orders`);
     
     // Handle pagination if enabled and we have more pages
     const isComplete = !(enablePagination && searchData.after_tag);
