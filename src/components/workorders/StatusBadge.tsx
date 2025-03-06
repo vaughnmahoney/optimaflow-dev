@@ -44,10 +44,12 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
     }
   };
 
-  // Function to get text for the OptimoRoute completion status
+  // Function to get text for the OptimoRoute completion status ONLY
   const getCompletionStatusText = () => {
-    if (!completionStatus) return status.replace(/_/g, " ").toUpperCase();
+    // If no completion status is provided, show a generic "PENDING" status
+    if (!completionStatus) return "PENDING";
     
+    // Always return the OptimoRoute completion status in uppercase
     return completionStatus.toUpperCase();
   };
 
