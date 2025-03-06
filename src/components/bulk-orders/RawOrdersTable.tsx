@@ -61,11 +61,13 @@ export const RawOrdersTable = ({ orders, isLoading, originalCount }: RawOrdersTa
     return 'N/A';
   };
 
-  // Get the completion status from OptimoRoute
+  // Get the completion status from OptimoRoute - Updated to match WorkOrderRow implementation
   const getCompletionStatus = (order: any) => {
     return order.completion_status || 
-          (order.completionDetails && order.completionDetails.data && order.completionDetails.data.status) || 
-          'N/A';
+           (order.completionDetails?.data?.status) ||
+           (order.completion_response?.orders?.[0]?.data?.status) ||
+           (order.searchResponse?.scheduleInformation?.status) ||
+           (order.search_response?.scheduleInformation?.status);
   };
 
   // Get the QC status (internal review status)
