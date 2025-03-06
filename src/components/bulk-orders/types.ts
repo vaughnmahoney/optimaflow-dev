@@ -24,6 +24,8 @@ export interface BulkOrdersResponse {
   after_tag?: string;
   searchResponse?: any;
   completionResponse?: any;
+  // Add batchStats property to fix TypeScript error
+  batchStats?: BatchProcessingStats;
 }
 
 export interface CompletionStatus {
@@ -38,4 +40,5 @@ export interface BatchProcessingStats {
   successfulBatches: number;
   failedBatches: number;
   totalOrdersProcessed: number;
+  errors?: string[];
 }
