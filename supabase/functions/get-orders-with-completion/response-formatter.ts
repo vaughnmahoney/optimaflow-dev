@@ -4,45 +4,24 @@ import { corsHeaders } from '../_shared/cors.ts';
 // Format a success response with all required data
 export function formatSuccessResponse(
   orders: any[],
-  previousOrders: any[],
-  searchData: any,
-  completionData: any | null,
+  filteringMetadata: {
+    unfilteredOrderCount: number;
+    filteredOrderCount: number;
+    completionDetailCount: number;
+  },
   isComplete: boolean
 ) {
-  // Calculate stats about the results
-  const totalOrders = searchData.orders?.length || 0;
-  const filteredOrders = orders.length;
-  
-  // Create pagination progress information
-  const paginationProgress = {
-    isComplete,
-    afterTag: searchData.after_tag || null,
-    totalCollected: orders.length,
-    previouslyCollected: previousOrders.length
-  };
-  
-  // Add detailed logging of the first order to help with debugging
-  if (searchData.orders && searchData.orders.length > 0) {
-    console.log("First search order sample:", JSON.stringify(searchData.orders[0], null, 2).substring(0, 500) + "...");
-  }
-  
-  if (completionData && completionData.orders && completionData.orders.length > 0) {
-    console.log("First completion sample:", JSON.stringify(completionData.orders[0], null, 2).substring(0, 500) + "...");
-  }
-  
   // Include complete raw data samples in the response for debugging
   const rawDataSamples = {
-    searchSample: searchData.orders && searchData.orders.length > 0 ? searchData.orders[0] : null,
-    completionSample: completionData && completionData.orders && completionData.orders.length > 0 ? 
-      completionData.orders[0] : null
+    searchSample: orders.length > 0 ? orders[0] : null,
+    completionSample: orders.length > 0 && orders[0].completionDetails ? orders[0].completionDetails : null
   };
   
-  console.log("Response formatter input:", JSON.stringify({
-    filteredOrdersCount: filteredOrders,
-    totalOrdersCount: totalOrders,
-    previousOrdersCount: previousOrders.length,
-    searchDataOrdersCount: searchData.orders?.length || 0,
-    completionDataOrdersCount: completionData?.orders?.length || 0,
+  console.log("Response formatter metadata:", JSON.stringify({
+    totalOrdersCount: orders.length,
+    unfilteredCount: filteringMetadata.unfilteredOrderCount,
+    filteredCount: filteringMetadata.filteredOrderCount,
+    completionDetailCount: filteringMetadata.completionDetailCount,
     isComplete
   }, null, 2));
   
@@ -50,16 +29,11 @@ export function formatSuccessResponse(
     JSON.stringify({
       success: true,
       orders,
-      totalCount: totalOrders,
-      filteredCount: filteredOrders,
-      after_tag: searchData.after_tag || null,
-      paginationProgress,
-      filteringMetadata: {
-        unfilteredOrderCount: searchData.orders?.length || 0,
-        filteredOrderCount: filteredOrders,
-        completionDetailCount: completionData?.orders?.length || 0
-      },
-      rawDataSamples // Include complete raw data samples for debugging
+      totalCount: filteringMetadata.unfilteredOrderCount,
+      filteredCount: filteringMetadata.filteredOrderCount,
+      isComplete,
+      rawDataSamples,
+      filteringMetadata
     }),
     { 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

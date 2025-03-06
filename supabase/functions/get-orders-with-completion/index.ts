@@ -14,10 +14,8 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { startDate, endDate, enablePagination, afterTag, allCollectedOrders = [], validStatuses = ['success', 'failed', 'rejected'] } = await req.json();
+    const { startDate, endDate, validStatuses = ['success', 'failed', 'rejected'] } = await req.json();
     console.log(`Fetching orders with completion data from ${startDate} to ${endDate}`);
-    console.log(`Pagination enabled: ${enablePagination}, afterTag: ${afterTag || 'none'}`);
-    console.log(`Previously collected orders: ${allCollectedOrders.length}`);
     console.log(`Filtering orders by statuses: ${validStatuses.join(', ')}`);
     
     // Validate required inputs
@@ -29,63 +27,54 @@ Deno.serve(async (req) => {
       return formatErrorResponse('OptimoRoute API key is not configured', 500);
     }
 
-    // STEP 1: Call search_orders to get all orders in date range
-    console.log("STEP 1: Calling search_orders API...");
-    const searchResult = await fetchSearchOrders(optimoRouteApiKey, startDate, endDate, afterTag);
+    // STEP 1: Collect ALL search results using pagination
+    console.log("STEP 1: Collecting ALL search results using pagination...");
+    const allSearchOrders = await collectAllSearchResults(optimoRouteApiKey, startDate, endDate);
     
-    if (!searchResult.success) {
-      console.error("Search API call failed:", searchResult.error);
-      return formatErrorResponse(searchResult.error, searchResult.status || 500);
+    if (!allSearchOrders.success) {
+      console.error("Failed to collect all search results:", allSearchOrders.error);
+      return formatErrorResponse(allSearchOrders.error, 500);
     }
     
-    const searchData = searchResult.data;
-    console.log(`Search API returned ${searchData.orders?.length || 0} orders`);
+    const allOrdersFromSearch = allSearchOrders.orders;
+    console.log(`Successfully collected ${allOrdersFromSearch.length} orders from all search pages`);
     
-    // If no orders found on this page, return what we've collected so far or empty result
-    if (!searchData.orders || searchData.orders.length === 0) {
-      console.log("No orders found in search results, returning early");
+    // If no orders found across all pages, return empty result
+    if (allOrdersFromSearch.length === 0) {
+      console.log("No orders found in search results");
       return formatSuccessResponse(
-        allCollectedOrders, 
-        [], 
-        searchData, 
-        null, 
+        [], // Empty orders array
+        {
+          unfilteredOrderCount: 0,
+          filteredOrderCount: 0,
+          completionDetailCount: 0
+        },
         true // isComplete = true
       );
     }
 
-    // STEP 2: Extract order numbers for all orders (no status filtering)
-    console.log("STEP 2: Extracting order numbers...");
-    const orderNumbers = extractOrderNumbers(searchData.orders);
-    console.log(`Extracted ${orderNumbers.length} order numbers`);
+    // STEP 2: Extract unique order numbers from ALL collected search results
+    console.log("STEP 2: Extracting unique order numbers from all search results...");
+    const uniqueOrderNumbers = extractUniqueOrderNumbers(allOrdersFromSearch);
+    console.log(`Extracted ${uniqueOrderNumbers.length} unique order numbers from ${allOrdersFromSearch.length} search results`);
     
-    // Check if we have any order numbers
-    if (orderNumbers.length === 0) {
+    // If no valid order numbers found, return search data without completion details
+    if (uniqueOrderNumbers.length === 0) {
       console.log('No valid order numbers found in search results');
-      
-      // If we're using pagination and have previous results, continue the pagination
-      if (enablePagination && searchData.after_tag && allCollectedOrders.length > 0) {
-        console.log("No valid order numbers but pagination enabled, continuing...");
-        return formatSuccessResponse(
-          allCollectedOrders,
-          allCollectedOrders,
-          searchData,
-          null,
-          false // isComplete = false
-        );
-      }
-      
       return formatSuccessResponse(
-        searchData.orders, // Return search data even without completion details
-        [],
-        searchData,
-        null,
+        allOrdersFromSearch, // Return original search data
+        {
+          unfilteredOrderCount: allOrdersFromSearch.length,
+          filteredOrderCount: 0,
+          completionDetailCount: 0
+        },
         true // isComplete = true
       );
     }
 
-    // STEP 3: Call get_completion_details with all order numbers
-    console.log("STEP 3: Calling get_completion_details API...");
-    const completionResult = await fetchCompletionDetails(optimoRouteApiKey, orderNumbers);
+    // STEP 3: Make a SINGLE call to get completion details for ALL unique order numbers
+    console.log("STEP 3: Calling get_completion_details API ONCE with all unique order numbers...");
+    const completionResult = await fetchCompletionDetails(optimoRouteApiKey, uniqueOrderNumbers);
     
     if (!completionResult.success) {
       console.error("Completion API call failed:", completionResult.error);
@@ -95,7 +84,7 @@ Deno.serve(async (req) => {
     const completionData = completionResult.data;
     console.log(`Got completion details for ${completionData?.orders?.length || 0} orders`);
     
-    // STEP 4: Combine the data
+    // STEP 4: Combine search data with completion details
     console.log('STEP 4: Combining search results with completion details...');
     
     // Create a map of orderNo to completion details for faster lookups
@@ -103,34 +92,24 @@ Deno.serve(async (req) => {
     console.log(`Created completion map with ${Object.keys(completionMap).length} entries`);
     
     // Merge search data with completion data
-    const mergedOrders = mergeOrderData(searchData.orders, completionMap);
+    const mergedOrders = mergeOrderData(allOrdersFromSearch, completionMap);
     console.log(`Successfully merged data for ${mergedOrders.length} orders`);
     
-    // STEP 5: Filter orders by status on the backend (NEW STEP)
-    console.log('STEP 5: Filtering orders by status on the backend...');
-    const filteredCurrentPageOrders = filterOrdersByStatus(mergedOrders, validStatuses);
-    console.log(`After status filtering: ${filteredCurrentPageOrders.length} orders remain`);
+    // STEP 5: Filter orders by status ONCE
+    console.log('STEP 5: Filtering final merged dataset by status...');
+    const filteredOrders = filterOrdersByStatus(mergedOrders, validStatuses);
+    console.log(`After status filtering: ${filteredOrders.length} orders of ${mergedOrders.length} total remain`);
     
-    // Combine with previously collected FILTERED orders if we're paginating
-    const combinedOrders = [...allCollectedOrders, ...filteredCurrentPageOrders];
-    console.log(`Combined with previous orders: ${combinedOrders.length} total filtered orders`);
-    
-    // Handle pagination if enabled and we have more pages
-    const isComplete = !(enablePagination && searchData.after_tag);
-    
-    if (!isComplete) {
-      console.log(`This is page ${Math.ceil(allCollectedOrders.length / 500) + 1}, more pages available.`);
-      console.log(`API returned after_tag: ${searchData.after_tag}`);
-    } else {
-      console.log("Final page reached or pagination complete");
-    }
-    
+    // STEP 6: Return the FINAL filtered dataset (no need for deduplication)
+    console.log('STEP 6: Returning final filtered dataset...');
     return formatSuccessResponse(
-      combinedOrders,
-      allCollectedOrders,
-      searchData,
-      completionData,
-      isComplete
+      filteredOrders,
+      {
+        unfilteredOrderCount: allOrdersFromSearch.length,
+        filteredOrderCount: filteredOrders.length,
+        completionDetailCount: completionData?.orders?.length || 0
+      },
+      true // isComplete = true
     );
 
   } catch (error) {
@@ -138,3 +117,77 @@ Deno.serve(async (req) => {
     return formatErrorResponse(error instanceof Error ? error.message : String(error));
   }
 });
+
+/**
+ * Collects all search results by handling pagination internally
+ * Returns all orders from all pages in a single array
+ */
+async function collectAllSearchResults(apiKey: string, startDate: string, endDate: string) {
+  let allOrders: any[] = [];
+  let currentAfterTag: string | undefined = undefined;
+  let pageCount = 0;
+  let hasMorePages = true;
+  
+  console.log("Starting to collect all search results across pages");
+  
+  while (hasMorePages) {
+    pageCount++;
+    console.log(`Fetching search page ${pageCount}${currentAfterTag ? ` with after_tag: ${currentAfterTag}` : ''}`);
+    
+    // Call the search API
+    const searchResult = await fetchSearchOrders(apiKey, startDate, endDate, currentAfterTag);
+    
+    if (!searchResult.success) {
+      console.error(`Failed on page ${pageCount}:`, searchResult.error);
+      return { success: false, error: searchResult.error, orders: allOrders };
+    }
+    
+    const searchData = searchResult.data;
+    const pageOrders = searchData.orders || [];
+    console.log(`Page ${pageCount} returned ${pageOrders.length} orders`);
+    
+    // Add this page's orders to our collection
+    allOrders = [...allOrders, ...pageOrders];
+    console.log(`Total orders collected so far: ${allOrders.length}`);
+    
+    // Check if there are more pages
+    if (searchData.after_tag) {
+      currentAfterTag = searchData.after_tag;
+      console.log(`More pages available, next after_tag: ${currentAfterTag}`);
+    } else {
+      hasMorePages = false;
+      console.log("No more pages available, pagination complete");
+    }
+    
+    // Safety limit - don't fetch more than 50 pages (25,000 orders)
+    if (pageCount >= 50) {
+      console.warn("Reached maximum page limit (50), stopping pagination");
+      hasMorePages = false;
+    }
+  }
+  
+  console.log(`Pagination complete. Collected ${allOrders.length} orders across ${pageCount} pages`);
+  return { success: true, orders: allOrders };
+}
+
+/**
+ * Extracts unique order numbers from an array of search orders
+ * Handles the nested structure of the OptimoRoute API response
+ */
+function extractUniqueOrderNumbers(orders: any[]): string[] {
+  if (!orders || orders.length === 0) {
+    return [];
+  }
+  
+  // Use a Set to automatically handle uniqueness
+  const uniqueOrderNumbers = new Set<string>();
+  
+  orders.forEach(order => {
+    // Check if orderNo exists in the expected data property
+    if (order.data && order.data.orderNo) {
+      uniqueOrderNumbers.add(order.data.orderNo);
+    }
+  });
+  
+  return Array.from(uniqueOrderNumbers);
+}
