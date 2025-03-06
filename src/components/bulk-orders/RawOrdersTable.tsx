@@ -1,3 +1,4 @@
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { RawJsonViewer } from "./RawJsonViewer";
 import { format } from "date-fns";
@@ -60,18 +61,13 @@ export const RawOrdersTable = ({ orders, isLoading, originalCount }: RawOrdersTa
     return 'N/A';
   };
 
-  // This function extracts the OptimoRoute completion status
+  // This function extracts the OptimoRoute completion status - UPDATED to match WorkOrderRow
   const getCompletionStatus = (order: any) => {
-    const status = order.completion_status || 
-           order.completionDetails?.data?.status ||
-           order.completion_response?.orders?.[0]?.data?.status ||
-           order.searchResponse?.scheduleInformation?.status ||
-           order.search_response?.scheduleInformation?.status;
-           
-    if (!status) return "pending";
-    
-    // Normalize status to match what StatusBadge expects
-    return status.toLowerCase();
+    return order.completion_status || 
+           (order.completionDetails?.data?.status) ||
+           (order.completion_response?.orders?.[0]?.data?.status) ||
+           (order.searchResponse?.scheduleInformation?.status) ||
+           (order.search_response?.scheduleInformation?.status);
   };
 
   // Get the QC status (internal review status)

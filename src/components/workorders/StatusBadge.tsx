@@ -28,8 +28,10 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
     // If no completion status is provided, default to "PENDING"
     if (!completionStatus) return "PENDING";
     
-    // Handle common completion status values
-    switch (completionStatus.toLowerCase()) {
+    // Handle common completion status values - case insensitive matching
+    const status = completionStatus.toLowerCase();
+    
+    switch (status) {
       case "success":
         return "SUCCESS";
       case "failed":
@@ -50,7 +52,9 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
   const getBadgeColor = () => {
     if (!completionStatus) return "bg-slate-500";
     
-    switch (completionStatus.toLowerCase()) {
+    const status = completionStatus.toLowerCase();
+    
+    switch (status) {
       case "success":
         return "bg-slate-600";
       case "failed":
