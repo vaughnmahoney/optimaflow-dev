@@ -1,7 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { format } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
 import { BulkOrdersResponse } from "@/components/bulk-orders/types";
 
@@ -34,8 +33,6 @@ export const fetchOrders = async ({
   startDate,
   endDate,
   activeTab,
-  afterTag,
-  previousOrders = [],
   validStatuses = ['success', 'failed', 'rejected']
 }: FetchOrdersParams): Promise<{
   data: BulkOrdersResponse | null;
@@ -66,31 +63,20 @@ export const fetchOrders = async ({
     console.log(`${logMessage} with dates: ${formattedStartDate} to ${formattedEndDate}`);
     console.log(`UTC conversion: ${startDate.toISOString()} -> ${formattedStartDate}, ${endDate.toISOString()} -> ${formattedEndDate}`);
     console.log(`Requesting orders with statuses: ${validStatuses.join(', ')}`);
-    
-    if (afterTag) {
-      console.log(`Continuing with afterTag/after_tag: ${afterTag}`);
-      console.log(`Previously collected orders: ${previousOrders.length}`);
-    }
 
     // Log the request payload
     const requestPayload = {
       startDate: formattedStartDate,
       endDate: formattedEndDate,
-      enablePagination: true,
-      afterTag: afterTag,
-      allCollectedOrders: previousOrders.length, // Just log the count, not the full array
       validStatuses: validStatuses
     };
     console.log("API request payload:", requestPayload);
 
-    // Call the selected edge function with pagination support
+    // Call the selected edge function
     const { data, error } = await supabase.functions.invoke(endpoint, {
       body: {
         startDate: formattedStartDate,
         endDate: formattedEndDate,
-        enablePagination: true,
-        afterTag: afterTag,
-        allCollectedOrders: previousOrders,
         validStatuses: validStatuses
       }
     });
@@ -104,8 +90,6 @@ export const fetchOrders = async ({
     console.log("API response metadata:", {
       totalCount: data.totalCount,
       filteredCount: data.filteredCount,
-      hasAfterTag: !!data.after_tag,
-      isComplete: data.paginationProgress?.isComplete,
       ordersInResponse: data.orders?.length || 0,
       filteringMetadata: data.filteringMetadata
     });

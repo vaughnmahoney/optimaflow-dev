@@ -4,8 +4,6 @@ import { toast } from "sonner";
 import { BulkOrdersResponse } from "@/components/bulk-orders/types";
 import { fetchOrders } from "./bulk-orders/useOrdersApi";
 import { useDateRange } from "./bulk-orders/useDateRange";
-import { useOrderPagination } from "./bulk-orders/useOrderPagination";
-import { useOrderDeduplication } from "./bulk-orders/useOrderDeduplication";
 
 export const useBulkOrdersFetch = () => {
   // Date range state
@@ -16,17 +14,17 @@ export const useBulkOrdersFetch = () => {
   const [response, setResponse] = useState<BulkOrdersResponse | null>(null);
   const [activeTab, setActiveTab] = useState("with-completion"); // Default to with-completion
   const [rawData, setRawData] = useState<any>(null);
+  const [orders, setOrders] = useState<any[]>([]);
   
   // Add data flow logging state
   const [dataFlowLogging, setDataFlowLogging] = useState({
     apiRequests: 0,
     totalOrdersFromAPI: 0,
-    statusFilteredOrders: 0,
-    finalDeduplicatedOrders: 0
+    statusFilteredOrders: 0
   });
 
-  // Handle order pagination
-  const fetchOrdersData = async (afterTag?: string, previousOrders: any[] = []) => {
+  // Handle order fetch
+  const fetchOrdersData = async () => {
     if (!hasValidDateRange) {
       toast.error("Please select both start and end dates");
       return;
@@ -44,43 +42,27 @@ export const useBulkOrdersFetch = () => {
     console.log("Fetch orders data:", {
       startDate: startDate?.toISOString(),
       endDate: endDate?.toISOString(),
-      activeTab,
-      afterTag: afterTag || "none",
-      previousOrdersCount: previousOrders.length
+      activeTab
     });
     
     setIsLoading(true);
+    setResponse(null);
+    setOrders([]);
+    setRawData(null);
     
-    // Track API request count
-    setDataFlowLogging(prev => ({
-      ...prev,
-      apiRequests: prev.apiRequests + 1
-    }));
-    
-    // Only reset response when starting a new fetch (no afterTag)
-    if (!afterTag) {
-      console.log("Starting new fetch, resetting response and collected orders");
-      setResponse(null);
-      setAllCollectedOrders([]);
-      setRawData(null);
-      
-      // Reset data flow logging for new fetch
-      setDataFlowLogging({
-        apiRequests: 1, // Count this request
-        totalOrdersFromAPI: 0,
-        statusFilteredOrders: 0,
-        finalDeduplicatedOrders: 0
-      });
-    }
+    // Reset data flow logging for new fetch
+    setDataFlowLogging({
+      apiRequests: 1, // Count this request
+      totalOrdersFromAPI: 0,
+      statusFilteredOrders: 0
+    });
 
-    // Call the orders API - now with only the three required statuses
+    // Call the orders API - with only the three required statuses
     console.log("Calling fetchOrders API with filtered status list...");
     const { data, error } = await fetchOrders({
       startDate: startDate!,
       endDate: endDate!,
       activeTab,
-      afterTag,
-      previousOrders,
       validStatuses: ['success', 'failed', 'rejected'] // Only request these three statuses
     });
 
@@ -91,21 +73,36 @@ export const useBulkOrdersFetch = () => {
     if (error || !data) {
       console.error("API call returned error:", error);
       toast.error(`Error: ${error || "Unknown error"}`);
-      setShouldContinueFetching(false);
       return;
     }
     
     // Update data flow logging with API response data
     if (data.filteringMetadata) {
-      setDataFlowLogging(prev => ({
-        ...prev,
-        totalOrdersFromAPI: prev.totalOrdersFromAPI + (data.filteringMetadata?.unfilteredOrderCount || 0),
-        statusFilteredOrders: prev.statusFilteredOrders + (data.filteringMetadata?.filteredOrderCount || 0)
-      }));
+      setDataFlowLogging({
+        apiRequests: 1,
+        totalOrdersFromAPI: data.filteringMetadata?.unfilteredOrderCount || 0,
+        statusFilteredOrders: data.filteringMetadata?.filteredOrderCount || 0
+      });
     }
 
-    // Update response and check if we need to continue fetching
+    // Update response
     setResponse(data);
+    
+    // Set orders
+    if (data && data.orders) {
+      setOrders(data.orders);
+      
+      // Log status distribution
+      const statusCounts: Record<string, number> = {};
+      data.orders.forEach(order => {
+        const status = order.completion_status || 
+                     order.completionDetails?.data?.status || 
+                     order.extracted?.completionStatus || 
+                     "unknown";
+        statusCounts[status] = (statusCounts[status] || 0) + 1;
+      });
+      console.log("Status distribution in orders:", statusCounts);
+    }
     
     // Extract raw data for debugging
     if (data && data.orders) {
@@ -115,50 +112,18 @@ export const useBulkOrdersFetch = () => {
       });
     }
     
-    // Check if there are more pages to fetch
-    const hasMorePages = !!(data.after_tag || 
-                      (data.paginationProgress && data.paginationProgress.isComplete === false));
-    
-    console.log(`Setting shouldContinueFetching to: ${hasMorePages} based on API response`);
-    setShouldContinueFetching(hasMorePages);
-    
-    // Display success message if this is the last page
-    if (!hasMorePages) {
-      toast.success(`Retrieved ${data.orders?.length || 0} orders`);
-    }
+    // Display success message
+    toast.success(`Retrieved ${data.orders?.length || 0} orders`);
   };
 
-  // Pagination state management
-  const { 
-    shouldContinueFetching, 
-    setShouldContinueFetching, 
-    allCollectedOrders, 
-    setAllCollectedOrders,
-    paginationStats
-  } = useOrderPagination(response, isLoading, fetchOrdersData);
-
-  // Deduplication
-  const { deduplicatedOrders, deduplicationStats } = useOrderDeduplication(allCollectedOrders);
-  
-  // Update data flow logging when deduplicated orders change
-  useEffect(() => {
-    if (deduplicatedOrders.length > 0) {
-      setDataFlowLogging(prev => ({
-        ...prev,
-        finalDeduplicatedOrders: deduplicatedOrders.length
-      }));
-    }
-  }, [deduplicatedOrders.length]);
-
-  // Function to start the initial fetch
+  // Function to start the fetch
   const handleFetchOrders = () => {
     console.log("Starting new fetch with dates:", {
       startDate: startDate?.toISOString(),
       endDate: endDate?.toISOString(),
       activeTab
     });
-    setShouldContinueFetching(false); // Reset this flag
-    fetchOrdersData(); // Start a fresh fetch without afterTag
+    fetchOrdersData();
   };
 
   return {
@@ -175,19 +140,13 @@ export const useBulkOrdersFetch = () => {
     // Response data
     response,
     rawData,
-    rawOrders: deduplicatedOrders, // Use deduplicated orders
-    originalOrders: allCollectedOrders, // Keep original orders available for debugging
+    rawOrders: orders,
     
     // Tab state
     activeTab,
     setActiveTab,
     
-    // Pagination state
-    shouldContinueFetching,
-    
-    // Stats and diagnostics - expose these properties
-    paginationStats,
-    deduplicationStats,
+    // Stats and diagnostics
     dataFlowLogging,
     
     // Actions

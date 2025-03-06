@@ -5,7 +5,6 @@ import { EndpointTabs } from "./EndpointTabs";
 import { ApiResponseDisplay } from "./ApiResponseDisplay";
 import { RawOrdersTable } from "./RawOrdersTable";
 import { useBulkOrdersFetch } from "@/hooks/useBulkOrdersFetch";
-import { FetchProgressBar } from "./FetchProgressBar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect } from "react";
 
@@ -19,26 +18,20 @@ export const BulkOrdersForm = () => {
     response,
     rawData,
     rawOrders,
-    originalOrders,
     activeTab,
     setActiveTab,
-    shouldContinueFetching,
-    paginationStats,
-    deduplicationStats,
     dataFlowLogging,
     handleFetchOrders,
   } = useBulkOrdersFetch();
 
   // Output data flow diagnostics whenever stats update
   useEffect(() => {
-    if (originalOrders.length > 0) {
+    if (rawOrders && rawOrders.length > 0) {
       console.log("Current data flow stats:", {
-        paginationStats,
-        deduplicationStats,
         dataFlowLogging
       });
     }
-  }, [originalOrders.length, paginationStats, deduplicationStats, dataFlowLogging]);
+  }, [rawOrders, dataFlowLogging]);
 
   return (
     <div className="space-y-8">
@@ -65,18 +58,11 @@ export const BulkOrdersForm = () => {
               isLoading={isLoading}
               activeTab={activeTab}
             />
-            
-            {shouldContinueFetching && (
-              <FetchProgressBar 
-                isActive={shouldContinueFetching}
-                currentCount={originalOrders?.length || 0} 
-              />
-            )}
           </div>
         </div>
         
         {/* Diagnostic Info Card - only show if we have data */}
-        {originalOrders.length > 0 && (
+        {rawOrders && rawOrders.length > 0 && (
           <Card className="bg-slate-50">
             <CardHeader className="pb-2">
               <CardTitle className="text-base">Order Processing Diagnostics</CardTitle>
@@ -84,11 +70,8 @@ export const BulkOrdersForm = () => {
             <CardContent className="text-sm">
               <div className="space-y-1 font-mono">
                 <p>API Requests: {dataFlowLogging.apiRequests}</p>
-                <p>Pages Retrieved: {paginationStats.pagesRetrieved}</p>
                 <p>Total Orders from API: {dataFlowLogging.totalOrdersFromAPI || 'N/A'}</p>
-                <p>After Status Filtering: {originalOrders.length}</p>
-                <p>After Deduplication: {rawOrders.length}</p>
-                <p>Duplicates Removed: {deduplicationStats.removedCount} ({deduplicationStats.removedCount > 0 ? Math.round(deduplicationStats.removedCount / deduplicationStats.originalCount * 100) : 0}%)</p>
+                <p>After Status Filtering: {rawOrders.length}</p>
               </div>
             </CardContent>
           </Card>
@@ -100,7 +83,6 @@ export const BulkOrdersForm = () => {
             <RawOrdersTable 
               orders={rawOrders} 
               isLoading={isLoading}
-              originalCount={originalOrders?.length} 
             />
           </div>
         )}
