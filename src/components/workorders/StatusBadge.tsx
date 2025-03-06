@@ -8,18 +8,24 @@ interface StatusBadgeProps {
 }
 
 export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
-  // Function to get badge variant based on QC status
-  const getVariant = () => {
-    switch (status) {
-      case "approved":
-        return "success";
-      case "pending_review":
-        return "warning";
-      case "flagged":
-      case "flagged_followup":
-        return "destructive";
+  // Function to get badge color based on completion status
+  const getBadgeColor = () => {
+    if (!completionStatus) return "bg-slate-500";
+
+    switch (completionStatus.toLowerCase()) {
+      case 'success':
+        return status === "flagged" || status === "flagged_followup" 
+          ? "bg-red-500 text-white" 
+          : status === "approved" 
+            ? "bg-green-500 text-white" 
+            : "bg-yellow-500 text-white";
+      case 'on_route':
+        return "bg-blue-500 text-white";
+      case 'failed':
+      case 'rejected':
+        return "bg-red-700 text-white";
       default:
-        return "default";
+        return "bg-slate-500 text-white";
     }
   };
 
@@ -47,15 +53,13 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
 
   return (
     <div className="flex items-center gap-1.5">
-      <Badge variant={getVariant()}>
+      <Badge className={cn("capitalize font-medium", getBadgeColor())}>
         {getCompletionStatusText()}
       </Badge>
-      {completionStatus && (
-        <div 
-          className={cn("w-2.5 h-2.5 rounded-full", getQcDotColor())} 
-          title={`QC Status: ${status.replace(/_/g, " ").toUpperCase()}`}
-        />
-      )}
+      <div 
+        className={cn("w-2.5 h-2.5 rounded-full", getQcDotColor())} 
+        title={`QC Status: ${status.replace(/_/g, " ").toUpperCase()}`}
+      />
     </div>
   );
 };
