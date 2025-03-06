@@ -94,15 +94,24 @@ export const RawOrdersTable = ({ orders, isLoading, originalCount }: RawOrdersTa
 
   return (
     <div className="space-y-4">
-      {/* Show deduplication stats if originalCount is provided */}
-      {originalCount !== undefined && originalCount !== orders.length && (
-        <div className="text-sm text-muted-foreground bg-slate-50 p-2 rounded border">
-          <span className="font-medium">Deduplication applied:</span> Showing {orders.length} unique orders from {originalCount} total entries.
-          <span className="ml-2 text-green-600">
-            ({originalCount - orders.length} duplicates removed)
+      {/* Show order count and deduplication stats */}
+      <div className="text-sm bg-slate-50 p-3 rounded border">
+        <div className="flex justify-between items-center">
+          <span className="font-medium">
+            Displaying <span className="text-green-600 font-bold">{orders.length}</span> orders
           </span>
+          
+          {/* Show deduplication stats if originalCount is provided */}
+          {originalCount !== undefined && originalCount !== orders.length && (
+            <div className="text-muted-foreground">
+              <span className="font-medium">Deduplication applied:</span> {orders.length} unique orders from {originalCount} total entries.
+              <span className="ml-2 text-green-600">
+                ({originalCount - orders.length} duplicates removed)
+              </span>
+            </div>
+          )}
         </div>
-      )}
+      </div>
       
       <div className="rounded-md border">
         <Table>

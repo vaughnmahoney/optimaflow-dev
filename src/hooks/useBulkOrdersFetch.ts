@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { BulkOrdersResponse, BatchProcessingStats } from "@/components/bulk-orders/types";
@@ -16,11 +15,12 @@ export const useBulkOrdersFetch = () => {
   const [rawData, setRawData] = useState<any>(null);
   const [orders, setOrders] = useState<any[]>([]);
   
-  // Add data flow logging state with batch stats
+  // Add data flow logging state with batch stats and original count tracking
   const [dataFlowLogging, setDataFlowLogging] = useState({
     apiRequests: 0,
     totalOrdersFromAPI: 0,
     statusFilteredOrders: 0,
+    originalOrderCount: 0, // Track original count before deduplication
     batchStats: null as BatchProcessingStats | null
   });
 
@@ -56,6 +56,7 @@ export const useBulkOrdersFetch = () => {
       apiRequests: 1, // Count this request
       totalOrdersFromAPI: 0,
       statusFilteredOrders: 0,
+      originalOrderCount: 0,
       batchStats: null
     });
 
@@ -83,6 +84,7 @@ export const useBulkOrdersFetch = () => {
       ...prev,
       totalOrdersFromAPI: data.filteringMetadata?.unfilteredOrderCount || 0,
       statusFilteredOrders: data.filteringMetadata?.filteredOrderCount || 0,
+      originalOrderCount: data.orders?.length || 0, // Store original count before any client-side filtering
       batchStats: data.batchStats || null
     }));
 
