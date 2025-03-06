@@ -3,36 +3,28 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
 interface FetchButtonProps {
-  isLoading: boolean;
-  isDisabled: boolean;
   onFetch: () => void;
+  isDisabled: boolean;
+  isLoading: boolean;
   activeTab?: string;
 }
 
-export const FetchButton = ({ 
-  isLoading, 
-  isDisabled, 
+export const FetchButton = ({
   onFetch,
+  isDisabled,
+  isLoading,
   activeTab = "with-completion"
 }: FetchButtonProps) => {
+  const buttonText = isLoading ? "Loading..." : "Fetch Orders";
+  
   return (
-    <Button 
-      className="mt-4" 
-      onClick={onFetch} 
-      disabled={isDisabled}
+    <Button
+      onClick={onFetch}
+      disabled={isDisabled || isLoading}
+      className="min-w-[120px]"
     >
-      {isLoading ? (
-        <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          {activeTab === "search-only" 
-            ? "Fetching Orders (with pagination)..." 
-            : "Fetching Completed Orders (with batching)..."}
-        </>
-      ) : (
-        activeTab === "search-only" 
-          ? "Fetch All Orders" 
-          : "Fetch All Completed Orders"
-      )}
+      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+      {buttonText}
     </Button>
   );
 };

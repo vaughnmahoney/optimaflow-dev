@@ -56,30 +56,31 @@ export const BulkOrdersWorkflow = () => {
           <div className="space-y-4">
             <DateRangePicker
               startDate={startDate}
-              setStartDate={setStartDate}
               endDate={endDate}
-              setEndDate={setEndDate}
+              onStartDateChange={setStartDate}
+              onEndDateChange={setEndDate}
             />
             
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
               <EndpointTabs
                 activeTab={activeTab}
-                setActiveTab={setActiveTab}
+                onTabChange={setActiveTab}
               />
               
               <div className="ml-auto flex items-center gap-2">
                 <FetchButton 
                   isLoading={isLoading} 
-                  handleFetchOrders={handleFetchOrders}
+                  onFetch={handleFetchOrders}
                   isDisabled={!startDate || !endDate}
+                  activeTab={activeTab}
                 />
               </div>
             </div>
             
-            {isLoading && (
+            {isLoading && dataFlowLogging.batchStats && (
               <FetchProgressBar 
-                isLoading={isLoading}
-                batchStats={dataFlowLogging.batchStats}
+                processing={isLoading}
+                stats={dataFlowLogging.batchStats}
               />
             )}
           </div>

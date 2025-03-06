@@ -96,6 +96,7 @@ export const BulkOrdersForm = () => {
             <RawOrdersTable 
               orders={rawOrders} 
               isLoading={isLoading}
+              originalCount={dataFlowLogging.originalOrderCount}
             />
           </div>
         )}

@@ -1,30 +1,27 @@
 
 import { Progress } from "@/components/ui/progress";
+import { BatchProcessingStats } from "./types";
 
 interface FetchProgressBarProps {
-  isActive: boolean;
-  currentCount: number;
+  processing: boolean;
+  stats: BatchProcessingStats | null;
 }
 
-export const FetchProgressBar = ({ 
-  isActive,
-  currentCount
-}: FetchProgressBarProps) => {
-  if (!isActive) {
-    return null;
-  }
-
+export const FetchProgressBar = ({ processing, stats }: FetchProgressBarProps) => {
+  if (!processing || !stats) return null;
+  
+  const { completedBatches, totalBatches } = stats;
+  const progress = Math.round((completedBatches / totalBatches) * 100);
+  
   return (
-    <div className="my-4 space-y-2">
-      <div className="flex justify-between text-sm">
+    <div className="space-y-2">
+      <div className="flex justify-between text-xs text-muted-foreground">
+        <span>Processing orders...</span>
         <span>
-          Fetching orders (pagination in progress)...
-        </span>
-        <span>
-          {currentCount} orders retrieved so far
+          {completedBatches}/{totalBatches} batches ({progress}%)
         </span>
       </div>
-      <Progress value={undefined} />
+      <Progress value={progress} className="h-2" />
     </div>
   );
 };
