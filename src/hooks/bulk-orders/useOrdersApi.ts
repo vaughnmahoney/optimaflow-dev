@@ -65,11 +65,23 @@ export const fetchOrders = async ({
     
     console.log(`${logMessage} with dates: ${formattedStartDate} to ${formattedEndDate}`);
     console.log(`UTC conversion: ${startDate.toISOString()} -> ${formattedStartDate}, ${endDate.toISOString()} -> ${formattedEndDate}`);
+    console.log(`Requesting orders with statuses: ${validStatuses.join(', ')}`);
     
     if (afterTag) {
       console.log(`Continuing with afterTag/after_tag: ${afterTag}`);
       console.log(`Previously collected orders: ${previousOrders.length}`);
     }
+
+    // Log the request payload
+    const requestPayload = {
+      startDate: formattedStartDate,
+      endDate: formattedEndDate,
+      enablePagination: true,
+      afterTag: afterTag,
+      allCollectedOrders: previousOrders.length, // Just log the count, not the full array
+      validStatuses: validStatuses
+    };
+    console.log("API request payload:", requestPayload);
 
     // Call the selected edge function with pagination support
     const { data, error } = await supabase.functions.invoke(endpoint, {
@@ -88,7 +100,25 @@ export const fetchOrders = async ({
       return { data: null, error: error.message };
     }
 
-    console.log("API response:", data);
+    // Log response metadata
+    console.log("API response metadata:", {
+      totalCount: data.totalCount,
+      filteredCount: data.filteredCount,
+      hasAfterTag: !!data.after_tag,
+      isComplete: data.paginationProgress?.isComplete,
+      ordersInResponse: data.orders?.length || 0,
+      filteringMetadata: data.filteringMetadata
+    });
+
+    // Calculate and log filtering ratio if we have the data
+    if (data.filteringMetadata) {
+      const { unfilteredOrderCount, filteredOrderCount } = data.filteringMetadata;
+      if (unfilteredOrderCount && filteredOrderCount) {
+        const filterRatio = (filteredOrderCount / unfilteredOrderCount * 100).toFixed(1);
+        console.log(`Filtering ratio: ${filterRatio}% of orders passed status filtering (${filteredOrderCount}/${unfilteredOrderCount})`);
+      }
+    }
+
     return { data, error: null };
   } catch (error) {
     console.error("Exception fetching orders:", error);

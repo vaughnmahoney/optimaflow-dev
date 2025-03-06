@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { BulkOrdersResponse } from "@/components/bulk-orders/types";
 import { fetchOrders } from "./bulk-orders/useOrdersApi";
