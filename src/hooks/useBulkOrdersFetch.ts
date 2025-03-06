@@ -16,6 +16,14 @@ export const useBulkOrdersFetch = () => {
   const [response, setResponse] = useState<BulkOrdersResponse | null>(null);
   const [activeTab, setActiveTab] = useState("with-completion"); // Default to with-completion
   const [rawData, setRawData] = useState<any>(null);
+  
+  // Add data flow logging state
+  const [dataFlowLogging, setDataFlowLogging] = useState({
+    apiRequests: 0,
+    totalOrdersFromAPI: 0,
+    statusFilteredOrders: 0,
+    finalDeduplicatedOrders: 0
+  });
 
   // Handle order pagination
   const fetchOrdersData = async (afterTag?: string, previousOrders: any[] = []) => {
@@ -43,12 +51,26 @@ export const useBulkOrdersFetch = () => {
     
     setIsLoading(true);
     
+    // Track API request count
+    setDataFlowLogging(prev => ({
+      ...prev,
+      apiRequests: prev.apiRequests + 1
+    }));
+    
     // Only reset response when starting a new fetch (no afterTag)
     if (!afterTag) {
       console.log("Starting new fetch, resetting response and collected orders");
       setResponse(null);
       setAllCollectedOrders([]);
       setRawData(null);
+      
+      // Reset data flow logging for new fetch
+      setDataFlowLogging({
+        apiRequests: 1, // Count this request
+        totalOrdersFromAPI: 0,
+        statusFilteredOrders: 0,
+        finalDeduplicatedOrders: 0
+      });
     }
 
     // Call the orders API - now with only the three required statuses
@@ -71,6 +93,15 @@ export const useBulkOrdersFetch = () => {
       toast.error(`Error: ${error || "Unknown error"}`);
       setShouldContinueFetching(false);
       return;
+    }
+    
+    // Update data flow logging with API response data
+    if (data.filteringMetadata) {
+      setDataFlowLogging(prev => ({
+        ...prev,
+        totalOrdersFromAPI: prev.totalOrdersFromAPI + (data.filteringMetadata?.unfilteredOrderCount || 0),
+        statusFilteredOrders: prev.statusFilteredOrders + (data.filteringMetadata?.filteredOrderCount || 0)
+      }));
     }
 
     // Update response and check if we need to continue fetching
@@ -102,11 +133,22 @@ export const useBulkOrdersFetch = () => {
     shouldContinueFetching, 
     setShouldContinueFetching, 
     allCollectedOrders, 
-    setAllCollectedOrders 
+    setAllCollectedOrders,
+    paginationStats
   } = useOrderPagination(response, isLoading, fetchOrdersData);
 
   // Deduplication
   const { deduplicatedOrders, deduplicationStats } = useOrderDeduplication(allCollectedOrders);
+  
+  // Update data flow logging when deduplicated orders change
+  useEffect(() => {
+    if (deduplicatedOrders.length > 0) {
+      setDataFlowLogging(prev => ({
+        ...prev,
+        finalDeduplicatedOrders: deduplicatedOrders.length
+      }));
+    }
+  }, [deduplicatedOrders.length]);
 
   // Function to start the initial fetch
   const handleFetchOrders = () => {
@@ -142,6 +184,11 @@ export const useBulkOrdersFetch = () => {
     
     // Pagination state
     shouldContinueFetching,
+    
+    // Stats and diagnostics - expose these properties
+    paginationStats,
+    deduplicationStats,
+    dataFlowLogging,
     
     // Actions
     handleFetchOrders,

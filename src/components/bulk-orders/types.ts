@@ -13,6 +13,11 @@ export interface BulkOrdersResponse {
     searchSample?: any;
     completionSample?: any;
   };
+  filteringMetadata?: {
+    unfilteredOrderCount: number;
+    filteredOrderCount: number;
+    completionDetailCount?: number;
+  };
   deduplicationStats?: {
     originalCount: number;
     uniqueCount: number;
