@@ -1,12 +1,20 @@
+
 import { WorkOrder } from "@/components/workorders/types";
 
 export const useBulkOrderStatus = () => {
   // Extract completion status exactly like WorkOrderRow does
   const getCompletionStatus = (order: any): string | undefined => {
-    return order.completion_status || 
+    const status = order.completion_status || 
            (order.completionDetails?.data?.status) ||
            (order.completion_response?.orders?.[0]?.data?.status) ||
            (order.search_response?.scheduleInformation?.status);
+    
+    // Return standardized completion status
+    if (status) {
+      return status.toLowerCase();
+    }
+    
+    return undefined;
   };
 
   // Get QC status (internal review status) exactly like WorkOrderRow

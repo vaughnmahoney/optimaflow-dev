@@ -5,6 +5,10 @@ import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/workorders/StatusBadge";
 import { useBulkOrderStatus } from "@/hooks/bulk-orders/useBulkOrderStatus";
+import { Button } from "@/components/ui/button";
+import { useBulkOrderImport } from "@/hooks/bulk-orders/useBulkOrderImport";
+import { Loader2, Database, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface RawOrdersTableProps {
   orders: any[];
@@ -14,6 +18,7 @@ interface RawOrdersTableProps {
 
 export const RawOrdersTable = ({ orders, isLoading, originalCount }: RawOrdersTableProps) => {
   const { getCompletionStatus, getQcStatus } = useBulkOrderStatus();
+  const { importOrders, isImporting, importResult } = useBulkOrderImport();
 
   if (isLoading) {
     return <div className="py-8 text-center">Loading orders...</div>;
@@ -68,11 +73,15 @@ export const RawOrdersTable = ({ orders, isLoading, originalCount }: RawOrdersTa
     return !!(order.completionDetails?.data?.form?.images?.length > 0);
   };
 
+  const handleImport = async () => {
+    await importOrders(orders);
+  };
+
   return (
     <div className="space-y-4">
       {/* Stats section */}
       <div className="text-sm bg-slate-50 p-3 rounded border">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <span className="font-medium">
             Displaying <span className="text-green-600 font-bold">{orders.length}</span> orders
           </span>
@@ -85,8 +94,43 @@ export const RawOrdersTable = ({ orders, isLoading, originalCount }: RawOrdersTa
               </span>
             </div>
           )}
+          
+          <Button 
+            className="ml-auto"
+            onClick={handleImport}
+            disabled={isImporting}
+          >
+            {isImporting ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Importing...
+              </>
+            ) : (
+              <>
+                <Database className="h-4 w-4 mr-2" />
+                Save to Database
+              </>
+            )}
+          </Button>
         </div>
       </div>
+      
+      {/* Import result alert */}
+      {importResult && (
+        <Alert variant={importResult.success ? "default" : "destructive"} className="mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>
+            {importResult.success 
+              ? "Import Successful" 
+              : "Import Completed with Issues"}
+          </AlertTitle>
+          <AlertDescription>
+            {importResult.imported} orders imported successfully, 
+            {importResult.duplicates} duplicates skipped,
+            {importResult.errors} errors encountered.
+          </AlertDescription>
+        </Alert>
+      )}
       
       <div className="rounded-md border">
         <Table>
