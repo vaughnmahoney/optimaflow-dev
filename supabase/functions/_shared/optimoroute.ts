@@ -88,8 +88,8 @@ export function mergeOrderData(orders: any[], completionMap: Record<string, any>
 }
 
 /**
- * Filters orders by status values provided in validStatuses
- * Checks for status in multiple possible locations within the order object
+ * Improved version of filterOrdersByStatus that handles all possible status locations
+ * and correctly handles case-insensitive comparison
  */
 export function filterOrdersByStatus(orders: any[], validStatuses: string[] = ['success', 'failed', 'rejected']): any[] {
   if (!orders || !Array.isArray(orders)) {
@@ -97,28 +97,43 @@ export function filterOrdersByStatus(orders: any[], validStatuses: string[] = ['
     return [];
   }
   
-  console.log(`Filtering ${orders.length} orders by status: ${validStatuses.join(', ')}`);
+  // Convert valid statuses to lowercase for case-insensitive comparison
+  const normalizedValidStatuses = validStatuses.map(status => status.toLowerCase());
+  
+  console.log(`Filtering ${orders.length} orders by status: ${normalizedValidStatuses.join(', ')}`);
   
   // Track status distribution for logging
   const statusCounts: Record<string, number> = {};
   const filteredOrders = orders.filter(order => {
-    // Look for status in multiple possible locations
-    const status = 
-      order.completion_status || 
-      order.completionDetails?.data?.status || 
-      order.extracted?.completionStatus ||
-      (order.completion_response?.orders?.[0]?.data?.status) ||
-      "unknown";
+    // Enhanced logic to find status in all possible locations
+    let status = "unknown";
+    
+    // Check all possible locations where status might be stored
+    if (order.completion_status) {
+      status = order.completion_status;
+    } else if (order.completionDetails?.data?.status) {
+      status = order.completionDetails.data.status;
+    } else if (order.extracted?.completionStatus) {
+      status = order.extracted.completionStatus;
+    } else if (order.completion_response?.orders?.[0]?.data?.status) {
+      status = order.completion_response.orders[0].data.status;
+    } else if (order.data?.status) {
+      // Direct status in data (might be in completion details)
+      status = order.data.status;
+    }
+    
+    // Normalize status to lowercase for comparison
+    const normalizedStatus = String(status).toLowerCase();
     
     // Count statuses for logging
-    statusCounts[status] = (statusCounts[status] || 0) + 1;
+    statusCounts[normalizedStatus] = (statusCounts[normalizedStatus] || 0) + 1;
     
-    // Keep only orders with status in validStatuses array
-    return validStatuses.includes(status.toLowerCase());
+    // Keep only orders with status in normalizedValidStatuses array
+    return normalizedValidStatuses.includes(normalizedStatus);
   });
   
   console.log("Status distribution in data:", JSON.stringify(statusCounts, null, 2));
-  console.log(`After filtering: ${filteredOrders.length} of ${orders.length} orders match valid statuses`);
+  console.log(`After filtering: ${filteredOrders.length} of ${orders.length} orders match valid statuses (${normalizedValidStatuses.join(', ')})`);
   
   return filteredOrders;
 }

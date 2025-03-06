@@ -9,19 +9,24 @@ interface ApiResponseDisplayProps {
 export const ApiResponseDisplay = ({ response }: ApiResponseDisplayProps) => {
   if (!response) return null;
 
+  // Ensure we have consistent values for displaying counts
+  const totalCount = response.totalCount || response.filteringMetadata?.unfilteredOrderCount;
+  const filteredCount = response.filteredCount || response.filteringMetadata?.filteredOrderCount;
+  const isComplete = response.isComplete || response.paginationProgress?.isComplete;
+  
   return (
     <Card>
       <CardHeader>
         <CardTitle>
           API Response 
-          {response.paginationProgress?.isComplete && (
-            response.filteredCount !== undefined && response.totalCount !== undefined ? (
-              ` (${response.filteredCount} completed orders of ${response.totalCount} total)`
-            ) : response.totalCount !== undefined ? (
-              ` (${response.totalCount} orders)`
+          {isComplete && (
+            filteredCount !== undefined && totalCount !== undefined ? (
+              ` (${filteredCount} completed orders of ${totalCount} total)`
+            ) : totalCount !== undefined ? (
+              ` (${totalCount} orders)`
             ) : null
           )}
-          {!response.paginationProgress?.isComplete && response.paginationProgress?.totalOrdersRetrieved !== undefined && (
+          {!isComplete && response.paginationProgress?.totalOrdersRetrieved !== undefined && (
             ` (Retrieving data... ${response.paginationProgress.totalOrdersRetrieved} orders so far)`
           )}
           {response.after_tag && (
@@ -55,10 +60,10 @@ export const ApiResponseDisplay = ({ response }: ApiResponseDisplayProps) => {
                   ? `Search API Response: ${response.searchResponse.code || 'Unknown error'} ${response.searchResponse.message ? `- ${response.searchResponse.message}` : ''}`
                   : response.completionResponse && response.completionResponse.success === false
                   ? `Completion API Response: ${response.completionResponse.code || 'Unknown error'} ${response.completionResponse.message ? `- ${response.completionResponse.message}` : ''}`
-                  : response.paginationProgress?.isComplete
-                    ? response.filteredCount !== undefined 
-                      ? `Successfully retrieved ${response.filteredCount} completed orders with status "success" (filtered from ${response.totalCount} total orders)`
-                      : `Successfully retrieved ${response.totalCount || 0} orders`
+                  : isComplete
+                    ? filteredCount !== undefined 
+                      ? `Successfully retrieved ${filteredCount} orders with statuses: "success", "failed", "rejected" (filtered from ${totalCount} total orders)`
+                      : `Successfully retrieved ${totalCount || 0} orders`
                     : `Data retrieval in progress... (${response.paginationProgress?.totalOrdersRetrieved || 0} orders so far)`}
               </p>
             </div>

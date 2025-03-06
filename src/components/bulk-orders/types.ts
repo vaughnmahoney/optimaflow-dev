@@ -15,9 +15,17 @@ export interface BulkOrdersResponse {
     filteredOrderCount: number;
     completionDetailCount?: number;
   };
+  // Add these optional properties to match what ApiResponseDisplay.tsx expects
+  paginationProgress?: {
+    isComplete?: boolean;
+    totalOrdersRetrieved?: number;
+  };
+  after_tag?: string;
+  searchResponse?: any;
+  completionResponse?: any;
 }
 
 export interface CompletionStatus {
-  status: 'success' | 'failed' | string;
+  status: 'success' | 'failed' | 'rejected' | string;
   timestamp?: string;
 }
