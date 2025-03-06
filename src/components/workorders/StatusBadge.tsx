@@ -10,11 +10,15 @@ interface StatusBadgeProps {
 export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
   // Function to get badge color based on completion status
   const getBadgeColor = () => {
-    if (!completionStatus || completionStatus === 'N/A') return "bg-slate-500";
+    if (!completionStatus) return "bg-slate-500";
 
     switch (completionStatus.toLowerCase()) {
       case 'success':
-        return "bg-green-500 text-white";
+        return status === "flagged" || status === "flagged_followup" 
+          ? "bg-red-500 text-white" 
+          : status === "approved" 
+            ? "bg-green-500 text-white" 
+            : "bg-yellow-500 text-white";
       case 'on_route':
         return "bg-blue-500 text-white";
       case 'failed':
@@ -42,10 +46,7 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
 
   // Function to get text for the OptimoRoute completion status
   const getCompletionStatusText = () => {
-    // Special case handling - if completionStatus is 'N/A', display it
-    if (!completionStatus || completionStatus === 'N/A') {
-      return "N/A";
-    }
+    if (!completionStatus) return status.replace(/_/g, " ").toUpperCase();
     
     return completionStatus.toUpperCase();
   };
