@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useBulkOrderImport } from "@/hooks/bulk-orders/useBulkOrderImport";
 import { Loader2, Database, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
 
 interface RawOrdersTableProps {
   orders: any[];
@@ -18,7 +19,7 @@ interface RawOrdersTableProps {
 
 export const RawOrdersTable = ({ orders, isLoading, originalCount }: RawOrdersTableProps) => {
   const { getCompletionStatus, getQcStatus } = useBulkOrderStatus();
-  const { importOrders, isImporting, importResult } = useBulkOrderImport();
+  const { importOrders, isImporting, importResult, importProgress } = useBulkOrderImport();
 
   if (isLoading) {
     return <div className="py-8 text-center">Loading orders...</div>;
@@ -114,6 +115,17 @@ export const RawOrdersTable = ({ orders, isLoading, originalCount }: RawOrdersTa
           </Button>
         </div>
       </div>
+      
+      {/* Import progress indicator */}
+      {isImporting && importProgress.total > 0 && (
+        <div className="space-y-2">
+          <div className="flex justify-between text-sm">
+            <span>Importing orders in batches...</span>
+            <span>{importProgress.current} of {importProgress.total} ({importProgress.percentage}%)</span>
+          </div>
+          <Progress value={importProgress.percentage} className="h-2" />
+        </div>
+      )}
       
       {/* Import result alert */}
       {importResult && (
