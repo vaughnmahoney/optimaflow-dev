@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
     // If no orders found across all pages, return empty result
     if (allOrdersFromSearch.length === 0) {
       console.log("No orders found in search results");
-      return formatSuccessResponse(
+      const formattedResponse = formatSuccessResponse(
         [], // Empty orders array
         {
           unfilteredOrderCount: 0,
@@ -51,6 +51,7 @@ Deno.serve(async (req) => {
         },
         true // isComplete = true
       );
+      return formattedResponse.response;
     }
 
     // STEP 2: Extract unique order numbers from ALL collected search results
@@ -61,7 +62,7 @@ Deno.serve(async (req) => {
     // If no valid order numbers found, return search data without completion details
     if (uniqueOrderNumbers.length === 0) {
       console.log('No valid order numbers found in search results');
-      return formatSuccessResponse(
+      const formattedResponse = formatSuccessResponse(
         allOrdersFromSearch, // Return original search data
         {
           unfilteredOrderCount: allOrdersFromSearch.length,
@@ -70,6 +71,7 @@ Deno.serve(async (req) => {
         },
         true // isComplete = true
       );
+      return formattedResponse.response;
     }
 
     // STEP 3: Make a BATCHED call to get completion details for ALL unique order numbers
@@ -113,8 +115,8 @@ Deno.serve(async (req) => {
     // STEP 6: Return the FINAL filtered dataset with batch stats
     console.log('STEP 6: Returning final filtered dataset with batch stats...');
     
-    // Add batch stats to the response
-    const responseWithBatchStats = formatSuccessResponse(
+    // Use the new response formatter to get the response data object
+    const formattedResponse = formatSuccessResponse(
       filteredOrders,
       {
         unfilteredOrderCount: allOrdersFromSearch.length,
@@ -124,11 +126,11 @@ Deno.serve(async (req) => {
       true // isComplete = true
     );
     
-    // Add batch stats to the response data
-    const responseData = JSON.parse(responseWithBatchStats.body);
+    // Add batch stats to the data object
+    const responseData = formattedResponse.data;
     responseData.batchStats = batchStats;
     
-    // Return the updated response
+    // Return the response with the updated data
     return new Response(
       JSON.stringify(responseData),
       {

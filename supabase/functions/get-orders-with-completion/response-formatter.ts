@@ -25,20 +25,27 @@ export function formatSuccessResponse(
     isComplete
   }, null, 2));
   
-  return new Response(
-    JSON.stringify({
-      success: true,
-      orders,
-      totalCount: filteringMetadata.unfilteredOrderCount,
-      filteredCount: filteringMetadata.filteredOrderCount,
-      isComplete,
-      rawDataSamples,
-      filteringMetadata
-    }),
-    { 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-    }
-  );
+  // Create response data object
+  const responseData = {
+    success: true,
+    orders,
+    totalCount: filteringMetadata.unfilteredOrderCount,
+    filteredCount: filteringMetadata.filteredOrderCount,
+    isComplete,
+    rawDataSamples,
+    filteringMetadata
+  };
+  
+  // Return both the data object and a formatted Response object
+  return {
+    data: responseData,
+    response: new Response(
+      JSON.stringify(responseData),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    )
+  };
 }
 
 // Format an error response with proper status code
