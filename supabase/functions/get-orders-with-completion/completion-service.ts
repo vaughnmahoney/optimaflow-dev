@@ -1,7 +1,7 @@
 
 import { baseUrl, endpoints } from "../_shared/optimoroute.ts";
 
-// Handle the get_completion_details API call
+// Handle the get_completion_details API call using GET method
 export async function fetchCompletionDetails(apiKey: string, orderNumbers: string[]) {
   if (!orderNumbers || orderNumbers.length === 0) {
     console.log("No order numbers provided for completion details");
@@ -15,27 +15,25 @@ export async function fetchCompletionDetails(apiKey: string, orderNumbers: strin
   console.log("First few order numbers:", orderNumbers.slice(0, 5));
   
   try {
-    console.log(`Making request to ${baseUrl}${endpoints.completion}`);
+    // Build the URL with repeated orderNo query parameters
+    let url = `${baseUrl}${endpoints.completion}?key=${apiKey}`;
     
-    // Transform the order numbers into the format expected by the API
-    // Ensure each orderNo is properly wrapped in an object
-    const formattedOrders = orderNumbers.map(orderNo => ({ orderNo }));
+    // Add each order number as a separate query parameter
+    orderNumbers.forEach(orderNo => {
+      url += `&orderNo=${encodeURIComponent(orderNo)}`;
+    });
     
-    // Log the actual request payload we're sending for debugging
-    console.log("Request payload:", JSON.stringify({ orders: formattedOrders }, null, 2));
+    // Log the request URL (truncated for readability)
+    const truncatedUrl = url.length > 150 ? 
+      `${url.substring(0, 150)}...&orderNo=X (truncated, ${orderNumbers.length} total parameters)` : 
+      url;
+    console.log(`Making GET request to: ${truncatedUrl}`);
     
-    const response = await fetch(
-      `${baseUrl}${endpoints.completion}?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          orders: formattedOrders  // Send array of objects with orderNo property
-        })
-      }
-    );
+    // Make the GET request
+    const response = await fetch(url, {
+      method: 'GET', // Changed from POST to GET
+      // No headers or body needed for GET request
+    });
     
     console.log(`Completion API response status: ${response.status}`);
     
