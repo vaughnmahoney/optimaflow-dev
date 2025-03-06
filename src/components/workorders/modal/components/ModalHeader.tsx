@@ -14,6 +14,14 @@ export const ModalHeader = ({
   onClose 
 }: ModalHeaderProps) => {
   const driverName = workOrder.search_response?.scheduleInformation?.driverName || 'No Driver Assigned';
+  
+  // Extract the completion status from the appropriate place in the order object
+  const getCompletionStatus = (order: WorkOrder): string | undefined => {
+    return order.completion_status || 
+           (order.completionDetails?.data?.status) ||
+           (order.completion_response?.orders?.[0]?.data?.status) ||
+           (order.search_response?.scheduleInformation?.status);
+  };
 
   return (
     <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-950 border-b">
@@ -24,7 +32,10 @@ export const ModalHeader = ({
         <div className="text-left">
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-semibold">Order #{workOrder.order_no}</h2>
-            <StatusBadge status={workOrder.status || "pending_review"} />
+            <StatusBadge 
+              status={workOrder.status || "pending_review"} 
+              completionStatus={getCompletionStatus(workOrder)}
+            />
           </div>
           <p className="text-sm text-muted-foreground">
             Driver: {driverName}

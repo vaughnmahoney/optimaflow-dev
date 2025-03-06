@@ -35,6 +35,14 @@ export const WorkOrderRow = ({ workOrder, onStatusUpdate, onImageView, onDelete 
     return 'No Driver Name';
   };
 
+  // Extract the completion status from the appropriate place in the order object
+  const getCompletionStatus = (order: WorkOrder): string | undefined => {
+    return order.completion_status || 
+           (order.completionDetails?.data?.status) ||
+           (order.completion_response?.orders?.[0]?.data?.status) ||
+           (order.search_response?.scheduleInformation?.status);
+  };
+
   return (
     <TableRow>
       <TableCell>{workOrder.order_no || 'N/A'}</TableCell>
@@ -48,7 +56,10 @@ export const WorkOrderRow = ({ workOrder, onStatusUpdate, onImageView, onDelete 
         {getLocationName(workOrder)}
       </TableCell>
       <TableCell>
-        <StatusBadge status={workOrder.status || 'pending_review'} />
+        <StatusBadge 
+          status={workOrder.status || 'pending_review'} 
+          completionStatus={getCompletionStatus(workOrder)}
+        />
       </TableCell>
       <TableCell>
         <div className="flex items-center space-x-2">

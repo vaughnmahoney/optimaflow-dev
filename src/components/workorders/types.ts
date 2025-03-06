@@ -88,6 +88,7 @@ export interface WorkOrderCompletionResponse {
         };
         note?: string;
       };
+      status?: string;
       startTime?: {
         localTime: string;
       };
@@ -122,6 +123,15 @@ export interface WorkOrder {
   completion_response?: WorkOrderCompletionResponse;
   tracking_url?: string;
   completion_status?: string;
+  completionDetails?: {
+    data?: {
+      status?: string;
+      form?: {
+        images?: Array<any>;
+        note?: string;
+      };
+    };
+  };
 }
 
 export interface WorkOrderListProps {
