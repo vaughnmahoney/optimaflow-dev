@@ -38,15 +38,34 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
         return "REJECTED";
       case "on_route":
         return "ON ROUTE";
+      case "pending":
+        return "PENDING";
       default:
         // For any other value, return it in uppercase
         return completionStatus.toUpperCase();
     }
   };
 
+  // Function to get badge background color based on completion status
+  const getBadgeColor = () => {
+    if (!completionStatus) return "bg-slate-500";
+    
+    switch (completionStatus.toLowerCase()) {
+      case "success":
+        return "bg-slate-600";
+      case "failed":
+      case "rejected":
+        return "bg-slate-700";
+      case "on_route":
+        return "bg-blue-600";
+      default:
+        return "bg-slate-500";
+    }
+  };
+
   return (
     <div className="relative inline-flex">
-      <Badge className="bg-slate-500 text-white pr-5">
+      <Badge className={`${getBadgeColor()} text-white pr-5`}>
         {getCompletionStatusText()}
       </Badge>
       <div 

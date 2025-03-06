@@ -1,4 +1,3 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { RawJsonViewer } from "./RawJsonViewer";
 import { format } from "date-fns";
@@ -61,19 +60,29 @@ export const RawOrdersTable = ({ orders, isLoading, originalCount }: RawOrdersTa
     return 'N/A';
   };
 
-  // Get the completion status from OptimoRoute - Updated to match WorkOrderRow implementation
+  // This function extracts the OptimoRoute completion status
   const getCompletionStatus = (order: any) => {
-    return order.completion_status || 
-           (order.completionDetails?.data?.status) ||
-           (order.completion_response?.orders?.[0]?.data?.status) ||
-           (order.searchResponse?.scheduleInformation?.status) ||
-           (order.search_response?.scheduleInformation?.status);
+    const status = order.completion_status || 
+           order.completionDetails?.data?.status ||
+           order.completion_response?.orders?.[0]?.data?.status ||
+           order.searchResponse?.scheduleInformation?.status ||
+           order.search_response?.scheduleInformation?.status;
+           
+    if (!status) return "pending";
+    
+    // Normalize status to match what StatusBadge expects
+    return status.toLowerCase();
   };
 
   // Get the QC status (internal review status)
   const getQcStatus = (order: any) => {
-    // Default to pending_review for newly imported orders
-    return order.status || "pending_review";
+    // If there's an explicit status property, use it
+    if (order.status) {
+      return order.status;
+    }
+    
+    // For new imports without status, use pending_review
+    return "pending_review";
   };
 
   const hasImages = (order: any) => {
