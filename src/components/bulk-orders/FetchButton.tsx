@@ -26,7 +26,7 @@ export const FetchButton = ({
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           {activeTab === "search-only" 
             ? "Fetching Orders (with pagination)..." 
-            : "Fetching Completed Orders (with pagination)..."}
+            : "Fetching Completed Orders (with batching)..."}
         </>
       ) : (
         activeTab === "search-only" 

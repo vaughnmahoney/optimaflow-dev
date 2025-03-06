@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { BulkOrdersResponse } from "@/components/bulk-orders/types";
+import { BulkOrdersResponse, BatchProcessingStats } from "@/components/bulk-orders/types";
 import { fetchOrders } from "./bulk-orders/useOrdersApi";
 import { useDateRange } from "./bulk-orders/useDateRange";
 
@@ -16,11 +16,12 @@ export const useBulkOrdersFetch = () => {
   const [rawData, setRawData] = useState<any>(null);
   const [orders, setOrders] = useState<any[]>([]);
   
-  // Add data flow logging state
+  // Add data flow logging state with batch stats
   const [dataFlowLogging, setDataFlowLogging] = useState({
     apiRequests: 0,
     totalOrdersFromAPI: 0,
-    statusFilteredOrders: 0
+    statusFilteredOrders: 0,
+    batchStats: null as BatchProcessingStats | null
   });
 
   // Handle order fetch
@@ -54,7 +55,8 @@ export const useBulkOrdersFetch = () => {
     setDataFlowLogging({
       apiRequests: 1, // Count this request
       totalOrdersFromAPI: 0,
-      statusFilteredOrders: 0
+      statusFilteredOrders: 0,
+      batchStats: null
     });
 
     // Call the orders API - with only the three required statuses
@@ -76,14 +78,13 @@ export const useBulkOrdersFetch = () => {
       return;
     }
     
-    // Update data flow logging with API response data
-    if (data.filteringMetadata) {
-      setDataFlowLogging({
-        apiRequests: 1,
-        totalOrdersFromAPI: data.filteringMetadata?.unfilteredOrderCount || 0,
-        statusFilteredOrders: data.filteringMetadata?.filteredOrderCount || 0
-      });
-    }
+    // Update data flow logging with API response data and batch stats
+    setDataFlowLogging(prev => ({
+      ...prev,
+      totalOrdersFromAPI: data.filteringMetadata?.unfilteredOrderCount || 0,
+      statusFilteredOrders: data.filteringMetadata?.filteredOrderCount || 0,
+      batchStats: data.batchStats || null
+    }));
 
     // Update response
     setResponse(data);
@@ -108,7 +109,8 @@ export const useBulkOrdersFetch = () => {
     if (data && data.orders) {
       setRawData({
         orders: data.orders,
-        samples: data.rawDataSamples
+        samples: data.rawDataSamples,
+        batchStats: data.batchStats
       });
     }
     

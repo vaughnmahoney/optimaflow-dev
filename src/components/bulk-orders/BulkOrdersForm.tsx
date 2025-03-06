@@ -72,6 +72,9 @@ export const BulkOrdersForm = () => {
                 <p>API Requests: {dataFlowLogging.apiRequests}</p>
                 <p>Total Orders from API: {dataFlowLogging.totalOrdersFromAPI || 'N/A'}</p>
                 <p>After Status Filtering: {rawOrders.length}</p>
+                {dataFlowLogging.batchStats && (
+                  <p>Completion Batches: {dataFlowLogging.batchStats.completedBatches}/{dataFlowLogging.batchStats.totalBatches}</p>
+                )}
                 {Object.keys(dataFlowLogging).length > 0 && (
                   <details className="mt-2">
                     <summary className="cursor-pointer text-blue-600 hover:text-blue-800">

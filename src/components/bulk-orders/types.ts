@@ -30,3 +30,12 @@ export interface CompletionStatus {
   status: 'success' | 'failed' | 'rejected' | string;
   timestamp?: string;
 }
+
+// New interface for batched completion processing
+export interface BatchProcessingStats {
+  totalBatches: number;
+  completedBatches: number;
+  successfulBatches: number;
+  failedBatches: number;
+  totalOrdersProcessed: number;
+}

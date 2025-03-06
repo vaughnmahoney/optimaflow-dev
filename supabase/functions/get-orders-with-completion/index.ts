@@ -72,8 +72,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    // STEP 3: Make a SINGLE call to get completion details for ALL unique order numbers
-    console.log("STEP 3: Calling get_completion_details API ONCE with all unique order numbers...");
+    // STEP 3: Make a BATCHED call to get completion details for ALL unique order numbers
+    console.log("STEP 3: Calling get_completion_details API with batched order numbers...");
     const completionResult = await fetchCompletionDetails(optimoRouteApiKey, uniqueOrderNumbers);
     
     if (!completionResult.success) {
@@ -82,7 +82,17 @@ Deno.serve(async (req) => {
     }
     
     const completionData = completionResult.data;
-    console.log(`Got completion details for ${completionData?.orders?.length || 0} orders`);
+    console.log(`Got completion details for ${completionData?.orders?.length || 0} orders across batches`);
+    
+    // Create batch stats for response
+    const batchStats = {
+      totalBatches: Math.ceil(uniqueOrderNumbers.length / 500),
+      completedBatches: completionResult.success ? 1 : 0,
+      successfulBatches: completionResult.success ? 1 : 0,
+      failedBatches: completionResult.success ? 0 : 1,
+      totalOrdersProcessed: completionData?.orders?.length || 0,
+      errors: completionResult.errors
+    };
     
     // STEP 4: Combine search data with completion details
     console.log('STEP 4: Combining search results with completion details...');
@@ -100,9 +110,11 @@ Deno.serve(async (req) => {
     const filteredOrders = filterOrdersByStatus(mergedOrders, validStatuses);
     console.log(`After status filtering: ${filteredOrders.length} orders of ${mergedOrders.length} total remain`);
     
-    // STEP 6: Return the FINAL filtered dataset (no need for deduplication)
-    console.log('STEP 6: Returning final filtered dataset...');
-    return formatSuccessResponse(
+    // STEP 6: Return the FINAL filtered dataset with batch stats
+    console.log('STEP 6: Returning final filtered dataset with batch stats...');
+    
+    // Add batch stats to the response
+    const responseWithBatchStats = formatSuccessResponse(
       filteredOrders,
       {
         unfilteredOrderCount: allOrdersFromSearch.length,
@@ -110,6 +122,19 @@ Deno.serve(async (req) => {
         completionDetailCount: completionData?.orders?.length || 0
       },
       true // isComplete = true
+    );
+    
+    // Add batch stats to the response data
+    const responseData = JSON.parse(responseWithBatchStats.body);
+    responseData.batchStats = batchStats;
+    
+    // Return the updated response
+    return new Response(
+      JSON.stringify(responseData),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200
+      }
     );
 
   } catch (error) {
