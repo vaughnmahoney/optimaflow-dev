@@ -1,28 +1,35 @@
-import { useState, useEffect } from "react";
+
+import { useState } from "react";
 import { toast } from "sonner";
-import { BulkOrdersResponse, BatchProcessingStats } from "@/components/bulk-orders/types";
-import { fetchOrders } from "./bulk-orders/useOrdersApi";
+import { BulkOrdersResponse } from "@/components/bulk-orders/types";
 import { useDateRange } from "./bulk-orders/useDateRange";
+import { useOrdersApi } from "./bulk-orders/useOrdersApi";
+import { useOrdersLogging } from "./bulk-orders/useOrdersLogging";
+import { useOrdersState } from "./bulk-orders/useOrdersState";
 
 export const useBulkOrdersFetch = () => {
   // Date range state
   const { startDate, setStartDate, endDate, setEndDate, hasValidDateRange } = useDateRange();
   
-  // API state
-  const [isLoading, setIsLoading] = useState(false);
-  const [response, setResponse] = useState<BulkOrdersResponse | null>(null);
-  const [activeTab, setActiveTab] = useState("with-completion"); // Default to with-completion
-  const [rawData, setRawData] = useState<any>(null);
-  const [orders, setOrders] = useState<any[]>([]);
+  // Orders state management
+  const { 
+    isLoading, 
+    setIsLoading,
+    response, 
+    setResponse,
+    rawData, 
+    setRawData,
+    orders, 
+    setOrders,
+    activeTab,
+    setActiveTab
+  } = useOrdersState();
   
-  // Add data flow logging state with batch stats and original count tracking
-  const [dataFlowLogging, setDataFlowLogging] = useState({
-    apiRequests: 0,
-    totalOrdersFromAPI: 0,
-    statusFilteredOrders: 0,
-    originalOrderCount: 0, // Track original count before deduplication
-    batchStats: null as BatchProcessingStats | null
-  });
+  // Data flow logging
+  const { dataFlowLogging, setDataFlowLogging, updateDataFlowLogging } = useOrdersLogging();
+  
+  // Orders API
+  const { fetchOrders } = useOrdersApi();
 
   // Handle order fetch
   const fetchOrdersData = async () => {
@@ -80,13 +87,12 @@ export const useBulkOrdersFetch = () => {
     }
     
     // Update data flow logging with API response data and batch stats
-    setDataFlowLogging(prev => ({
-      ...prev,
+    updateDataFlowLogging({
       totalOrdersFromAPI: data.filteringMetadata?.unfilteredOrderCount || 0,
       statusFilteredOrders: data.filteringMetadata?.filteredOrderCount || 0,
-      originalOrderCount: data.orders?.length || 0, // Store original count before any client-side filtering
+      originalOrderCount: data.orders?.length || 0,
       batchStats: data.batchStats || null
-    }));
+    });
 
     // Update response
     setResponse(data);
