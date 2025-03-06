@@ -14,11 +14,7 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
 
     switch (completionStatus.toLowerCase()) {
       case 'success':
-        return status === "flagged" || status === "flagged_followup" 
-          ? "bg-red-500 text-white" 
-          : status === "approved" 
-            ? "bg-green-500 text-white" 
-            : "bg-yellow-500 text-white";
+        return "bg-green-500 text-white";
       case 'on_route':
         return "bg-blue-500 text-white";
       case 'failed':
@@ -44,9 +40,9 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
     }
   };
 
-  // Function to get text for the OptimoRoute completion status
+  // Function to get text for the OptimoRoute completion status (not the QC status)
   const getCompletionStatusText = () => {
-    if (!completionStatus) return status.replace(/_/g, " ").toUpperCase();
+    if (!completionStatus) return "PENDING";
     
     return completionStatus.toUpperCase();
   };
