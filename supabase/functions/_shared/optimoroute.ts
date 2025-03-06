@@ -1,3 +1,4 @@
+
 // Shared OptimoRoute API utilities
 
 export const baseUrl = 'https://api.optimoroute.com/v1';
@@ -102,23 +103,40 @@ export function filterOrdersByStatus(orders: any[], validStatuses: string[] = ['
   
   console.log(`Filtering ${orders.length} orders by status: ${normalizedValidStatuses.join(', ')}`);
   
+  // Inspect a sample order to help debug status locations
+  if (orders.length > 0) {
+    const sample = orders[0];
+    console.log("Sample order structure for status debugging:", JSON.stringify({
+      hasCompletionDetails: !!sample.completionDetails,
+      completionDetailsDataStatus: sample.completionDetails?.data?.status,
+      completionStatus: sample.completion_status,
+      extractedStatus: sample.extracted?.completionStatus,
+      directDataStatus: sample.data?.status,
+      completionResponseStatus: sample.completion_response?.orders?.[0]?.data?.status
+    }, null, 2));
+  }
+  
   // Track status distribution for logging
   const statusCounts: Record<string, number> = {};
   const filteredOrders = orders.filter(order => {
     // Enhanced logic to find status in all possible locations
     let status = "unknown";
     
-    // Check all possible locations where status might be stored
-    if (order.completion_status) {
-      status = order.completion_status;
-    } else if (order.completionDetails?.data?.status) {
+    // First check the most likely location based on API docs: completionDetails.data.status
+    if (order.completionDetails?.data?.status) {
       status = order.completionDetails.data.status;
-    } else if (order.extracted?.completionStatus) {
+    } 
+    // Then check other possible locations
+    else if (order.completion_status) {
+      status = order.completion_status;
+    } 
+    else if (order.extracted?.completionStatus) {
       status = order.extracted.completionStatus;
-    } else if (order.completion_response?.orders?.[0]?.data?.status) {
+    } 
+    else if (order.completion_response?.orders?.[0]?.data?.status) {
       status = order.completion_response.orders[0].data.status;
-    } else if (order.data?.status) {
-      // Direct status in data (might be in completion details)
+    }
+    else if (order.data?.status) {
       status = order.data.status;
     }
     

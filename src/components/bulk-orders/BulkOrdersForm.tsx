@@ -72,6 +72,16 @@ export const BulkOrdersForm = () => {
                 <p>API Requests: {dataFlowLogging.apiRequests}</p>
                 <p>Total Orders from API: {dataFlowLogging.totalOrdersFromAPI || 'N/A'}</p>
                 <p>After Status Filtering: {rawOrders.length}</p>
+                {Object.keys(dataFlowLogging).length > 0 && (
+                  <details className="mt-2">
+                    <summary className="cursor-pointer text-blue-600 hover:text-blue-800">
+                      Show Debug Info
+                    </summary>
+                    <pre className="mt-2 p-2 bg-slate-100 rounded text-xs overflow-auto max-h-40">
+                      {JSON.stringify(dataFlowLogging, null, 2)}
+                    </pre>
+                  </details>
+                )}
               </div>
             </CardContent>
           </Card>

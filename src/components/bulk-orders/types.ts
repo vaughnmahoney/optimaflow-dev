@@ -19,6 +19,7 @@ export interface BulkOrdersResponse {
   paginationProgress?: {
     isComplete?: boolean;
     totalOrdersRetrieved?: number;
+    afterTag?: string; // Added missing afterTag property
   };
   after_tag?: string;
   searchResponse?: any;
