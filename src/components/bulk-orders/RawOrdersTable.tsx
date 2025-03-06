@@ -4,14 +4,17 @@ import { RawJsonViewer } from "./RawJsonViewer";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/workorders/StatusBadge";
+import { useBulkOrderStatus } from "@/hooks/bulk-orders/useBulkOrderStatus";
 
 interface RawOrdersTableProps {
   orders: any[];
   isLoading: boolean;
-  originalCount?: number; // Add optional prop for original count
+  originalCount?: number;
 }
 
 export const RawOrdersTable = ({ orders, isLoading, originalCount }: RawOrdersTableProps) => {
+  const { getCompletionStatus, getQcStatus } = useBulkOrderStatus();
+
   if (isLoading) {
     return <div className="py-8 text-center">Loading orders...</div>;
   }
@@ -61,40 +64,19 @@ export const RawOrdersTable = ({ orders, isLoading, originalCount }: RawOrdersTa
     return 'N/A';
   };
 
-  // This function extracts the OptimoRoute completion status - UPDATED to match WorkOrderRow
-  const getCompletionStatus = (order: any) => {
-    return order.completion_status || 
-           (order.completionDetails?.data?.status) ||
-           (order.completion_response?.orders?.[0]?.data?.status) ||
-           (order.searchResponse?.scheduleInformation?.status) ||
-           (order.search_response?.scheduleInformation?.status);
-  };
-
-  // Get the QC status (internal review status)
-  const getQcStatus = (order: any) => {
-    // If there's an explicit status property, use it
-    if (order.status) {
-      return order.status;
-    }
-    
-    // For new imports without status, use pending_review
-    return "pending_review";
-  };
-
   const hasImages = (order: any) => {
     return !!(order.completionDetails?.data?.form?.images?.length > 0);
   };
 
   return (
     <div className="space-y-4">
-      {/* Show order count and deduplication stats */}
+      {/* Stats section */}
       <div className="text-sm bg-slate-50 p-3 rounded border">
         <div className="flex justify-between items-center">
           <span className="font-medium">
             Displaying <span className="text-green-600 font-bold">{orders.length}</span> orders
           </span>
           
-          {/* Show deduplication stats if originalCount is provided */}
           {originalCount !== undefined && originalCount !== orders.length && (
             <div className="text-muted-foreground">
               <span className="font-medium">Deduplication applied:</span> {orders.length} unique orders from {originalCount} total entries.
@@ -119,36 +101,31 @@ export const RawOrdersTable = ({ orders, isLoading, originalCount }: RawOrdersTa
             </TableRow>
           </TableHeader>
           <TableBody>
-            {orders.map((order, index) => {
-              const completionStatus = getCompletionStatus(order);
-              const qcStatus = getQcStatus(order);
-              
-              return (
-                <TableRow key={index}>
-                  <TableCell className="font-medium">{getOrderNo(order)}</TableCell>
-                  <TableCell>{getServiceDate(order)}</TableCell>
-                  <TableCell>{getDriverName(order)}</TableCell>
-                  <TableCell>
-                    <StatusBadge 
-                      status={qcStatus}
-                      completionStatus={completionStatus}
-                    />
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {hasImages(order) ? (
-                      <Badge variant="outline" className="bg-slate-100">
-                        {order.completionDetails?.data?.form?.images?.length || 0}
-                      </Badge>
-                    ) : (
-                      <span className="text-sm text-gray-400">None</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <RawJsonViewer data={order} />
-                  </TableCell>
-                </TableRow>
-              );
-            })}
+            {orders.map((order, index) => (
+              <TableRow key={index}>
+                <TableCell className="font-medium">{getOrderNo(order)}</TableCell>
+                <TableCell>{getServiceDate(order)}</TableCell>
+                <TableCell>{getDriverName(order)}</TableCell>
+                <TableCell>
+                  <StatusBadge 
+                    status={getQcStatus(order)}
+                    completionStatus={getCompletionStatus(order)}
+                  />
+                </TableCell>
+                <TableCell className="text-center">
+                  {hasImages(order) ? (
+                    <Badge variant="outline" className="bg-slate-100">
+                      {order.completionDetails?.data?.form?.images?.length || 0}
+                    </Badge>
+                  ) : (
+                    <span className="text-sm text-gray-400">None</span>
+                  )}
+                </TableCell>
+                <TableCell className="text-right">
+                  <RawJsonViewer data={order} />
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </div>
