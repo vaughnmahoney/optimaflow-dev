@@ -26,9 +26,9 @@ export const useWorkOrderSync = () => {
       
       console.log(`Fetching orders from ${formattedStartDate} to ${formattedEndDate}`);
       
-      // Step 2: Call the get-orders-with-completion edge function
-      const { data: ordersData, error: fetchError } = await supabase.functions.invoke(
-        'get-orders-with-completion',
+      // Step 2: Call the combined sync-work-orders edge function
+      const { data: syncResult, error } = await supabase.functions.invoke(
+        'sync-work-orders',
         {
           body: {
             startDate: formattedStartDate,
@@ -38,43 +38,29 @@ export const useWorkOrderSync = () => {
         }
       );
 
-      if (fetchError) throw new Error(`Failed to fetch orders: ${fetchError.message}`);
+      if (error) throw new Error(`Failed to sync orders: ${error.message}`);
       
-      if (!ordersData?.orders || ordersData.orders.length === 0) {
-        toast.info("No new orders found to import");
-        setIsSyncing(false);
+      if (!syncResult) {
+        toast.error("Failed to sync work orders: No response from server");
         return;
       }
       
-      console.log(`Found ${ordersData.orders.length} orders to import`);
-      toast.info(`Found ${ordersData.orders.length} orders to import...`);
-
-      // Step 3: Import the fetched orders to the database
-      const { data: importResult, error: importError } = await supabase.functions.invoke(
-        'import-bulk-orders',
-        {
-          body: { orders: ordersData.orders }
-        }
-      );
-
-      if (importError) throw new Error(`Failed to import orders: ${importError.message}`);
+      // Step 3: Show the results
+      const { imported, duplicates, errors } = syncResult;
       
-      // Step 4: Show the results
-      if (importResult) {
-        const { imported, duplicates, errors } = importResult;
-        
-        if (imported > 0) {
-          toast.success(`Imported ${imported} new work orders`);
-        } else if (duplicates > 0 && imported === 0) {
-          toast.info(`All ${duplicates} orders already exist in the system`);
-        }
-        
-        if (errors > 0) {
-          toast.error(`Failed to import ${errors} orders`);
-        }
+      if (imported > 0) {
+        toast.success(`Imported ${imported} new work orders`);
+      } else if (duplicates > 0 && imported === 0) {
+        toast.info(`All ${duplicates} orders already exist in the system`);
+      } else if (imported === 0 && duplicates === 0) {
+        toast.info("No new orders found to import");
       }
       
-      // Step 5: Refresh the work orders list
+      if (errors > 0) {
+        toast.error(`Failed to import ${errors} orders`);
+      }
+      
+      // Step 4: Refresh the work orders list
       queryClient.invalidateQueries({ queryKey: ["workOrders"] });
       queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
       
