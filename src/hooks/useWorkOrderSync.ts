@@ -17,13 +17,12 @@ export function useWorkOrderSync() {
       const endDate = new Date().toISOString().split('T')[0];
       const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-      // Call the get-orders-with-completion function with saveToDatabase=true
-      const { data, error } = await supabase.functions.invoke('get-orders-with-completion', {
+      // Call the sync-work-orders function which handles smaller batches internally
+      const { data, error } = await supabase.functions.invoke('sync-work-orders', {
         body: {
           startDate,
           endDate,
-          validStatuses: ['success', 'failed', 'rejected'],
-          saveToDatabase: true // Explicitly request database saving
+          validStatuses: ['success', 'failed', 'rejected']
         }
       });
 
@@ -31,20 +30,27 @@ export function useWorkOrderSync() {
         throw new Error(`Error syncing work orders: ${error.message}`);
       }
 
-      // Show success message with stats
-      const savedStats = data.dbSaveStats || { successful: 0, failed: 0 };
-      
-      if (savedStats.successful > 0) {
-        toast.success(`Successfully synced ${savedStats.successful} work orders`);
-      } else if (data.filteredCount === 0) {
-        toast.info('No new work orders found to sync');
-      } else {
-        toast.warning('Sync completed but no orders were saved');
-      }
+      if (data.success) {
+        const totalImported = data.imported || 0;
+        const totalDuplicates = data.duplicates || 0;
+        const totalErrors = data.errors || 0;
+        
+        // Show success message with stats
+        if (totalImported > 0) {
+          toast.success(`Successfully synced ${totalImported} work orders`);
+        } else if (totalDuplicates > 0 && totalImported === 0) {
+          toast.info(`No new work orders to sync (${totalDuplicates} already exist)`);
+        } else {
+          toast.info('No new work orders found to sync');
+        }
 
-      // If any failed, show warning
-      if (savedStats.failed > 0) {
-        toast.warning(`Failed to sync ${savedStats.failed} work orders`);
+        // If any failed, show warning
+        if (totalErrors > 0) {
+          toast.warning(`Failed to sync ${totalErrors} work orders`);
+        }
+      } else {
+        // Handle failure case
+        toast.error(data.error || 'Failed to sync work orders');
       }
 
       // Refresh work orders data

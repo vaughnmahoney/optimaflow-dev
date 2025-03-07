@@ -49,14 +49,63 @@ Deno.serve(async (req) => {
 
     console.log(`Syncing orders from ${startDate} to ${endDate} with statuses: ${validStatuses.join(', ')}`);
     
-    // STEP 1: Fetch orders directly from OptimoRoute API
-    const orders = await fetchAllOrdersWithCompletion(optimoRouteApiKey, startDate, endDate, validStatuses);
-    
-    if (!orders.success) {
+    // Get all orders from OptimoRoute using pagination
+    let allOrders = [];
+    let hasMorePages = true;
+    let afterTag = null;
+    let page = 1;
+
+    try {
+      console.log(`Starting paginated fetch of orders from OptimoRoute...`);
+      
+      while (hasMorePages && page <= 5) { // Limit to 5 pages for safety
+        console.log(`Fetching page ${page}${afterTag ? ` with afterTag ${afterTag}` : ''}...`);
+        
+        const searchResponse = await fetch(
+          `${baseUrl}${endpoints.search}?key=${optimoRouteApiKey}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              dateRange: {
+                from: startDate,
+                to: endDate,
+              },
+              includeOrderData: true,
+              includeScheduleInformation: true,
+              after_tag: afterTag
+            })
+          }
+        );
+        
+        if (!searchResponse.ok) {
+          throw new Error(`OptimoRoute search_orders API Error (${searchResponse.status}): ${await searchResponse.text()}`);
+        }
+        
+        const searchData = await searchResponse.json();
+        const pageOrders = searchData.orders || [];
+        
+        console.log(`Page ${page} returned ${pageOrders.length} orders`);
+        allOrders = [...allOrders, ...pageOrders];
+        
+        // Check if there are more pages
+        if (searchData.after_tag) {
+          afterTag = searchData.after_tag;
+          page++;
+        } else {
+          hasMorePages = false;
+        }
+      }
+      
+      console.log(`Total orders collected: ${allOrders.length}`);
+    } catch (searchError) {
+      console.error('Error fetching orders from OptimoRoute:', searchError);
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: orders.error || 'Failed to fetch orders from OptimoRoute'
+          error: `Error fetching orders: ${searchError.message}` 
         }),
         { 
           status: 500,
@@ -65,15 +114,16 @@ Deno.serve(async (req) => {
       );
     }
     
-    const filteredOrders = orders.data || [];
-    console.log(`Found ${filteredOrders.length} orders to process`);
+    // Extract order numbers
+    const orderNumbers = allOrders
+      .filter(order => order.data && order.data.orderNo)
+      .map(order => order.data.orderNo);
     
-    // If no orders found, return early
-    if (filteredOrders.length === 0) {
+    if (orderNumbers.length === 0) {
       return new Response(
         JSON.stringify({ 
           success: true, 
-          message: 'No new orders found to import',
+          message: 'No orders found to process',
           imported: 0,
           duplicates: 0,
           errors: 0
@@ -82,24 +132,174 @@ Deno.serve(async (req) => {
       );
     }
     
-    // STEP 2: Process orders in parallel using batching
-    console.log(`Processing ${filteredOrders.length} orders in parallel batches...`);
-    const importResults = await processOrdersInParallel(filteredOrders);
+    console.log(`Found ${orderNumbers.length} order numbers for completion details`);
     
-    // Compile and return the final results
-    const totalResults = {
-      success: importResults.successCount > 0 && importResults.errorCount === 0,
-      total: filteredOrders.length,
-      imported: importResults.importedCount,
-      duplicates: importResults.duplicateCount,
-      errors: importResults.errorCount,
-      errorDetails: importResults.errorDetails
+    // Process in batches of 100 order numbers
+    const BATCH_SIZE = 100;
+    const orderBatches = [];
+    
+    for (let i = 0; i < orderNumbers.length; i += BATCH_SIZE) {
+      orderBatches.push(orderNumbers.slice(i, i + BATCH_SIZE));
+    }
+    
+    console.log(`Split ${orderNumbers.length} orders into ${orderBatches.length} batches for completion details`);
+    
+    // Process each batch to get completion details and save to database
+    const results = {
+      total: allOrders.length,
+      imported: 0,
+      duplicates: 0,
+      errors: 0,
+      errorDetails: [] as string[]
     };
     
-    console.log(`Sync complete. Results:`, totalResults);
+    console.log(`Processing ${orderBatches.length} batches sequentially...`);
+    
+    for (let batchIndex = 0; batchIndex < orderBatches.length; batchIndex++) {
+      const currentBatch = orderBatches[batchIndex];
+      console.log(`Processing batch ${batchIndex + 1} of ${orderBatches.length} with ${currentBatch.length} orders...`);
+      
+      try {
+        // Get completion details for this batch
+        const completionResponse = await fetch(
+          `${baseUrl}${endpoints.completion}?key=${optimoRouteApiKey}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ orderNumbers: currentBatch })
+          }
+        );
+        
+        if (!completionResponse.ok) {
+          throw new Error(`OptimoRoute get_completion_details API Error (${completionResponse.status}): ${await completionResponse.text()}`);
+        }
+        
+        const completionData = await completionResponse.json();
+        const completionOrders = completionData.orders || [];
+        console.log(`Got completion details for ${completionOrders.length} orders in batch ${batchIndex + 1}`);
+        
+        // Create a map of orderNo to completion details
+        const completionMap: Record<string, any> = {};
+        completionOrders.forEach((order: any) => {
+          if (order.orderNo) {
+            completionMap[order.orderNo] = order;
+          }
+        });
+        
+        // Find matching orders in the original search results
+        const batchOrdersToSave = [];
+        
+        for (const orderNo of currentBatch) {
+          const completionDetails = completionMap[orderNo];
+          if (!completionDetails) continue;
+          
+          // Find the search order data
+          const searchOrder = allOrders.find(o => o.data?.orderNo === orderNo);
+          if (!searchOrder) continue;
+          
+          // Check if the status matches our filter
+          const status = completionDetails.data?.status || '';
+          if (!validStatuses.includes(status.toLowerCase())) continue;
+          
+          // Add to batch for saving
+          batchOrdersToSave.push({
+            searchOrder,
+            completionDetails
+          });
+        }
+        
+        console.log(`Found ${batchOrdersToSave.length} valid orders to save in batch ${batchIndex + 1}`);
+        
+        // Save these orders to the database in smaller chunks
+        if (batchOrdersToSave.length > 0) {
+          const DB_BATCH_SIZE = 10;
+          const dbBatches = [];
+          
+          for (let i = 0; i < batchOrdersToSave.length; i += DB_BATCH_SIZE) {
+            dbBatches.push(batchOrdersToSave.slice(i, i + DB_BATCH_SIZE));
+          }
+          
+          console.log(`Split ${batchOrdersToSave.length} orders into ${dbBatches.length} database batches`);
+          
+          for (let dbBatchIndex = 0; dbBatchIndex < dbBatches.length; dbBatchIndex++) {
+            const dbBatch = dbBatches[dbBatchIndex];
+            console.log(`Processing database batch ${dbBatchIndex + 1} of ${dbBatches.length}...`);
+            
+            for (const order of dbBatch) {
+              try {
+                const orderNo = order.completionDetails.orderNo;
+                
+                // Check if order already exists
+                const { data: existingOrder } = await adminClient
+                  .from('work_orders')
+                  .select('id')
+                  .eq('order_no', orderNo)
+                  .maybeSingle();
+                
+                if (existingOrder) {
+                  results.duplicates++;
+                  continue;
+                }
+                
+                // Prepare data for insertion
+                const workOrderData = {
+                  order_no: orderNo,
+                  status: 'pending_review',
+                  service_date: order.searchOrder.data?.date || null,
+                  location: {
+                    name: order.searchOrder.data?.location?.locationName || order.searchOrder.data?.location?.name || null,
+                    address: order.searchOrder.data?.location?.address || null,
+                  },
+                  driver: {
+                    name: order.searchOrder.scheduleInformation?.driverName || null,
+                    id: order.searchOrder.scheduleInformation?.driverId || null,
+                  },
+                  search_response: order.searchOrder,
+                  completion_response: { success: true, orders: [order.completionDetails] },
+                  synced_at: new Date().toISOString(),
+                };
+                
+                // Insert the work order
+                const { error: insertError } = await adminClient
+                  .from('work_orders')
+                  .insert(workOrderData);
+                
+                if (insertError) {
+                  throw new Error(`Error inserting order ${orderNo}: ${insertError.message}`);
+                }
+                
+                results.imported++;
+              } catch (orderError) {
+                console.error(`Error processing order:`, orderError);
+                results.errors++;
+                results.errorDetails.push(orderError instanceof Error ? orderError.message : String(orderError));
+              }
+            }
+          }
+        }
+        
+      } catch (batchError) {
+        console.error(`Error processing batch ${batchIndex + 1}:`, batchError);
+        results.errors += currentBatch.length;
+        results.errorDetails.push(`Batch ${batchIndex + 1} error: ${batchError instanceof Error ? batchError.message : String(batchError)}`);
+      }
+      
+      // Add a small delay between batches to prevent rate limiting
+      if (batchIndex < orderBatches.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    }
+    
+    console.log(`Sync complete. Results: imported=${results.imported}, duplicates=${results.duplicates}, errors=${results.errors}`);
     
     return new Response(
-      JSON.stringify(totalResults),
+      JSON.stringify({
+        success: true,
+        ...results,
+        errorDetails: results.errorDetails.slice(0, 10) // Only send the first 10 errors to keep response size reasonable
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
     
@@ -122,273 +322,3 @@ Deno.serve(async (req) => {
     );
   }
 });
-
-/**
- * Fetches all orders with completion details from OptimoRoute
- */
-async function fetchAllOrdersWithCompletion(
-  apiKey: string, 
-  startDate: string, 
-  endDate: string, 
-  validStatuses: string[]
-): Promise<{ success: boolean, data?: any[], error?: string }> {
-  try {
-    // Step 1: Call the search_orders API to get base order data
-    console.log(`Calling search_orders to get orders from ${startDate} to ${endDate}`);
-    
-    const requestBody = {
-      dateRange: {
-        from: startDate,
-        to: endDate,
-      },
-      includeOrderData: true,
-      includeScheduleInformation: true
-    };
-    
-    const searchResponse = await fetch(
-      `${baseUrl}${endpoints.search}?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody)
-      }
-    );
-    
-    if (!searchResponse.ok) {
-      const errorText = await searchResponse.text();
-      console.error('OptimoRoute search_orders error:', errorText);
-      return {
-        success: false,
-        error: `OptimoRoute search_orders API Error (${searchResponse.status}): ${errorText}`
-      };
-    }
-    
-    // Parse the search response
-    const searchData = await searchResponse.json();
-    const allOrders = searchData.orders || [];
-    console.log(`Found ${allOrders.length} orders in search results`);
-    
-    if (allOrders.length === 0) {
-      return { success: true, data: [] };
-    }
-    
-    // Step 2: Extract order numbers for completion API call
-    const orderNumbers = allOrders
-      .filter(order => order.data && order.data.orderNo)
-      .map(order => order.data.orderNo);
-    
-    console.log(`Extracted ${orderNumbers.length} order numbers for completion details`);
-    
-    if (orderNumbers.length === 0) {
-      return { success: true, data: allOrders };
-    }
-    
-    // Step 3: Get completion details
-    console.log(`Calling get_completion_details for ${orderNumbers.length} orders`);
-    
-    const completionResponse = await fetch(
-      `${baseUrl}${endpoints.completion}?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ orderNumbers })
-      }
-    );
-    
-    if (!completionResponse.ok) {
-      const errorText = await completionResponse.text();
-      console.error('OptimoRoute get_completion_details error:', errorText);
-      return {
-        success: false,
-        error: `OptimoRoute get_completion_details API Error (${completionResponse.status}): ${errorText}`
-      };
-    }
-    
-    // Parse the completion response
-    const completionData = await completionResponse.json();
-    const completionOrders = completionData.orders || [];
-    console.log(`Got completion details for ${completionOrders.length} orders`);
-    
-    // Step 4: Create a map for faster lookups
-    const completionMap: Record<string, any> = {};
-    completionOrders.forEach((order: any) => {
-      if (order.orderNo) {
-        completionMap[order.orderNo] = order;
-      }
-    });
-    
-    // Step 5: Merge search and completion data
-    const mergedOrders = allOrders.map(order => {
-      const orderNo = order.data?.orderNo;
-      const completionDetails = orderNo ? completionMap[orderNo] : null;
-      
-      return {
-        ...order,
-        completionDetails,
-        search_response: order,
-        completion_response: completionDetails ? { success: true, orders: [completionDetails] } : null,
-        completion_status: completionDetails?.data?.status || null
-      };
-    });
-    
-    // Step 6: Filter by status
-    const normalizedValidStatuses = validStatuses.map(status => status.toLowerCase());
-    
-    const filteredOrders = mergedOrders.filter(order => {
-      let status = "unknown";
-      
-      if (order.completionDetails?.data?.status) {
-        status = order.completionDetails.data.status;
-      } 
-      else if (order.completion_status) {
-        status = order.completion_status;
-      }
-      
-      const normalizedStatus = String(status).toLowerCase();
-      return normalizedValidStatuses.includes(normalizedStatus);
-    });
-    
-    console.log(`After filtering by status: ${filteredOrders.length} of ${mergedOrders.length} orders remain`);
-    
-    return { success: true, data: filteredOrders };
-    
-  } catch (error) {
-    console.error('Error fetching orders with completion:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : String(error)
-    };
-  }
-}
-
-/**
- * Process orders in parallel using batches
- */
-async function processOrdersInParallel(orders: any[]) {
-  // Define batch size
-  const BATCH_SIZE = 50;
-  
-  // Split orders into batches
-  const batches = [];
-  for (let i = 0; i < orders.length; i += BATCH_SIZE) {
-    batches.push(orders.slice(i, i + BATCH_SIZE));
-  }
-  
-  console.log(`Split ${orders.length} orders into ${batches.length} batches of max ${BATCH_SIZE} orders each`);
-  
-  // Results accumulator
-  const results = {
-    importedCount: 0,
-    duplicateCount: 0,
-    errorCount: 0,
-    successCount: 0,
-    errorDetails: [] as string[]
-  };
-  
-  // Process each batch in parallel
-  const batchPromises = batches.map(async (batch, index) => {
-    console.log(`Processing batch ${index + 1} of ${batches.length} with ${batch.length} orders`);
-    
-    try {
-      // Process orders in the current batch
-      const batchResults = await processBatch(batch);
-      
-      // Accumulate results from this batch
-      results.importedCount += batchResults.imported;
-      results.duplicateCount += batchResults.duplicates;
-      results.errorCount += batchResults.errors;
-      results.successCount += (batchResults.errors === 0 ? 1 : 0);
-      
-      if (batchResults.errorDetails && batchResults.errorDetails.length > 0) {
-        results.errorDetails = [...results.errorDetails, ...batchResults.errorDetails];
-      }
-      
-      console.log(`Batch ${index + 1} complete: imported=${batchResults.imported}, duplicates=${batchResults.duplicates}, errors=${batchResults.errors}`);
-      
-    } catch (error) {
-      console.error(`Error processing batch ${index + 1}:`, error);
-      results.errorCount++;
-      results.errorDetails.push(`Batch ${index + 1} error: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  });
-  
-  // Wait for all batches to complete
-  await Promise.all(batchPromises);
-  
-  console.log(`All batches processed. Final results: imported=${results.importedCount}, duplicates=${results.duplicateCount}, errors=${results.errorCount}`);
-  
-  return results;
-}
-
-/**
- * Process a single batch of orders
- */
-async function processBatch(orders: any[]) {
-  const results = {
-    total: orders.length,
-    imported: 0,
-    duplicates: 0,
-    errors: 0,
-    errorDetails: [] as string[]
-  };
-  
-  // Process orders one by one to avoid overwhelming the database
-  for (const order of orders) {
-    try {
-      // Extract unique identifier from various possible locations
-      const orderNo = order.order_no || 
-                    order.data?.orderNo || 
-                    (order.searchResponse && order.searchResponse.data?.orderNo) ||
-                    (order.completionDetails && order.completionDetails.orderNo) || 
-                    'unknown';
-      
-      // Check if order already exists by order_no
-      const { data: existingOrders, error: checkError } = await adminClient
-        .from('work_orders')
-        .select('id')
-        .eq('order_no', orderNo)
-        .maybeSingle();
-      
-      if (checkError) {
-        throw new Error(`Error checking for existing order: ${checkError.message}`);
-      }
-      
-      // If order already exists, count as duplicate and skip
-      if (existingOrders) {
-        results.duplicates++;
-        continue;
-      }
-      
-      // Transform order to match work_orders table schema
-      const workOrder = {
-        order_no: orderNo,
-        status: 'pending_review', // Default status for imported orders
-        timestamp: new Date().toISOString(),
-        search_response: order.search_response || order, // Store original search data
-        completion_response: order.completion_response || order.completionDetails || null // Store completion data if available
-      };
-      
-      // Insert the order into the database
-      const { error: insertError } = await adminClient
-        .from('work_orders')
-        .insert(workOrder);
-      
-      if (insertError) {
-        throw new Error(`Error inserting order: ${insertError.message}`);
-      }
-      
-      results.imported++;
-      
-    } catch (orderError) {
-      console.error(`Error processing order:`, orderError);
-      results.errors++;
-      results.errorDetails.push(orderError instanceof Error ? orderError.message : String(orderError));
-    }
-  }
-  
-  return results;
-}
