@@ -5,14 +5,47 @@ import { WorkOrder, WorkOrderFilters } from "@/components/workorders/types";
 import { transformWorkOrderData } from "@/utils/workOrderUtils";
 
 /**
+ * Helper function to get the date value for sorting from a work order
+ */
+const getServiceDateValue = (order: WorkOrder): Date | null => {
+  // Try to get the end date from completion data first
+  const endTime = order.completion_response?.orders?.[0]?.data?.endTime?.localTime;
+  
+  if (endTime) {
+    try {
+      const date = new Date(endTime);
+      if (!isNaN(date.getTime())) {
+        return date;
+      }
+    } catch (error) {
+      // If date parsing fails, continue to fallback
+    }
+  }
+  
+  // Fall back to service_date if end date is not available or invalid
+  if (order.service_date) {
+    try {
+      const date = new Date(order.service_date);
+      if (!isNaN(date.getTime())) {
+        return date;
+      }
+    } catch (error) {
+      // If parsing fails, return null
+    }
+  }
+  
+  return null;
+};
+
+/**
  * Hook to fetch work orders from Supabase with pagination and filtering
  */
 export const useWorkOrderFetch = (
   filters: WorkOrderFilters,
   page: number = 1,
   pageSize: number = 10,
-  sortField: string | null = null,
-  sortDirection: string | null = null
+  sortField: string | null = 'service_date',
+  sortDirection: string | null = 'desc'
 ) => {
   return useQuery({
     queryKey: ["workOrders", filters, page, pageSize, sortField, sortDirection],
@@ -113,12 +146,9 @@ export const useWorkOrderFetch = (
       
       if (filters.dateRange && (filters.dateRange.from || filters.dateRange.to)) {
         filteredData = filteredData.filter(order => {
-          if (!order.service_date) return false;
-          
-          const orderDate = new Date(order.service_date);
-          
-          // Check if orderDate is valid
-          if (isNaN(orderDate.getTime())) return false;
+          // Get the date using our helper function
+          const orderDate = getServiceDateValue(order);
+          if (!orderDate) return false;
           
           // Check "from" date if specified
           if (filters.dateRange.from) {
@@ -147,12 +177,13 @@ export const useWorkOrderFetch = (
           let valueB: any;
           
           if (sortField === 'service_date') {
-            const dateA = a.service_date ? new Date(a.service_date).getTime() : 0;
-            const dateB = b.service_date ? new Date(b.service_date).getTime() : 0;
+            // Use our helper function to get dates for sorting
+            const dateA = getServiceDateValue(a);
+            const dateB = getServiceDateValue(b);
             
             // Handle invalid dates
-            const validA = !isNaN(dateA);
-            const validB = !isNaN(dateB);
+            const validA = dateA !== null;
+            const validB = dateB !== null;
             
             // If one date is valid and the other isn't, the valid one comes first
             if (validA && !validB) return sortDirection === 'asc' ? -1 : 1;
@@ -160,7 +191,7 @@ export const useWorkOrderFetch = (
             // If both are invalid, they're considered equal
             if (!validA && !validB) return 0;
             
-            return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
+            return sortDirection === 'asc' ? dateA!.getTime() - dateB!.getTime() : dateB!.getTime() - dateA!.getTime();
           } 
           else if (sortField === 'driver') {
             // Handle driver sorting
