@@ -1,5 +1,5 @@
 
-import { CheckCircle, Flag, Trash2, MoreVertical } from "lucide-react";
+import { CheckCircle, Flag, Trash2, Image, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WorkOrder } from "../types";
 import {
@@ -12,10 +12,11 @@ import {
 interface ActionsMenuProps {
   workOrder: WorkOrder;
   onStatusUpdate: (workOrderId: string, newStatus: string) => void;
+  onImageView: (workOrderId: string) => void; // Add missing prop
   onDelete: (workOrderId: string) => void;
 }
 
-export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenuProps) => {
+export const ActionsMenu = ({ workOrder, onStatusUpdate, onImageView, onDelete }: ActionsMenuProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -41,6 +42,12 @@ export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenu
         >
           <Flag className="h-4 w-4 mr-2" />
           Flag for Review
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => onImageView(workOrder.id)}
+        >
+          <Image className="h-4 w-4 mr-2" />
+          View Images
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => onDelete(workOrder.id)}

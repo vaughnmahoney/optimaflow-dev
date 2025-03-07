@@ -1,5 +1,9 @@
 
-import { ColumnFilterProps as OriginalColumnFilterProps } from "../types";
+import { TextFilterProps } from "./TextFilter";
+import { DateFilterProps } from "./DateFilter";
+import { StatusFilterProps } from "./StatusFilter";
 
-// Re-export using 'export type' for compatibility with isolatedModules
-export type { OriginalColumnFilterProps as ColumnFilterProps };
+// Export common types
+export type { TextFilterProps, DateFilterProps, StatusFilterProps };
+
+// ColumnFilterProps is no longer directly imported from types.ts

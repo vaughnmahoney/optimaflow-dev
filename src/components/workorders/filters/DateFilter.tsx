@@ -1,13 +1,19 @@
 
 import { useState } from "react";
-import { ColumnFilterProps } from "./types";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 
-export const DateFilter = ({ column, value, onChange, onClear }: ColumnFilterProps) => {
+export interface DateFilterProps {
+  column: string;
+  value: { from: Date | null; to: Date | null };
+  onChange: (value: { from: Date | null; to: Date | null }) => void;
+  onClear: () => void;
+}
+
+export const DateFilter = ({ column, value, onChange, onClear }: DateFilterProps) => {
   const [dateRange, setDateRange] = useState({
     from: value?.from || null,
     to: value?.to || null

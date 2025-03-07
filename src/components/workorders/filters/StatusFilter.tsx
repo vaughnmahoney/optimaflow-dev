@@ -1,9 +1,15 @@
 
-import { ColumnFilterProps } from "./types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export const StatusFilter = ({ column, value, onChange, onClear }: ColumnFilterProps) => {
+export interface StatusFilterProps {
+  column: string;
+  value: string | null;
+  onChange: (value: string) => void;
+  onClear: () => void;
+}
+
+export const StatusFilter = ({ column, value, onChange, onClear }: StatusFilterProps) => {
   const statuses = [
     { value: "pending_review", label: "Pending Review" },
     { value: "approved", label: "Approved" },
