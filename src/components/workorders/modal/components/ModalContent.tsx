@@ -3,7 +3,6 @@ import React from "react";
 import { WorkOrder } from "@/components/workorders/types";
 import { ImageViewer } from "./ImageViewer";
 import { ImageThumbnails } from "./ImageThumbnails";
-import { QuickInfo } from "./QuickInfo";
 import { OrderDetails } from "./OrderDetails";
 
 interface ModalContentProps {
@@ -51,10 +50,7 @@ export const ModalContent: React.FC<ModalContentProps> = ({
       {/* Right side - Details panel */}
       {!isImageExpanded && (
         <div className="w-2/5 flex flex-col overflow-hidden">
-          {/* Quick info section */}
-          <QuickInfo workOrder={workOrder} />
-          
-          {/* Tabs for Details, Notes, Signature */}
+          {/* Tabs for Details, Notes, Signature - now directly after the header */}
           <OrderDetails workOrder={workOrder} />
         </div>
       )}
