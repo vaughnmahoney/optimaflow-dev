@@ -27,6 +27,8 @@ interface WorkOrderContentProps {
   onColumnFilterChange: (column: string, value: any) => void;
   clearColumnFilter: (column: string) => void;
   clearAllFilters: () => void;
+  onBulkStatusUpdate?: (workOrderIds: string[], newStatus: string) => void;
+  onBulkDelete?: (workOrderIds: string[]) => void;
 }
 
 export const WorkOrderContent = ({
@@ -48,7 +50,9 @@ export const WorkOrderContent = ({
   onPageSizeChange,
   onColumnFilterChange,
   clearColumnFilter,
-  clearAllFilters
+  clearAllFilters,
+  onBulkStatusUpdate,
+  onBulkDelete
 }: WorkOrderContentProps) => {
   return (
     <WorkOrderList
@@ -71,6 +75,8 @@ export const WorkOrderContent = ({
       onColumnFilterChange={onColumnFilterChange}
       clearColumnFilter={clearColumnFilter}
       clearAllFilters={clearAllFilters}
+      onBulkStatusUpdate={onBulkStatusUpdate}
+      onBulkDelete={onBulkDelete}
     />
   );
 };

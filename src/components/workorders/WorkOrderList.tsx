@@ -26,7 +26,9 @@ export const WorkOrderList = ({
   onPageSizeChange,
   onColumnFilterChange,
   clearColumnFilter,
-  clearAllFilters
+  clearAllFilters,
+  onBulkStatusUpdate,
+  onBulkDelete
 }: WorkOrderListProps) => {
   const [searchResponse, setSearchResponse] = useState<any>(null);
   const [transformedData, setTransformedData] = useState<any>(null);
@@ -92,6 +94,8 @@ export const WorkOrderList = ({
         onColumnFilterChange={onColumnFilterChange}
         onColumnFilterClear={clearColumnFilter}
         onClearAllFilters={clearAllFilters}
+        onBulkStatusUpdate={onBulkStatusUpdate}
+        onBulkDelete={onBulkDelete}
       />
 
       {currentWorkOrder && (

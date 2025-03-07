@@ -46,7 +46,12 @@ export const useWorkOrderData = () => {
   
   // Import and mutation methods
   const { searchOptimoRoute } = useWorkOrderImport();
-  const { updateWorkOrderStatus, deleteWorkOrder } = useWorkOrderMutations();
+  const { 
+    updateWorkOrderStatus, 
+    deleteWorkOrder,
+    bulkUpdateWorkOrderStatus,
+    bulkDeleteWorkOrders
+  } = useWorkOrderMutations();
 
   // Handle column filter changes
   const handleColumnFilterChange = (column: string, value: any) => {
@@ -159,8 +164,10 @@ export const useWorkOrderData = () => {
     clearAllFilters,
     searchOptimoRoute,
     updateWorkOrderStatus,
+    bulkUpdateWorkOrderStatus,
     openImageViewer,
     deleteWorkOrder,
+    bulkDeleteWorkOrders,
     statusCounts,
     sortField,
     sortDirection,

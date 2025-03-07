@@ -23,8 +23,10 @@ const WorkOrders = () => {
     clearAllFilters,
     searchOptimoRoute,
     updateWorkOrderStatus,
+    bulkUpdateWorkOrderStatus,
     openImageViewer,
     deleteWorkOrder,
+    bulkDeleteWorkOrders,
     statusCounts,
     sortField,
     sortDirection,
@@ -79,6 +81,8 @@ const WorkOrders = () => {
           onColumnFilterChange={onColumnFilterChange}
           clearColumnFilter={clearColumnFilter}
           clearAllFilters={clearAllFilters}
+          onBulkStatusUpdate={bulkUpdateWorkOrderStatus}
+          onBulkDelete={bulkDeleteWorkOrders}
         />
       </div>
     </Layout>

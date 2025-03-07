@@ -1,154 +1,160 @@
 
-import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { SortDirection, SortField } from "../types";
-import { useState } from "react";
-import { TextFilter, DateFilter, StatusFilter, DriverFilter, LocationFilter } from "../filters";
+import { TableHeader, TableRow, TableHead } from "@/components/ui/table";
+import { SortDirection, SortField, WorkOrderFilters } from "../types";
 import { ColumnHeader } from "./ColumnHeader";
-import { isColumnFiltered } from "./utils";
+import { FilterButton } from "./FilterButton";
+import { TextFilter } from "../filters";
+import { DateFilter } from "../filters";
+import { DriverFilter } from "../filters";
+import { LocationFilter } from "../filters";
+import { StatusFilter } from "../filters";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface WorkOrderTableHeaderProps {
-  sortField: SortField;
-  sortDirection: SortDirection;
-  onSort: (field: SortField) => void;
-  filters: {
-    orderNo: string | null;
-    dateRange: { from: Date | null; to: Date | null };
-    driver: string | null;
-    location: string | null;
-    status: string | null;
-  };
+  sortField?: SortField;
+  sortDirection?: SortDirection;
+  onSort?: (field: SortField, direction: SortDirection) => void;
+  filters: WorkOrderFilters;
   onFilterChange: (column: string, value: any) => void;
   onFilterClear: (column: string) => void;
+  selectable?: boolean;
+  allSelected?: boolean;
+  onSelectAll?: () => void;
 }
 
-export const WorkOrderTableHeader = ({ 
-  sortField, 
-  sortDirection, 
+export const WorkOrderTableHeader = ({
+  sortField,
+  sortDirection,
   onSort,
   filters,
   onFilterChange,
-  onFilterClear
+  onFilterClear,
+  selectable = false,
+  allSelected = false,
+  onSelectAll
 }: WorkOrderTableHeaderProps) => {
-  const [openPopover, setOpenPopover] = useState<string | null>(null);
-  
-  const handleFilterChange = (column: string, value: any) => {
-    onFilterChange(column, value);
-    // Don't close popover immediately to allow for multiple selections
-  };
-  
-  const closePopover = () => {
-    setOpenPopover(null);
+  const handleSort = (field: SortField) => {
+    if (!onSort) return;
+
+    if (sortField === field) {
+      // Toggle direction: asc -> desc -> null
+      if (sortDirection === "asc") {
+        onSort(field, "desc");
+      } else if (sortDirection === "desc") {
+        onSort(null, null);
+      } else {
+        onSort(field, "asc");
+      }
+    } else {
+      // New field, start with asc
+      onSort(field, "asc");
+    }
   };
 
   return (
     <TableHeader>
       <TableRow>
+        {selectable && (
+          <TableHead className="w-10">
+            <Checkbox 
+              checked={allSelected} 
+              onCheckedChange={onSelectAll}
+              aria-label="Select all work orders"
+            />
+          </TableHead>
+        )}
         <ColumnHeader
           label="Order #"
-          column="order_no"
-          sortDirection={sortField === 'order_no' ? sortDirection : null}
-          onSort={() => onSort('order_no')}
-          isFiltered={isColumnFiltered('order_no', filters)}
-          filterContent={
-            <TextFilter 
-              column="order_no" 
-              value={filters.orderNo} 
-              onChange={(value) => handleFilterChange('order_no', value)}
-              onClear={() => {
-                onFilterClear('order_no');
-                closePopover();
-              }}
+          sortable
+          sorted={sortField === "order_no" ? sortDirection : null}
+          onSort={() => handleSort("order_no")}
+        >
+          <FilterButton
+            column="order_no"
+            active={!!filters.orderNo}
+            onClear={() => onFilterClear("order_no")}
+          >
+            <TextFilter
+              value={filters.orderNo || ""}
+              onChange={(value) => onFilterChange("order_no", value)}
+              placeholder="Filter by order #"
             />
-          }
-          isPopoverOpen={openPopover === 'order_no'}
-          setOpenPopover={setOpenPopover}
-        />
-        
+          </FilterButton>
+        </ColumnHeader>
+
         <ColumnHeader
           label="Service Date"
-          column="service_date"
-          sortDirection={sortField === 'service_date' ? sortDirection : null}
-          onSort={() => onSort('service_date')}
-          isFiltered={isColumnFiltered('service_date', filters)}
-          filterContent={
-            <DateFilter 
-              column="service_date" 
-              value={filters.dateRange} 
-              onChange={(value) => handleFilterChange('service_date', value)}
-              onClear={() => {
-                onFilterClear('service_date');
-                closePopover();
-              }}
+          sortable
+          sorted={sortField === "service_date" ? sortDirection : null}
+          onSort={() => handleSort("service_date")}
+        >
+          <FilterButton
+            column="service_date"
+            active={!!filters.dateRange.from || !!filters.dateRange.to}
+            onClear={() => onFilterClear("service_date")}
+          >
+            <DateFilter
+              dateRange={filters.dateRange}
+              onChange={(range) => onFilterChange("service_date", range)}
             />
-          }
-          isPopoverOpen={openPopover === 'service_date'}
-          setOpenPopover={setOpenPopover}
-        />
-        
+          </FilterButton>
+        </ColumnHeader>
+
         <ColumnHeader
           label="Driver"
-          column="driver"
-          sortDirection={sortField === 'driver' ? sortDirection : null}
-          onSort={() => onSort('driver')}
-          isFiltered={isColumnFiltered('driver', filters)}
-          filterContent={
-            <DriverFilter 
-              column="driver" 
-              value={filters.driver} 
-              onChange={(value) => handleFilterChange('driver', value)}
-              onClear={() => {
-                onFilterClear('driver');
-                closePopover();
-              }}
+          sortable
+          sorted={sortField === "driver" ? sortDirection : null}
+          onSort={() => handleSort("driver")}
+        >
+          <FilterButton
+            column="driver"
+            active={!!filters.driver}
+            onClear={() => onFilterClear("driver")}
+          >
+            <DriverFilter
+              value={filters.driver || ""}
+              onChange={(value) => onFilterChange("driver", value)}
             />
-          }
-          isPopoverOpen={openPopover === 'driver'}
-          setOpenPopover={setOpenPopover}
-        />
-        
+          </FilterButton>
+        </ColumnHeader>
+
         <ColumnHeader
           label="Location"
-          column="location"
-          sortDirection={sortField === 'location' ? sortDirection : null}
-          onSort={() => onSort('location')}
-          isFiltered={isColumnFiltered('location', filters)}
-          filterContent={
-            <LocationFilter 
-              column="location" 
-              value={filters.location} 
-              onChange={(value) => handleFilterChange('location', value)}
-              onClear={() => {
-                onFilterClear('location');
-                closePopover();
-              }}
+          sortable
+          sorted={sortField === "location" ? sortDirection : null}
+          onSort={() => handleSort("location")}
+        >
+          <FilterButton
+            column="location"
+            active={!!filters.location}
+            onClear={() => onFilterClear("location")}
+          >
+            <LocationFilter
+              value={filters.location || ""}
+              onChange={(value) => onFilterChange("location", value)}
             />
-          }
-          isPopoverOpen={openPopover === 'location'}
-          setOpenPopover={setOpenPopover}
-        />
-        
+          </FilterButton>
+        </ColumnHeader>
+
         <ColumnHeader
           label="Status"
-          column="status"
-          sortDirection={sortField === 'status' ? sortDirection : null}
-          onSort={() => onSort('status')}
-          isFiltered={isColumnFiltered('status', filters)}
-          filterContent={
-            <StatusFilter 
-              column="status" 
-              value={filters.status} 
-              onChange={(value) => handleFilterChange('status', value)}
-              onClear={() => {
-                onFilterClear('status');
-                closePopover();
-              }}
+          sortable
+          sorted={sortField === "status" ? sortDirection : null}
+          onSort={() => handleSort("status")}
+        >
+          <FilterButton
+            column="status"
+            active={!!filters.status}
+            onClear={() => onFilterClear("status")}
+          >
+            <StatusFilter
+              value={filters.status || ""}
+              onChange={(value) => onFilterChange("status", value)}
             />
-          }
-          isPopoverOpen={openPopover === 'status'}
-          setOpenPopover={setOpenPopover}
-        />
-        
-        <TableHead>Actions</TableHead>
+          </FilterButton>
+        </ColumnHeader>
+
+        <TableHead className="w-10">Actions</TableHead>
       </TableRow>
     </TableHeader>
   );
