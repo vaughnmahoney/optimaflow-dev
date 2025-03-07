@@ -1,79 +1,64 @@
 
-import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { useState, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
-/**
- * Hook for syncing new work orders from OptimoRoute
- */
-export const useWorkOrderSync = () => {
+export function useWorkOrderSync() {
   const [isSyncing, setIsSyncing] = useState(false);
   const queryClient = useQueryClient();
 
-  const syncWorkOrders = async () => {
+  const syncWorkOrders = useCallback(async () => {
     setIsSyncing(true);
-    toast.info("Syncing work orders...");
+    toast.info('Syncing work orders from OptimoRoute...');
 
     try {
-      // Step 1: Get current date minus 7 days and format it for the API
-      const endDate = new Date();
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - 7); // Last 7 days
-      
-      const formattedStartDate = startDate.toISOString().split('T')[0];
-      const formattedEndDate = endDate.toISOString().split('T')[0];
-      
-      console.log(`Fetching orders from ${formattedStartDate} to ${formattedEndDate}`);
-      
-      // Step 2: Call the combined sync-work-orders edge function
-      const { data: syncResult, error } = await supabase.functions.invoke(
-        'sync-work-orders',
-        {
-          body: {
-            startDate: formattedStartDate,
-            endDate: formattedEndDate,
-            validStatuses: ['success', 'failed', 'rejected']
-          }
-        }
-      );
+      // Get date range for last 7 days
+      const endDate = new Date().toISOString().split('T')[0];
+      const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-      if (error) throw new Error(`Failed to sync orders: ${error.message}`);
-      
-      if (!syncResult) {
-        toast.error("Failed to sync work orders: No response from server");
-        return;
+      // Call the get-orders-with-completion function with saveToDatabase=true
+      const { data, error } = await supabase.functions.invoke('get-orders-with-completion', {
+        body: {
+          startDate,
+          endDate,
+          validStatuses: ['success', 'failed', 'rejected'],
+          saveToDatabase: true // Explicitly request database saving
+        }
+      });
+
+      if (error) {
+        throw new Error(`Error syncing work orders: ${error.message}`);
       }
+
+      // Show success message with stats
+      const savedStats = data.dbSaveStats || { successful: 0, failed: 0 };
       
-      // Step 3: Show the results
-      const { imported, duplicates, errors } = syncResult;
-      
-      if (imported > 0) {
-        toast.success(`Imported ${imported} new work orders`);
-      } else if (duplicates > 0 && imported === 0) {
-        toast.info(`All ${duplicates} orders already exist in the system`);
-      } else if (imported === 0 && duplicates === 0) {
-        toast.info("No new orders found to import");
+      if (savedStats.successful > 0) {
+        toast.success(`Successfully synced ${savedStats.successful} work orders`);
+      } else if (data.filteredCount === 0) {
+        toast.info('No new work orders found to sync');
+      } else {
+        toast.warning('Sync completed but no orders were saved');
       }
-      
-      if (errors > 0) {
-        toast.error(`Failed to import ${errors} orders`);
+
+      // If any failed, show warning
+      if (savedStats.failed > 0) {
+        toast.warning(`Failed to sync ${savedStats.failed} work orders`);
       }
+
+      // Refresh work orders data
+      await queryClient.invalidateQueries({ queryKey: ['workOrders'] });
       
-      // Step 4: Refresh the work orders list
-      queryClient.invalidateQueries({ queryKey: ["workOrders"] });
-      queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
-      
+      return { success: true, data };
     } catch (error) {
-      console.error("Sync error:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to sync work orders");
+      console.error('Error in syncWorkOrders:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to sync work orders');
+      return { success: false, error };
     } finally {
       setIsSyncing(false);
     }
-  };
+  }, [queryClient]);
 
-  return {
-    syncWorkOrders,
-    isSyncing
-  };
-};
+  return { syncWorkOrders, isSyncing };
+}
