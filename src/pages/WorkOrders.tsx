@@ -33,7 +33,8 @@ const WorkOrders = () => {
     setSort,
     pagination,
     handlePageChange,
-    handlePageSizeChange
+    handlePageSizeChange,
+    refetch
   } = useWorkOrderData();
 
   useEffect(() => {

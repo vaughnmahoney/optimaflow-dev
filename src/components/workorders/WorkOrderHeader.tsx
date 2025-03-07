@@ -7,6 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Header } from "@/components/Header";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useWorkOrderSync } from "@/hooks/useWorkOrderSync";
 
 interface WorkOrderHeaderProps {
   onOptimoRouteSearch: (value: string) => void;
@@ -19,6 +20,7 @@ export const WorkOrderHeader = ({
   const [isImporting, setIsImporting] = useState(false);
   const queryClient = useQueryClient();
   const isMobile = useIsMobile();
+  const { syncWorkOrders, isSyncing } = useWorkOrderSync();
 
   const handleImport = async () => {
     if (!importValue.trim()) return;
@@ -50,8 +52,7 @@ export const WorkOrderHeader = ({
   };
 
   const handleRefresh = () => {
-    queryClient.invalidateQueries({ queryKey: ["workOrders"] });
-    toast.success("Work orders refreshed");
+    syncWorkOrders();
   };
 
   return (
@@ -85,9 +86,14 @@ export const WorkOrderHeader = ({
             variant="outline" 
             size="icon" 
             onClick={handleRefresh}
+            disabled={isSyncing}
             className="flex-shrink-0 bg-gray-50"
           >
-            <RefreshCw className="h-4 w-4" />
+            {isSyncing ? (
+              <RefreshCw className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
             <span className="sr-only">Refresh</span>
           </Button>
         </div>
