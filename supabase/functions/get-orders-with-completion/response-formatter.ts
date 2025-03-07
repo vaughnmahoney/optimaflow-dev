@@ -33,8 +33,7 @@ export function formatSuccessResponse(
     filteredCount: filteringMetadata.filteredOrderCount,
     isComplete,
     rawDataSamples,
-    filteringMetadata,
-    // Database save stats will be added by the main function if saveToDatabase=true
+    filteringMetadata
   };
   
   // Return both the data object and a formatted Response object

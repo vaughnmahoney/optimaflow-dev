@@ -1,18 +1,11 @@
 
 import { useState } from "react";
+import { ColumnFilterProps } from "./types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 
-export interface TextFilterProps {
-  column: string;
-  value: string;
-  onChange: (value: string) => void;
-  onClear: () => void;
-  placeholder?: string;
-}
-
-export const TextFilter = ({ column, value, onChange, onClear, placeholder }: TextFilterProps) => {
+export const TextFilter = ({ column, value, onChange, onClear }: ColumnFilterProps) => {
   const [localValue, setLocalValue] = useState(value || "");
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,7 +35,7 @@ export const TextFilter = ({ column, value, onChange, onClear, placeholder }: Te
           value={localValue}
           onChange={handleChange}
           onKeyPress={handleKeyPress}
-          placeholder={placeholder || `Filter ${column}...`}
+          placeholder={`Filter ${column}...`}
           className="h-8 text-sm"
         />
         {localValue && (

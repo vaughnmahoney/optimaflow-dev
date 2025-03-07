@@ -1,3 +1,4 @@
+
 import {
   Table,
   TableBody,
@@ -9,9 +10,7 @@ import { EmptyState } from "./EmptyState";
 import { useSortableTable } from "./useSortableTable";
 import { Pagination } from "./Pagination";
 import { Button } from "@/components/ui/button";
-import { FilterX, CheckSquare, Square } from "lucide-react";
-import { useState } from "react";
-import { BulkActionsBar } from "./BulkActionsBar";
+import { FilterX } from "lucide-react";
 
 interface WorkOrderTableProps {
   workOrders: WorkOrder[];
@@ -28,8 +27,6 @@ interface WorkOrderTableProps {
   onColumnFilterChange: (column: string, value: any) => void;
   onColumnFilterClear: (column: string) => void;
   onClearAllFilters: () => void;
-  onBulkStatusUpdate?: (workOrderIds: string[], newStatus: string) => void;
-  onBulkDelete?: (workOrderIds: string[]) => void;
 }
 
 export const WorkOrderTable = ({ 
@@ -46,9 +43,7 @@ export const WorkOrderTable = ({
   filters,
   onColumnFilterChange,
   onColumnFilterClear,
-  onClearAllFilters,
-  onBulkStatusUpdate,
-  onBulkDelete
+  onClearAllFilters
 }: WorkOrderTableProps) => {
   const { 
     workOrders, 
@@ -62,9 +57,6 @@ export const WorkOrderTable = ({
     externalOnSort
   );
 
-  // Selection state
-  const [selectedWorkOrders, setSelectedWorkOrders] = useState<string[]>([]);
-  
   // Check if any filter is active
   const hasActiveFilters = 
     filters.status !== null || 
@@ -73,31 +65,6 @@ export const WorkOrderTable = ({
     filters.location !== null || 
     filters.dateRange.from !== null || 
     filters.dateRange.to !== null;
-
-  // Handle item selection
-  const handleSelectWorkOrder = (workOrderId: string, isSelected: boolean) => {
-    if (isSelected) {
-      setSelectedWorkOrders(prev => [...prev, workOrderId]);
-    } else {
-      setSelectedWorkOrders(prev => prev.filter(id => id !== workOrderId));
-    }
-  };
-
-  // Select all work orders on current page
-  const handleSelectAll = () => {
-    if (selectedWorkOrders.length === workOrders.length) {
-      // If all are selected, deselect all
-      setSelectedWorkOrders([]);
-    } else {
-      // Otherwise select all
-      setSelectedWorkOrders(workOrders.map(wo => wo.id));
-    }
-  };
-
-  // Clear selection
-  const handleClearSelection = () => {
-    setSelectedWorkOrders([]);
-  };
 
   return (
     <div className="space-y-2">
@@ -118,20 +85,6 @@ export const WorkOrderTable = ({
           </Button>
         </div>
       )}
-      
-      {/* Bulk actions bar */}
-      {selectedWorkOrders.length > 0 && onBulkStatusUpdate && onBulkDelete && (
-        <BulkActionsBar 
-          selectedCount={selectedWorkOrders.length}
-          onApprove={() => onBulkStatusUpdate(selectedWorkOrders, 'approved')}
-          onFlag={() => onBulkStatusUpdate(selectedWorkOrders, 'flagged')}
-          onDelete={() => {
-            onBulkDelete(selectedWorkOrders);
-            setSelectedWorkOrders([]);
-          }}
-          onClearSelection={handleClearSelection}
-        />
-      )}
     
       <div className="rounded-md border">
         <Table>
@@ -142,9 +95,6 @@ export const WorkOrderTable = ({
             filters={filters}
             onFilterChange={onColumnFilterChange}
             onFilterClear={onColumnFilterClear}
-            selectable={true}
-            allSelected={selectedWorkOrders.length === workOrders.length && workOrders.length > 0}
-            onSelectAll={handleSelectAll}
           />
           <TableBody>
             {workOrders.length === 0 ? (
@@ -157,9 +107,6 @@ export const WorkOrderTable = ({
                   onStatusUpdate={onStatusUpdate}
                   onImageView={onImageView}
                   onDelete={onDelete}
-                  selectable={true}
-                  selected={selectedWorkOrders.includes(workOrder.id)}
-                  onSelect={(isSelected) => handleSelectWorkOrder(workOrder.id, isSelected)}
                 />
               ))
             )}

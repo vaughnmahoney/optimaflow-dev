@@ -23,18 +23,15 @@ const WorkOrders = () => {
     clearAllFilters,
     searchOptimoRoute,
     updateWorkOrderStatus,
-    bulkUpdateWorkOrderStatus,
     openImageViewer,
     deleteWorkOrder,
-    bulkDeleteWorkOrders,
     statusCounts,
     sortField,
     sortDirection,
     setSort,
     pagination,
     handlePageChange,
-    handlePageSizeChange,
-    refetch
+    handlePageSizeChange
   } = useWorkOrderData();
 
   useEffect(() => {
@@ -82,8 +79,6 @@ const WorkOrders = () => {
           onColumnFilterChange={onColumnFilterChange}
           clearColumnFilter={clearColumnFilter}
           clearAllFilters={clearAllFilters}
-          onBulkStatusUpdate={bulkUpdateWorkOrderStatus}
-          onBulkDelete={bulkDeleteWorkOrders}
         />
       </div>
     </Layout>

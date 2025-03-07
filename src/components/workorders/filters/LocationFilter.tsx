@@ -1,13 +1,16 @@
 
-import { TextFilter, TextFilterProps } from "./TextFilter";
+import { ColumnFilterProps } from "./types";
+import { TextFilter } from "./TextFilter";
 
-export const LocationFilter = (props: TextFilterProps) => {
+export const LocationFilter = ({ column, value, onChange, onClear }: ColumnFilterProps) => {
   // Similar to TextFilter, but in a real implementation you might
   // fetch a list of locations from the API
   return (
     <TextFilter
-      {...props}
-      placeholder="Filter by location"
+      column={column}
+      value={value}
+      onChange={onChange}
+      onClear={onClear}
     />
   );
 };

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { SortField, SortDirection, PaginationState, WorkOrderFilters } from "@/components/workorders/types";
 import { useWorkOrderFetch } from "./useWorkOrderFetch";
@@ -45,12 +46,7 @@ export const useWorkOrderData = () => {
   
   // Import and mutation methods
   const { searchOptimoRoute } = useWorkOrderImport();
-  const { 
-    updateWorkOrderStatus, 
-    deleteWorkOrder,
-    bulkUpdateWorkOrderStatus,
-    bulkDeleteWorkOrders
-  } = useWorkOrderMutations();
+  const { updateWorkOrderStatus, deleteWorkOrder } = useWorkOrderMutations();
 
   // Handle column filter changes
   const handleColumnFilterChange = (column: string, value: any) => {
@@ -163,10 +159,8 @@ export const useWorkOrderData = () => {
     clearAllFilters,
     searchOptimoRoute,
     updateWorkOrderStatus,
-    bulkUpdateWorkOrderStatus,
     openImageViewer,
     deleteWorkOrder,
-    bulkDeleteWorkOrders,
     statusCounts,
     sortField,
     sortDirection,

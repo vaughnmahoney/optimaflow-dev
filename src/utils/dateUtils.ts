@@ -1,6 +1,4 @@
 
-import { format } from "date-fns";
-
 export const getWeekNumber = (date: Date): number => {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
   const dayNum = d.getUTCDay() || 7;
@@ -21,9 +19,4 @@ export const getWeekEnd = (date: Date): Date => {
   const day = d.getDay();
   const diff = d.getDate() - day + (day === 0 ? 0 : 7);
   return new Date(d.setDate(diff));
-};
-
-// Add the missing formatDate function
-export const formatDate = (date: Date, formatString: string): string => {
-  return format(date, formatString);
 };

@@ -1,4 +1,3 @@
-
 import { ReactNode } from "react";
 
 // Define types for sorting
@@ -160,8 +159,6 @@ export interface WorkOrderListProps {
   onColumnFilterChange: (column: string, value: any) => void;
   clearColumnFilter: (column: string) => void;
   clearAllFilters: () => void;
-  onBulkStatusUpdate?: (workOrderIds: string[], newStatus: string) => void;
-  onBulkDelete?: (workOrderIds: string[]) => void;
 }
 
 export interface StatusFilterProps {

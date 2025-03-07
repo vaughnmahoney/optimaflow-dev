@@ -29,29 +29,6 @@ export const useWorkOrderMutations = () => {
     }
   };
 
-  const bulkUpdateWorkOrderStatus = async (workOrderIds: string[], newStatus: string) => {
-    if (!workOrderIds.length) return;
-    
-    try {
-      // Use the in filter to update multiple records
-      const { error, count } = await supabase
-        .from('work_orders')
-        .update({ status: newStatus })
-        .in('id', workOrderIds);
-
-      if (error) throw error;
-
-      toast.success(`${count || workOrderIds.length} orders updated to ${newStatus}`);
-      
-      // Immediately refetch work orders and the badge count
-      queryClient.invalidateQueries({ queryKey: ["workOrders"] });
-      queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
-    } catch (error) {
-      console.error('Bulk status update error:', error);
-      toast.error('Failed to update orders');
-    }
-  };
-
   const updateWorkOrderQcNotes = async (workOrderId: string, qcNotes: string) => {
     try {
       const { error } = await supabase
@@ -168,33 +145,11 @@ export const useWorkOrderMutations = () => {
     }
   };
 
-  const bulkDeleteWorkOrders = async (workOrderIds: string[]) => {
-    if (!workOrderIds.length) return;
-    
-    try {
-      const { error, count } = await supabase
-        .from('work_orders')
-        .delete()
-        .in('id', workOrderIds);
-
-      if (error) throw error;
-
-      toast.success(`${count || workOrderIds.length} orders deleted`);
-      queryClient.invalidateQueries({ queryKey: ["workOrders"] });
-      queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
-    } catch (error) {
-      console.error('Bulk delete error:', error);
-      toast.error('Failed to delete work orders');
-    }
-  };
-
   return {
     updateWorkOrderStatus,
-    bulkUpdateWorkOrderStatus,
     updateWorkOrderQcNotes,
     updateWorkOrderResolutionNotes,
     resolveWorkOrderFlag,
-    deleteWorkOrder,
-    bulkDeleteWorkOrders
+    deleteWorkOrder
   };
 };
