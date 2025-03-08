@@ -24,7 +24,7 @@ export const useWorkOrderData = () => {
     total: 0
   });
 
-  // Fetch work orders with client-side pagination and filters
+  // Fetch work orders with pagination and filters
   const { data: workOrdersData = { data: [], total: 0 }, isLoading, refetch } = useWorkOrderFetch(
     filters, 
     pagination.page, 
@@ -33,7 +33,7 @@ export const useWorkOrderData = () => {
     sortDirection
   );
   
-  // Update local state with the data
+  // Update total count when data changes
   const workOrders = workOrdersData.data;
   const total = workOrdersData.total;
   
@@ -42,7 +42,7 @@ export const useWorkOrderData = () => {
     setPagination(prev => ({ ...prev, total }));
   }
   
-  // Get status counts for filter cards
+  // Get status counts
   const statusCounts = useWorkOrderStatusCounts(workOrders, filters.status);
   
   // Import and mutation methods
