@@ -7,6 +7,7 @@ import { useWorkOrderMutations } from "./useWorkOrderMutations";
 import { useWorkOrderImport } from "./useWorkOrderImport";
 
 export const useWorkOrderData = () => {
+  // Initialize filter state
   const [filters, setFilters] = useState<WorkOrderFilters>({
     status: null,
     dateRange: { from: null, to: null },
@@ -15,16 +16,18 @@ export const useWorkOrderData = () => {
     orderNo: null
   });
   
-  // Initialize with service_date sorting in descending order (newest first)
+  // Initialize sorting (newest first by default)
   const [sortField, setSortField] = useState<SortField>('service_date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  
+  // Initialize pagination
   const [pagination, setPagination] = useState<PaginationState>({
     page: 1,
     pageSize: 10,
     total: 0
   });
 
-  // Fetch work orders with pagination and filters
+  // Fetch work orders with current filters, pagination and sorting
   const { data: workOrdersData = { data: [], total: 0 }, isLoading, refetch } = useWorkOrderFetch(
     filters, 
     pagination.page, 
@@ -33,7 +36,7 @@ export const useWorkOrderData = () => {
     sortDirection
   );
   
-  // Update total count when data changes
+  // Extract work orders and total count
   const workOrders = workOrdersData.data;
   const total = workOrdersData.total;
   
@@ -42,7 +45,7 @@ export const useWorkOrderData = () => {
     setPagination(prev => ({ ...prev, total }));
   }
   
-  // Get status counts
+  // Calculate status counts from current work orders
   const statusCounts = useWorkOrderStatusCounts(workOrders, filters.status);
   
   // Import and mutation methods
@@ -54,7 +57,6 @@ export const useWorkOrderData = () => {
     setFilters(prev => {
       const newFilters = { ...prev };
       
-      // Handle each column type specifically
       switch (column) {
         case 'order_no':
           newFilters.orderNo = value;
@@ -77,7 +79,7 @@ export const useWorkOrderData = () => {
     });
     
     // Reset to first page when filters change
-    handlePageChange(1);
+    setPagination(prev => ({ ...prev, page: 1 }));
   };
 
   // Clear a specific column filter
@@ -107,7 +109,7 @@ export const useWorkOrderData = () => {
     });
     
     // Reset to first page when filters are cleared
-    handlePageChange(1);
+    setPagination(prev => ({ ...prev, page: 1 }));
   };
 
   // Clear all filters
@@ -121,21 +123,23 @@ export const useWorkOrderData = () => {
     });
     
     // Reset to first page when all filters are cleared
-    handlePageChange(1);
+    setPagination(prev => ({ ...prev, page: 1 }));
   };
 
+  // Image viewer handler
   const openImageViewer = (workOrderId: string) => {
-    // Implementation would depend on how the image viewer is rendered
     console.log(`Opening images for work order: ${workOrderId}`);
   };
 
+  // Sort handler
   const handleSort = (field: SortField, direction: SortDirection) => {
     setSortField(field);
     setSortDirection(direction);
-    // Reset to first page when sorting
-    handlePageChange(1);
+    // Reset to first page when sorting changes
+    setPagination(prev => ({ ...prev, page: 1 }));
   };
   
+  // Pagination handlers
   const handlePageChange = (page: number) => {
     setPagination(prev => ({ ...prev, page }));
   };
@@ -144,10 +148,11 @@ export const useWorkOrderData = () => {
     setPagination(prev => ({ ...prev, pageSize, page: 1 }));
   };
   
+  // Filter change handler with page reset
   const handleFiltersChange = (newFilters: WorkOrderFilters) => {
     setFilters(newFilters);
     // Reset to first page when filters change
-    handlePageChange(1);
+    setPagination(prev => ({ ...prev, page: 1 }));
   };
 
   return {
