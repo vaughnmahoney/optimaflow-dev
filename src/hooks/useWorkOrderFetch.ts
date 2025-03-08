@@ -99,7 +99,37 @@ const applyDatabaseFilters = (query, filters: WorkOrderFilters) => {
     query = query.ilike('order_no', `%${filters.orderNo}%`);
   }
   
-  // Add other database-level filters here as needed
+  // Filter by date range if both dates are provided
+  if (filters.dateRange?.from && filters.dateRange?.to) {
+    const formattedFrom = filters.dateRange.from.toISOString().split('T')[0];
+    const formattedTo = filters.dateRange.to.toISOString().split('T')[0];
+    query = query.gte('timestamp', `${formattedFrom}T00:00:00.000Z`);
+    query = query.lte('timestamp', `${formattedTo}T23:59:59.999Z`);
+  }
+  // Filter by from date only
+  else if (filters.dateRange?.from) {
+    const formattedFrom = filters.dateRange.from.toISOString().split('T')[0];
+    query = query.gte('timestamp', `${formattedFrom}T00:00:00.000Z`);
+  }
+  // Filter by to date only
+  else if (filters.dateRange?.to) {
+    const formattedTo = filters.dateRange.to.toISOString().split('T')[0];
+    query = query.lte('timestamp', `${formattedTo}T23:59:59.999Z`);
+  }
+  
+  // Filter by driver (using driver info stored in JSON)
+  if (filters.driver) {
+    // This assumes driver info is stored in a JSON column 
+    // or can be extracted from completion_response
+    query = query.ilike('search_response::text', `%${filters.driver}%`);
+  }
+  
+  // Filter by location (using location info stored in JSON)
+  if (filters.location) {
+    // This assumes location info is stored in a JSON column
+    // or can be extracted from search_response
+    query = query.ilike('search_response::text', `%${filters.location}%`);
+  }
   
   return query;
 };
@@ -109,8 +139,17 @@ const applyDatabaseFilters = (query, filters: WorkOrderFilters) => {
  */
 const applySorting = (query, sortField: string | null, sortDirection: string | null) => {
   // Apply database-level sorting for fields that are actual columns
-  if (sortField && sortDirection && !['service_date', 'driver', 'location'].includes(sortField)) {
-    query = query.order(sortField, { ascending: sortDirection === 'asc' });
+  if (sortField && sortDirection) {
+    if (sortField === 'order_no' || sortField === 'status') {
+      // These are direct database columns
+      query = query.order(sortField, { ascending: sortDirection === 'asc' });
+    } else if (sortField === 'service_date') {
+      // Assuming service_date is extracted from timestamp 
+      query = query.order('timestamp', { ascending: sortDirection === 'asc' });
+    } else {
+      // Default sort by timestamp
+      query = query.order('timestamp', { ascending: sortDirection === 'asc' });
+    }
   } else {
     // Default sort by timestamp (created_at) descending
     query = query.order('timestamp', { ascending: false });
