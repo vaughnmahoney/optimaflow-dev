@@ -38,7 +38,7 @@ const getServiceDateValue = (order: WorkOrder): Date | null => {
 };
 
 /**
- * Hook to fetch work orders from Supabase with pagination and filtering
+ * Hook to fetch work orders from Supabase with client-side pagination and filtering
  */
 export const useWorkOrderFetch = (
   filters: WorkOrderFilters,
@@ -50,43 +50,12 @@ export const useWorkOrderFetch = (
   return useQuery({
     queryKey: ["workOrders", filters, page, pageSize, sortField, sortDirection],
     queryFn: async () => {
-      // Calculate range for pagination
-      const from = (page - 1) * pageSize;
-      const to = from + pageSize - 1;
-      
-      // We need to fetch all records for client-side filtering, but with pagination
-      // First, get the total count without pagination
-      const countQuery = supabase
-        .from("work_orders")
-        .select("id", { count: "exact", head: true });
-      
-      // Apply database-level filters to count query
-      if (filters.status) {
-        if (filters.status === 'flagged') {
-          countQuery.or('status.eq.flagged,status.eq.flagged_followup');
-        } else {
-          countQuery.eq('status', filters.status);
-        }
-      }
-      
-      if (filters.orderNo) {
-        countQuery.ilike('order_no', `%${filters.orderNo}%`);
-      }
-      
-      // Get the total count of all records matching the database-level filters
-      const { count: totalDBCount, error: countError } = await countQuery;
-      
-      if (countError) {
-        console.error("Error fetching count:", countError);
-        throw countError;
-      }
-      
-      // Start building the query for the current page data
+      // Build the database query with only database-level filters
       let dataQuery = supabase
         .from("work_orders")
         .select("*");
       
-      // Apply database-level filters to data query
+      // Apply database-level filters
       if (filters.status) {
         if (filters.status === 'flagged') {
           dataQuery = dataQuery.or('status.eq.flagged,status.eq.flagged_followup');
@@ -95,26 +64,20 @@ export const useWorkOrderFetch = (
         }
       }
       
-      // Apply column-specific filters that operate on actual database columns
       if (filters.orderNo) {
         dataQuery = dataQuery.ilike('order_no', `%${filters.orderNo}%`);
       }
       
-      // Apply sorting if provided and it's a direct database column
-      if (sortField && sortDirection && 
-          !['service_date', 'driver', 'location'].includes(sortField)) {
-        dataQuery = dataQuery.order(sortField, { ascending: sortDirection === 'asc' });
-      } else {
-        // Default sort by timestamp
-        dataQuery = dataQuery.order("timestamp", { ascending: false });
-      }
+      // Apply default sorting at database level 
+      // (this ensures consistent results for pagination)
+      dataQuery = dataQuery.order("timestamp", { ascending: false });
       
-      // Execute the query with pagination
-      const { data, error } = await dataQuery.range(from, to);
+      // Fetch all matching records (limit to a reasonable amount to prevent performance issues)
+      const { data, error, count } = await dataQuery.limit(1000);
 
       if (error) throw error;
 
-      console.log("Fetched work orders:", data?.length, "Total count:", totalDBCount);
+      console.log("Fetched work orders from database:", data?.length);
 
       // Transform all data to proper WorkOrder objects
       const transformedOrders = data.map(transformWorkOrderData);
@@ -170,8 +133,8 @@ export const useWorkOrderFetch = (
         });
       }
       
-      // Apply client-side sorting for special fields
-      if (sortField && sortDirection && ['service_date', 'driver', 'location'].includes(sortField)) {
+      // Apply client-side sorting
+      if (sortField && sortDirection) {
         filteredData.sort((a, b) => {
           let valueA: any;
           let valueB: any;
@@ -207,19 +170,40 @@ export const useWorkOrderFetch = (
             valueB = b.location && typeof b.location === 'object'
               ? (b.location.name || b.location.locationName || '').toLowerCase() : '';
           }
+          else {
+            // Handle simple field sorting
+            valueA = a[sortField as keyof WorkOrder] || '';
+            valueB = b[sortField as keyof WorkOrder] || '';
+          }
           
-          // For string comparisons (driver and location)
+          // For string comparisons
+          if (typeof valueA === 'string' && typeof valueB === 'string') {
+            return sortDirection === 'asc' 
+              ? valueA.localeCompare(valueB) 
+              : valueB.localeCompare(valueA);
+          }
+          
+          // For other types
           return sortDirection === 'asc' 
-            ? valueA.localeCompare(valueB) 
-            : valueB.localeCompare(valueA);
+            ? (valueA > valueB ? 1 : -1)
+            : (valueB > valueA ? 1 : -1);
         });
       }
       
-      // The important part: Use the total count from the database for pagination
-      // This ensures we show the correct number of pages based on all available records
+      // Calculate total filtered records for pagination
+      const totalFilteredCount = filteredData.length;
+      
+      // Apply client-side pagination after all filtering and sorting
+      const startIndex = (page - 1) * pageSize;
+      const endIndex = startIndex + pageSize;
+      const paginatedData = filteredData.slice(startIndex, endIndex);
+      
+      console.log("After client-side filtering:", filteredData.length);
+      console.log("After pagination:", paginatedData.length, "Page:", page, "PageSize:", pageSize);
+      
       return {
-        data: filteredData,
-        total: totalDBCount || 0
+        data: paginatedData,
+        total: totalFilteredCount
       };
     },
     placeholderData: (previousData) => previousData,
