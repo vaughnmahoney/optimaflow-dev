@@ -22,8 +22,8 @@ export const Pagination = ({
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   
   // Ensure current page is within valid range
-  const currentPage = Math.min(page, totalPages);
-  if (currentPage !== page) {
+  const currentPage = Math.min(Math.max(1, page), totalPages);
+  if (currentPage !== page && total > 0) {
     // If current page is out of range, update it
     setTimeout(() => onPageChange(currentPage), 0);
   }

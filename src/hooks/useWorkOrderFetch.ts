@@ -21,23 +21,23 @@ export const useWorkOrderFetch = (
       console.log("Page:", page, "PageSize:", pageSize);
       console.log("Sort:", sortField, sortDirection);
       
-      // STEP 1: Fetch all work orders with database-level filters
-      // This will be used to calculate the total count of filtered records
-      let query = supabase
+      // STEP 1: Fetch total count of filtered work orders
+      let countQuery = supabase
         .from("work_orders")
-        .select("*");
+        .select("*", { count: 'exact', head: true });
       
       // Apply database-level filters
-      query = applyDatabaseFilters(query, filters);
+      countQuery = applyDatabaseFilters(countQuery, filters);
       
-      // Get total filtered count from database
-      const { count: totalFilteredCount, error: countError } = await query.count();
+      // Execute the count query
+      const { count, error: countError } = await countQuery;
       
       if (countError) {
         console.error("Error fetching count:", countError);
         throw countError;
       }
       
+      const totalFilteredCount = count || 0;
       console.log("Total filtered count from database:", totalFilteredCount);
       
       // STEP 2: Fetch paginated records with the same database filters
@@ -64,15 +64,15 @@ export const useWorkOrderFetch = (
         throw paginatedError;
       }
       
-      console.log(`Fetched ${paginatedData.length} records for page ${page}`);
+      console.log(`Fetched ${paginatedData?.length || 0} records for page ${page}`);
       
       // STEP 3: Transform the data to WorkOrder objects
-      const transformedOrders = paginatedData.map(transformWorkOrderData);
+      const transformedOrders = (paginatedData || []).map(transformWorkOrderData);
       
       // Return the paginated data with the total count
       return {
         data: transformedOrders,
-        total: totalFilteredCount || 0
+        total: totalFilteredCount
       };
     },
     placeholderData: (previousData) => previousData,
