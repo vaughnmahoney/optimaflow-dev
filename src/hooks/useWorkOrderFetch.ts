@@ -1,225 +1,150 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { WorkOrder, WorkOrderFilters } from "@/components/workorders/types";
+import { WorkOrder, WorkOrderFilters, SortField, SortDirection } from "@/components/workorders/types";
 import { transformWorkOrderData } from "@/utils/workOrderUtils";
 
 /**
- * Helper function to get the date value for sorting from a work order
- */
-const getServiceDateValue = (order: WorkOrder): Date | null => {
-  // Try to get the end date from completion data first
-  const endTime = order.completion_response?.orders?.[0]?.data?.endTime?.localTime;
-  
-  if (endTime) {
-    try {
-      const date = new Date(endTime);
-      if (!isNaN(date.getTime())) {
-        return date;
-      }
-    } catch (error) {
-      // If date parsing fails, continue to fallback
-    }
-  }
-  
-  // Fall back to service_date if end date is not available or invalid
-  if (order.service_date) {
-    try {
-      const date = new Date(order.service_date);
-      if (!isNaN(date.getTime())) {
-        return date;
-      }
-    } catch (error) {
-      // If parsing fails, return null
-    }
-  }
-  
-  return null;
-};
-
-/**
  * Hook to fetch work orders from Supabase with pagination and filtering
+ * Implements database-level filtering for all filter types and proper server-side pagination
  */
 export const useWorkOrderFetch = (
   filters: WorkOrderFilters,
   page: number = 1,
   pageSize: number = 10,
-  sortField: string | null = 'service_date',
-  sortDirection: string | null = 'desc'
+  sortField: SortField = 'service_date',
+  sortDirection: SortDirection = 'desc'
 ) => {
   return useQuery({
     queryKey: ["workOrders", filters, page, pageSize, sortField, sortDirection],
     queryFn: async () => {
+      console.log("Fetching work orders with:", { 
+        filters, 
+        page, 
+        pageSize, 
+        sortField, 
+        sortDirection 
+      });
+      
       // Calculate range for pagination
       const from = (page - 1) * pageSize;
       const to = from + pageSize - 1;
       
-      // We need to fetch all records for client-side filtering, but with pagination
-      // First, get the total count without pagination
-      const countQuery = supabase
+      // Start building the count query to get total count of filtered records
+      let countQuery = supabase
         .from("work_orders")
         .select("id", { count: "exact", head: true });
       
-      // Apply database-level filters to count query
+      // Start building the data query to fetch the current page of records
+      let dataQuery = supabase
+        .from("work_orders")
+        .select("*");
+      
+      // Apply all filters to both queries
+      
+      // 1. Status filtering
       if (filters.status) {
         if (filters.status === 'flagged') {
-          countQuery.or('status.eq.flagged,status.eq.flagged_followup');
+          countQuery = countQuery.or('status.eq.flagged,status.eq.flagged_followup');
+          dataQuery = dataQuery.or('status.eq.flagged,status.eq.flagged_followup');
         } else {
-          countQuery.eq('status', filters.status);
+          countQuery = countQuery.eq('status', filters.status);
+          dataQuery = dataQuery.eq('status', filters.status);
         }
       }
       
+      // 2. Order number filtering (simple text column)
       if (filters.orderNo) {
-        countQuery.ilike('order_no', `%${filters.orderNo}%`);
+        countQuery = countQuery.ilike('order_no', `%${filters.orderNo}%`);
+        dataQuery = dataQuery.ilike('order_no', `%${filters.orderNo}%`);
       }
       
-      // Get the total count of all records matching the database-level filters
-      const { count: totalDBCount, error: countError } = await countQuery;
+      // 3. Date range filtering - needs special handling
+      if (filters.dateRange && filters.dateRange.from) {
+        // We look for the service_date in the search response JSON 
+        // Using Postgres JSONB operators to filter by date
+        countQuery = countQuery.gte('search_response->data->date', filters.dateRange.from.toISOString().split('T')[0]);
+        dataQuery = dataQuery.gte('search_response->data->date', filters.dateRange.from.toISOString().split('T')[0]);
+      }
+      
+      if (filters.dateRange && filters.dateRange.to) {
+        // We need to add a day to the end date to include that day (inclusive range)
+        const toDate = new Date(filters.dateRange.to);
+        toDate.setDate(toDate.getDate() + 1);
+        countQuery = countQuery.lt('search_response->data->date', toDate.toISOString().split('T')[0]);
+        dataQuery = dataQuery.lt('search_response->data->date', toDate.toISOString().split('T')[0]);
+      }
+      
+      // 4. Driver filtering with JSONB
+      if (filters.driver) {
+        // Driver name is in the JSON, we need to use JSON path operators
+        // We're using text_search to search for the driver name within the JSON
+        countQuery = countQuery.textSearch('search_response', filters.driver, { config: 'english' });
+        dataQuery = dataQuery.textSearch('search_response', filters.driver, { config: 'english' });
+      }
+      
+      // 5. Location filtering with JSONB
+      if (filters.location) {
+        // Location name is in the JSON, we need to use JSON path operators
+        // We're using text_search to search for the location name within the JSON
+        countQuery = countQuery.textSearch('search_response', filters.location, { config: 'english' });
+        dataQuery = dataQuery.textSearch('search_response', filters.location, { config: 'english' });
+      }
+      
+      // Execute the count query to get total filtered records
+      const { count, error: countError } = await countQuery;
       
       if (countError) {
         console.error("Error fetching count:", countError);
         throw countError;
       }
       
-      // Start building the query for the current page data
-      let dataQuery = supabase
-        .from("work_orders")
-        .select("*");
-      
-      // Apply database-level filters to data query
-      if (filters.status) {
-        if (filters.status === 'flagged') {
-          dataQuery = dataQuery.or('status.eq.flagged,status.eq.flagged_followup');
-        } else {
-          dataQuery = dataQuery.eq('status', filters.status);
+      // Apply sorting to data query
+      if (sortField && sortDirection) {
+        if (sortField === 'order_no' || sortField === 'status') {
+          // Direct column sort
+          dataQuery = dataQuery.order(sortField, { ascending: sortDirection === 'asc' });
+        } 
+        else if (sortField === 'service_date') {
+          // Sort by date in the JSON
+          dataQuery = dataQuery.order('search_response->data->date', { ascending: sortDirection === 'asc' });
         }
-      }
-      
-      // Apply column-specific filters that operate on actual database columns
-      if (filters.orderNo) {
-        dataQuery = dataQuery.ilike('order_no', `%${filters.orderNo}%`);
-      }
-      
-      // Apply sorting if provided and it's a direct database column
-      if (sortField && sortDirection && 
-          !['service_date', 'driver', 'location'].includes(sortField)) {
-        dataQuery = dataQuery.order(sortField, { ascending: sortDirection === 'asc' });
+        else {
+          // Default fallback to timestamp sorting
+          dataQuery = dataQuery.order('timestamp', { ascending: sortDirection === 'asc' });
+        }
       } else {
-        // Default sort by timestamp
-        dataQuery = dataQuery.order("timestamp", { ascending: false });
+        // Default sort if no criteria specified
+        dataQuery = dataQuery.order('timestamp', { ascending: false });
       }
       
-      // Execute the query with pagination
-      const { data, error } = await dataQuery.range(from, to);
-
-      if (error) throw error;
-
-      console.log("Fetched work orders:", data?.length, "Total count:", totalDBCount);
-
-      // Transform all data to proper WorkOrder objects
+      // Apply pagination to data query
+      dataQuery = dataQuery.range(from, to);
+      
+      // Execute the data query
+      const { data, error } = await dataQuery;
+      
+      if (error) {
+        console.error("Error fetching work orders:", error);
+        throw error;
+      }
+      
+      console.log(`Fetched ${data?.length} work orders out of ${count} total matching records`);
+      
+      // Transform to proper WorkOrder objects
       const transformedOrders = data.map(transformWorkOrderData);
       
-      // Apply client-side filtering for fields stored within JSON
+      // Since we've moved all filtering to the database level,
+      // We'll only do additional filtering here for edge cases
+      // that Postgres can't handle well
+      
+      // Apply additional client-side filtering if needed
       let filteredData = transformedOrders;
       
-      // Client-side filters for JSON fields
-      if (filters.driver) {
-        const driverSearchTerm = filters.driver.toLowerCase();
-        filteredData = filteredData.filter(order => {
-          if (!order.driver) return false;
-          const driverName = typeof order.driver === 'object' && order.driver.name
-            ? order.driver.name.toLowerCase() : '';
-          return driverName.includes(driverSearchTerm);
-        });
-      }
-      
-      if (filters.location) {
-        const locationSearchTerm = filters.location.toLowerCase();
-        filteredData = filteredData.filter(order => {
-          if (!order.location) return false;
-          if (typeof order.location !== 'object') return false;
-          
-          const locationName = (order.location.name || order.location.locationName || '').toLowerCase();
-          return locationName.includes(locationSearchTerm);
-        });
-      }
-      
-      if (filters.dateRange && (filters.dateRange.from || filters.dateRange.to)) {
-        filteredData = filteredData.filter(order => {
-          // Get the date using our helper function
-          const orderDate = getServiceDateValue(order);
-          if (!orderDate) return false;
-          
-          // Check "from" date if specified
-          if (filters.dateRange.from) {
-            const fromDate = new Date(filters.dateRange.from);
-            fromDate.setHours(0, 0, 0, 0);
-            
-            if (orderDate < fromDate) return false;
-          }
-          
-          // Check "to" date if specified
-          if (filters.dateRange.to) {
-            const toDate = new Date(filters.dateRange.to);
-            toDate.setHours(23, 59, 59, 999);
-            
-            if (orderDate > toDate) return false;
-          }
-          
-          return true;
-        });
-      }
-      
-      // Apply client-side sorting for special fields
-      if (sortField && sortDirection && ['service_date', 'driver', 'location'].includes(sortField)) {
-        filteredData.sort((a, b) => {
-          let valueA: any;
-          let valueB: any;
-          
-          if (sortField === 'service_date') {
-            // Use our helper function to get dates for sorting
-            const dateA = getServiceDateValue(a);
-            const dateB = getServiceDateValue(b);
-            
-            // Handle invalid dates
-            const validA = dateA !== null;
-            const validB = dateB !== null;
-            
-            // If one date is valid and the other isn't, the valid one comes first
-            if (validA && !validB) return sortDirection === 'asc' ? -1 : 1;
-            if (!validA && validB) return sortDirection === 'asc' ? 1 : -1;
-            // If both are invalid, they're considered equal
-            if (!validA && !validB) return 0;
-            
-            return sortDirection === 'asc' ? dateA!.getTime() - dateB!.getTime() : dateB!.getTime() - dateA!.getTime();
-          } 
-          else if (sortField === 'driver') {
-            // Handle driver sorting
-            valueA = a.driver && typeof a.driver === 'object' && a.driver.name
-              ? a.driver.name.toLowerCase() : '';
-            valueB = b.driver && typeof b.driver === 'object' && b.driver.name
-              ? b.driver.name.toLowerCase() : '';
-          } 
-          else if (sortField === 'location') {
-            // Handle location sorting
-            valueA = a.location && typeof a.location === 'object' 
-              ? (a.location.name || a.location.locationName || '').toLowerCase() : '';
-            valueB = b.location && typeof b.location === 'object'
-              ? (b.location.name || b.location.locationName || '').toLowerCase() : '';
-          }
-          
-          // For string comparisons (driver and location)
-          return sortDirection === 'asc' 
-            ? valueA.localeCompare(valueB) 
-            : valueB.localeCompare(valueA);
-        });
-      }
-      
-      // The important part: Use the total count from the database for pagination
-      // This ensures we show the correct number of pages based on all available records
+      // Return both the data and total count for pagination
       return {
         data: filteredData,
-        total: totalDBCount || 0
+        total: count || 0
       };
     },
     placeholderData: (previousData) => previousData,

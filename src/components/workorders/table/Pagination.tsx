@@ -21,8 +21,17 @@ export const Pagination = ({
   // Calculate total pages
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   
+  // Ensure current page is not out of bounds
+  const currentPage = Math.min(page, totalPages);
+  
+  // If the current page is different from the page prop, adjust it
+  if (currentPage !== page && totalPages > 0) {
+    // This will trigger a re-render with the correct page
+    setTimeout(() => onPageChange(currentPage), 0);
+  }
+  
   // Calculate displayed page range
-  const firstItem = Math.min((page - 1) * pageSize + 1, total);
+  const firstItem = total === 0 ? 0 : Math.min((page - 1) * pageSize + 1, total);
   const lastItem = Math.min(page * pageSize, total);
   
   return (

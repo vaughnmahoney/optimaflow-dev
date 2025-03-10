@@ -33,7 +33,7 @@ export const useWorkOrderData = () => {
     sortDirection
   );
   
-  // Update total count when data changes
+  // Get work orders and total count from the data
   const workOrders = workOrdersData.data;
   const total = workOrdersData.total;
   
@@ -125,7 +125,6 @@ export const useWorkOrderData = () => {
   };
 
   const openImageViewer = (workOrderId: string) => {
-    // Implementation would depend on how the image viewer is rendered
     console.log(`Opening images for work order: ${workOrderId}`);
   };
 
@@ -137,10 +136,14 @@ export const useWorkOrderData = () => {
   };
   
   const handlePageChange = (page: number) => {
-    setPagination(prev => ({ ...prev, page }));
+    // Ensure page is at least 1
+    const newPage = Math.max(1, page);
+    // Update pagination state
+    setPagination(prev => ({ ...prev, page: newPage }));
   };
   
   const handlePageSizeChange = (pageSize: number) => {
+    // Update pagination with new page size and reset to page 1
     setPagination(prev => ({ ...prev, pageSize, page: 1 }));
   };
   
