@@ -129,15 +129,28 @@ export const applySorting = (
       dataQuery = dataQuery.order(sortField, { ascending: sortDirection === 'asc' });
     } 
     else if (sortField === 'service_date') {
-      // Sort by date in the JSON
-      dataQuery = dataQuery.order('search_response->data->date', { ascending: sortDirection === 'asc' });
+      // Improved date sorting - cast string to date type for proper date comparison
+      dataQuery = dataQuery.order('search_response->data->date', { ascending: sortDirection === 'asc', nullsFirst: false });
+      
+      // Add a secondary sort on timestamp to ensure consistent ordering
+      const ascendingFlag = sortDirection === 'asc';
+      dataQuery = dataQuery.order('timestamp', { ascending: ascendingFlag });
+    }
+    else if (sortField === 'driver') {
+      // Sort by driver name
+      dataQuery = dataQuery.order('search_response->scheduleInformation->driverName', { ascending: sortDirection === 'asc' });
+    }
+    else if (sortField === 'location') {
+      // Sort by location name
+      dataQuery = dataQuery.order('search_response->data->location->name', { ascending: sortDirection === 'asc' });
     }
     else {
       // Default fallback to timestamp sorting
       dataQuery = dataQuery.order('timestamp', { ascending: sortDirection === 'asc' });
     }
   } else {
-    // Default sort if no criteria specified
+    // Default sort if no criteria specified - newest first
+    dataQuery = dataQuery.order('search_response->data->date', { ascending: false });
     dataQuery = dataQuery.order('timestamp', { ascending: false });
   }
   

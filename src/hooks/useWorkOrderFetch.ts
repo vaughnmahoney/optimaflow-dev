@@ -49,6 +49,8 @@ export const useWorkOrderFetch = (
       // Execute the count query to get total filtered records
       const count = await executeCountQuery(countQuery);
       
+      console.log(`Total matching records before sorting/pagination: ${count}`);
+      
       // Apply sorting to data query
       dataQuery = applySorting(dataQuery, sortField, sortDirection);
       
@@ -59,6 +61,18 @@ export const useWorkOrderFetch = (
       const data = await executeDataQuery(dataQuery);
       
       console.log(`Fetched ${data.length} work orders out of ${count} total matching records`);
+      
+      if (data.length > 0) {
+        // Log first and last dates for debugging
+        try {
+          const dates = data.map(item => {
+            return item.search_response?.data?.date || 'unknown date';
+          });
+          console.log(`Date range in this page: ${dates[0]} to ${dates[dates.length - 1]}`);
+        } catch (error) {
+          console.error("Error logging date debug info:", error);
+        }
+      }
       
       // Transform to proper WorkOrder objects
       const transformedOrders = transformWorkOrderResults(data);

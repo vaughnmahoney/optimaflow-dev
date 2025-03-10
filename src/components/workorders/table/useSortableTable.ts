@@ -22,11 +22,22 @@ export const useSortableTable = (
     }
   }, [externalSortField, externalSortDirection]);
 
-  // Get end date from completion data, or fall back to service_date
+  // Get best available date from work order data
   const getServiceDateValue = (order: WorkOrder): Date | null => {
-    // Try to get the end date from completion data first
-    const endTime = order.completion_response?.orders?.[0]?.data?.endTime?.localTime;
+    // First try to use service_date if available
+    if (order.service_date) {
+      try {
+        const date = new Date(order.service_date);
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
+      } catch (error) {
+        // If parsing fails, continue to fallbacks
+      }
+    }
     
+    // Try to get the end date from completion data as fallback
+    const endTime = order.completion_response?.orders?.[0]?.data?.endTime?.localTime;
     if (endTime) {
       try {
         const date = new Date(endTime);
@@ -38,10 +49,10 @@ export const useSortableTable = (
       }
     }
     
-    // Fall back to service_date if end date is not available or invalid
-    if (order.service_date) {
+    // Finally, fall back to timestamp if available
+    if (order.timestamp) {
       try {
-        const date = new Date(order.service_date);
+        const date = new Date(order.timestamp);
         if (!isNaN(date.getTime())) {
           return date;
         }
@@ -53,8 +64,15 @@ export const useSortableTable = (
     return null;
   };
 
-  // Sort the work orders when sort criteria or data changes
+  // Only perform client-side sorting if we're NOT using external sorting
+  // This prevents double-sorting (once on server, once on client)
   useEffect(() => {
+    // If using external sort, don't client-side sort
+    if (externalSortField !== undefined && externalSortDirection !== undefined) {
+      setWorkOrders(initialWorkOrders);
+      return;
+    }
+    
     let sortedWorkOrders = [...initialWorkOrders];
     
     if (sortField && sortDirection) {
@@ -138,26 +156,21 @@ export const useSortableTable = (
     }
     
     setWorkOrders(sortedWorkOrders);
-  }, [initialWorkOrders, sortField, sortDirection]);
+  }, [initialWorkOrders, sortField, sortDirection, externalSortField, externalSortDirection]);
 
   const handleSort = (field: SortField) => {
-    let newDirection: SortDirection = null;
+    let newDirection: SortDirection = 'asc';
     
     if (field === sortField) {
-      // Cycle through: null -> asc -> desc -> null
-      if (sortDirection === null) newDirection = 'asc';
-      else if (sortDirection === 'asc') newDirection = 'desc';
-      else newDirection = null;
-    } else {
-      // New field, start with ascending
-      newDirection = 'asc';
+      // Toggle between asc and desc
+      newDirection = sortDirection === 'asc' ? 'desc' : 'asc';
     }
     
-    setSortField(newDirection === null ? null : field);
+    setSortField(field);
     setSortDirection(newDirection);
     
     if (externalOnSort) {
-      externalOnSort(newDirection === null ? null : field, newDirection);
+      externalOnSort(field, newDirection);
     }
   };
 
