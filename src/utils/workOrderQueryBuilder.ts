@@ -124,29 +124,31 @@ export const applySorting = (
   sortDirection: SortDirection = 'desc'
 ) => {
   if (sortField && sortDirection) {
+    const isAscending = sortDirection === 'asc';
+    
     if (sortField === 'order_no' || sortField === 'status') {
       // Direct column sort
-      dataQuery = dataQuery.order(sortField, { ascending: sortDirection === 'asc' });
+      dataQuery = dataQuery.order(sortField, { ascending: isAscending });
     } 
     else if (sortField === 'service_date') {
-      // Improved date sorting - cast string to date type for proper date comparison
-      dataQuery = dataQuery.order('search_response->data->date', { ascending: sortDirection === 'asc', nullsFirst: false });
+      // For service_date, apply a multi-level sorting approach
+      // First sort by the date field
+      dataQuery = dataQuery.order('search_response->data->date', { ascending: isAscending });
       
-      // Add a secondary sort on timestamp to ensure consistent ordering
-      const ascendingFlag = sortDirection === 'asc';
-      dataQuery = dataQuery.order('timestamp', { ascending: ascendingFlag });
+      // Add a secondary sort using timestamp for consistent ordering within same date
+      dataQuery = dataQuery.order('timestamp', { ascending: isAscending });
     }
     else if (sortField === 'driver') {
       // Sort by driver name
-      dataQuery = dataQuery.order('search_response->scheduleInformation->driverName', { ascending: sortDirection === 'asc' });
+      dataQuery = dataQuery.order('search_response->scheduleInformation->driverName', { ascending: isAscending });
     }
     else if (sortField === 'location') {
       // Sort by location name
-      dataQuery = dataQuery.order('search_response->data->location->name', { ascending: sortDirection === 'asc' });
+      dataQuery = dataQuery.order('search_response->data->location->name', { ascending: isAscending });
     }
     else {
       // Default fallback to timestamp sorting
-      dataQuery = dataQuery.order('timestamp', { ascending: sortDirection === 'asc' });
+      dataQuery = dataQuery.order('timestamp', { ascending: isAscending });
     }
   } else {
     // Default sort if no criteria specified - newest first
