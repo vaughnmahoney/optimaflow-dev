@@ -26,8 +26,7 @@ export const WorkOrderList = ({
   onPageSizeChange,
   onColumnFilterChange,
   clearColumnFilter,
-  clearAllFilters,
-  onResolveFlag  // Added this prop
+  clearAllFilters
 }: WorkOrderListProps) => {
   const [searchResponse, setSearchResponse] = useState<any>(null);
   const [transformedData, setTransformedData] = useState<any>(null);
@@ -104,8 +103,6 @@ export const WorkOrderList = ({
           onClose={() => setIsImageModalOpen(false)}
           onStatusUpdate={onStatusUpdate}
           onNavigate={handleNavigate}
-          onDownloadAll={onDownloadAll}
-          onResolveFlag={onResolveFlag}  // Passing this prop
         />
       )}
     </div>

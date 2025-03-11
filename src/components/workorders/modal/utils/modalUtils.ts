@@ -38,25 +38,3 @@ export const calculateDuration = (startTime?: string, endTime?: string) => {
     return "N/A";
   }
 };
-
-// Helper to add visual indication to status buttons
-export const getStatusButtonStyle = (currentStatus: string, buttonStatus: string) => {
-  const isActive = currentStatus === buttonStatus;
-  
-  switch (buttonStatus) {
-    case "approved":
-      return isActive 
-        ? "bg-green-100 text-green-700 hover:bg-green-200 border border-green-300" 
-        : "bg-green-500 hover:bg-green-600 text-white";
-    case "flagged":
-      return isActive 
-        ? "bg-red-100 text-red-700 hover:bg-red-200 border border-red-300" 
-        : "bg-red-500 hover:bg-red-600 text-white";
-    case "resolved":
-      return isActive 
-        ? "bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-300" 
-        : "bg-purple-500 hover:bg-purple-600 text-white";
-    default:
-      return "bg-gray-500 hover:bg-gray-600 text-white";
-  }
-};

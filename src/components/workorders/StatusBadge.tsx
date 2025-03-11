@@ -25,21 +25,9 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
     }
   };
 
-  // Get the status label
-  const getStatusLabel = () => {
-    switch (status) {
-      case "approved":
-        return "APPROVED";
-      case "pending_review":
-        return "PENDING";
-      case "flagged":
-      case "flagged_followup":
-        return "FLAGGED";
-      case "resolved":
-        return "RESOLVED";
-      default:
-        return status.toUpperCase().replace(/_/g, " ");
-    }
+  // Get the success label for the completion status
+  const getSuccessLabel = () => {
+    return "SUCCESS";
   };
 
   // Get the QC status styling
@@ -51,7 +39,7 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
       title={`QC Status: ${status.replace(/_/g, " ").toUpperCase()}`}
     >
       {icon}
-      {getStatusLabel()}
+      {getSuccessLabel()}
     </Badge>
   );
 };

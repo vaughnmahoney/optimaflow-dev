@@ -1,16 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { 
-  Check, 
-  Download, 
-  Flag, 
-  RotateCcw, 
-  ThumbsDown, 
-  ThumbsUp, 
-  CheckCheck, 
-  RefreshCw,
-  Undo
-} from "lucide-react";
+import { Check, Download, Flag, RotateCcw, ThumbsDown, ThumbsUp, CheckCheck } from "lucide-react";
 
 interface ModalFooterProps {
   workOrderId: string;
@@ -29,73 +19,36 @@ export const ModalFooter = ({
   status,
   onResolveFlag
 }: ModalFooterProps) => {
-  // Determine current order states
-  const isPending = status === "pending_review";
-  const isApproved = status === "approved";
+  // Determine if this order is in a flagged state
   const isFlagged = status === "flagged" || status === "flagged_followup";
   const isResolved = status === "resolved";
-  
-  // Only render buttons if we have the callback to update status
-  if (!onStatusUpdate) {
-    return null;
-  }
   
   return (
     <div className="p-3 bg-white dark:bg-gray-950 border-t flex justify-between items-center">
       <div className="flex gap-2">
-        {/* Approve button - always visible for toggling */}
-        <Button 
-          variant="custom"
-          className={`${isApproved 
-            ? "bg-green-100 text-green-700 hover:bg-green-200 border border-green-300" 
-            : "bg-green-500 hover:bg-green-600 text-white"} 
-            font-medium rounded-md transition-colors shadow-sm`}
-          onClick={() => onStatusUpdate(workOrderId, isApproved ? "pending_review" : "approved")}
-        >
-          <Check className="mr-1 h-4 w-4" />
-          {isApproved ? "Approved ✓" : "Approve"}
-        </Button>
-        
-        {/* Flag button - always visible except when resolved */}
-        {!isResolved && (
-          <Button 
-            variant="custom"
-            className={`${isFlagged 
-              ? "bg-red-100 text-red-700 hover:bg-red-200 border border-red-300" 
-              : "bg-red-500 hover:bg-red-600 text-white"} 
-              font-medium rounded-md transition-colors shadow-sm`}
-            onClick={() => onStatusUpdate(workOrderId, isFlagged ? "pending_review" : "flagged")}
-          >
-            <Flag className="mr-1 h-4 w-4" />
-            {isFlagged ? "Flagged ✓" : "Flag for Review"}
-          </Button>
+        {/* Show approve/flag buttons only for pending review orders */}
+        {onStatusUpdate && !isFlagged && !isResolved && (
+          <>
+            <Button 
+              variant="custom"
+              className="bg-green-500 hover:bg-green-600 text-white font-medium rounded-md transition-colors shadow-sm"
+              onClick={() => onStatusUpdate(workOrderId, "approved")}
+            >
+              <Check className="mr-1 h-4 w-4" />
+              Approve
+            </Button>
+            <Button 
+              variant="custom"
+              className="bg-red-500 hover:bg-red-600 text-white font-medium rounded-md transition-colors shadow-sm"
+              onClick={() => onStatusUpdate(workOrderId, "flagged")}
+            >
+              <Flag className="mr-1 h-4 w-4" />
+              Flag for Review
+            </Button>
+          </>
         )}
         
-        {/* Resolve button - only for flagged orders */}
-        {isFlagged && (
-          <Button 
-            variant="custom"
-            className="bg-purple-500 hover:bg-purple-600 text-white font-medium rounded-md transition-colors shadow-sm"
-            onClick={() => onStatusUpdate(workOrderId, "resolved")}
-          >
-            <CheckCheck className="mr-1 h-4 w-4" />
-            Mark as Resolved
-          </Button>
-        )}
-        
-        {/* Return to flagged button - only for resolved orders */}
-        {isResolved && (
-          <Button 
-            variant="custom"
-            className="bg-red-500 hover:bg-red-600 text-white font-medium rounded-md transition-colors shadow-sm"
-            onClick={() => onStatusUpdate(workOrderId, "flagged")}
-          >
-            <Undo className="mr-1 h-4 w-4" />
-            Return to Flagged
-          </Button>
-        )}
-        
-        {/* Resolution buttons - only when flagged and onResolveFlag handler exists */}
+        {/* Show resolution buttons only for flagged orders */}
         {onResolveFlag && isFlagged && (
           <>
             <Button 
@@ -125,7 +78,19 @@ export const ModalFooter = ({
           </>
         )}
         
-        {/* Resolved status indicator if order is resolved */}
+        {/* Add Mark as Resolved button for flagged orders */}
+        {onStatusUpdate && isFlagged && (
+          <Button 
+            variant="custom"
+            className="bg-purple-500 hover:bg-purple-600 text-white font-medium rounded-md transition-colors shadow-sm"
+            onClick={() => onStatusUpdate(workOrderId, "resolved")}
+          >
+            <CheckCheck className="mr-1 h-4 w-4" />
+            Mark as Resolved
+          </Button>
+        )}
+        
+        {/* Show resolved status indicator if the order is resolved */}
         {isResolved && (
           <div className="flex items-center gap-2 bg-purple-100 text-purple-700 px-3 py-1.5 rounded-md">
             <CheckCheck className="h-4 w-4" />
@@ -133,7 +98,6 @@ export const ModalFooter = ({
           </div>
         )}
       </div>
-      
       <div>
         {onDownloadAll && hasImages && (
           <Button 
