@@ -125,12 +125,16 @@ export const calculateStatusCounts = (workOrders: WorkOrder[]) => {
     approved: 0,
     pending_review: 0,
     flagged: 0,
+    resolved: 0,
     all: workOrders.length
   };
   
   workOrders.forEach(order => {
     // Count both "flagged" and "flagged_followup" as flagged for the status cards
-    const status = order.status === "flagged_followup" ? "flagged" : order.status;
+    let status = order.status;
+    if (status === "flagged_followup") {
+      status = "flagged";
+    }
     
     if (status && counts[status] !== undefined) {
       counts[status]++;

@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Check, Flag, Clock } from "lucide-react";
+import { Check, Flag, Clock, CheckCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -11,6 +11,7 @@ interface StatusFilterCardsProps {
     approved: number;
     pending_review: number;
     flagged: number;
+    resolved: number;
     all?: number;
   };
 }
@@ -30,7 +31,8 @@ export const StatusFilterCards = ({
       color: "bg-green-500",
       ringColor: "ring-green-500",
       hoverColor: "hover:bg-green-600",
-      textColor: "text-green-500" 
+      textColor: "text-green-500",
+      lightBg: "bg-green-50"
     },
     { 
       label: "Pending Review", 
@@ -39,7 +41,8 @@ export const StatusFilterCards = ({
       color: "bg-yellow-500",
       ringColor: "ring-yellow-500",
       hoverColor: "hover:bg-yellow-600",
-      textColor: "text-yellow-500" 
+      textColor: "text-yellow-500",
+      lightBg: "bg-yellow-50"
     },
     { 
       label: "Flagged", 
@@ -48,12 +51,23 @@ export const StatusFilterCards = ({
       color: "bg-red-500",
       ringColor: "ring-red-500",
       hoverColor: "hover:bg-red-600",
-      textColor: "text-red-500" 
+      textColor: "text-red-500",
+      lightBg: "bg-red-50"
+    },
+    { 
+      label: "Resolved", 
+      value: "resolved", 
+      icon: CheckCheck, 
+      color: "bg-purple-500",
+      ringColor: "ring-purple-500",
+      hoverColor: "hover:bg-purple-600",
+      textColor: "text-purple-500",
+      lightBg: "bg-purple-50"
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 w-full mb-2 sm:mb-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 w-full mb-2 sm:mb-4">
       {statuses.map((status) => {
         const isActive = statusFilter === status.value;
         const count = statusCounts[status.value] || 0;
@@ -62,10 +76,10 @@ export const StatusFilterCards = ({
           <Card 
             key={status.value}
             className={cn(
-              "cursor-pointer transition-all overflow-hidden group shadow-sm",
+              "cursor-pointer transition-all overflow-hidden group shadow-sm hover:shadow-md",
               isActive 
                 ? `ring-2 ring-offset-1 sm:ring-offset-2 ${status.ringColor}` 
-                : `hover:shadow-md ${status.hoverColor}`
+                : `hover:translate-y-[-2px] ${status.hoverColor}`
             )}
             onClick={() => onStatusFilterChange(
               statusFilter === status.value ? null : status.value
@@ -79,21 +93,26 @@ export const StatusFilterCards = ({
               aria-hidden="true"
             />
             <CardContent className={cn(
-              "p-2 sm:p-3 flex items-center justify-between transition-colors",
-              isActive ? `${status.color} text-white` : "bg-white"
+              "p-3 sm:p-4 flex items-center justify-between transition-colors",
+              isActive ? `${status.color} text-white` : cn("bg-white", status.lightBg)
             )}>
-              <div className="flex items-center gap-2">
-                <status.icon 
-                  size={isMobile ? 16 : 18} 
-                  className={isActive ? "text-white" : status.textColor} 
-                />
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className={cn(
+                  "flex items-center justify-center w-7 h-7 rounded-full",
+                  isActive ? "bg-white/20" : status.color
+                )}>
+                  <status.icon 
+                    size={isMobile ? 16 : 18} 
+                    className={isActive ? "text-white" : "text-white"} 
+                  />
+                </div>
                 <h3 className={`font-medium ${isMobile ? 'text-sm' : ''}`}>{status.label}</h3>
               </div>
               
               {/* Count badges */}
               <div className={cn(
-                "w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-xs font-medium",
-                isActive ? "bg-white text-gray-800" : `bg-gray-100 ${status.textColor}`
+                "w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-xs font-medium shadow-sm",
+                isActive ? "bg-white text-gray-800" : `bg-white ${status.textColor} border border-gray-100`
               )}>
                 {count}
               </div>

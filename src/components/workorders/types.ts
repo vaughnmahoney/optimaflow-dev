@@ -1,3 +1,4 @@
+
 import { ReactNode } from "react";
 
 // Define types for sorting
@@ -148,6 +149,7 @@ export interface WorkOrderListProps {
     approved: number;
     pending_review: number;
     flagged: number;
+    resolved: number;
     all?: number;
   };
   sortField?: SortField;

@@ -18,6 +18,8 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
       case "flagged":
       case "flagged_followup":
         return "bg-red-500";
+      case "resolved":
+        return "bg-purple-500";
       default:
         return "bg-gray-400";
     }
@@ -69,7 +71,7 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
 
   return (
     <div className="relative inline-flex">
-      <Badge className={`${getBadgeColor()} text-white pr-5`}>
+      <Badge className={`${getBadgeColor()} text-white pr-5 shadow-sm`}>
         {getCompletionStatusText()}
       </Badge>
       <div 

@@ -6,7 +6,10 @@ export const getStatusBorderColor = (status: string) => {
     case "approved":
       return "border-green-500";
     case "flagged":
+    case "flagged_followup":
       return "border-red-500";
+    case "resolved":
+      return "border-purple-500";
     case "pending_review":
     default:
       return "border-yellow-500";

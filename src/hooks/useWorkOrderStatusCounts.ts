@@ -23,13 +23,17 @@ export const useWorkOrderStatusCounts = (workOrders: WorkOrder[], statusFilter: 
             approved: 0,
             pending_review: 0,
             flagged: 0,
+            resolved: 0,
             all: 0
           };
           
           data.forEach(order => {
             const status = order.status || 'pending_review';
-            if (dbCounts[status] !== undefined) {
-              dbCounts[status]++;
+            // Group flagged_followup under flagged for the counts
+            const normalizedStatus = status === 'flagged_followup' ? 'flagged' : status;
+            
+            if (dbCounts[normalizedStatus] !== undefined) {
+              dbCounts[normalizedStatus]++;
             }
             dbCounts.all = (dbCounts.all || 0) + 1;
           });
