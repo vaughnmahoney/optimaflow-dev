@@ -1,6 +1,5 @@
 
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import { Check, Clock, Flag, XCircle } from "lucide-react";
 
 interface StatusBadgeProps {
@@ -9,20 +8,20 @@ interface StatusBadgeProps {
 }
 
 export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
-  // Function to get the QC status icon and color
-  const getQcIconAndColor = () => {
+  // Function to get the QC status styling
+  const getQcStyling = () => {
     switch (status) {
       case "approved":
-        return { icon: <Check className="h-3 w-3 text-green-500" />, color: "bg-green-500" };
+        return { icon: <Check className="h-3 w-3 text-white" />, bgColor: "bg-green-500 hover:bg-green-600" };
       case "pending_review":
-        return { icon: <Clock className="h-3 w-3 text-yellow-500" />, color: "bg-yellow-500" };
+        return { icon: <Clock className="h-3 w-3 text-white" />, bgColor: "bg-yellow-500 hover:bg-yellow-600" };
       case "flagged":
       case "flagged_followup":
-        return { icon: <Flag className="h-3 w-3 text-red-500" />, color: "bg-red-500" };
+        return { icon: <Flag className="h-3 w-3 text-white" />, bgColor: "bg-red-500 hover:bg-red-600" };
       case "resolved":
-        return { icon: <Check className="h-3 w-3 text-purple-500" />, color: "bg-purple-500" };
+        return { icon: <Check className="h-3 w-3 text-white" />, bgColor: "bg-purple-500 hover:bg-purple-600" };
       default:
-        return { icon: <XCircle className="h-3 w-3 text-gray-400" />, color: "bg-gray-400" };
+        return { icon: <XCircle className="h-3 w-3 text-white" />, bgColor: "bg-gray-500 hover:bg-gray-600" };
     }
   };
 
@@ -47,20 +46,22 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
     }
   };
 
-  // Get the QC status icon and color
-  const { icon, color } = getQcIconAndColor();
+  // Get the QC status styling
+  const { icon, bgColor } = getQcStyling();
 
   return (
     <div className="relative inline-flex items-center">
-      <Badge variant="secondary" className="text-gray-700 dark:text-gray-300 pr-6 font-medium">
-        {getCompletionStatusText()}
-      </Badge>
-      <div 
-        className="absolute right-1.5 flex items-center justify-center"
-        title={`QC Status: ${status.replace(/_/g, " ").toUpperCase()}`}
+      <Badge 
+        className={`text-white pr-6 font-medium transition-colors ${bgColor}`}
       >
-        {icon}
-      </div>
+        {getCompletionStatusText()}
+        <div 
+          className="absolute right-1.5 flex items-center justify-center"
+          title={`QC Status: ${status.replace(/_/g, " ").toUpperCase()}`}
+        >
+          {icon}
+        </div>
+      </Badge>
     </div>
   );
 };
