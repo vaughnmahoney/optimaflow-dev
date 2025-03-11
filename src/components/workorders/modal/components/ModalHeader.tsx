@@ -34,10 +34,6 @@ export const ModalHeader = ({
         <div className="text-left">
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-semibold">Order #{workOrder.order_no}</h2>
-            <StatusBadge 
-              status={workOrder.status || "pending_review"} 
-              completionStatus={getCompletionStatus(workOrder)}
-            />
           </div>
           <p className="text-sm text-muted-foreground">
             Driver: {driverName}
@@ -45,20 +41,28 @@ export const ModalHeader = ({
         </div>
       </div>
       
-      {/* Location information added to header */}
-      <div className="flex items-center text-right mr-8">
-        <div className="flex flex-col items-end">
-          <div className="flex items-center gap-1">
-            <h3 className="font-medium">{locationName}</h3>
-            <MapPin className="h-4 w-4 text-gray-500" />
+      <div className="flex items-center gap-3">
+        {/* Status Badge */}
+        <StatusBadge 
+          status={workOrder.status || "pending_review"} 
+          completionStatus={getCompletionStatus(workOrder)}
+        />
+        
+        {/* Location information */}
+        <div className="flex items-center text-right mr-4">
+          <div className="flex flex-col items-end">
+            <div className="flex items-center gap-1">
+              <h3 className="font-medium">{locationName}</h3>
+              <MapPin className="h-4 w-4 text-gray-500" />
+            </div>
+            <p className="text-xs text-muted-foreground">{address}</p>
           </div>
-          <p className="text-xs text-muted-foreground">{address}</p>
         </div>
+        
+        <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+          <X className="h-4 w-4" />
+        </Button>
       </div>
-      
-      <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-        <X className="h-4 w-4" />
-      </Button>
     </div>
   );
 };

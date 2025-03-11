@@ -82,14 +82,14 @@ export const WorkOrderRow = ({ workOrder, onStatusUpdate, onImageView, onDelete 
       <TableCell className="max-w-xs truncate">
         {getLocationName(workOrder)}
       </TableCell>
-      <TableCell>
+      <TableCell className="whitespace-nowrap">
         <StatusBadge 
           status={workOrder.status || 'pending_review'} 
           completionStatus={getCompletionStatus(workOrder)}
         />
       </TableCell>
       <TableCell>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 justify-end">
           <Button 
             variant="ghost" 
             size="icon"

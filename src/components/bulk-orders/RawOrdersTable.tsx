@@ -162,7 +162,7 @@ export const RawOrdersTable = ({ orders, isLoading, originalCount }: RawOrdersTa
                 <TableCell className="font-medium">{getOrderNo(order)}</TableCell>
                 <TableCell>{getServiceDate(order)}</TableCell>
                 <TableCell>{getDriverName(order)}</TableCell>
-                <TableCell>
+                <TableCell className="whitespace-nowrap">
                   <StatusBadge 
                     status={getQcStatus(order)}
                     completionStatus={getCompletionStatus(order)}

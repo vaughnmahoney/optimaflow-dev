@@ -100,7 +100,10 @@ export const useBulkOrdersAdapter = () => {
     updateWorkOrderStatus: handleUpdateWorkOrderStatus,
     openImageViewer,
     deleteWorkOrder: handleDeleteWorkOrder,
-    statusCounts,
+    statusCounts: {
+      ...statusCounts,
+      resolved: statusCounts.resolved || 0, // Add resolved property with fallback to 0
+    },
     sortField,
     sortDirection,
     setSort,
