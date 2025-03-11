@@ -37,6 +37,9 @@ export const useBulkOrderStatus = () => {
       // Keep other necessary fields for status display
       order_no: order.order_no || order.data?.orderNo || 'N/A',
       service_date: order.service_date || order.data?.date,
+      // Include resolved information if available
+      resolved_at: order.resolved_at,
+      resolution_notes: order.resolution_notes
     };
   };
 

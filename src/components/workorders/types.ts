@@ -1,3 +1,4 @@
+
 import { ReactNode } from "react";
 
 // Define types for sorting
@@ -160,6 +161,7 @@ export interface WorkOrderListProps {
   onColumnFilterChange: (column: string, value: any) => void;
   clearColumnFilter: (column: string) => void;
   clearAllFilters: () => void;
+  onResolveFlag?: (workOrderId: string, resolution: string) => void;
 }
 
 export interface StatusFilterProps {

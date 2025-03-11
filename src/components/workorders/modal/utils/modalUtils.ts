@@ -38,3 +38,8 @@ export const calculateDuration = (startTime?: string, endTime?: string) => {
     return "N/A";
   }
 };
+
+// Get formatted status name for display
+export const getFormattedStatus = (status: string): string => {
+  return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+};

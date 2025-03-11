@@ -25,9 +25,14 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
     }
   };
 
-  // Get the success label for the completion status
-  const getSuccessLabel = () => {
-    return "SUCCESS";
+  // Get the status label (standardized to match the status type)
+  const getStatusLabel = () => {
+    if (status === "resolved") {
+      return "RESOLVED";
+    }
+    
+    // For non-resolved statuses, display the completion status if available
+    return completionStatus?.toUpperCase() || "SUCCESS";
   };
 
   // Get the QC status styling
@@ -39,7 +44,7 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
       title={`QC Status: ${status.replace(/_/g, " ").toUpperCase()}`}
     >
       {icon}
-      {getSuccessLabel()}
+      {getStatusLabel()}
     </Badge>
   );
 };

@@ -26,7 +26,8 @@ export const WorkOrderList = ({
   onPageSizeChange,
   onColumnFilterChange,
   clearColumnFilter,
-  clearAllFilters
+  clearAllFilters,
+  onResolveFlag
 }: WorkOrderListProps) => {
   const [searchResponse, setSearchResponse] = useState<any>(null);
   const [transformedData, setTransformedData] = useState<any>(null);
@@ -103,6 +104,11 @@ export const WorkOrderList = ({
           onClose={() => setIsImageModalOpen(false)}
           onStatusUpdate={onStatusUpdate}
           onNavigate={handleNavigate}
+          onResolveFlag={onResolveFlag}
+          onDownloadAll={() => {
+            // Placeholder for download all functionality
+            console.log("Download all images for:", currentWorkOrder.id);
+          }}
         />
       )}
     </div>
