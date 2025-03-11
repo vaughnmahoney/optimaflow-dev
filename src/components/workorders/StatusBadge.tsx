@@ -28,11 +28,6 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
   // Get the status label (standardized to match the status type)
   const getStatusLabel = () => {
     // First priority is the QC status (our internal status)
-    if (status === "resolved" && completionStatus) {
-      // For resolved status, show the OptimoRoute status if available
-      return completionStatus.toUpperCase();
-    }
-    
     switch (status) {
       case "approved":
         return "APPROVED";
@@ -42,7 +37,6 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
       case "flagged_followup":
         return "FLAGGED";
       case "resolved":
-        // Fallback if no completion status available
         return "RESOLVED";
       default:
         // For any other statuses, display the completion status if available
