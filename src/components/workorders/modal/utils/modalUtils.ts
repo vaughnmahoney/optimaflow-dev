@@ -16,6 +16,21 @@ export const getStatusBorderColor = (status: string) => {
   }
 };
 
+export const getStatusBgColor = (status: string) => {
+  switch (status) {
+    case "approved":
+      return "bg-green-50";
+    case "flagged":
+    case "flagged_followup":
+      return "bg-red-50";
+    case "resolved":
+      return "bg-purple-50";
+    case "pending_review":
+    default:
+      return "bg-yellow-50";
+  }
+};
+
 export const formatDate = (dateStr?: string, formatString: string = "EEEE, MMMM d, yyyy") => {
   if (!dateStr) return 'N/A';
   try {

@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Check, Download, Flag, RotateCcw, ThumbsDown, ThumbsUp, CheckCheck, Clock } from "lucide-react";
+import { Check, Download, Flag, ThumbsDown, CheckCheck, Clock } from "lucide-react";
 
 interface ModalFooterProps {
   workOrderId: string;
@@ -25,6 +25,14 @@ export const ModalFooter = ({
   const isApproved = status === "approved";
   const isPending = status === "pending_review";
   
+  // Get status-specific styling for the disabled status button
+  const getStatusButtonStyle = () => {
+    if (isApproved) return "bg-green-50 text-green-700 border-green-200";
+    if (isFlagged) return "bg-red-50 text-red-700 border-red-200";
+    if (isResolved) return "bg-purple-50 text-purple-700 border-purple-200";
+    return "bg-gray-100 text-gray-500";
+  };
+  
   return (
     <div className="p-3 bg-white dark:bg-gray-950 border-t flex justify-between items-center">
       <div className="flex gap-2 flex-wrap">
@@ -32,7 +40,7 @@ export const ModalFooter = ({
         {onStatusUpdate && !isPending && (
           <Button 
             variant="outline" 
-            className="bg-gray-100 text-gray-500 cursor-pointer"
+            className={`${getStatusButtonStyle()} cursor-pointer`}
             onClick={() => onStatusUpdate(workOrderId, "pending_review")}
           >
             <Clock className="mr-1 h-4 w-4" />
@@ -88,17 +96,7 @@ export const ModalFooter = ({
           </Button>
         )}
         
-        {/* Show pending button for flagged orders */}
-        {onResolveFlag && isFlagged && (
-          <Button 
-            variant="custom"
-            className="bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-md transition-colors shadow-sm"
-            onClick={() => onResolveFlag(workOrderId, "followup")}
-          >
-            <RotateCcw className="mr-1 h-4 w-4" />
-            Mark as Pending
-          </Button>
-        )}
+        {/* "Mark as Pending" button removed as requested */}
       </div>
       <div>
         {onDownloadAll && hasImages && (

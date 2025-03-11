@@ -22,6 +22,14 @@ export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenu
   const isApproved = workOrder.status === 'approved';
   const isPending = workOrder.status === 'pending_review';
 
+  // Get status-specific styling for the disabled status menu item
+  const getStatusItemStyle = () => {
+    if (isApproved) return "text-green-700 bg-green-50 hover:bg-green-100";
+    if (isFlagged) return "text-red-700 bg-red-50 hover:bg-red-100";
+    if (isResolved) return "text-purple-700 bg-purple-50 hover:bg-purple-100";
+    return "text-gray-500 hover:bg-gray-100";
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -38,7 +46,7 @@ export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenu
         {!isPending && (
           <DropdownMenuItem 
             onClick={() => onStatusUpdate(workOrder.id, "pending_review")}
-            className="text-gray-500"
+            className={getStatusItemStyle()}
           >
             <Clock className="h-4 w-4 mr-2" />
             {isApproved ? "Approved" : isFlagged ? "Flagged" : isResolved ? "Resolved" : "Status"}
