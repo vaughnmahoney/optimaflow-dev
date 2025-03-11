@@ -37,7 +37,8 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
       case "flagged_followup":
         return "FLAGGED";
       case "resolved":
-        return "RESOLVED";
+        // For resolved status, display the completion status if available
+        return completionStatus?.toUpperCase() || "SUCCESS";
       default:
         // For any other statuses, display the completion status if available
         return completionStatus?.toUpperCase() || "SUCCESS";
