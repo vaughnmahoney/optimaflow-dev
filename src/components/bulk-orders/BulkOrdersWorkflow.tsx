@@ -156,8 +156,14 @@ export const BulkOrdersWorkflow = () => {
           onStatusUpdate={updateWorkOrderStatus}
           onImageView={openImageViewer}
           onDelete={deleteWorkOrder}
-          onOptimoRouteSearch={() => {}} // Not needed for bulk view
-          statusCounts={statusCounts}
+          onOptimoRouteSearch={() => {}}
+          statusCounts={{
+            approved: statusCounts.approved,
+            pending_review: statusCounts.pending_review,
+            flagged: statusCounts.flagged,
+            resolved: statusCounts.resolved || 0,
+            all: statusCounts.all
+          }}
           sortField={sortField}
           sortDirection={sortDirection}
           onSort={setSort}
