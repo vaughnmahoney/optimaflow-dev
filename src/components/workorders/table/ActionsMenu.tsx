@@ -1,5 +1,5 @@
 
-import { CheckCircle, Flag, Trash2, MoreVertical, CheckCheck } from "lucide-react";
+import { CheckCircle, Flag, Trash2, MoreVertical, CheckCheck, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WorkOrder } from "../types";
 import {
@@ -17,8 +17,10 @@ interface ActionsMenuProps {
 }
 
 export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenuProps) => {
+  const isApproved = workOrder.status === 'approved';
   const isResolved = workOrder.status === 'resolved';
   const isFlagged = workOrder.status === 'flagged' || workOrder.status === 'flagged_followup';
+  const isPending = workOrder.status === 'pending_review';
 
   return (
     <DropdownMenu>
@@ -32,15 +34,35 @@ export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenu
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuItem 
-          onClick={() => onStatusUpdate(workOrder.id, "approved")}
-          className={workOrder.status === 'approved' ? 'text-green-600 font-medium' : ''}
-        >
-          <CheckCircle className="h-4 w-4 mr-2" />
-          Approve
-        </DropdownMenuItem>
+        {/* Show conditionally based on current status */}
+        {isApproved ? (
+          <DropdownMenuItem 
+            onClick={() => onStatusUpdate(workOrder.id, "pending_review")}
+            className="text-gray-600"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Return to Pending
+          </DropdownMenuItem>
+        ) : (
+          <DropdownMenuItem 
+            onClick={() => onStatusUpdate(workOrder.id, "approved")}
+            className={isApproved ? 'text-green-600 font-medium' : ''}
+          >
+            <CheckCircle className="h-4 w-4 mr-2" />
+            Approve
+          </DropdownMenuItem>
+        )}
         
-        {!isResolved && (
+        {/* Flag or return to pending */}
+        {isFlagged ? (
+          <DropdownMenuItem 
+            onClick={() => onStatusUpdate(workOrder.id, "pending_review")}
+            className="text-gray-600"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Return to Pending
+          </DropdownMenuItem>
+        ) : !isResolved && (
           <DropdownMenuItem 
             onClick={() => onStatusUpdate(workOrder.id, "flagged")}
             className={isFlagged ? 'text-red-600 font-medium' : ''}
@@ -50,6 +72,7 @@ export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenu
           </DropdownMenuItem>
         )}
         
+        {/* Mark as resolved or back to flagged */}
         {isFlagged && (
           <DropdownMenuItem 
             onClick={() => onStatusUpdate(workOrder.id, "resolved")}
@@ -57,6 +80,16 @@ export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenu
           >
             <CheckCheck className="h-4 w-4 mr-2" />
             Mark as Resolved
+          </DropdownMenuItem>
+        )}
+        
+        {isResolved && (
+          <DropdownMenuItem 
+            onClick={() => onStatusUpdate(workOrder.id, "flagged")}
+            className="text-red-600"
+          >
+            <Flag className="h-4 w-4 mr-2" />
+            Return to Flagged
           </DropdownMenuItem>
         )}
         
