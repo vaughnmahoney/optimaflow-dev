@@ -1,17 +1,18 @@
+
 import { format } from "date-fns";
 
 export const getStatusBorderColor = (status: string) => {
   switch (status) {
     case "approved":
-      return "border-emerald-500";
+      return "border-green-500";
     case "flagged":
     case "flagged_followup":
-      return "border-rose-500";
+      return "border-red-500";
     case "resolved":
-      return "border-indigo-500";
+      return "border-purple-500";
     case "pending_review":
     default:
-      return "border-amber-500";
+      return "border-yellow-500";
   }
 };
 

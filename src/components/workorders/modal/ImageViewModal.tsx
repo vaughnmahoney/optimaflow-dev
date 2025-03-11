@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { WorkOrder } from "../types";
@@ -17,6 +18,7 @@ interface ImageViewModalProps {
   onStatusUpdate?: (workOrderId: string, status: string) => void;
   onNavigate: (index: number) => void;
   onDownloadAll?: () => void;
+  onResolveFlag?: (workOrderId: string, resolution: string) => void;
 }
 
 export const ImageViewModal = ({
@@ -28,6 +30,7 @@ export const ImageViewModal = ({
   onStatusUpdate,
   onNavigate,
   onDownloadAll,
+  onResolveFlag,
 }: ImageViewModalProps) => {
   const [isImageExpanded, setIsImageExpanded] = useState(false);
   
@@ -84,6 +87,8 @@ export const ImageViewModal = ({
           onStatusUpdate={onStatusUpdate} 
           onDownloadAll={onDownloadAll}
           hasImages={images.length > 0}
+          status={currentWorkOrder.status}
+          onResolveFlag={onResolveFlag}
         />
         
         <NavigationControls 

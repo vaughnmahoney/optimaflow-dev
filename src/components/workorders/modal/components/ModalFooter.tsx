@@ -31,7 +31,7 @@ export const ModalFooter = ({
           <>
             <Button 
               variant="custom"
-              className="bg-[#6CAE75] hover:bg-[#5a9361] text-white font-medium rounded-md transition-colors shadow-sm"
+              className="bg-green-500 hover:bg-green-600 text-white font-medium rounded-md transition-colors shadow-sm"
               onClick={() => onStatusUpdate(workOrderId, "approved")}
             >
               <Check className="mr-1 h-4 w-4" />
@@ -39,7 +39,7 @@ export const ModalFooter = ({
             </Button>
             <Button 
               variant="custom"
-              className="bg-[#ea384c] hover:bg-[#d32f3f] text-white font-medium rounded-md transition-colors shadow-sm"
+              className="bg-red-500 hover:bg-red-600 text-white font-medium rounded-md transition-colors shadow-sm"
               onClick={() => onStatusUpdate(workOrderId, "flagged")}
             >
               <Flag className="mr-1 h-4 w-4" />
@@ -53,7 +53,7 @@ export const ModalFooter = ({
           <>
             <Button 
               variant="custom"
-              className="bg-[#6CAE75] hover:bg-[#5a9361] text-white font-medium rounded-md transition-colors shadow-sm"
+              className="bg-green-500 hover:bg-green-600 text-white font-medium rounded-md transition-colors shadow-sm"
               onClick={() => onResolveFlag(workOrderId, "approved")}
             >
               <ThumbsUp className="mr-1 h-4 w-4" />
@@ -61,7 +61,7 @@ export const ModalFooter = ({
             </Button>
             <Button 
               variant="custom"
-              className="bg-[#ea384c] hover:bg-[#d32f3f] text-white font-medium rounded-md transition-colors shadow-sm"
+              className="bg-red-500 hover:bg-red-600 text-white font-medium rounded-md transition-colors shadow-sm"
               onClick={() => onResolveFlag(workOrderId, "rejected")}
             >
               <ThumbsDown className="mr-1 h-4 w-4" />
@@ -69,21 +69,25 @@ export const ModalFooter = ({
             </Button>
             <Button 
               variant="custom"
-              className="bg-[#f59e0b] hover:bg-[#d97706] text-white font-medium rounded-md transition-colors shadow-sm"
+              className="bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-md transition-colors shadow-sm"
               onClick={() => onResolveFlag(workOrderId, "followup")}
             >
               <RotateCcw className="mr-1 h-4 w-4" />
               Request Follow-up
             </Button>
-            <Button 
-              variant="custom"
-              className="bg-[#9b87f5] hover:bg-[#8b5cf6] text-white font-medium rounded-md transition-colors shadow-sm"
-              onClick={() => onStatusUpdate(workOrderId, "resolved")}
-            >
-              <CheckCheck className="mr-1 h-4 w-4" />
-              Mark as Resolved
-            </Button>
           </>
+        )}
+        
+        {/* Add Mark as Resolved button for flagged orders */}
+        {onStatusUpdate && isFlagged && (
+          <Button 
+            variant="custom"
+            className="bg-purple-500 hover:bg-purple-600 text-white font-medium rounded-md transition-colors shadow-sm"
+            onClick={() => onStatusUpdate(workOrderId, "resolved")}
+          >
+            <CheckCheck className="mr-1 h-4 w-4" />
+            Mark as Resolved
+          </Button>
         )}
         
         {/* Show resolved status indicator if the order is resolved */}

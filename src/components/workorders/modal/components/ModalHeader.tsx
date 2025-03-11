@@ -1,5 +1,5 @@
 
-import { User, X, MapPin } from "lucide-react";
+import { User, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "../../StatusBadge";
 import { WorkOrder } from "../../types";
@@ -14,8 +14,6 @@ export const ModalHeader = ({
   onClose 
 }: ModalHeaderProps) => {
   const driverName = workOrder.search_response?.scheduleInformation?.driverName || 'No Driver Assigned';
-  const locationName = workOrder.location?.name || workOrder.location?.locationName || 'Unknown Location';
-  const address = workOrder.location?.address || 'No Address Available';
   
   // Extract the completion status from the appropriate place in the order object
   const getCompletionStatus = (order: WorkOrder): string | undefined => {
@@ -42,17 +40,6 @@ export const ModalHeader = ({
           <p className="text-sm text-muted-foreground">
             Driver: {driverName}
           </p>
-        </div>
-      </div>
-      
-      {/* Location information with improved alignment */}
-      <div className="flex items-center text-right mr-8">
-        <div className="flex flex-col items-end">
-          <div className="flex items-center gap-1">
-            <h3 className="font-medium text-lg">{locationName}</h3>
-            <MapPin className="h-4 w-4 text-gray-500" />
-          </div>
-          <p className="text-sm text-muted-foreground">{address}</p>
         </div>
       </div>
       

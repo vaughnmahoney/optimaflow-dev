@@ -12,14 +12,14 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
   const getQcStyling = () => {
     switch (status) {
       case "approved":
-        return { icon: <Check className="h-3 w-3" />, bgColor: "bg-emerald-500 hover:bg-emerald-600" };
+        return { icon: <Check className="h-3 w-3" />, bgColor: "bg-green-500 hover:bg-green-600" };
       case "pending_review":
-        return { icon: <Clock className="h-3 w-3" />, bgColor: "bg-amber-500 hover:bg-amber-600" };
+        return { icon: <Clock className="h-3 w-3" />, bgColor: "bg-yellow-500 hover:bg-yellow-600" };
       case "flagged":
       case "flagged_followup":
-        return { icon: <Flag className="h-3 w-3" />, bgColor: "bg-rose-500 hover:bg-rose-600" };
+        return { icon: <Flag className="h-3 w-3" />, bgColor: "bg-red-500 hover:bg-red-600" };
       case "resolved":
-        return { icon: <CheckCheck className="h-3 w-3" />, bgColor: "bg-indigo-500 hover:bg-indigo-600" };
+        return { icon: <CheckCheck className="h-3 w-3" />, bgColor: "bg-purple-500 hover:bg-purple-600" };
       default:
         return { icon: <XCircle className="h-3 w-3" />, bgColor: "bg-gray-500 hover:bg-gray-600" };
     }

@@ -7,11 +7,13 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useWorkOrderData } from "@/hooks/useWorkOrderData";
 import { useQueryClient } from "@tanstack/react-query";
 import { SortDirection, SortField } from "@/components/workorders/types";
+import { useWorkOrderMutations } from "@/hooks/useWorkOrderMutations";
 
 const WorkOrders = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
+  const { resolveWorkOrderFlag } = useWorkOrderMutations();
   
   const {
     data: workOrders,
@@ -80,6 +82,7 @@ const WorkOrders = () => {
           onColumnFilterChange={onColumnFilterChange}
           clearColumnFilter={clearColumnFilter}
           clearAllFilters={clearAllFilters}
+          onResolveFlag={resolveWorkOrderFlag}
         />
       </div>
     </Layout>
