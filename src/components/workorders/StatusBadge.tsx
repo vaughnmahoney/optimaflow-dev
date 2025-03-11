@@ -1,6 +1,6 @@
 
 import { Badge } from "@/components/ui/badge";
-import { Check, Clock, Flag, XCircle, CheckCheck } from "lucide-react";
+import { Check, Clock, Flag, XCircle, CheckCheck, AlertTriangle } from "lucide-react";
 
 interface StatusBadgeProps {
   status: string;
@@ -20,14 +20,21 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
         return { icon: <Flag className="h-3 w-3" />, bgColor: "bg-red-500 hover:bg-red-600" };
       case "resolved":
         return { icon: <CheckCheck className="h-3 w-3" />, bgColor: "bg-purple-500 hover:bg-purple-600" };
+      case "rejected":
+        return { icon: <AlertTriangle className="h-3 w-3" />, bgColor: "bg-orange-500 hover:bg-orange-600" };
       default:
         return { icon: <XCircle className="h-3 w-3" />, bgColor: "bg-gray-500 hover:bg-gray-600" };
     }
   };
 
-  // Get the status label (standardized to match the status type)
+  // Get the status label - for all statuses, display the underlying OptimoRoute status
   const getStatusLabel = () => {
-    // First priority is the QC status (our internal status)
+    // If we have a completion status, display it (regardless of QC status)
+    if (completionStatus) {
+      return completionStatus.toUpperCase();
+    }
+    
+    // Fallback to displaying the QC status if no completion status is available
     switch (status) {
       case "approved":
         return "APPROVED";
@@ -37,11 +44,11 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
       case "flagged_followup":
         return "FLAGGED";
       case "resolved":
-        // For resolved status, display the completion status if available
-        return completionStatus?.toUpperCase() || "SUCCESS";
+        return "RESOLVED";
+      case "rejected":
+        return "REJECTED";
       default:
-        // For any other statuses, display the completion status if available
-        return completionStatus?.toUpperCase() || "SUCCESS";
+        return "UNKNOWN";
     }
   };
 
