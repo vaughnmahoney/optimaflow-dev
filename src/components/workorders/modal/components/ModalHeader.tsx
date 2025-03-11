@@ -45,18 +45,23 @@ export const ModalHeader = ({
         </div>
       </div>
       
-      {/* Location information added to header */}
+      {/* Location information with improved alignment */}
       <div className="flex items-center text-right mr-8">
         <div className="flex flex-col items-end">
           <div className="flex items-center gap-1">
-            <h3 className="font-medium">{locationName}</h3>
+            <h3 className="font-medium text-lg">{locationName}</h3>
             <MapPin className="h-4 w-4 text-gray-500" />
           </div>
-          <p className="text-xs text-muted-foreground">{address}</p>
+          <p className="text-sm text-muted-foreground">{address}</p>
         </div>
       </div>
       
-      <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+      <Button 
+        variant="ghost" 
+        size="icon" 
+        onClick={onClose} 
+        className="rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+      >
         <X className="h-4 w-4" />
       </Button>
     </div>

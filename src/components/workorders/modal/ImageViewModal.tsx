@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { WorkOrder } from "../types";
@@ -69,10 +68,8 @@ export const ImageViewModal = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className={`max-w-6xl p-0 h-[90vh] flex flex-col rounded-lg overflow-hidden border-t-4 ${statusBorderColor}`}>
-        {/* Header with order info */}
         <ModalHeader workOrder={currentWorkOrder} onClose={onClose} />
         
-        {/* Main content area */}
         <ModalContent
           workOrder={currentWorkOrder}
           images={images}
@@ -82,7 +79,6 @@ export const ImageViewModal = ({
           toggleImageExpand={toggleImageExpand}
         />
         
-        {/* Action buttons */}
         <ModalFooter 
           workOrderId={currentWorkOrder.id} 
           onStatusUpdate={onStatusUpdate} 
@@ -90,7 +86,6 @@ export const ImageViewModal = ({
           hasImages={images.length > 0}
         />
         
-        {/* Navigation Footer */}
         <NavigationControls 
           currentIndex={navIndex}
           totalOrders={workOrders.length}
