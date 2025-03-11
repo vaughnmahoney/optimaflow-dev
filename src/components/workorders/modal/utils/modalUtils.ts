@@ -39,7 +39,7 @@ export const calculateDuration = (startTime?: string, endTime?: string) => {
   }
 };
 
-// New utility functions for status styling
+// Status color utilities matching our StatusBadge component
 export const getStatusColors = (status: string) => {
   switch (status) {
     case "approved":
@@ -78,7 +78,7 @@ export const getStatusLabel = (status: string) => {
     case "flagged":
       return "FLAGGED";
     case "flagged_followup":
-      return "FLAGGED (FOLLOWUP)";
+      return "FOLLOWUP";
     case "resolved":
       return "RESOLVED";
     case "pending_review":

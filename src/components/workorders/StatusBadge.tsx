@@ -15,37 +15,42 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
       case "approved":
         return { 
           icon: <CheckCheck className="h-3.5 w-3.5 text-green-600 mr-1.5" />,
-          dotColor: "bg-green-500",
+          bgColor: "bg-green-50",
           textColor: "text-green-700",
+          borderColor: "border-green-200",
           label: "APPROVED"
         };
       case "pending_review":
         return { 
           icon: <Clock className="h-3.5 w-3.5 text-yellow-600 mr-1.5" />,
-          dotColor: "bg-yellow-500", 
+          bgColor: "bg-yellow-50", 
           textColor: "text-yellow-700",
+          borderColor: "border-yellow-200",
           label: "PENDING" 
         };
       case "flagged":
       case "flagged_followup":
         return { 
           icon: <Flag className="h-3.5 w-3.5 text-red-600 mr-1.5" />,
-          dotColor: "bg-red-500",
+          bgColor: "bg-red-50",
           textColor: "text-red-700",
-          label: "FLAGGED"
+          borderColor: "border-red-200",
+          label: status === "flagged_followup" ? "FOLLOWUP" : "FLAGGED"
         };
       case "resolved":
         return { 
           icon: <CheckCircle className="h-3.5 w-3.5 text-purple-600 mr-1.5" />,
-          dotColor: "bg-purple-500",
+          bgColor: "bg-purple-50",
           textColor: "text-purple-700",
+          borderColor: "border-purple-200",
           label: "RESOLVED"
         };
       default:
         return { 
           icon: <Clock className="h-3.5 w-3.5 text-gray-500 mr-1.5" />, 
-          dotColor: "bg-gray-400",
-          textColor: "text-gray-700",
+          bgColor: "bg-slate-50",
+          textColor: "text-slate-700",
+          borderColor: "border-slate-200",
           label: status.replace(/_/g, " ").toUpperCase()
         };
     }
@@ -76,8 +81,8 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
     }
   };
 
-  // Function to get badge background color based on completion status
-  const getBadgeColor = () => {
+  // Function to get badge style based on completion status
+  const getCompletionBadgeStyle = () => {
     if (!completionStatus) return "bg-slate-100 text-slate-600";
     
     const status = completionStatus.toLowerCase();
@@ -100,19 +105,17 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
   return (
     <div className="flex gap-2">
       {/* Completion Status Badge */}
-      <Badge className={`${getBadgeColor()} rounded-md font-medium shadow-sm`}>
+      <Badge className={`${getCompletionBadgeStyle()} rounded-md font-medium text-xs py-0.5 px-2`}>
         {getCompletionStatusText()}
       </Badge>
 
       {/* QC Status Badge */}
       <Badge 
         className={cn(
-          "rounded-md font-medium shadow-sm flex items-center gap-1 transition-all duration-200",
-          status === "approved" && "bg-green-50 text-green-700 border-green-200",
-          status === "pending_review" && "bg-yellow-50 text-yellow-700 border-yellow-200",
-          (status === "flagged" || status === "flagged_followup") && "bg-red-50 text-red-700 border-red-200",
-          status === "resolved" && "bg-purple-50 text-purple-700 border-purple-200",
-          status === "default" && "bg-slate-50 text-slate-700 border-slate-200"
+          "rounded-md font-medium text-xs py-0.5 px-2 flex items-center border",
+          qcStatusInfo.bgColor,
+          qcStatusInfo.textColor,
+          qcStatusInfo.borderColor
         )}
       >
         {qcStatusInfo.icon}

@@ -72,6 +72,16 @@ export const useBulkOrdersAdapter = () => {
     deleteWorkOrder(setWorkOrders, workOrderId);
   };
   
+  // Ensure all required status counts are present
+  const completeStatusCounts = {
+    ...statusCounts,
+    approved: statusCounts.approved || 0,
+    pending_review: statusCounts.pending_review || 0,
+    flagged: statusCounts.flagged || 0,
+    resolved: statusCounts.resolved || 0,
+    flagged_followup: statusCounts.flagged_followup || 0,
+  };
+  
   // Return the adapted interface for work order components
   return {
     // Bulk order specific properties
@@ -100,10 +110,7 @@ export const useBulkOrdersAdapter = () => {
     updateWorkOrderStatus: handleUpdateWorkOrderStatus,
     openImageViewer,
     deleteWorkOrder: handleDeleteWorkOrder,
-    statusCounts: {
-      ...statusCounts,
-      resolved: statusCounts.resolved || 0, // Add resolved property with fallback to 0
-    },
+    statusCounts: completeStatusCounts,
     sortField,
     sortDirection,
     setSort,
