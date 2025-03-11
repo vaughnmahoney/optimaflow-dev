@@ -7,11 +7,12 @@ import { toast } from "sonner";
  * Hook to manage status changes for bulk order adapter
  */
 export const useAdapterStatusManager = (workOrders: WorkOrder[]) => {
-  // Status counts state
+  // Status counts state with resolved property added
   const [statusCounts, setStatusCounts] = useState({
     approved: 0,
     pending_review: 0,
     flagged: 0,
+    resolved: 0, // Added resolved property
     all: 0
   });
 
@@ -23,13 +24,14 @@ export const useAdapterStatusManager = (workOrders: WorkOrder[]) => {
         const status = order.status || "pending_review";
         if (status === "approved") acc.approved++;
         else if (status === "flagged") acc.flagged++;
+        else if (status === "resolved") acc.resolved++;
         else if (status === "pending_review") acc.pending_review++;
         return acc;
-      }, { approved: 0, pending_review: 0, flagged: 0, all: workOrders.length });
+      }, { approved: 0, pending_review: 0, flagged: 0, resolved: 0, all: workOrders.length });
       
       setStatusCounts(counts);
     } else {
-      setStatusCounts({ approved: 0, pending_review: 0, flagged: 0, all: 0 });
+      setStatusCounts({ approved: 0, pending_review: 0, flagged: 0, resolved: 0, all: 0 });
     }
   }, [workOrders]);
 
