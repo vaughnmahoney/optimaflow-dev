@@ -27,12 +27,21 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
 
   // Get the status label (standardized to match the status type)
   const getStatusLabel = () => {
-    if (status === "resolved") {
-      return "RESOLVED";
+    // First priority is the QC status (our internal status)
+    switch (status) {
+      case "approved":
+        return "APPROVED";
+      case "pending_review":
+        return "PENDING";
+      case "flagged":
+      case "flagged_followup":
+        return "FLAGGED";
+      case "resolved":
+        return "RESOLVED";
+      default:
+        // For any other statuses, display the completion status if available
+        return completionStatus?.toUpperCase() || "SUCCESS";
     }
-    
-    // For non-resolved statuses, display the completion status if available
-    return completionStatus?.toUpperCase() || "SUCCESS";
   };
 
   // Get the QC status styling

@@ -20,6 +20,7 @@ export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenu
   const isResolved = workOrder.status === 'resolved';
   const isFlagged = workOrder.status === 'flagged' || workOrder.status === 'flagged_followup';
   const isApproved = workOrder.status === 'approved';
+  const isPending = workOrder.status === 'pending_review';
 
   return (
     <DropdownMenu>
@@ -33,7 +34,18 @@ export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenu
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
-        {/* Show approve option for non-approved states */}
+        {/* Current status - clicking returns to pending */}
+        {!isPending && (
+          <DropdownMenuItem 
+            onClick={() => onStatusUpdate(workOrder.id, "pending_review")}
+            className="text-gray-500"
+          >
+            <Clock className="h-4 w-4 mr-2" />
+            {isApproved ? "Approved" : isFlagged ? "Flagged" : isResolved ? "Resolved" : "Status"}
+          </DropdownMenuItem>
+        )}
+        
+        {/* Show approve option if not already approved */}
         {!isApproved && (
           <DropdownMenuItem 
             onClick={() => onStatusUpdate(workOrder.id, "approved")}
@@ -43,34 +55,24 @@ export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenu
           </DropdownMenuItem>
         )}
         
-        {/* Show flag option for non-flagged, non-resolved states */}
-        {!isFlagged && !isResolved && (
+        {/* Show flag option if not already flagged */}
+        {!isFlagged && (
           <DropdownMenuItem 
             onClick={() => onStatusUpdate(workOrder.id, "flagged")}
           >
             <Flag className="h-4 w-4 mr-2" />
-            Flag for Review
+            Flag
           </DropdownMenuItem>
         )}
         
         {/* Show resolve option for flagged states */}
-        {isFlagged && !isResolved && (
+        {isFlagged && (
           <DropdownMenuItem 
             onClick={() => onStatusUpdate(workOrder.id, "resolved")}
             className="text-purple-600"
           >
             <CheckCheck className="h-4 w-4 mr-2" />
-            Mark as Resolved
-          </DropdownMenuItem>
-        )}
-        
-        {/* Show return to pending option for resolved or approved states */}
-        {(isResolved || isApproved) && (
-          <DropdownMenuItem 
-            onClick={() => onStatusUpdate(workOrder.id, "pending_review")}
-          >
-            <Clock className="h-4 w-4 mr-2" />
-            Return to Pending
+            Resolve
           </DropdownMenuItem>
         )}
         

@@ -41,5 +41,19 @@ export const calculateDuration = (startTime?: string, endTime?: string) => {
 
 // Get formatted status name for display
 export const getFormattedStatus = (status: string): string => {
-  return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  switch (status) {
+    case "approved":
+      return "Approved";
+    case "flagged":
+    case "flagged_followup":
+      return "Flagged";
+    case "resolved":
+      return "Resolved";
+    case "pending_review":
+      return "Pending Review";
+    case "rejected":
+      return "Rejected";
+    default:
+      return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  }
 };

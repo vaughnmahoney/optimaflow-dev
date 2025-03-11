@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Check, Download, Flag, RotateCcw, ThumbsDown, ThumbsUp, CheckCheck } from "lucide-react";
+import { Check, Download, Flag, RotateCcw, ThumbsDown, ThumbsUp, CheckCheck, Clock } from "lucide-react";
 
 interface ModalFooterProps {
   workOrderId: string;
@@ -19,66 +19,52 @@ export const ModalFooter = ({
   status,
   onResolveFlag
 }: ModalFooterProps) => {
-  // Determine if this order is in a flagged state
+  // Determine if this order is in a specific state
   const isFlagged = status === "flagged" || status === "flagged_followup";
   const isResolved = status === "resolved";
+  const isApproved = status === "approved";
+  const isPending = status === "pending_review";
   
   return (
     <div className="p-3 bg-white dark:bg-gray-950 border-t flex justify-between items-center">
-      <div className="flex gap-2">
-        {/* Show approve/flag buttons only for pending review orders */}
-        {onStatusUpdate && !isFlagged && !isResolved && (
-          <>
-            <Button 
-              variant="custom"
-              className="bg-green-500 hover:bg-green-600 text-white font-medium rounded-md transition-colors shadow-sm"
-              onClick={() => onStatusUpdate(workOrderId, "approved")}
-            >
-              <Check className="mr-1 h-4 w-4" />
-              Approve
-            </Button>
-            <Button 
-              variant="custom"
-              className="bg-red-500 hover:bg-red-600 text-white font-medium rounded-md transition-colors shadow-sm"
-              onClick={() => onStatusUpdate(workOrderId, "flagged")}
-            >
-              <Flag className="mr-1 h-4 w-4" />
-              Flag for Review
-            </Button>
-          </>
+      <div className="flex gap-2 flex-wrap">
+        {/* Current Status Button - always show and disabled, clicking returns to pending */}
+        {onStatusUpdate && !isPending && (
+          <Button 
+            variant="outline" 
+            className="bg-gray-100 text-gray-500 cursor-pointer"
+            onClick={() => onStatusUpdate(workOrderId, "pending_review")}
+          >
+            <Clock className="mr-1 h-4 w-4" />
+            {isApproved ? "Approved" : isFlagged ? "Flagged" : isResolved ? "Resolved" : "Status"}
+          </Button>
         )}
         
-        {/* Show resolution buttons only for flagged orders */}
-        {onResolveFlag && isFlagged && (
-          <>
-            <Button 
-              variant="custom"
-              className="bg-green-500 hover:bg-green-600 text-white font-medium rounded-md transition-colors shadow-sm"
-              onClick={() => onResolveFlag(workOrderId, "approved")}
-            >
-              <ThumbsUp className="mr-1 h-4 w-4" />
-              Approve Despite Flag
-            </Button>
-            <Button 
-              variant="custom"
-              className="bg-red-500 hover:bg-red-600 text-white font-medium rounded-md transition-colors shadow-sm"
-              onClick={() => onResolveFlag(workOrderId, "rejected")}
-            >
-              <ThumbsDown className="mr-1 h-4 w-4" />
-              Reject Order
-            </Button>
-            <Button 
-              variant="custom"
-              className="bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-md transition-colors shadow-sm"
-              onClick={() => onResolveFlag(workOrderId, "followup")}
-            >
-              <RotateCcw className="mr-1 h-4 w-4" />
-              Request Follow-up
-            </Button>
-          </>
+        {/* Show approve button for non-approved orders */}
+        {onStatusUpdate && !isApproved && (
+          <Button 
+            variant="custom"
+            className="bg-green-500 hover:bg-green-600 text-white font-medium rounded-md transition-colors shadow-sm"
+            onClick={() => onStatusUpdate(workOrderId, "approved")}
+          >
+            <Check className="mr-1 h-4 w-4" />
+            Approve
+          </Button>
         )}
         
-        {/* Add Mark as Resolved button for flagged orders */}
+        {/* Show flag button for non-flagged orders */}
+        {onStatusUpdate && !isFlagged && (
+          <Button 
+            variant="custom"
+            className="bg-red-500 hover:bg-red-600 text-white font-medium rounded-md transition-colors shadow-sm"
+            onClick={() => onStatusUpdate(workOrderId, "flagged")}
+          >
+            <Flag className="mr-1 h-4 w-4" />
+            Flag
+          </Button>
+        )}
+        
+        {/* Show resolve button for flagged orders */}
         {onStatusUpdate && isFlagged && (
           <Button 
             variant="custom"
@@ -86,16 +72,32 @@ export const ModalFooter = ({
             onClick={() => onStatusUpdate(workOrderId, "resolved")}
           >
             <CheckCheck className="mr-1 h-4 w-4" />
-            Mark as Resolved
+            Resolve
           </Button>
         )}
         
-        {/* Show resolved status indicator if the order is resolved */}
-        {isResolved && (
-          <div className="flex items-center gap-2 bg-purple-100 text-purple-700 px-3 py-1.5 rounded-md">
-            <CheckCheck className="h-4 w-4" />
-            <span className="font-medium text-sm">Resolved</span>
-          </div>
+        {/* Show reject button for flagged orders */}
+        {onResolveFlag && isFlagged && (
+          <Button 
+            variant="custom"
+            className="bg-red-500 hover:bg-red-600 text-white font-medium rounded-md transition-colors shadow-sm"
+            onClick={() => onResolveFlag(workOrderId, "rejected")}
+          >
+            <ThumbsDown className="mr-1 h-4 w-4" />
+            Reject
+          </Button>
+        )}
+        
+        {/* Show pending button for flagged orders */}
+        {onResolveFlag && isFlagged && (
+          <Button 
+            variant="custom"
+            className="bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-md transition-colors shadow-sm"
+            onClick={() => onResolveFlag(workOrderId, "followup")}
+          >
+            <RotateCcw className="mr-1 h-4 w-4" />
+            Mark as Pending
+          </Button>
         )}
       </div>
       <div>
