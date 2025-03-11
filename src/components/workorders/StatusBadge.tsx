@@ -25,25 +25,9 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
     }
   };
 
-  // Function to get text for the OptimoRoute completion status
-  const getCompletionStatusText = () => {
-    if (!completionStatus) return "PENDING";
-    const status = completionStatus.toLowerCase();
-    
-    switch (status) {
-      case "success":
-        return "SUCCESS";
-      case "failed":
-        return "FAILED";
-      case "rejected":
-        return "REJECTED";
-      case "on_route":
-        return "ON ROUTE";
-      case "pending":
-        return "PENDING";
-      default:
-        return completionStatus.toUpperCase();
-    }
+  // Get the success label for the completion status
+  const getSuccessLabel = () => {
+    return "SUCCESS";
   };
 
   // Get the QC status styling
@@ -51,11 +35,11 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
 
   return (
     <Badge 
-      className={`text-white font-medium transition-colors ${bgColor} inline-flex items-center gap-1.5`}
+      className={`text-white font-semibold px-2.5 py-1 transition-colors ${bgColor} inline-flex items-center gap-1.5 rounded-full`}
       title={`QC Status: ${status.replace(/_/g, " ").toUpperCase()}`}
     >
       {icon}
-      {getCompletionStatusText()}
+      {getSuccessLabel()}
     </Badge>
   );
 };
