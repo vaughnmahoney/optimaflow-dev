@@ -16,6 +16,7 @@ interface WorkOrderContentProps {
     approved: number;
     pending_review: number;
     flagged: number;
+    resolved: number;
     all?: number;
   };
   sortField?: SortField;
@@ -39,7 +40,7 @@ export const WorkOrderContent = ({
   onDelete,
   onSearchChange,
   onOptimoRouteSearch,
-  statusCounts = { approved: 0, pending_review: 0, flagged: 0 },
+  statusCounts = { approved: 0, pending_review: 0, flagged: 0, resolved: 0 },
   sortField,
   sortDirection,
   onSort,
