@@ -1,5 +1,5 @@
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { OrderDetailsTab } from "../tabs/OrderDetailsTab";
 import { NotesTab } from "../tabs/NotesTab";
 import { SignatureTab } from "../tabs/SignatureTab";
@@ -20,6 +20,9 @@ export const OrderDetails = ({
   const completionData = workOrder.completion_response?.orders[0]?.data;
   const trackingUrl = completionData?.tracking_url;
   
+  // State to track the active tab
+  const [activeTab, setActiveTab] = useState("details");
+  
   // Create refs for each section to scroll to
   const detailsSectionRef = useRef<HTMLDivElement>(null);
   const notesSectionRef = useRef<HTMLDivElement>(null);
@@ -27,6 +30,7 @@ export const OrderDetails = ({
   
   // Handle scrolling to the appropriate section when a tab is clicked
   const handleTabChange = (value: string) => {
+    setActiveTab(value);
     switch (value) {
       case "details":
         detailsSectionRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -40,11 +44,57 @@ export const OrderDetails = ({
     }
   };
 
+  // Set up intersection observers for each section
+  useEffect(() => {
+    const options = {
+      root: null, // Use the viewport as the root
+      rootMargin: "-50px 0px", // Negative margin to trigger a bit before the element reaches the top
+      threshold: 0.1 // Trigger when 10% of the element is visible
+    };
+
+    const handleIntersect = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach(entry => {
+        // Only process elements that are intersecting (visible)
+        if (entry.isIntersecting) {
+          const id = entry.target.id;
+          
+          // Update the active tab based on which section is visible
+          if (id === "details-section") {
+            setActiveTab("details");
+          } else if (id === "notes-section") {
+            setActiveTab("notes");
+          } else if (id === "signature-section") {
+            setActiveTab("signature");
+          }
+        }
+      });
+    };
+
+    // Create the observer
+    const observer = new IntersectionObserver(handleIntersect, options);
+    
+    // Observe all three sections
+    if (detailsSectionRef.current) {
+      observer.observe(detailsSectionRef.current);
+    }
+    if (notesSectionRef.current) {
+      observer.observe(notesSectionRef.current);
+    }
+    if (signatureSectionRef.current) {
+      observer.observe(signatureSectionRef.current);
+    }
+
+    // Clean up the observer on component unmount
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       <div className="bg-gray-100 sticky top-0 z-10">
         <div className="w-full bg-gray-100 flex items-center justify-center">
-          <Tabs defaultValue="details" onValueChange={handleTabChange} className="w-full">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className="w-full h-12 bg-gray-100 grid grid-cols-3 rounded-none">
               <TabsTrigger value="details" className="rounded-none data-[state=active]:bg-white">
                 <div className="flex items-center gap-2">
