@@ -1,5 +1,4 @@
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OrderDetailsTab } from "../tabs/OrderDetailsTab";
 import { NotesTab } from "../tabs/NotesTab";
 import { SignatureTab } from "../tabs/SignatureTab";
@@ -7,6 +6,7 @@ import { WorkOrder } from "../../types";
 import { Link, FileText, MessageSquare, FileSignature } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QcNotesSheet } from "./QcNotesSheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface OrderDetailsProps {
   workOrder: WorkOrder;
@@ -20,38 +20,51 @@ export const OrderDetails = ({
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <Tabs defaultValue="details" className="flex-1 flex flex-col overflow-hidden">
-        <div className="bg-gray-100">
-          <TabsList className="w-full rounded-none h-12 bg-gray-100">
-            <TabsTrigger value="details" className="flex-1 rounded-none text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=active]:font-medium flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Order Details
-            </TabsTrigger>
-            <TabsTrigger value="notes" className="flex-1 rounded-none text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=active]:font-medium flex items-center gap-2">
-              <MessageSquare className="h-4 w-4" />
-              Notes
-            </TabsTrigger>
-            <TabsTrigger value="signature" className="flex-1 rounded-none text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=active]:font-medium flex items-center gap-2">
-              <FileSignature className="h-4 w-4" />
-              Signature
-            </TabsTrigger>
-          </TabsList>
+      <div className="bg-gray-100">
+        <div className="w-full h-12 bg-gray-100 flex">
+          <div className="flex-1 rounded-none text-gray-900 bg-gray-100 font-medium flex items-center gap-2 justify-center">
+            <FileText className="h-4 w-4" />
+            Order Information
+          </div>
         </div>
+      </div>
 
-        <div className="flex-1 overflow-auto">
-          <TabsContent value="details" className="m-0 h-full flex-1">
+      <ScrollArea className="flex-1 overflow-auto">
+        <div className="space-y-4 pt-4">
+          {/* Order Details Section */}
+          <div id="details-section" className="px-4 pb-6">
+            <div className="mb-4 pb-2 border-b border-gray-200">
+              <h3 className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <FileText className="h-4 w-4 text-gray-500" />
+                Order Details
+              </h3>
+            </div>
             <OrderDetailsTab workOrder={workOrder} />
-          </TabsContent>
+          </div>
           
-          <TabsContent value="notes" className="m-0 h-full flex-1">
+          {/* Notes Section */}
+          <div id="notes-section" className="px-4 pb-6">
+            <div className="mb-4 pb-2 border-b border-gray-200">
+              <h3 className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <MessageSquare className="h-4 w-4 text-gray-500" />
+                Notes
+              </h3>
+            </div>
             <NotesTab workOrder={workOrder} />
-          </TabsContent>
+          </div>
           
-          <TabsContent value="signature" className="m-0 h-full flex-1">
+          {/* Signature Section */}
+          <div id="signature-section" className="px-4 pb-6">
+            <div className="mb-4 pb-2 border-b border-gray-200">
+              <h3 className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <FileSignature className="h-4 w-4 text-gray-500" />
+                Signature
+              </h3>
+            </div>
             <SignatureTab workOrder={workOrder} />
-          </TabsContent>
+          </div>
         </div>
-      </Tabs>
+      </ScrollArea>
       
       {/* Footer with tracking URL and QC Notes */}
       <div className="p-4 border-t flex items-center justify-between bg-gray-50">

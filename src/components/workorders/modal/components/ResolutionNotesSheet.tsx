@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { WorkOrder } from "../../types";
 import { useWorkOrderMutations } from "@/hooks/useWorkOrderMutations";
 import { toast } from "sonner";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { PenLine, StickyNote, Save } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -42,8 +42,8 @@ export const ResolutionNotesSheet = ({ workOrder }: ResolutionNotesSheetProps) =
   const hasNotes = workOrder.resolution_notes && workOrder.resolution_notes.trim().length > 0;
 
   return (
-    <Sheet open={isOpen} onOpenChange={setIsOpen}>
-      <SheetTrigger asChild>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
         <Button 
           variant="custom" 
           size="sm" 
@@ -62,14 +62,14 @@ export const ResolutionNotesSheet = ({ workOrder }: ResolutionNotesSheetProps) =
             />
           )}
         </Button>
-      </SheetTrigger>
-      <SheetContent side="bottom" className="max-w-md mx-auto rounded-t-lg h-[450px]">
-        <SheetHeader className="pb-2 border-b mb-4">
-          <SheetTitle className="flex items-center gap-2 text-red-700">
+      </DialogTrigger>
+      <DialogContent className="max-w-md mx-auto px-6 py-6">
+        <DialogHeader className="pb-2 border-b mb-4">
+          <DialogTitle className="flex items-center gap-2 text-red-700">
             <StickyNote className="h-5 w-5 text-red-500" />
             Resolution Notes
-          </SheetTitle>
-        </SheetHeader>
+          </DialogTitle>
+        </DialogHeader>
         <div className="py-2">
           <Textarea 
             placeholder="Add notes about resolution decision..."
@@ -78,7 +78,7 @@ export const ResolutionNotesSheet = ({ workOrder }: ResolutionNotesSheetProps) =
             onChange={(e) => setResolutionNotes(e.target.value)}
           />
         </div>
-        <SheetFooter>
+        <DialogFooter>
           <Button 
             onClick={handleSaveResolutionNotes} 
             disabled={isSaving}
@@ -87,8 +87,8 @@ export const ResolutionNotesSheet = ({ workOrder }: ResolutionNotesSheetProps) =
             <Save className="h-4 w-4" />
             {isSaving ? "Saving..." : "Save Notes"}
           </Button>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
