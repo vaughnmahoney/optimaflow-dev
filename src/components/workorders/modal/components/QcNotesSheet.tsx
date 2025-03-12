@@ -73,7 +73,7 @@ export const QcNotesSheet = ({ workOrder }: QcNotesSheetProps) => {
         <div className="py-2">
           <Textarea 
             placeholder="Add your QC notes here..."
-            className="min-h-[250px] mb-4 border-purple-200 focus:border-purple-400"
+            className="min-h-[250px] mb-4 border-purple-200 focus-visible:border-purple-400 focus-visible:ring-0"
             value={qcNotes}
             onChange={(e) => setQcNotes(e.target.value)}
           />

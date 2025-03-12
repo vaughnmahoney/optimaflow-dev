@@ -1,0 +1,9 @@
+
+@@ -71,6 +71,7 @@
+   pending_review: number;
+   flagged: number;
+   resolved: number;
++  rejected: number;
+   all?: number;
+ }
+

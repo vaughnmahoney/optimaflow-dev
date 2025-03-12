@@ -73,7 +73,7 @@ export const ResolutionNotesSheet = ({ workOrder }: ResolutionNotesSheetProps) =
         <div className="py-2">
           <Textarea 
             placeholder="Add notes about resolution decision..."
-            className="min-h-[250px] mb-4 border-red-200 focus:border-red-400"
+            className="min-h-[250px] mb-4 border-red-200 focus-visible:border-red-400 focus-visible:ring-0"
             value={resolutionNotes}
             onChange={(e) => setResolutionNotes(e.target.value)}
           />
