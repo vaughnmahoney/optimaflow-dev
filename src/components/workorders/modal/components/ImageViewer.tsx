@@ -20,6 +20,7 @@ export const ImageViewer = ({
   toggleImageExpand,
 }: ImageViewerProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isLoading, setIsLoading] = useState(false);
   
   const {
     zoomLevel,
@@ -38,8 +39,10 @@ export const ImageViewer = ({
   
   const handlePrevious = () => {
     if (currentImageIndex > 0) {
+      setIsLoading(true);
       setCurrentImageIndex(currentImageIndex - 1);
     } else if (images.length > 0) {
+      setIsLoading(true);
       setCurrentImageIndex(images.length - 1);
     }
     // Reset zoom when changing images
@@ -48,12 +51,19 @@ export const ImageViewer = ({
   
   const handleNext = () => {
     if (currentImageIndex < images.length - 1) {
+      setIsLoading(true);
       setCurrentImageIndex(currentImageIndex + 1);
     } else if (images.length > 0) {
+      setIsLoading(true);
       setCurrentImageIndex(0);
     }
     // Reset zoom when changing images
     resetZoomOnImageChange();
+  };
+
+  // Handle image load complete
+  const handleImageLoad = () => {
+    setIsLoading(false);
   };
 
   return (
@@ -70,6 +80,13 @@ export const ImageViewer = ({
               height: "100%",
             }}
           >
+            {/* Show skeleton while loading */}
+            {isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
+                <div className="h-16 w-16 border-4 border-t-blue-500 border-r-transparent border-b-blue-500 border-l-transparent rounded-full animate-spin"></div>
+              </div>
+            )}
+            
             <img 
               ref={imageRef}
               src={images[currentImageIndex]?.url} 
@@ -92,6 +109,7 @@ export const ImageViewer = ({
               onMouseDown={handleMouseDown}
               onMouseUp={handleMouseUp}
               onMouseLeave={handleMouseLeave}
+              onLoad={handleImageLoad}
               draggable="false"
             />
           </div>
