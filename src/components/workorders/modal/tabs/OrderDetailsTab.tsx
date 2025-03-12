@@ -1,5 +1,6 @@
 
 import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { WorkOrder } from "../../types";
 import { MapPin, Clock, Package, ClipboardCheck } from "lucide-react";
 import { format } from "date-fns";
@@ -61,17 +62,17 @@ export const OrderDetailsTab = ({
     <div className="space-y-4">
       <Card className="overflow-hidden border shadow-sm bg-white">
         <div className="p-5 space-y-4">
-          {/* Single Order Details Section */}
-          <div className="space-y-3">
+          {/* Main Order Details Section */}
+          <div className="space-y-4">
             <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
               <ClipboardCheck className="h-5 w-5 text-blue-600" />
               <h3 className="font-medium text-blue-800 text-lg">Order Details</h3>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 pl-2">
+            <div className="space-y-6 pl-2">
               {/* Location Information */}
               <div className="space-y-3">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 pb-1 border-b border-gray-50">
                   <MapPin className="h-4 w-4 text-blue-600" />
                   <span className="text-sm font-medium text-blue-700">Location</span>
                 </div>
@@ -84,9 +85,11 @@ export const OrderDetailsTab = ({
                 </div>
               </div>
               
+              <Separator className="bg-gray-100" />
+              
               {/* Time Information */}
               <div className="space-y-3">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 pb-1 border-b border-gray-50">
                   <Clock className="h-4 w-4 text-blue-600" />
                   <span className="text-sm font-medium text-blue-700">Time Details</span>
                 </div>
@@ -102,9 +105,11 @@ export const OrderDetailsTab = ({
                 </div>
               </div>
               
+              <Separator className="bg-gray-100" />
+              
               {/* Materials Section */}
               <div className="space-y-3">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 pb-1 border-b border-gray-50">
                   <Package className="h-4 w-4 text-blue-600" />
                   <span className="text-sm font-medium text-blue-700">Materials</span>
                 </div>
