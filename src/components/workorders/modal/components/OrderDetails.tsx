@@ -4,7 +4,7 @@ import { OrderDetailsTab } from "../tabs/OrderDetailsTab";
 import { NotesTab } from "../tabs/NotesTab";
 import { SignatureTab } from "../tabs/SignatureTab";
 import { WorkOrder } from "../../types";
-import { Link } from "lucide-react";
+import { Link, FileText, MessageSquare, FileSignature } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QcNotesSheet } from "./QcNotesSheet";
 
@@ -23,13 +23,16 @@ export const OrderDetails = ({
       <Tabs defaultValue="details" className="flex-1 flex flex-col overflow-hidden">
         <div className="bg-gray-100">
           <TabsList className="w-full rounded-none h-12 bg-gray-100">
-            <TabsTrigger value="details" className="flex-1 rounded-none text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900">
+            <TabsTrigger value="details" className="flex-1 rounded-none text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=active]:font-medium flex items-center gap-2">
+              <FileText className="h-4 w-4" />
               Order Details
             </TabsTrigger>
-            <TabsTrigger value="notes" className="flex-1 rounded-none text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900">
+            <TabsTrigger value="notes" className="flex-1 rounded-none text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=active]:font-medium flex items-center gap-2">
+              <MessageSquare className="h-4 w-4" />
               Notes
             </TabsTrigger>
-            <TabsTrigger value="signature" className="flex-1 rounded-none text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900">
+            <TabsTrigger value="signature" className="flex-1 rounded-none text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=active]:font-medium flex items-center gap-2">
+              <FileSignature className="h-4 w-4" />
               Signature
             </TabsTrigger>
           </TabsList>
@@ -51,13 +54,13 @@ export const OrderDetails = ({
       </Tabs>
       
       {/* Footer with tracking URL and QC Notes */}
-      <div className="p-4 border-t flex items-center justify-between">
+      <div className="p-4 border-t flex items-center justify-between bg-gray-50">
         <QcNotesSheet workOrder={workOrder} />
         
         {trackingUrl ? (
           <Button 
             variant="outline" 
-            className="text-left flex items-center gap-2 bg-gray-50 hover:bg-gray-100 text-gray-700 border-gray-200" 
+            className="text-left flex items-center gap-2 bg-white hover:bg-gray-100 text-gray-700 border-gray-200" 
             onClick={() => window.open(trackingUrl, '_blank')}
           >
             <Link className="h-4 w-4" />
