@@ -1,51 +1,58 @@
 
 import { Card } from "@/components/ui/card";
 import { WorkOrder } from "../../types";
-import { formatDate, calculateDuration } from "../utils/modalUtils";
-import { User, MapPin, Calendar, Clock, Hash, CalendarClock } from "lucide-react";
+import { Clock, MapPin, Truck, CalendarIcon, BadgeInfo } from "lucide-react";
+import { format } from "date-fns";
 
 interface OrderDetailsTabProps {
   workOrder: WorkOrder;
 }
 
-export const OrderDetailsTab = ({ workOrder }: OrderDetailsTabProps) => {
+export const OrderDetailsTab = ({
+  workOrder
+}: OrderDetailsTabProps) => {
   const completionData = workOrder.completion_response?.orders[0]?.data;
-  const driverName = workOrder.driver?.name || workOrder.search_response?.scheduleInformation?.driverName || 'Not assigned';
-  const startTime = completionData?.startTime?.localTime || '';
-  const endTime = completionData?.endTime?.localTime || '';
+  
+  // Format date function
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return "N/A";
+    try {
+      return format(new Date(dateString), "MMM d, yyyy h:mm a");
+    } catch (error) {
+      console.error("Date parsing error:", error);
+      return "Invalid Date";
+    }
+  };
+
+  // Get formatted start and end times
+  const startTime = completionData?.startTime?.localTime 
+    ? formatDate(completionData.startTime.localTime) 
+    : "Not recorded";
+  
+  const endTime = completionData?.endTime?.localTime 
+    ? formatDate(completionData.endTime.localTime) 
+    : "Not recorded";
+
+  // Location information
+  const location = workOrder.location || {};
+  const locationName = location.name || location.locationName || "N/A";
+  const address = location.address || "N/A";
+  const city = location.city || "";
+  const state = location.state || "";
+  const zip = location.zip || "";
+  
+  // Format full address
+  const fullAddress = [
+    address,
+    [city, state, zip].filter(Boolean).join(", ")
+  ].filter(part => part && part !== "N/A").join(", ");
+
+  // Driver information
+  const driverName = workOrder.driver?.name || "No driver assigned";
 
   return (
     <div className="space-y-4">
-      {/* Driver & Location Section */}
-      <Card className="overflow-hidden border-l-4 border-l-blue-400">
-        <div className="bg-gradient-to-r from-blue-50 to-transparent p-3 flex items-center justify-between border-b">
-          <div className="flex items-center gap-2">
-            <User className="h-4 w-4 text-blue-500" />
-            <h3 className="font-medium text-blue-700">Technician & Location</h3>
-          </div>
-        </div>
-        <div className="p-4">
-          <div className="space-y-3 text-sm">
-            <div className="flex items-start gap-3">
-              <User className="h-4 w-4 text-blue-400 mt-0.5" />
-              <div>
-                <p className="font-medium text-gray-900">{driverName}</p>
-                <p className="text-xs text-gray-500">Technician</p>
-              </div>
-            </div>
-            
-            <div className="flex items-start gap-3">
-              <MapPin className="h-4 w-4 text-blue-400 mt-0.5" />
-              <div>
-                <p className="font-medium text-gray-900">{workOrder.location?.name || workOrder.location?.locationName || 'N/A'}</p>
-                <p className="text-xs text-gray-500">{workOrder.location?.address || 'Address not available'}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Card>
-      
-      {/* Time Information Section */}
+      {/* Time Information */}
       <Card className="overflow-hidden border-l-4 border-l-blue-400">
         <div className="bg-gradient-to-r from-blue-50 to-transparent p-3 flex items-center justify-between border-b">
           <div className="flex items-center gap-2">
@@ -53,78 +60,74 @@ export const OrderDetailsTab = ({ workOrder }: OrderDetailsTabProps) => {
             <h3 className="font-medium text-blue-700">Time Information</h3>
           </div>
         </div>
-        <div className="p-4">
-          {/* Add LDS as the first item in Time Information */}
-          <div className="mb-3 pb-3 border-b border-gray-100">
-            <div className="flex items-start gap-3">
-              <CalendarClock className="h-4 w-4 text-blue-400 mt-0.5" />
-              <div>
-                <p className="font-medium text-gray-900">{workOrder.lds || 'N/A'}</p>
-                <p className="text-xs text-gray-500">Last Date of Service</p>
-              </div>
-            </div>
+        <div className="p-4 grid gap-3">
+          <div className="grid grid-cols-[120px_1fr] items-center">
+            <span className="text-sm font-medium text-gray-500">Start Time:</span>
+            <span className="text-sm text-gray-700">{startTime}</span>
           </div>
-          
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div className="flex items-start gap-3">
-              <Calendar className="h-4 w-4 text-blue-400 mt-0.5" />
-              <div>
-                <p className="font-medium text-gray-900">{formatDate(startTime) || 'N/A'}</p>
-                <p className="text-xs text-gray-500">Start Date</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <Clock className="h-4 w-4 text-blue-400 mt-0.5" />
-              <div>
-                <p className="font-medium text-gray-900">{formatDate(startTime, "h:mm a") || 'N/A'}</p>
-                <p className="text-xs text-gray-500">Start Time</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <Calendar className="h-4 w-4 text-blue-400 mt-0.5" />
-              <div>
-                <p className="font-medium text-gray-900">{formatDate(endTime) || 'N/A'}</p>
-                <p className="text-xs text-gray-500">End Date</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <Clock className="h-4 w-4 text-blue-400 mt-0.5" />
-              <div>
-                <p className="font-medium text-gray-900">{formatDate(endTime, "h:mm a") || 'N/A'}</p>
-                <p className="text-xs text-gray-500">End Time</p>
-              </div>
-            </div>
+          <div className="grid grid-cols-[120px_1fr] items-center">
+            <span className="text-sm font-medium text-gray-500">End Time:</span>
+            <span className="text-sm text-gray-700">{endTime}</span>
           </div>
-          
-          <div className="mt-3 pt-3 border-t border-gray-100">
-            <div className="flex items-start gap-3">
-              <Clock className="h-4 w-4 text-blue-400 mt-0.5" />
-              <div>
-                <p className="font-medium text-gray-900">{workOrder.duration || calculateDuration(startTime, endTime) || 'N/A'}</p>
-                <p className="text-xs text-gray-500">Total Duration</p>
-              </div>
-            </div>
+          <div className="grid grid-cols-[120px_1fr] items-center">
+            <span className="text-sm font-medium text-gray-500">Service Date:</span>
+            <span className="text-sm text-gray-700">{workOrder.service_date ? formatDate(workOrder.service_date) : "N/A"}</span>
           </div>
         </div>
       </Card>
-      
-      {/* Order Number Information */}
+
+      {/* Location Information */}
       <Card className="overflow-hidden border-l-4 border-l-blue-400">
         <div className="bg-gradient-to-r from-blue-50 to-transparent p-3 flex items-center justify-between border-b">
           <div className="flex items-center gap-2">
-            <Hash className="h-4 w-4 text-blue-500" />
-            <h3 className="font-medium text-blue-700">Order Information</h3>
+            <MapPin className="h-4 w-4 text-blue-500" />
+            <h3 className="font-medium text-blue-700">Location Information</h3>
+          </div>
+        </div>
+        <div className="p-4 grid gap-3">
+          <div className="grid grid-cols-[120px_1fr] items-center">
+            <span className="text-sm font-medium text-gray-500">Name:</span>
+            <span className="text-sm text-gray-700">{locationName}</span>
+          </div>
+          <div className="grid grid-cols-[120px_1fr] items-center">
+            <span className="text-sm font-medium text-gray-500">Address:</span>
+            <span className="text-sm text-gray-700">{fullAddress || "N/A"}</span>
+          </div>
+        </div>
+      </Card>
+
+      {/* Driver Information */}
+      <Card className="overflow-hidden border-l-4 border-l-blue-400">
+        <div className="bg-gradient-to-r from-blue-50 to-transparent p-3 flex items-center justify-between border-b">
+          <div className="flex items-center gap-2">
+            <Truck className="h-4 w-4 text-blue-500" />
+            <h3 className="font-medium text-blue-700">Driver Information</h3>
           </div>
         </div>
         <div className="p-4">
-          <div className="space-y-3 text-sm">
-            <div className="flex items-start gap-3">
-              <Hash className="h-4 w-4 text-blue-400 mt-0.5" />
-              <div>
-                <p className="font-medium text-gray-900">{workOrder.order_no || 'N/A'}</p>
-                <p className="text-xs text-gray-500">Order Number</p>
-              </div>
-            </div>
+          <div className="grid grid-cols-[120px_1fr] items-center">
+            <span className="text-sm font-medium text-gray-500">Driver:</span>
+            <span className="text-sm text-gray-700">{driverName}</span>
+          </div>
+        </div>
+      </Card>
+
+      {/* Order Information */}
+      <Card className="overflow-hidden border-l-4 border-l-blue-400">
+        <div className="bg-gradient-to-r from-blue-50 to-transparent p-3 flex items-center justify-between border-b">
+          <div className="flex items-center gap-2">
+            <BadgeInfo className="h-4 w-4 text-blue-500" />
+            <h3 className="font-medium text-blue-700">Order Information</h3>
+          </div>
+        </div>
+        <div className="p-4 grid gap-3">
+          <div className="grid grid-cols-[120px_1fr] items-center">
+            <span className="text-sm font-medium text-gray-500">Order #:</span>
+            <span className="text-sm text-gray-700">{workOrder.order_no || "N/A"}</span>
+          </div>
+          <div className="grid grid-cols-[120px_1fr] items-center">
+            <span className="text-sm font-medium text-gray-500">Status:</span>
+            <span className="text-sm text-gray-700 capitalize">{workOrder.status?.replace(/_/g, " ") || "N/A"}</span>
           </div>
         </div>
       </Card>

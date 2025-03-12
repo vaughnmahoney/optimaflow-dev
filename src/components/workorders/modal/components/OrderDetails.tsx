@@ -161,9 +161,8 @@ export const OrderDetails = ({
       <div className="p-4 border-t flex items-center justify-between bg-gray-50">
         <div className="flex items-center gap-2">
           <QcNotesSheet workOrder={workOrder} />
-          {workOrder.status === "flagged" && (
-            <ResolutionNotesSheet workOrder={workOrder} />
-          )}
+          {/* Show Resolution Notes for all statuses, not just flagged */}
+          <ResolutionNotesSheet workOrder={workOrder} />
         </div>
         
         {trackingUrl ? (

@@ -19,7 +19,6 @@ export const NotesTab = ({
   workOrder
 }: NotesTabProps) => {
   const completionData = workOrder.completion_response?.orders[0]?.data;
-  const isFlagged = workOrder.status === "flagged";
   
   // Helper function to create an empty state for notes
   const EmptyNoteState = ({ type }: { type: string }) => (
@@ -53,11 +52,11 @@ export const NotesTab = ({
       </Card>
 
       {/* Service Notes */}
-      <Card className="overflow-hidden border-l-4 border-l-green-400">
-        <div className="bg-gradient-to-r from-green-50 to-transparent p-3 flex items-center justify-between border-b">
+      <Card className="overflow-hidden border-l-4 border-l-blue-400">
+        <div className="bg-gradient-to-r from-blue-50 to-transparent p-3 flex items-center justify-between border-b">
           <div className="flex items-center gap-2">
-            <Wrench className="h-4 w-4 text-green-500" />
-            <h3 className="font-medium text-green-700">Service Notes</h3>
+            <Wrench className="h-4 w-4 text-blue-500" />
+            <h3 className="font-medium text-blue-700">Service Notes</h3>
           </div>
         </div>
         <div className="p-4">
@@ -72,11 +71,11 @@ export const NotesTab = ({
       </Card>
       
       {/* Additional Notes */}
-      <Card className="overflow-hidden border-l-4 border-l-amber-400">
-        <div className="bg-gradient-to-r from-amber-50 to-transparent p-3 flex items-center justify-between border-b">
+      <Card className="overflow-hidden border-l-4 border-l-blue-400">
+        <div className="bg-gradient-to-r from-blue-50 to-transparent p-3 flex items-center justify-between border-b">
           <div className="flex items-center gap-2">
-            <ClipboardList className="h-4 w-4 text-amber-500" />
-            <h3 className="font-medium text-amber-700">Additional Notes</h3>
+            <ClipboardList className="h-4 w-4 text-blue-500" />
+            <h3 className="font-medium text-blue-700">Additional Notes</h3>
           </div>
         </div>
         <div className="p-4">
@@ -109,26 +108,24 @@ export const NotesTab = ({
         </div>
       </Card>
       
-      {/* Resolution Notes - only shown for flagged orders */}
-      {isFlagged && (
-        <Card className="overflow-hidden border-l-4 border-l-purple-400">
-          <div className="bg-gradient-to-r from-purple-50 to-transparent p-3 flex items-center justify-between border-b">
-            <div className="flex items-center gap-2">
-              <PenSquare className="h-4 w-4 text-purple-500" />
-              <h3 className="font-medium text-purple-700">Resolution Notes</h3>
-            </div>
+      {/* Resolution Notes - now shown for all statuses, not just flagged */}
+      <Card className="overflow-hidden border-l-4 border-l-purple-400">
+        <div className="bg-gradient-to-r from-purple-50 to-transparent p-3 flex items-center justify-between border-b">
+          <div className="flex items-center gap-2">
+            <PenSquare className="h-4 w-4 text-purple-500" />
+            <h3 className="font-medium text-purple-700">Resolution Notes</h3>
           </div>
-          <div className="p-4">
-            {workOrder.resolution_notes ? (
-              <p className="text-sm whitespace-pre-wrap text-gray-700">
-                {workOrder.resolution_notes}
-              </p>
-            ) : (
-              <EmptyNoteState type="resolution" />
-            )}
-          </div>
-        </Card>
-      )}
+        </div>
+        <div className="p-4">
+          {workOrder.resolution_notes ? (
+            <p className="text-sm whitespace-pre-wrap text-gray-700">
+              {workOrder.resolution_notes}
+            </p>
+          ) : (
+            <EmptyNoteState type="resolution" />
+          )}
+        </div>
+      </Card>
     </div>
   );
 };
