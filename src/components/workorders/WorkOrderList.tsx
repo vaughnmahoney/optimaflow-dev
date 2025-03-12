@@ -70,7 +70,14 @@ export const WorkOrderList = ({
       <StatusFilterCards 
         statusFilter={filters.status}
         onStatusFilterChange={handleStatusFilterChange}
-        statusCounts={statusCounts}
+        statusCounts={{
+          approved: statusCounts.approved,
+          pending_review: statusCounts.pending_review,
+          flagged: statusCounts.flagged,
+          resolved: statusCounts.resolved,
+          rejected: statusCounts.rejected || 0,
+          all: statusCounts.all
+        }}
       />
 
       <DebugDataDisplay 

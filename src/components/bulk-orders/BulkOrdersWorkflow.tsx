@@ -162,6 +162,7 @@ export const BulkOrdersWorkflow = () => {
             pending_review: statusCounts.pending_review,
             flagged: statusCounts.flagged,
             resolved: statusCounts.resolved || 0,
+            rejected: statusCounts.rejected || 0,
             all: statusCounts.all
           }}
           sortField={sortField}
