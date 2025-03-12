@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { WorkOrder } from "../../types";
@@ -32,64 +31,66 @@ export const NotesTab = ({
 
   return (
     <div className="space-y-4">
-      {/* Tech Notes */}
-      <Card className="overflow-hidden border-l-4 border-l-blue-400">
-        <div className="bg-gradient-to-r from-blue-50 to-transparent p-3 flex items-center justify-between border-b">
-          <div className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4 text-blue-500" />
-            <h3 className="font-medium text-blue-700">Tech Notes</h3>
+      {/* Combined Technician Notes */}
+      <Card className="overflow-hidden border-none shadow-md bg-gradient-to-r from-blue-50 to-white">
+        <div className="p-5 space-y-6">
+          {/* Tech Notes Section */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 border-b border-blue-100 pb-2">
+              <MessageSquare className="h-5 w-5 text-blue-600" />
+              <h3 className="font-medium text-blue-800 text-lg">Tech Notes</h3>
+            </div>
+            
+            <div className="pl-7">
+              {completionData?.form?.note ? (
+                <p className="text-sm whitespace-pre-wrap text-gray-700">
+                  {completionData.form.note}
+                </p>
+              ) : (
+                <EmptyNoteState type="tech" />
+              )}
+            </div>
           </div>
-        </div>
-        <div className="p-4">
-          {completionData?.form?.note ? (
-            <p className="text-sm whitespace-pre-wrap text-gray-700">
-              {completionData.form.note}
-            </p>
-          ) : (
-            <EmptyNoteState type="tech" />
-          )}
-        </div>
-      </Card>
-
-      {/* Service Notes */}
-      <Card className="overflow-hidden border-l-4 border-l-blue-400">
-        <div className="bg-gradient-to-r from-blue-50 to-transparent p-3 flex items-center justify-between border-b">
-          <div className="flex items-center gap-2">
-            <Wrench className="h-4 w-4 text-blue-500" />
-            <h3 className="font-medium text-blue-700">Service Notes</h3>
+          
+          {/* Service Notes Section */}
+          <div className="space-y-3 pt-2">
+            <div className="flex items-center gap-2 border-b border-blue-100 pb-2">
+              <Wrench className="h-5 w-5 text-blue-600" />
+              <h3 className="font-medium text-blue-800 text-lg">Service Notes</h3>
+            </div>
+            
+            <div className="pl-7">
+              {workOrder.service_notes ? (
+                <p className="text-sm whitespace-pre-wrap text-gray-700">
+                  {workOrder.service_notes}
+                </p>
+              ) : (
+                <EmptyNoteState type="service" />
+              )}
+            </div>
           </div>
-        </div>
-        <div className="p-4">
-          {workOrder.service_notes ? (
-            <p className="text-sm whitespace-pre-wrap text-gray-700">
-              {workOrder.service_notes}
-            </p>
-          ) : (
-            <EmptyNoteState type="service" />
-          )}
+          
+          {/* Additional Notes Section */}
+          <div className="space-y-3 pt-2">
+            <div className="flex items-center gap-2 border-b border-blue-100 pb-2">
+              <ClipboardList className="h-5 w-5 text-blue-600" />
+              <h3 className="font-medium text-blue-800 text-lg">Additional Notes</h3>
+            </div>
+            
+            <div className="pl-7">
+              {workOrder.notes ? (
+                <p className="text-sm whitespace-pre-wrap text-gray-700">
+                  {workOrder.notes}
+                </p>
+              ) : (
+                <EmptyNoteState type="additional" />
+              )}
+            </div>
+          </div>
         </div>
       </Card>
       
-      {/* Additional Notes */}
-      <Card className="overflow-hidden border-l-4 border-l-blue-400">
-        <div className="bg-gradient-to-r from-blue-50 to-transparent p-3 flex items-center justify-between border-b">
-          <div className="flex items-center gap-2">
-            <ClipboardList className="h-4 w-4 text-blue-500" />
-            <h3 className="font-medium text-blue-700">Additional Notes</h3>
-          </div>
-        </div>
-        <div className="p-4">
-          {workOrder.notes ? (
-            <p className="text-sm whitespace-pre-wrap text-gray-700">
-              {workOrder.notes}
-            </p>
-          ) : (
-            <EmptyNoteState type="additional" />
-          )}
-        </div>
-      </Card>
-      
-      {/* QC Notes */}
+      {/* QC Notes - Keep separate with red accent */}
       <Card className="overflow-hidden border-l-4 border-l-red-400">
         <div className="bg-gradient-to-r from-red-50 to-transparent p-3 flex items-center justify-between border-b">
           <div className="flex items-center gap-2">
@@ -108,7 +109,7 @@ export const NotesTab = ({
         </div>
       </Card>
       
-      {/* Resolution Notes - now shown for all statuses, not just flagged */}
+      {/* Resolution Notes - Keep separate with purple accent */}
       <Card className="overflow-hidden border-l-4 border-l-purple-400">
         <div className="bg-gradient-to-r from-purple-50 to-transparent p-3 flex items-center justify-between border-b">
           <div className="flex items-center gap-2">
