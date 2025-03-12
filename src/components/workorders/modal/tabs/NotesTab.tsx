@@ -116,8 +116,8 @@ export const NotesTab = ({
       <Card className="overflow-hidden border shadow-sm bg-white">
         <div className="p-5 space-y-3">
           <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
-            <PenSquare className="h-5 w-5 text-purple-600" />
-            <h3 className="font-medium text-purple-800 text-lg">Resolution Notes</h3>
+            <PenSquare className="h-5 w-5 text-blue-600" />
+            <h3 className="font-medium text-blue-800 text-lg">Resolution Notes</h3>
           </div>
           
           <div className="pl-7">

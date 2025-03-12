@@ -49,8 +49,8 @@ export const ResolutionNotesSheet = ({ workOrder }: ResolutionNotesSheetProps) =
           size="sm" 
           className={`relative gap-1 px-2 py-1 h-7 rounded-md ${
             hasNotes 
-              ? "bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200" 
-              : "bg-white text-purple-600 border border-purple-200 hover:bg-purple-50"
+              ? "bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200" 
+              : "bg-white text-blue-600 border border-blue-200 hover:bg-blue-50"
           }`}
         >
           {hasNotes ? <PenLine className="h-3.5 w-3.5" /> : <StickyNote className="h-3.5 w-3.5" />}
@@ -58,22 +58,22 @@ export const ResolutionNotesSheet = ({ workOrder }: ResolutionNotesSheetProps) =
           {hasNotes && (
             <Badge 
               variant="info" 
-              className="w-2 h-2 p-0 absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-purple-500"
+              className="w-2 h-2 p-0 absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-blue-500"
             />
           )}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md mx-auto px-6 py-6">
         <DialogHeader className="pb-2 border-b mb-4">
-          <DialogTitle className="flex items-center gap-2 text-purple-700">
-            <StickyNote className="h-5 w-5 text-purple-500" />
+          <DialogTitle className="flex items-center gap-2 text-blue-700">
+            <StickyNote className="h-5 w-5 text-blue-500" />
             Resolution Notes
           </DialogTitle>
         </DialogHeader>
         <div className="py-2">
           <Textarea 
             placeholder="Add notes about resolution decision..."
-            className="min-h-[250px] mb-4 border-purple-200 focus-visible:border-purple-400 focus-visible:ring-0"
+            className="min-h-[250px] mb-4 border-blue-200 focus-visible:border-blue-400 focus-visible:ring-0"
             value={resolutionNotes}
             onChange={(e) => setResolutionNotes(e.target.value)}
           />
@@ -82,7 +82,7 @@ export const ResolutionNotesSheet = ({ workOrder }: ResolutionNotesSheetProps) =
           <Button 
             onClick={handleSaveResolutionNotes} 
             disabled={isSaving}
-            className="w-full gap-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white"
+            className="w-full gap-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
           >
             <Save className="h-4 w-4" />
             {isSaving ? "Saving..." : "Save Notes"}

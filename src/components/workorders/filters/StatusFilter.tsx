@@ -9,7 +9,7 @@ export const StatusFilter = ({ column, value, onChange, onClear }: ColumnFilterP
     { value: "pending_review", label: "Pending Review", icon: Clock, color: "text-yellow-500" },
     { value: "approved", label: "Approved", icon: Check, color: "text-green-500" },
     { value: "flagged", label: "Flagged", icon: Flag, color: "text-red-500" },
-    { value: "resolved", label: "Resolved", icon: CheckCheck, color: "text-purple-500" }
+    { value: "resolved", label: "Resolved", icon: CheckCheck, color: "text-blue-500" }
   ];
   
   const handleStatusChange = (status: string) => {

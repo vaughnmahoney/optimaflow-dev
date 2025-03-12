@@ -59,11 +59,11 @@ export const StatusFilterCards = ({
       label: "Resolved", 
       value: "resolved", 
       icon: CheckCheck, 
-      color: "bg-purple-500",
-      ringColor: "ring-purple-500",
-      hoverColor: "hover:bg-purple-600",
-      textColor: "text-purple-500",
-      lightBg: "bg-purple-50"
+      color: "bg-blue-500",
+      ringColor: "ring-blue-500",
+      hoverColor: "hover:bg-blue-600",
+      textColor: "text-blue-500",
+      lightBg: "bg-blue-50"
     },
     { 
       label: "Rejected", 

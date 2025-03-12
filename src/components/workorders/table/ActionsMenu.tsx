@@ -27,7 +27,7 @@ export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenu
   const getStatusItemStyle = () => {
     if (isApproved) return "text-green-700 bg-green-50 hover:bg-green-100";
     if (isFlagged) return "text-red-700 bg-red-50 hover:bg-red-100";
-    if (isResolved) return "text-purple-700 bg-purple-50 hover:bg-purple-100";
+    if (isResolved) return "text-blue-700 bg-blue-50 hover:bg-blue-100";
     if (isRejected) return "text-orange-700 bg-orange-50 hover:bg-orange-100";
     return "text-gray-500 hover:bg-gray-100";
   };
@@ -79,7 +79,7 @@ export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenu
         {isFlagged && (
           <DropdownMenuItem 
             onClick={() => onStatusUpdate(workOrder.id, "resolved")}
-            className="text-purple-600"
+            className="text-blue-600"
           >
             <CheckCheck className="h-4 w-4 mr-2" />
             Resolve

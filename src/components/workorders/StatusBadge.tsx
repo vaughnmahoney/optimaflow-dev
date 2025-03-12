@@ -19,7 +19,7 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
       case "flagged_followup":
         return { icon: <Flag className="h-3 w-3" />, bgColor: "bg-red-500 hover:bg-red-600" };
       case "resolved":
-        return { icon: <CheckCheck className="h-3 w-3" />, bgColor: "bg-purple-500 hover:bg-purple-600" };
+        return { icon: <CheckCheck className="h-3 w-3" />, bgColor: "bg-blue-500 hover:bg-blue-600" };
       case "rejected":
         return { icon: <AlertTriangle className="h-3 w-3" />, bgColor: "bg-orange-500 hover:bg-orange-600" };
       default:
