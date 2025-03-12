@@ -7,6 +7,7 @@ import { WorkOrder } from "../../types";
 import { Link, FileText, MessageSquare, FileSignature } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QcNotesSheet } from "./QcNotesSheet";
+import { ResolutionNotesSheet } from "./ResolutionNotesSheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -156,9 +157,14 @@ export const OrderDetails = ({
         </div>
       </ScrollArea>
       
-      {/* Footer with tracking URL and QC Notes */}
+      {/* Footer with notes buttons and tracking URL */}
       <div className="p-4 border-t flex items-center justify-between bg-gray-50">
-        <QcNotesSheet workOrder={workOrder} />
+        <div className="flex items-center gap-2">
+          <QcNotesSheet workOrder={workOrder} />
+          {workOrder.status === "flagged" && (
+            <ResolutionNotesSheet workOrder={workOrder} />
+          )}
+        </div>
         
         {trackingUrl ? (
           <Button 

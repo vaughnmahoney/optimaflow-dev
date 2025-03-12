@@ -49,8 +49,8 @@ export const QcNotesSheet = ({ workOrder }: QcNotesSheetProps) => {
           size="sm" 
           className={`relative gap-1 px-2 py-1 h-7 rounded-md ${
             hasNotes 
-              ? "bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200" 
-              : "bg-white text-purple-600 border border-purple-200 hover:bg-purple-50"
+              ? "bg-red-100 text-red-700 border border-red-200 hover:bg-red-200" 
+              : "bg-white text-red-600 border border-red-200 hover:bg-red-50"
           }`}
         >
           {hasNotes ? <PenLine className="h-3.5 w-3.5" /> : <StickyNote className="h-3.5 w-3.5" />}
@@ -58,22 +58,22 @@ export const QcNotesSheet = ({ workOrder }: QcNotesSheetProps) => {
           {hasNotes && (
             <Badge 
               variant="info" 
-              className="w-2 h-2 p-0 absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-purple-500"
+              className="w-2 h-2 p-0 absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-red-500"
             />
           )}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md mx-auto px-6 py-6">
         <DialogHeader className="pb-2 border-b mb-4">
-          <DialogTitle className="flex items-center gap-2 text-purple-700">
-            <StickyNote className="h-5 w-5 text-purple-500" />
+          <DialogTitle className="flex items-center gap-2 text-red-700">
+            <StickyNote className="h-5 w-5 text-red-500" />
             Quality Control Notes
           </DialogTitle>
         </DialogHeader>
         <div className="py-2">
           <Textarea 
             placeholder="Add your QC notes here..."
-            className="min-h-[250px] mb-4 border-purple-200 focus-visible:border-purple-400 focus-visible:ring-0"
+            className="min-h-[250px] mb-4 border-red-200 focus-visible:border-red-400 focus-visible:ring-0"
             value={qcNotes}
             onChange={(e) => setQcNotes(e.target.value)}
           />
@@ -82,7 +82,7 @@ export const QcNotesSheet = ({ workOrder }: QcNotesSheetProps) => {
           <Button 
             onClick={handleSaveQcNotes} 
             disabled={isSaving}
-            className="w-full gap-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white"
+            className="w-full gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white"
           >
             <Save className="h-4 w-4" />
             {isSaving ? "Saving..." : "Save Notes"}

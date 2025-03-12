@@ -91,11 +91,11 @@ export const NotesTab = ({
       </Card>
       
       {/* QC Notes */}
-      <Card className="overflow-hidden border-l-4 border-l-purple-400">
-        <div className="bg-gradient-to-r from-purple-50 to-transparent p-3 flex items-center justify-between border-b">
+      <Card className="overflow-hidden border-l-4 border-l-red-400">
+        <div className="bg-gradient-to-r from-red-50 to-transparent p-3 flex items-center justify-between border-b">
           <div className="flex items-center gap-2">
-            <StickyNote className="h-4 w-4 text-purple-500" />
-            <h3 className="font-medium text-purple-700">QC Notes</h3>
+            <StickyNote className="h-4 w-4 text-red-500" />
+            <h3 className="font-medium text-red-700">QC Notes</h3>
           </div>
         </div>
         <div className="p-4">
@@ -111,11 +111,11 @@ export const NotesTab = ({
       
       {/* Resolution Notes - only shown for flagged orders */}
       {isFlagged && (
-        <Card className="overflow-hidden border-l-4 border-l-red-400">
-          <div className="bg-gradient-to-r from-red-50 to-transparent p-3 flex items-center justify-between border-b">
+        <Card className="overflow-hidden border-l-4 border-l-purple-400">
+          <div className="bg-gradient-to-r from-purple-50 to-transparent p-3 flex items-center justify-between border-b">
             <div className="flex items-center gap-2">
-              <PenSquare className="h-4 w-4 text-red-500" />
-              <h3 className="font-medium text-red-700">Resolution Notes</h3>
+              <PenSquare className="h-4 w-4 text-purple-500" />
+              <h3 className="font-medium text-purple-700">Resolution Notes</h3>
             </div>
           </div>
           <div className="p-4">
