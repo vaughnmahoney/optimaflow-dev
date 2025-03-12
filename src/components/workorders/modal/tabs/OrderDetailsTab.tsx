@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { WorkOrder } from "../../types";
 import { formatDate, calculateDuration } from "../utils/modalUtils";
-import { User, MapPin, Calendar, Clock, Hash, Info } from "lucide-react";
+import { User, MapPin, Calendar, Clock, Hash, CalendarClock } from "lucide-react";
 
 interface OrderDetailsTabProps {
   workOrder: WorkOrder;
@@ -43,6 +43,18 @@ export const OrderDetailsTab = ({ workOrder }: OrderDetailsTabProps) => {
         {/* Time Information Section */}
         <Card className="p-4 mb-4 bg-white border border-gray-200">
           <h3 className="text-sm font-medium text-gray-500 mb-3">Time Information</h3>
+          
+          {/* Add LDS as the first item in Time Information */}
+          <div className="mb-3 pb-3 border-b border-gray-100">
+            <div className="flex items-start gap-3">
+              <CalendarClock className="h-4 w-4 text-gray-400 mt-0.5" />
+              <div>
+                <p className="font-medium text-gray-900">{workOrder.lds || 'N/A'}</p>
+                <p className="text-xs text-gray-500">Last Date of Service</p>
+              </div>
+            </div>
+          </div>
+          
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div className="flex items-start gap-3">
               <Calendar className="h-4 w-4 text-gray-400 mt-0.5" />
@@ -85,20 +97,11 @@ export const OrderDetailsTab = ({ workOrder }: OrderDetailsTabProps) => {
           </div>
         </Card>
         
-        {/* Additional Information */}
+        {/* Order Number Information */}
         <Card className="p-4 bg-white border border-gray-200">
-          <h3 className="text-sm font-medium text-gray-500 mb-3">Additional Information</h3>
           <div className="space-y-3 text-sm">
             <div className="flex items-start gap-3">
               <Hash className="h-4 w-4 text-gray-400 mt-0.5" />
-              <div>
-                <p className="font-medium text-gray-900">{workOrder.lds || 'N/A'}</p>
-                <p className="text-xs text-gray-500">LDS</p>
-              </div>
-            </div>
-            
-            <div className="flex items-start gap-3">
-              <Info className="h-4 w-4 text-gray-400 mt-0.5" />
               <div>
                 <p className="font-medium text-gray-900">{workOrder.order_no || 'N/A'}</p>
                 <p className="text-xs text-gray-500">Order Number</p>
