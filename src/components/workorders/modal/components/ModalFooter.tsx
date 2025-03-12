@@ -24,12 +24,14 @@ export const ModalFooter = ({
   const isResolved = status === "resolved";
   const isApproved = status === "approved";
   const isPending = status === "pending_review";
+  const isRejected = status === "rejected";
   
   // Get status-specific styling for the disabled status button
   const getStatusButtonStyle = () => {
     if (isApproved) return "bg-green-50 text-green-700 border-green-200";
     if (isFlagged) return "bg-red-50 text-red-700 border-red-200";
     if (isResolved) return "bg-purple-50 text-purple-700 border-purple-200";
+    if (isRejected) return "bg-orange-50 text-orange-700 border-orange-200";
     return "bg-gray-100 text-gray-500";
   };
   
@@ -44,12 +46,12 @@ export const ModalFooter = ({
             onClick={() => onStatusUpdate(workOrderId, "pending_review")}
           >
             <Clock className="mr-1 h-4 w-4" />
-            {isApproved ? "Approved" : isFlagged ? "Flagged" : isResolved ? "Resolved" : "Status"}
+            {isApproved ? "Approved" : isFlagged ? "Flagged" : isResolved ? "Resolved" : isRejected ? "Rejected" : "Status"}
           </Button>
         )}
         
         {/* Show approve button for non-approved orders */}
-        {onStatusUpdate && !isApproved && (
+        {onStatusUpdate && !isApproved && !isRejected && (
           <Button 
             variant="custom"
             className="bg-green-500 hover:bg-green-600 text-white font-medium rounded-md transition-colors shadow-sm"
@@ -61,7 +63,7 @@ export const ModalFooter = ({
         )}
         
         {/* Show flag button for non-flagged orders */}
-        {onStatusUpdate && !isFlagged && (
+        {onStatusUpdate && !isFlagged && !isRejected && (
           <Button 
             variant="custom"
             className="bg-red-500 hover:bg-red-600 text-white font-medium rounded-md transition-colors shadow-sm"
@@ -96,7 +98,17 @@ export const ModalFooter = ({
           </Button>
         )}
         
-        {/* "Mark as Pending" button removed as requested */}
+        {/* For rejected status, show button to reopen as pending */}
+        {onStatusUpdate && isRejected && (
+          <Button 
+            variant="custom"
+            className="bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-md transition-colors shadow-sm"
+            onClick={() => onStatusUpdate(workOrderId, "pending_review")}
+          >
+            <Clock className="mr-1 h-4 w-4" />
+            Reopen
+          </Button>
+        )}
       </div>
       <div>
         {onDownloadAll && hasImages && (

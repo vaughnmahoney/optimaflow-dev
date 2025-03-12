@@ -10,6 +10,8 @@ export const getStatusBorderColor = (status: string) => {
       return "border-red-500";
     case "resolved":
       return "border-purple-500";
+    case "rejected":
+      return "border-orange-500";
     case "pending_review":
     default:
       return "border-yellow-500";
@@ -25,6 +27,8 @@ export const getStatusBgColor = (status: string) => {
       return "bg-red-50";
     case "resolved":
       return "bg-purple-50";
+    case "rejected":
+      return "bg-orange-50";
     case "pending_review":
     default:
       return "bg-yellow-50";

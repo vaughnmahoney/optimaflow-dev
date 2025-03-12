@@ -1,5 +1,5 @@
 
-import { CheckCircle, Flag, Trash2, MoreVertical, CheckCheck, Clock } from "lucide-react";
+import { CheckCircle, Flag, Trash2, MoreVertical, CheckCheck, Clock, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WorkOrder } from "../types";
 import {
@@ -21,12 +21,14 @@ export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenu
   const isFlagged = workOrder.status === 'flagged' || workOrder.status === 'flagged_followup';
   const isApproved = workOrder.status === 'approved';
   const isPending = workOrder.status === 'pending_review';
+  const isRejected = workOrder.status === 'rejected';
 
   // Get status-specific styling for the disabled status menu item
   const getStatusItemStyle = () => {
     if (isApproved) return "text-green-700 bg-green-50 hover:bg-green-100";
     if (isFlagged) return "text-red-700 bg-red-50 hover:bg-red-100";
     if (isResolved) return "text-purple-700 bg-purple-50 hover:bg-purple-100";
+    if (isRejected) return "text-orange-700 bg-orange-50 hover:bg-orange-100";
     return "text-gray-500 hover:bg-gray-100";
   };
 
@@ -49,12 +51,12 @@ export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenu
             className={getStatusItemStyle()}
           >
             <Clock className="h-4 w-4 mr-2" />
-            {isApproved ? "Approved" : isFlagged ? "Flagged" : isResolved ? "Resolved" : "Status"}
+            {isApproved ? "Approved" : isFlagged ? "Flagged" : isResolved ? "Resolved" : isRejected ? "Rejected" : "Status"}
           </DropdownMenuItem>
         )}
         
-        {/* Show approve option if not already approved */}
-        {!isApproved && (
+        {/* Show approve option if not already approved and not rejected */}
+        {!isApproved && !isRejected && (
           <DropdownMenuItem 
             onClick={() => onStatusUpdate(workOrder.id, "approved")}
           >
@@ -63,8 +65,8 @@ export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenu
           </DropdownMenuItem>
         )}
         
-        {/* Show flag option if not already flagged */}
-        {!isFlagged && (
+        {/* Show flag option if not already flagged and not rejected */}
+        {!isFlagged && !isRejected && (
           <DropdownMenuItem 
             onClick={() => onStatusUpdate(workOrder.id, "flagged")}
           >
@@ -81,6 +83,17 @@ export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenu
           >
             <CheckCheck className="h-4 w-4 mr-2" />
             Resolve
+          </DropdownMenuItem>
+        )}
+        
+        {/* If rejected, show option to reopen */}
+        {isRejected && (
+          <DropdownMenuItem 
+            onClick={() => onStatusUpdate(workOrder.id, "pending_review")}
+            className="text-yellow-600"
+          >
+            <Clock className="h-4 w-4 mr-2" />
+            Reopen
           </DropdownMenuItem>
         )}
         
