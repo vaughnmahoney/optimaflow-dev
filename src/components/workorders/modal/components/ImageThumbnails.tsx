@@ -45,17 +45,17 @@ export const ImageThumbnails = ({
         )}
       </div>
       
-      {/* Thumbnails container with fixed height and scrollable */}
+      {/* Thumbnails container with fixed height and scrollable - prevent horizontal scrolling */}
       <div 
         ref={thumbnailsContainerRef}
-        className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 px-2 space-y-2"
+        className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300 px-2 space-y-2"
         style={{ scrollbarWidth: 'thin' }}
       >
         {images.map((image, idx) => (
           <div 
             key={idx}
             ref={idx === currentImageIndex ? activeItemRef : null}
-            className={`relative h-16 w-16 flex-shrink-0 cursor-pointer transition-all duration-200 ${
+            className={`relative h-16 w-16 mx-auto flex-shrink-0 cursor-pointer transition-all duration-200 ${
               idx === currentImageIndex 
                 ? 'border-2 border-primary shadow-sm scale-[1.05] z-10' 
                 : 'border border-gray-200 dark:border-gray-700 opacity-70 hover:opacity-100'

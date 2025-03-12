@@ -4,7 +4,7 @@ import { OrderDetailsTab } from "../tabs/OrderDetailsTab";
 import { NotesTab } from "../tabs/NotesTab";
 import { SignatureTab } from "../tabs/SignatureTab";
 import { WorkOrder } from "../../types";
-import { Link, FileText, MessageSquare, FileSignature } from "lucide-react";
+import { Link, FileText, MessageSquare, FileSignature, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QcNotesSheet } from "./QcNotesSheet";
 import { ResolutionNotesSheet } from "./ResolutionNotesSheet";
@@ -149,10 +149,11 @@ export const OrderDetails = ({
         {trackingUrl ? (
           <Button 
             variant="outline" 
-            className="text-left flex items-center gap-2 bg-white hover:bg-gray-100 text-gray-700 border-gray-200" 
+            size="sm"
+            className="text-purple-600 border-purple-200 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-300"
             onClick={() => window.open(trackingUrl, '_blank')}
           >
-            <Link className="h-4 w-4" />
+            <ExternalLink className="h-4 w-4 mr-1" />
             View Tracking URL
           </Button>
         ) : (
