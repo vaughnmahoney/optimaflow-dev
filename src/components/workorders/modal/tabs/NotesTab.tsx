@@ -19,6 +19,7 @@ export const NotesTab = ({
   workOrder
 }: NotesTabProps) => {
   const completionData = workOrder.completion_response?.orders[0]?.data;
+  const searchData = workOrder.search_response?.data;
   
   // Helper function to create an empty state for notes
   const EmptyNoteState = ({ type }: { type: string }) => (
@@ -33,11 +34,11 @@ export const NotesTab = ({
   return (
     <div className="space-y-4">
       {/* Combined Technician Notes */}
-      <Card className="overflow-hidden border-none shadow-md bg-gradient-to-r from-blue-50 to-white">
+      <Card className="overflow-hidden border shadow-sm bg-white">
         <div className="p-5 space-y-6">
           {/* Tech Notes Section */}
           <div className="space-y-3">
-            <div className="flex items-center gap-2 border-b border-blue-100 pb-2">
+            <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
               <MessageSquare className="h-5 w-5 text-blue-600" />
               <h3 className="font-medium text-blue-800 text-lg">Tech Notes</h3>
             </div>
@@ -55,7 +56,7 @@ export const NotesTab = ({
           
           {/* Service Notes Section */}
           <div className="space-y-3 pt-2">
-            <div className="flex items-center gap-2 border-b border-blue-100 pb-2">
+            <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
               <Wrench className="h-5 w-5 text-blue-600" />
               <h3 className="font-medium text-blue-800 text-lg">Service Notes</h3>
             </div>
@@ -71,17 +72,17 @@ export const NotesTab = ({
             </div>
           </div>
           
-          {/* Additional Notes Section */}
+          {/* Additional Notes Section - Now with correct mapping */}
           <div className="space-y-3 pt-2">
-            <div className="flex items-center gap-2 border-b border-blue-100 pb-2">
+            <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
               <ClipboardList className="h-5 w-5 text-blue-600" />
               <h3 className="font-medium text-blue-800 text-lg">Additional Notes</h3>
             </div>
             
             <div className="pl-7">
-              {workOrder.notes ? (
+              {searchData?.customField1 ? (
                 <p className="text-sm whitespace-pre-wrap text-gray-700">
-                  {workOrder.notes}
+                  {searchData.customField1}
                 </p>
               ) : (
                 <EmptyNoteState type="additional" />
@@ -91,10 +92,10 @@ export const NotesTab = ({
         </div>
       </Card>
       
-      {/* QC Notes - Updated with same card style */}
-      <Card className="overflow-hidden border-none shadow-md bg-gradient-to-r from-red-50 to-white">
+      {/* QC Notes - Updated with clean style */}
+      <Card className="overflow-hidden border shadow-sm bg-white">
         <div className="p-5 space-y-3">
-          <div className="flex items-center gap-2 border-b border-red-100 pb-2">
+          <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
             <StickyNote className="h-5 w-5 text-red-600" />
             <h3 className="font-medium text-red-800 text-lg">QC Notes</h3>
           </div>
@@ -111,10 +112,10 @@ export const NotesTab = ({
         </div>
       </Card>
       
-      {/* Resolution Notes - Updated with same card style */}
-      <Card className="overflow-hidden border-none shadow-md bg-gradient-to-r from-purple-50 to-white">
+      {/* Resolution Notes - Updated with clean style */}
+      <Card className="overflow-hidden border shadow-sm bg-white">
         <div className="p-5 space-y-3">
-          <div className="flex items-center gap-2 border-b border-purple-100 pb-2">
+          <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
             <PenSquare className="h-5 w-5 text-purple-600" />
             <h3 className="font-medium text-purple-800 text-lg">Resolution Notes</h3>
           </div>

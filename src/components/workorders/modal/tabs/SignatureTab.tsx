@@ -14,9 +14,9 @@ export const SignatureTab = ({
 
   return (
     <div>
-      <Card className="overflow-hidden border-none shadow-md bg-gradient-to-r from-blue-50 to-white">
+      <Card className="overflow-hidden border shadow-sm bg-white">
         <div className="p-5 space-y-3">
-          <div className="flex items-center gap-2 border-b border-blue-100 pb-2">
+          <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
             <FileSignature className="h-5 w-5 text-blue-600" />
             <h3 className="font-medium text-blue-800 text-lg">Customer Signature</h3>
           </div>

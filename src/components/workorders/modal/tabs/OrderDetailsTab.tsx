@@ -48,8 +48,7 @@ export const OrderDetailsTab = ({
     [city, state, zip].filter(Boolean).join(", ")
   ].filter(part => part && part !== "N/A").join(", ");
 
-  // Extract custom fields from search response
-  const additionalNotes = searchData?.customField1 || "";
+  // Extract material quantity
   const materialQuantity = searchData?.customField3 || "N/A";
   
   // Format LDS information
@@ -60,11 +59,11 @@ export const OrderDetailsTab = ({
 
   return (
     <div className="space-y-4">
-      <Card className="overflow-hidden border-none shadow-md bg-white">
+      <Card className="overflow-hidden border shadow-sm bg-white">
         <div className="p-5 space-y-4">
           {/* Location Information */}
           <div className="space-y-3">
-            <div className="flex items-center gap-2 border-b border-blue-100 pb-2">
+            <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
               <MapPin className="h-5 w-5 text-blue-600" />
               <h3 className="font-medium text-blue-800 text-lg">Location Information</h3>
             </div>
@@ -77,25 +76,11 @@ export const OrderDetailsTab = ({
               <span className="text-sm text-gray-700">{fullAddress || "N/A"}</span>
             </div>
           </div>
-          
-          {/* Additional Notes Section - Only show if notes exist */}
-          {additionalNotes && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 border-b border-blue-100 pb-2">
-                <Clipboard className="h-5 w-5 text-blue-600" />
-                <h3 className="font-medium text-blue-800 text-lg">Additional Notes</h3>
-              </div>
-              
-              <div className="pl-1 sm:pl-2">
-                <p className="text-sm text-gray-700 whitespace-pre-line">{additionalNotes}</p>
-              </div>
-            </div>
-          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Time Information */}
             <div className="space-y-3">
-              <div className="flex items-center gap-2 border-b border-blue-100 pb-2">
+              <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
                 <Clock className="h-5 w-5 text-blue-600" />
                 <h3 className="font-medium text-blue-800 text-lg">Time Information</h3>
               </div>
@@ -114,7 +99,7 @@ export const OrderDetailsTab = ({
             
             {/* Materials Section */}
             <div className="space-y-3">
-              <div className="flex items-center gap-2 border-b border-blue-100 pb-2">
+              <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
                 <Package className="h-5 w-5 text-blue-600" />
                 <h3 className="font-medium text-blue-800 text-lg">Materials</h3>
               </div>
