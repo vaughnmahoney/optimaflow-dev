@@ -1,7 +1,7 @@
 
 import { Card } from "@/components/ui/card";
 import { WorkOrder } from "../../types";
-import { Clock, MapPin, Truck, CalendarIcon, BadgeInfo } from "lucide-react";
+import { Clock, MapPin } from "lucide-react";
 import { format } from "date-fns";
 
 interface OrderDetailsTabProps {
@@ -47,98 +47,50 @@ export const OrderDetailsTab = ({
     [city, state, zip].filter(Boolean).join(", ")
   ].filter(part => part && part !== "N/A").join(", ");
 
-  // Driver information
-  const driverName = workOrder.driver?.name || "No driver assigned";
-
-  // LDS information (using lds field if available)
+  // LDS information
   const ldsInfo = workOrder.lds || "N/A";
 
   return (
     <div className="space-y-4">
-      {/* Location Information - Now First */}
-      <Card className="overflow-hidden border-l-4 border-l-blue-400">
-        <div className="bg-gradient-to-r from-blue-50 to-transparent p-3 flex items-center justify-between border-b">
-          <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-blue-500" />
-            <h3 className="font-medium text-blue-700">Location Information</h3>
+      {/* Merged Location and Time Information */}
+      <Card className="overflow-hidden border-none shadow-md bg-gradient-to-r from-blue-50 to-white">
+        <div className="p-5 space-y-6">
+          {/* Location Section */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 border-b border-blue-100 pb-2">
+              <MapPin className="h-5 w-5 text-blue-600" />
+              <h3 className="font-medium text-blue-800 text-lg">Location Information</h3>
+            </div>
+            
+            <div className="grid grid-cols-[120px_1fr] gap-y-3 pl-7">
+              <span className="text-sm font-medium text-gray-600">Name:</span>
+              <span className="text-sm text-gray-700 font-medium">{locationName}</span>
+              
+              <span className="text-sm font-medium text-gray-600">Address:</span>
+              <span className="text-sm text-gray-700">{fullAddress || "N/A"}</span>
+            </div>
           </div>
-        </div>
-        <div className="p-4 grid gap-3">
-          <div className="grid grid-cols-[120px_1fr] items-center">
-            <span className="text-sm font-medium text-gray-500">Name:</span>
-            <span className="text-sm text-gray-700">{locationName}</span>
-          </div>
-          <div className="grid grid-cols-[120px_1fr] items-center">
-            <span className="text-sm font-medium text-gray-500">Address:</span>
-            <span className="text-sm text-gray-700">{fullAddress || "N/A"}</span>
-          </div>
-        </div>
-      </Card>
-
-      {/* Time Information - Now Second */}
-      <Card className="overflow-hidden border-l-4 border-l-blue-400">
-        <div className="bg-gradient-to-r from-blue-50 to-transparent p-3 flex items-center justify-between border-b">
-          <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-blue-500" />
-            <h3 className="font-medium text-blue-700">Time Information</h3>
-          </div>
-        </div>
-        <div className="p-4 grid gap-3">
-          <div className="grid grid-cols-[120px_1fr] items-center">
-            <span className="text-sm font-medium text-gray-500">Start Time:</span>
-            <span className="text-sm text-gray-700">{startTime}</span>
-          </div>
-          <div className="grid grid-cols-[120px_1fr] items-center">
-            <span className="text-sm font-medium text-gray-500">End Time:</span>
-            <span className="text-sm text-gray-700">{endTime}</span>
-          </div>
-          <div className="grid grid-cols-[120px_1fr] items-center">
-            <span className="text-sm font-medium text-gray-500">Service Date:</span>
-            <span className="text-sm text-gray-700">{workOrder.service_date ? formatDate(workOrder.service_date) : "N/A"}</span>
-          </div>
-          <div className="grid grid-cols-[120px_1fr] items-center">
-            <span className="text-sm font-medium text-gray-500">LDS:</span>
-            <span className="text-sm text-gray-700">{ldsInfo}</span>
-          </div>
-        </div>
-      </Card>
-
-      {/* Driver Information */}
-      <Card className="overflow-hidden border-l-4 border-l-blue-400">
-        <div className="bg-gradient-to-r from-blue-50 to-transparent p-3 flex items-center justify-between border-b">
-          <div className="flex items-center gap-2">
-            <Truck className="h-4 w-4 text-blue-500" />
-            <h3 className="font-medium text-blue-700">Driver Information</h3>
-          </div>
-        </div>
-        <div className="p-4">
-          <div className="grid grid-cols-[120px_1fr] items-center">
-            <span className="text-sm font-medium text-gray-500">Driver:</span>
-            <span className="text-sm text-gray-700">{driverName}</span>
-          </div>
-        </div>
-      </Card>
-
-      {/* Order Information */}
-      <Card className="overflow-hidden border-l-4 border-l-blue-400">
-        <div className="bg-gradient-to-r from-blue-50 to-transparent p-3 flex items-center justify-between border-b">
-          <div className="flex items-center gap-2">
-            <BadgeInfo className="h-4 w-4 text-blue-500" />
-            <h3 className="font-medium text-blue-700">Order Information</h3>
-          </div>
-        </div>
-        <div className="p-4 grid gap-3">
-          <div className="grid grid-cols-[120px_1fr] items-center">
-            <span className="text-sm font-medium text-gray-500">Order #:</span>
-            <span className="text-sm text-gray-700">{workOrder.order_no || "N/A"}</span>
-          </div>
-          <div className="grid grid-cols-[120px_1fr] items-center">
-            <span className="text-sm font-medium text-gray-500">Status:</span>
-            <span className="text-sm text-gray-700 capitalize">{workOrder.status?.replace(/_/g, " ") || "N/A"}</span>
+          
+          {/* Time Section */}
+          <div className="space-y-3 pt-2">
+            <div className="flex items-center gap-2 border-b border-blue-100 pb-2">
+              <Clock className="h-5 w-5 text-blue-600" />
+              <h3 className="font-medium text-blue-800 text-lg">Time Information</h3>
+            </div>
+            
+            <div className="grid grid-cols-[120px_1fr] gap-y-3 pl-7">
+              <span className="text-sm font-medium text-gray-600">Start Time:</span>
+              <span className="text-sm text-gray-700">{startTime}</span>
+              
+              <span className="text-sm font-medium text-gray-600">End Time:</span>
+              <span className="text-sm text-gray-700">{endTime}</span>
+              
+              <span className="text-sm font-medium text-gray-600">LDS:</span>
+              <span className="text-sm text-gray-700">{ldsInfo}</span>
+            </div>
           </div>
         </div>
       </Card>
     </div>
   );
 };
-
