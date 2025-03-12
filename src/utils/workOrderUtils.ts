@@ -1,3 +1,4 @@
+
 import { WorkOrder } from "@/components/workorders/types";
 
 /**
@@ -58,6 +59,7 @@ export const transformWorkOrderData = (order: any): WorkOrder => {
   let driver = null;
   let service_date = null;
   let service_notes = null;
+  let lds = null;
   
   if (searchResponse && typeof searchResponse === 'object') {
     // Safely extract driver information
@@ -72,6 +74,15 @@ export const transformWorkOrderData = (order: any): WorkOrder => {
     if (searchResponse.data && typeof searchResponse.data === 'object') {
       service_date = searchResponse.data.date;
       service_notes = searchResponse.data.notes;
+      
+      // Extract LDS from customField5 if available
+      if (searchResponse.data.customField5) {
+        lds = searchResponse.data.customField5;
+        // If LDS contains a timestamp, extract just the date part
+        if (lds.includes(" ")) {
+          lds = lds.split(" ")[0];
+        }
+      }
     }
   }
   
@@ -127,8 +138,8 @@ export const transformWorkOrderData = (order: any): WorkOrder => {
     driver: driver,
     // If duration exists in database use it, otherwise set to empty string
     duration: order.duration || '',
-    // If lds exists in database use it, otherwise set to empty string
-    lds: order.lds || '',
+    // If lds exists in database use it, otherwise extract from customField5
+    lds: lds || order.lds || '',
     has_images: has_images,
     signature_url: completionResponse && 
                   typeof completionResponse === 'object' && 

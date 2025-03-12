@@ -56,6 +56,9 @@ export interface WorkOrderSearchResponse {
     timeWindow: string;
     notes: string;
     location: Location;
+    customField1?: string; // Additional notes
+    customField3?: string; // Material quantity
+    customField5?: string; // LDS information
     customer?: {
       name: string;
       phone: string;

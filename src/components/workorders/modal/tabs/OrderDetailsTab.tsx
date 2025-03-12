@@ -1,7 +1,7 @@
 
 import { Card } from "@/components/ui/card";
 import { WorkOrder } from "../../types";
-import { Clock, MapPin } from "lucide-react";
+import { Clock, MapPin, Package } from "lucide-react";
 import { format } from "date-fns";
 
 interface OrderDetailsTabProps {
@@ -12,6 +12,7 @@ export const OrderDetailsTab = ({
   workOrder
 }: OrderDetailsTabProps) => {
   const completionData = workOrder.completion_response?.orders[0]?.data;
+  const searchData = workOrder.search_response?.data;
   
   // Format date function
   const formatDate = (dateString: string | undefined) => {
@@ -47,8 +48,15 @@ export const OrderDetailsTab = ({
     [city, state, zip].filter(Boolean).join(", ")
   ].filter(part => part && part !== "N/A").join(", ");
 
-  // LDS information
-  const ldsInfo = workOrder.lds || "N/A";
+  // Extract custom fields from search response
+  const additionalNotes = searchData?.customField1 || "N/A";
+  const materialQuantity = searchData?.customField3 || "N/A";
+  
+  // Format LDS information
+  const ldsRaw = searchData?.customField5 || workOrder.lds || "N/A";
+  const ldsInfo = ldsRaw !== "N/A" && ldsRaw.includes(" ") 
+    ? ldsRaw.split(" ")[0] // Take only the date part from "2024-10-17 00:00"
+    : ldsRaw;
 
   return (
     <div className="space-y-4">
@@ -68,6 +76,13 @@ export const OrderDetailsTab = ({
               
               <span className="text-sm font-medium text-gray-600">Address:</span>
               <span className="text-sm text-gray-700">{fullAddress || "N/A"}</span>
+              
+              {additionalNotes && additionalNotes !== "N/A" && (
+                <>
+                  <span className="text-sm font-medium text-gray-600">Add. Notes:</span>
+                  <span className="text-sm text-gray-700">{additionalNotes}</span>
+                </>
+              )}
             </div>
           </div>
           
@@ -87,6 +102,19 @@ export const OrderDetailsTab = ({
               
               <span className="text-sm font-medium text-gray-600">LDS:</span>
               <span className="text-sm text-gray-700">{ldsInfo}</span>
+            </div>
+          </div>
+          
+          {/* Materials Section */}
+          <div className="space-y-3 pt-2">
+            <div className="flex items-center gap-2 border-b border-blue-100 pb-2">
+              <Package className="h-5 w-5 text-blue-600" />
+              <h3 className="font-medium text-blue-800 text-lg">Materials</h3>
+            </div>
+            
+            <div className="grid grid-cols-[120px_1fr] gap-y-3 pl-7">
+              <span className="text-sm font-medium text-gray-600">Quantity:</span>
+              <span className="text-sm text-gray-700">{materialQuantity}</span>
             </div>
           </div>
         </div>
