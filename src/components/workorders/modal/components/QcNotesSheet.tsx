@@ -6,7 +6,7 @@ import { WorkOrder } from "../../types";
 import { useWorkOrderMutations } from "@/hooks/useWorkOrderMutations";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from "@/components/ui/sheet";
-import { StickyNote, CircleDot } from "lucide-react";
+import { StickyNote, Save, PenLine } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface QcNotesSheetProps {
@@ -45,28 +45,35 @@ export const QcNotesSheet = ({ workOrder }: QcNotesSheetProps) => {
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <Button 
-          variant={hasNotes ? "secondary" : "outline"} 
+          variant="custom" 
           size="sm" 
-          className={`gap-2 relative ${hasNotes ? "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 hover:text-blue-800" : ""}`}
+          className={`relative gap-1 px-2 py-1 h-7 rounded-md ${
+            hasNotes 
+              ? "bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200" 
+              : "bg-white text-purple-600 border border-purple-200 hover:bg-purple-50"
+          }`}
         >
-          <StickyNote className="h-4 w-4" />
-          QC Notes
+          {hasNotes ? <PenLine className="h-3.5 w-3.5" /> : <StickyNote className="h-3.5 w-3.5" />}
+          <span className="text-xs font-medium">{hasNotes ? "Edit Notes" : "Add Notes"}</span>
           {hasNotes && (
             <Badge 
               variant="info" 
-              className="w-2 h-2 p-0 absolute -top-1 -right-1 flex items-center justify-center rounded-full"
+              className="w-2 h-2 p-0 absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-purple-500"
             />
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent side="bottom" className="max-w-md mx-auto rounded-t-lg h-[400px]">
-        <SheetHeader>
-          <SheetTitle>Quality Control Notes</SheetTitle>
+      <SheetContent side="bottom" className="max-w-md mx-auto rounded-t-lg h-[450px]">
+        <SheetHeader className="pb-2 border-b mb-4">
+          <SheetTitle className="flex items-center gap-2 text-purple-700">
+            <StickyNote className="h-5 w-5 text-purple-500" />
+            Quality Control Notes
+          </SheetTitle>
         </SheetHeader>
-        <div className="py-4">
+        <div className="py-2">
           <Textarea 
-            placeholder="Add QC notes here..."
-            className="min-h-[200px] mb-2"
+            placeholder="Add your QC notes here..."
+            className="min-h-[250px] mb-4 border-purple-200 focus:border-purple-400"
             value={qcNotes}
             onChange={(e) => setQcNotes(e.target.value)}
           />
@@ -75,8 +82,9 @@ export const QcNotesSheet = ({ workOrder }: QcNotesSheetProps) => {
           <Button 
             onClick={handleSaveQcNotes} 
             disabled={isSaving}
-            className="w-full"
+            className="w-full gap-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white"
           >
+            <Save className="h-4 w-4" />
             {isSaving ? "Saving..." : "Save Notes"}
           </Button>
         </SheetFooter>
