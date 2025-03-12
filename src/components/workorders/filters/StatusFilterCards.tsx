@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Check, Flag, Clock, CheckCheck } from "lucide-react";
+import { Check, Flag, Clock, CheckCheck, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -12,6 +12,7 @@ interface StatusFilterCardsProps {
     pending_review: number;
     flagged: number;
     resolved: number;
+    rejected: number;
     all?: number;
   };
 }
@@ -64,10 +65,20 @@ export const StatusFilterCards = ({
       textColor: "text-purple-500",
       lightBg: "bg-purple-50"
     },
+    { 
+      label: "Rejected", 
+      value: "rejected", 
+      icon: AlertTriangle, 
+      color: "bg-orange-500",
+      ringColor: "ring-orange-500",
+      hoverColor: "hover:bg-orange-600",
+      textColor: "text-orange-500",
+      lightBg: "bg-orange-50"
+    },
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 w-full mb-2 sm:mb-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2 sm:gap-4 w-full mb-2 sm:mb-4">
       {statuses.map((status) => {
         const isActive = statusFilter === status.value;
         const count = statusCounts[status.value] || 0;

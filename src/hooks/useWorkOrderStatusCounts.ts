@@ -24,6 +24,7 @@ export const useWorkOrderStatusCounts = (workOrders: WorkOrder[], statusFilter: 
             pending_review: 0,
             flagged: 0,
             resolved: 0,
+            rejected: 0,
             all: 0
           };
           
