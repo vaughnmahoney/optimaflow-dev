@@ -122,36 +122,18 @@ export const OrderDetails = ({
 
       <ScrollArea className="flex-1 overflow-auto">
         <div className="space-y-4 pt-4">
-          {/* Location & Time Section */}
+          {/* Location & Time Section - Removed header */}
           <div id="details-section" ref={detailsSectionRef} className="px-4 pb-6 scroll-m-12">
-            <div className="mb-4 pb-2 border-b border-gray-200">
-              <h3 className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                <FileText className="h-4 w-4 text-gray-500" />
-                Location & Time
-              </h3>
-            </div>
             <OrderDetailsTab workOrder={workOrder} />
           </div>
           
-          {/* Notes Section */}
+          {/* Notes Section - Removed header */}
           <div id="notes-section" ref={notesSectionRef} className="px-4 pb-6 scroll-m-12">
-            <div className="mb-4 pb-2 border-b border-gray-200">
-              <h3 className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                <MessageSquare className="h-4 w-4 text-gray-500" />
-                Notes
-              </h3>
-            </div>
             <NotesTab workOrder={workOrder} />
           </div>
           
-          {/* Signature Section */}
+          {/* Signature Section - Removed header */}
           <div id="signature-section" ref={signatureSectionRef} className="px-4 pb-6 scroll-m-12">
-            <div className="mb-4 pb-2 border-b border-gray-200">
-              <h3 className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                <FileSignature className="h-4 w-4 text-gray-500" />
-                Signature
-              </h3>
-            </div>
             <SignatureTab workOrder={workOrder} />
           </div>
         </div>
