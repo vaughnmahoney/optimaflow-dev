@@ -1,8 +1,9 @@
 
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import { WorkOrder } from "../../types";
-import { MapPin, Clock, Package, ClipboardCheck } from "lucide-react";
+import { MapPin, Clock, Package, ClipboardCheck, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 
 interface OrderDetailsTabProps {
@@ -14,6 +15,7 @@ export const OrderDetailsTab = ({
 }: OrderDetailsTabProps) => {
   const completionData = workOrder.completion_response?.orders[0]?.data;
   const searchData = workOrder.search_response?.data;
+  const trackingUrl = completionData?.tracking_url;
   
   // Format date function
   const formatDate = (dateString: string | undefined) => {
@@ -64,9 +66,24 @@ export const OrderDetailsTab = ({
         <div className="p-5 space-y-4">
           {/* Main Order Details Section */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
-              <ClipboardCheck className="h-5 w-5 text-blue-600" />
-              <h3 className="font-medium text-blue-800 text-lg">Order Details</h3>
+            <div className="flex items-center justify-between gap-2 border-b border-gray-100 pb-2">
+              <div className="flex items-center gap-2">
+                <ClipboardCheck className="h-5 w-5 text-blue-600" />
+                <h3 className="font-medium text-blue-800 text-lg">Order Details</h3>
+              </div>
+              
+              {/* Tracking URL button added here */}
+              {trackingUrl && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300"
+                  onClick={() => window.open(trackingUrl, '_blank')}
+                >
+                  <ExternalLink className="h-4 w-4 mr-1" />
+                  View Tracking URL
+                </Button>
+              )}
             </div>
             
             <div className="space-y-6 pl-2">

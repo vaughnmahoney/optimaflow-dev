@@ -4,7 +4,7 @@ import { OrderDetailsTab } from "../tabs/OrderDetailsTab";
 import { NotesTab } from "../tabs/NotesTab";
 import { SignatureTab } from "../tabs/SignatureTab";
 import { WorkOrder } from "../../types";
-import { Link, FileText, MessageSquare, FileSignature, ExternalLink } from "lucide-react";
+import { FileText, MessageSquare, FileSignature } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QcNotesSheet } from "./QcNotesSheet";
 import { ResolutionNotesSheet } from "./ResolutionNotesSheet";
@@ -18,9 +18,6 @@ interface OrderDetailsProps {
 export const OrderDetails = ({
   workOrder
 }: OrderDetailsProps) => {
-  const completionData = workOrder.completion_response?.orders[0]?.data;
-  const trackingUrl = completionData?.tracking_url;
-  
   // State to track the active tab
   const [activeTab, setActiveTab] = useState("details");
   
@@ -139,26 +136,14 @@ export const OrderDetails = ({
         </div>
       </ScrollArea>
       
-      {/* Footer with notes buttons and tracking URL */}
+      {/* Footer with notes buttons */}
       <div className="p-4 border-t flex items-center justify-between bg-gray-50">
         <div className="flex items-center gap-2">
           <QcNotesSheet workOrder={workOrder} />
           <ResolutionNotesSheet workOrder={workOrder} />
         </div>
         
-        {trackingUrl ? (
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="text-purple-600 border-purple-200 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-300"
-            onClick={() => window.open(trackingUrl, '_blank')}
-          >
-            <ExternalLink className="h-4 w-4 mr-1" />
-            View Tracking URL
-          </Button>
-        ) : (
-          <div></div> // Empty div for spacing when no tracking URL
-        )}
+        <div></div> {/* Empty div for spacing */}
       </div>
     </div>
   );

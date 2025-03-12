@@ -30,7 +30,7 @@ export const ModalFooter = ({
   const getStatusButtonStyle = () => {
     if (isApproved) return "bg-green-50 text-green-700 border-green-200";
     if (isFlagged) return "bg-red-50 text-red-700 border-red-200";
-    if (isResolved) return "bg-purple-50 text-purple-700 border-purple-200";
+    if (isResolved) return "bg-blue-50 text-blue-700 border-blue-200";
     if (isRejected) return "bg-orange-50 text-orange-700 border-orange-200";
     return "bg-gray-100 text-gray-500";
   };
@@ -78,7 +78,7 @@ export const ModalFooter = ({
         {onStatusUpdate && isFlagged && (
           <Button 
             variant="custom"
-            className="bg-purple-500 hover:bg-purple-600 text-white font-medium rounded-md transition-colors shadow-sm"
+            className="bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-md transition-colors shadow-sm"
             onClick={() => onStatusUpdate(workOrderId, "resolved")}
           >
             <CheckCheck className="mr-1 h-4 w-4" />
