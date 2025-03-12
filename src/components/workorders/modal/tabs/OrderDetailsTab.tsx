@@ -1,7 +1,7 @@
 
 import { Card } from "@/components/ui/card";
 import { WorkOrder } from "../../types";
-import { Clock, MapPin, Package } from "lucide-react";
+import { Clock, MapPin, Package, Clipboard } from "lucide-react";
 import { format } from "date-fns";
 
 interface OrderDetailsTabProps {
@@ -49,7 +49,7 @@ export const OrderDetailsTab = ({
   ].filter(part => part && part !== "N/A").join(", ");
 
   // Extract custom fields from search response
-  const additionalNotes = searchData?.customField1 || "N/A";
+  const additionalNotes = searchData?.customField1 || "";
   const materialQuantity = searchData?.customField3 || "N/A";
   
   // Format LDS information
@@ -60,61 +60,69 @@ export const OrderDetailsTab = ({
 
   return (
     <div className="space-y-4">
-      {/* Merged Location and Time Information */}
-      <Card className="overflow-hidden border-none shadow-md bg-gradient-to-r from-blue-50 to-white">
-        <div className="p-5 space-y-6">
-          {/* Location Section */}
+      <Card className="overflow-hidden border-none shadow-md bg-white">
+        <div className="p-5 space-y-4">
+          {/* Location Information */}
           <div className="space-y-3">
             <div className="flex items-center gap-2 border-b border-blue-100 pb-2">
               <MapPin className="h-5 w-5 text-blue-600" />
               <h3 className="font-medium text-blue-800 text-lg">Location Information</h3>
             </div>
             
-            <div className="grid grid-cols-[120px_1fr] gap-y-3 pl-7">
+            <div className="grid sm:grid-cols-[120px_1fr] gap-y-2 pl-1 sm:pl-2">
               <span className="text-sm font-medium text-gray-600">Name:</span>
               <span className="text-sm text-gray-700 font-medium">{locationName}</span>
               
               <span className="text-sm font-medium text-gray-600">Address:</span>
               <span className="text-sm text-gray-700">{fullAddress || "N/A"}</span>
-              
-              {additionalNotes && additionalNotes !== "N/A" && (
-                <>
-                  <span className="text-sm font-medium text-gray-600">Add. Notes:</span>
-                  <span className="text-sm text-gray-700">{additionalNotes}</span>
-                </>
-              )}
             </div>
           </div>
           
-          {/* Time Section */}
-          <div className="space-y-3 pt-2">
-            <div className="flex items-center gap-2 border-b border-blue-100 pb-2">
-              <Clock className="h-5 w-5 text-blue-600" />
-              <h3 className="font-medium text-blue-800 text-lg">Time Information</h3>
+          {/* Additional Notes Section - Only show if notes exist */}
+          {additionalNotes && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 border-b border-blue-100 pb-2">
+                <Clipboard className="h-5 w-5 text-blue-600" />
+                <h3 className="font-medium text-blue-800 text-lg">Additional Notes</h3>
+              </div>
+              
+              <div className="pl-1 sm:pl-2">
+                <p className="text-sm text-gray-700 whitespace-pre-line">{additionalNotes}</p>
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Time Information */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 border-b border-blue-100 pb-2">
+                <Clock className="h-5 w-5 text-blue-600" />
+                <h3 className="font-medium text-blue-800 text-lg">Time Information</h3>
+              </div>
+              
+              <div className="grid sm:grid-cols-[120px_1fr] gap-y-2 pl-1 sm:pl-2">
+                <span className="text-sm font-medium text-gray-600">Start Time:</span>
+                <span className="text-sm text-gray-700">{startTime}</span>
+                
+                <span className="text-sm font-medium text-gray-600">End Time:</span>
+                <span className="text-sm text-gray-700">{endTime}</span>
+                
+                <span className="text-sm font-medium text-gray-600">LDS:</span>
+                <span className="text-sm text-gray-700">{ldsInfo}</span>
+              </div>
             </div>
             
-            <div className="grid grid-cols-[120px_1fr] gap-y-3 pl-7">
-              <span className="text-sm font-medium text-gray-600">Start Time:</span>
-              <span className="text-sm text-gray-700">{startTime}</span>
+            {/* Materials Section */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 border-b border-blue-100 pb-2">
+                <Package className="h-5 w-5 text-blue-600" />
+                <h3 className="font-medium text-blue-800 text-lg">Materials</h3>
+              </div>
               
-              <span className="text-sm font-medium text-gray-600">End Time:</span>
-              <span className="text-sm text-gray-700">{endTime}</span>
-              
-              <span className="text-sm font-medium text-gray-600">LDS:</span>
-              <span className="text-sm text-gray-700">{ldsInfo}</span>
-            </div>
-          </div>
-          
-          {/* Materials Section */}
-          <div className="space-y-3 pt-2">
-            <div className="flex items-center gap-2 border-b border-blue-100 pb-2">
-              <Package className="h-5 w-5 text-blue-600" />
-              <h3 className="font-medium text-blue-800 text-lg">Materials</h3>
-            </div>
-            
-            <div className="grid grid-cols-[120px_1fr] gap-y-3 pl-7">
-              <span className="text-sm font-medium text-gray-600">Quantity:</span>
-              <span className="text-sm text-gray-700">{materialQuantity}</span>
+              <div className="grid sm:grid-cols-[120px_1fr] gap-y-2 pl-1 sm:pl-2">
+                <span className="text-sm font-medium text-gray-600">Quantity:</span>
+                <span className="text-sm text-gray-700">{materialQuantity}</span>
+              </div>
             </div>
           </div>
         </div>

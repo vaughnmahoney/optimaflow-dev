@@ -100,7 +100,7 @@ export const OrderDetails = ({
               <TabsTrigger value="details" className="rounded-none data-[state=active]:bg-white">
                 <div className="flex items-center gap-2">
                   <FileText className="h-4 w-4" />
-                  <span className="hidden sm:inline">Location & Time</span>
+                  <span className="hidden sm:inline">Order Details</span>
                 </div>
               </TabsTrigger>
               <TabsTrigger value="notes" className="rounded-none data-[state=active]:bg-white">
@@ -122,17 +122,17 @@ export const OrderDetails = ({
 
       <ScrollArea className="flex-1 overflow-auto">
         <div className="space-y-4 pt-4">
-          {/* Location & Time Section - Removed header */}
+          {/* Order Details Section */}
           <div id="details-section" ref={detailsSectionRef} className="px-4 pb-6 scroll-m-12">
             <OrderDetailsTab workOrder={workOrder} />
           </div>
           
-          {/* Notes Section - Removed header */}
+          {/* Notes Section */}
           <div id="notes-section" ref={notesSectionRef} className="px-4 pb-6 scroll-m-12">
             <NotesTab workOrder={workOrder} />
           </div>
           
-          {/* Signature Section - Removed header */}
+          {/* Signature Section */}
           <div id="signature-section" ref={signatureSectionRef} className="px-4 pb-6 scroll-m-12">
             <SignatureTab workOrder={workOrder} />
           </div>
