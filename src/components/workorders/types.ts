@@ -150,6 +150,7 @@ export interface WorkOrderListProps {
     pending_review: number;
     flagged: number;
     resolved: number;
+    rejected: number;
     all?: number;
   };
   sortField?: SortField;
