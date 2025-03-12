@@ -1,7 +1,7 @@
 
 import { Card } from "@/components/ui/card";
 import { WorkOrder } from "../../types";
-import { Clock, MapPin, Package, Clipboard } from "lucide-react";
+import { MapPin, Clock, Package, ClipboardCheck } from "lucide-react";
 import { format } from "date-fns";
 
 interface OrderDetailsTabProps {
@@ -61,52 +61,57 @@ export const OrderDetailsTab = ({
     <div className="space-y-4">
       <Card className="overflow-hidden border shadow-sm bg-white">
         <div className="p-5 space-y-4">
-          {/* Location Information */}
+          {/* Single Order Details Section */}
           <div className="space-y-3">
             <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
-              <MapPin className="h-5 w-5 text-blue-600" />
-              <h3 className="font-medium text-blue-800 text-lg">Location Information</h3>
+              <ClipboardCheck className="h-5 w-5 text-blue-600" />
+              <h3 className="font-medium text-blue-800 text-lg">Order Details</h3>
             </div>
             
-            <div className="grid sm:grid-cols-[120px_1fr] gap-y-2 pl-1 sm:pl-2">
-              <span className="text-sm font-medium text-gray-600">Name:</span>
-              <span className="text-sm text-gray-700 font-medium">{locationName}</span>
-              
-              <span className="text-sm font-medium text-gray-600">Address:</span>
-              <span className="text-sm text-gray-700">{fullAddress || "N/A"}</span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Time Information */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
-                <Clock className="h-5 w-5 text-blue-600" />
-                <h3 className="font-medium text-blue-800 text-lg">Time Information</h3>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 pl-2">
+              {/* Location Information */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-blue-600" />
+                  <span className="text-sm font-medium text-blue-700">Location</span>
+                </div>
+                <div className="grid grid-cols-[100px_1fr] gap-y-2 pl-6">
+                  <span className="text-sm font-medium text-gray-600">Name:</span>
+                  <span className="text-sm text-gray-700 font-medium">{locationName}</span>
+                  
+                  <span className="text-sm font-medium text-gray-600">Address:</span>
+                  <span className="text-sm text-gray-700">{fullAddress || "N/A"}</span>
+                </div>
               </div>
               
-              <div className="grid sm:grid-cols-[120px_1fr] gap-y-2 pl-1 sm:pl-2">
-                <span className="text-sm font-medium text-gray-600">Start Time:</span>
-                <span className="text-sm text-gray-700">{startTime}</span>
-                
-                <span className="text-sm font-medium text-gray-600">End Time:</span>
-                <span className="text-sm text-gray-700">{endTime}</span>
-                
-                <span className="text-sm font-medium text-gray-600">LDS:</span>
-                <span className="text-sm text-gray-700">{ldsInfo}</span>
-              </div>
-            </div>
-            
-            {/* Materials Section */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
-                <Package className="h-5 w-5 text-blue-600" />
-                <h3 className="font-medium text-blue-800 text-lg">Materials</h3>
+              {/* Time Information */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-blue-600" />
+                  <span className="text-sm font-medium text-blue-700">Time Details</span>
+                </div>
+                <div className="grid grid-cols-[100px_1fr] gap-y-2 pl-6">
+                  <span className="text-sm font-medium text-gray-600">Start Time:</span>
+                  <span className="text-sm text-gray-700">{startTime}</span>
+                  
+                  <span className="text-sm font-medium text-gray-600">End Time:</span>
+                  <span className="text-sm text-gray-700">{endTime}</span>
+                  
+                  <span className="text-sm font-medium text-gray-600">LDS:</span>
+                  <span className="text-sm text-gray-700">{ldsInfo}</span>
+                </div>
               </div>
               
-              <div className="grid sm:grid-cols-[120px_1fr] gap-y-2 pl-1 sm:pl-2">
-                <span className="text-sm font-medium text-gray-600">Quantity:</span>
-                <span className="text-sm text-gray-700">{materialQuantity}</span>
+              {/* Materials Section */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Package className="h-4 w-4 text-blue-600" />
+                  <span className="text-sm font-medium text-blue-700">Materials</span>
+                </div>
+                <div className="grid grid-cols-[100px_1fr] gap-y-2 pl-6">
+                  <span className="text-sm font-medium text-gray-600">Quantity:</span>
+                  <span className="text-sm text-gray-700">{materialQuantity}</span>
+                </div>
               </div>
             </div>
           </div>
