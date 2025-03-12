@@ -50,9 +50,32 @@ export const OrderDetailsTab = ({
   // Driver information
   const driverName = workOrder.driver?.name || "No driver assigned";
 
+  // LDS information (using lds field if available)
+  const ldsInfo = workOrder.lds || "N/A";
+
   return (
     <div className="space-y-4">
-      {/* Time Information */}
+      {/* Location Information - Now First */}
+      <Card className="overflow-hidden border-l-4 border-l-blue-400">
+        <div className="bg-gradient-to-r from-blue-50 to-transparent p-3 flex items-center justify-between border-b">
+          <div className="flex items-center gap-2">
+            <MapPin className="h-4 w-4 text-blue-500" />
+            <h3 className="font-medium text-blue-700">Location Information</h3>
+          </div>
+        </div>
+        <div className="p-4 grid gap-3">
+          <div className="grid grid-cols-[120px_1fr] items-center">
+            <span className="text-sm font-medium text-gray-500">Name:</span>
+            <span className="text-sm text-gray-700">{locationName}</span>
+          </div>
+          <div className="grid grid-cols-[120px_1fr] items-center">
+            <span className="text-sm font-medium text-gray-500">Address:</span>
+            <span className="text-sm text-gray-700">{fullAddress || "N/A"}</span>
+          </div>
+        </div>
+      </Card>
+
+      {/* Time Information - Now Second */}
       <Card className="overflow-hidden border-l-4 border-l-blue-400">
         <div className="bg-gradient-to-r from-blue-50 to-transparent p-3 flex items-center justify-between border-b">
           <div className="flex items-center gap-2">
@@ -73,25 +96,9 @@ export const OrderDetailsTab = ({
             <span className="text-sm font-medium text-gray-500">Service Date:</span>
             <span className="text-sm text-gray-700">{workOrder.service_date ? formatDate(workOrder.service_date) : "N/A"}</span>
           </div>
-        </div>
-      </Card>
-
-      {/* Location Information */}
-      <Card className="overflow-hidden border-l-4 border-l-blue-400">
-        <div className="bg-gradient-to-r from-blue-50 to-transparent p-3 flex items-center justify-between border-b">
-          <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-blue-500" />
-            <h3 className="font-medium text-blue-700">Location Information</h3>
-          </div>
-        </div>
-        <div className="p-4 grid gap-3">
           <div className="grid grid-cols-[120px_1fr] items-center">
-            <span className="text-sm font-medium text-gray-500">Name:</span>
-            <span className="text-sm text-gray-700">{locationName}</span>
-          </div>
-          <div className="grid grid-cols-[120px_1fr] items-center">
-            <span className="text-sm font-medium text-gray-500">Address:</span>
-            <span className="text-sm text-gray-700">{fullAddress || "N/A"}</span>
+            <span className="text-sm font-medium text-gray-500">LDS:</span>
+            <span className="text-sm text-gray-700">{ldsInfo}</span>
           </div>
         </div>
       </Card>
@@ -134,3 +141,4 @@ export const OrderDetailsTab = ({
     </div>
   );
 };
+

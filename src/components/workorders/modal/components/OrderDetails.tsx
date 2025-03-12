@@ -122,7 +122,7 @@ export const OrderDetails = ({
 
       <ScrollArea className="flex-1 overflow-auto">
         <div className="space-y-4 pt-4">
-          {/* Order Details Section */}
+          {/* Order Details Section - Kept first */}
           <div id="details-section" ref={detailsSectionRef} className="px-4 pb-6 scroll-m-12">
             <div className="mb-4 pb-2 border-b border-gray-200">
               <h3 className="text-sm font-medium text-gray-700 flex items-center gap-2">
@@ -161,7 +161,6 @@ export const OrderDetails = ({
       <div className="p-4 border-t flex items-center justify-between bg-gray-50">
         <div className="flex items-center gap-2">
           <QcNotesSheet workOrder={workOrder} />
-          {/* Show Resolution Notes for all statuses, not just flagged */}
           <ResolutionNotesSheet workOrder={workOrder} />
         </div>
         
@@ -181,3 +180,4 @@ export const OrderDetails = ({
     </div>
   );
 };
+
