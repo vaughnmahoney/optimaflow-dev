@@ -23,6 +23,8 @@ export const getOrderDetails = async (orderNumbers: string[]): Promise<OrderDeta
       return { success: false, error: "No order numbers provided" };
     }
     
+    console.log(`Fetching details for ${orderNumbers.length} order numbers`);
+    
     // Call the Supabase Edge Function to get order details
     const { data, error } = await supabase.functions.invoke('search-optimoroute', {
       body: {
@@ -34,6 +36,13 @@ export const getOrderDetails = async (orderNumbers: string[]): Promise<OrderDeta
       console.error("Error fetching order details:", error);
       return { success: false, error: error.message };
     }
+    
+    if (!data.success) {
+      console.error("API returned error:", data.error);
+      return { success: false, error: data.error };
+    }
+    
+    console.log(`Received details for ${data.orders?.length || 0} orders`);
     
     return data;
   } catch (error) {

@@ -101,27 +101,18 @@ serve(async (req) => {
     else if (orderNumbers && Array.isArray(orderNumbers)) {
       console.log(`Searching for ${orderNumbers.length} order numbers`);
       
-      // For multiple order numbers, we need to make a search request for each one
-      // But there's a more efficient way by using a date range search and filtering
-      // the results by orderNo
+      // Format the order numbers as required by the API
+      // The API expects an array of objects with orderNo property
+      const formattedOrders = orderNumbers.map(orderNo => ({ orderNo }));
       
-      const today = new Date();
-      const oneYearAgo = new Date();
-      oneYearAgo.setFullYear(today.getFullYear() - 1);
-      
-      // Format dates as YYYY-MM-DD
-      const startDate = oneYearAgo.toISOString().split('T')[0];
-      const endDate = today.toISOString().split('T')[0];
-      
-      // Build the search request payload for a date range
+      // Build the search request payload with properly formatted orders
       const searchPayload = {
-        dateRange: {
-          from: startDate,
-          to: endDate,
-        },
+        orders: formattedOrders,
         includeOrderData: true,
         includeScheduleInformation: true,
       };
+      
+      console.log("Search payload:", JSON.stringify(searchPayload));
       
       // Make the search API request
       const searchResponse = await fetch(
@@ -151,27 +142,10 @@ serve(async (req) => {
         );
       }
       
-      // Process search results to find matching order numbers
+      // Process search results
       const searchData = await searchResponse.json();
       
       if (!searchData.orders || searchData.orders.length === 0) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: "No orders found in date range",
-          }),
-          {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
-      }
-      
-      // Filter orders to only include those with matching order numbers
-      const matchingOrders = searchData.orders.filter(order => 
-        orderNumbers.includes(order.data?.orderNo)
-      );
-      
-      if (matchingOrders.length === 0) {
         return new Response(
           JSON.stringify({
             success: false,
@@ -186,8 +160,8 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({
           success: true,
-          orders: matchingOrders,
-          totalFound: matchingOrders.length,
+          orders: searchData.orders,
+          totalFound: searchData.orders.length,
           totalRequested: orderNumbers.length,
         }),
         {
