@@ -5,6 +5,7 @@ import { getOrderDetails, OrderDetail } from '@/services/optimoroute/getOrderDet
 import { useMRStore, MaterialItem } from '@/hooks/materials/useMRStore';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
+import { BatchProcessingStats } from '@/components/bulk-orders/types';
 
 export interface RouteMaterialsResponse {
   isLoading: boolean;
@@ -12,6 +13,7 @@ export interface RouteMaterialsResponse {
   orderDetails: OrderDetail[];
   rawRoutesResponse: any; // Added to store raw API response
   rawOrderDetailsResponse: any; // Added to store raw API response
+  batchStats: BatchProcessingStats | null;
   fetchRouteMaterials: (params: GetRoutesParams) => Promise<void>;
   reset: () => void;
 }
@@ -48,10 +50,12 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
   const [orderDetails, setOrderDetails] = useState<OrderDetail[]>([]);
   const [rawRoutesResponse, setRawRoutesResponse] = useState<any>(null);
   const [rawOrderDetailsResponse, setRawOrderDetailsResponse] = useState<any>(null);
+  const [batchStats, setBatchStats] = useState<BatchProcessingStats | null>(null);
   const { setMaterialsData, setRawNotes, setTechnicianName, clearData } = useMRStore();
 
   const fetchRouteMaterials = async (params: GetRoutesParams) => {
     setIsLoading(true);
+    setBatchStats(null);
     
     try {
       // Step 1: Get routes for the selected date
@@ -88,8 +92,16 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
       // Store the raw response for debugging
       setRawOrderDetailsResponse(orderDetailsResponse);
       
-      // Log batch statistics if available
+      // Update batch stats for UI
       if (orderDetailsResponse.batchStats) {
+        setBatchStats({
+          totalBatches: orderDetailsResponse.batchStats.totalBatches,
+          completedBatches: orderDetailsResponse.batchStats.completedBatches,
+          successfulBatches: orderDetailsResponse.batchStats.successfulBatches,
+          failedBatches: orderDetailsResponse.batchStats.failedBatches
+        });
+        
+        // Log batch statistics if available
         console.log(`Batch processing stats: ${orderDetailsResponse.batchStats.successfulBatches}/${orderDetailsResponse.batchStats.totalBatches} batches successful`);
         
         // Show toast with batch processing info
@@ -145,6 +157,7 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
     setOrderDetails([]);
     setRawRoutesResponse(null);
     setRawOrderDetailsResponse(null);
+    setBatchStats(null);
     clearData();
   };
 
@@ -154,6 +167,7 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
     orderDetails,
     rawRoutesResponse,
     rawOrderDetailsResponse,
+    batchStats,
     fetchRouteMaterials,
     reset
   };
