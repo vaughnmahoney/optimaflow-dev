@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { WorkOrder } from "../types";
@@ -7,7 +8,6 @@ import { ModalFooter } from "./components/ModalFooter";
 import { NavigationControls } from "./components/NavigationControls";
 import { getStatusBorderColor } from "./utils/modalUtils";
 import { useWorkOrderNavigation } from "@/hooks/useWorkOrderNavigation";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OrderDetailsTab } from "./tabs/OrderDetailsTab";
 import { NotesTab } from "./tabs/NotesTab";
 import { SignatureTab } from "./tabs/SignatureTab";
@@ -75,7 +75,8 @@ export const ImageViewModal = ({
         <ModalHeader workOrder={currentWorkOrder} onClose={onClose} />
         
         <div className="flex-1 flex overflow-hidden">
-          <div className="w-1/2 h-full overflow-hidden">
+          {/* Left side - Image viewer (60% width) */}
+          <div className="w-[60%] h-full overflow-hidden">
             <ModalContent
               workOrder={currentWorkOrder}
               images={images}
@@ -86,26 +87,38 @@ export const ImageViewModal = ({
             />
           </div>
           
-          <div className="w-1/2 h-full border-l">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-              <TabsList className="w-full justify-start px-4 pt-2">
-                <TabsTrigger value="details">Order Details</TabsTrigger>
-                <TabsTrigger value="notes">Notes</TabsTrigger>
-                <TabsTrigger value="signature">Signature</TabsTrigger>
-              </TabsList>
+          {/* Right side - Information (40% width) */}
+          <div className="w-[40%] h-full border-l">
+            <div className="h-full flex flex-col">
+              {/* Horizontal tabs */}
+              <div className="flex border-b">
+                <div 
+                  className={`px-6 py-3 font-medium cursor-pointer ${activeTab === 'details' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}
+                  onClick={() => setActiveTab('details')}
+                >
+                  Order Details
+                </div>
+                <div 
+                  className={`px-6 py-3 font-medium cursor-pointer ${activeTab === 'notes' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}
+                  onClick={() => setActiveTab('notes')}
+                >
+                  Notes
+                </div>
+                <div 
+                  className={`px-6 py-3 font-medium cursor-pointer ${activeTab === 'signature' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}
+                  onClick={() => setActiveTab('signature')}
+                >
+                  Signature
+                </div>
+              </div>
               
-              <TabsContent value="details" className="flex-1 overflow-auto m-0">
-                <OrderDetailsTab workOrder={currentWorkOrder} />
-              </TabsContent>
-              
-              <TabsContent value="notes" className="flex-1 overflow-auto m-0">
-                <NotesTab workOrder={currentWorkOrder} />
-              </TabsContent>
-              
-              <TabsContent value="signature" className="flex-1 overflow-auto m-0">
-                <SignatureTab workOrder={currentWorkOrder} />
-              </TabsContent>
-            </Tabs>
+              {/* Tab content */}
+              <div className="flex-1 overflow-auto">
+                {activeTab === 'details' && <OrderDetailsTab workOrder={currentWorkOrder} />}
+                {activeTab === 'notes' && <NotesTab workOrder={currentWorkOrder} />}
+                {activeTab === 'signature' && <SignatureTab workOrder={currentWorkOrder} />}
+              </div>
+            </div>
           </div>
         </div>
         
