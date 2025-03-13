@@ -37,6 +37,8 @@ export const MRSummary = ({ data }: MRSummaryProps) => {
       if (b.type === 'CONDCOIL') return 1;
       if (a.type === 'REFRIGERATOR_COILS') return -1;
       if (b.type === 'REFRIGERATOR_COILS') return 1;
+      if (a.type === 'PRODUCE') return -1;
+      if (b.type === 'PRODUCE') return 1;
       
       // Sort polyester MEND filters before regular polyester filters
       if (a.type.startsWith('S') && a.type.endsWith('MEND') && !(b.type.startsWith('S') && b.type.endsWith('MEND'))) return -1;
@@ -45,6 +47,10 @@ export const MRSummary = ({ data }: MRSummaryProps) => {
       // Sort regular polyester filters before fiberglass filters
       if (a.type.startsWith('S') && !b.type.startsWith('S')) return -1;
       if (!a.type.startsWith('S') && b.type.startsWith('S')) return 1;
+      
+      // Sort fiberglass filters before frames
+      if (a.type.startsWith('G') && b.type.startsWith('F')) return -1;
+      if (a.type.startsWith('F') && b.type.startsWith('G')) return 1;
       
       return a.type.localeCompare(b.type);
     });
@@ -88,6 +94,19 @@ export const MRSummary = ({ data }: MRSummaryProps) => {
       }
       return `Fiberglass: ${formattedSize}`;
     }
+    // Handle Frames
+    else if (type.startsWith('F')) {
+      // Extract the size part (after F)
+      const sizeCode = type.substring(1);
+      // Format dimensions based on length of the size code
+      let formattedSize = sizeCode;
+      if (sizeCode.length === 5) { // e.g., 24242 for 24x24x2
+        formattedSize = `${sizeCode.substring(0, 2)}x${sizeCode.substring(2, 4)}x${sizeCode.substring(4, 5)}`;
+      } else if (sizeCode.length === 4) { // e.g., 2025 for 20x25
+        formattedSize = `${sizeCode.substring(0, 2)}x${sizeCode.substring(2, 4)}`;
+      }
+      return `Frame: ${formattedSize}`;
+    }
     else if (type === 'REFRIGERATOR_COILS') {
       return 'Refrigerator Coils';
     } else if (type === 'CONDCOIL') {
@@ -95,7 +114,7 @@ export const MRSummary = ({ data }: MRSummaryProps) => {
     } else if (type === 'P-TRAP') {
       return 'P-Trap';
     } else if (type === 'PRODUCE') {
-      return 'Produce Filter';
+      return 'Produce Coil';
     } else {
       return type;
     }
@@ -113,6 +132,10 @@ export const MRSummary = ({ data }: MRSummaryProps) => {
       return 'warning'; // For regular Poly filters
     } else if (type.startsWith('G') && type.endsWith('B')) {
       return 'secondary'; // For Fiberglass filters
+    } else if (type.startsWith('F')) {
+      return 'destructive'; // For Frames
+    } else if (type === 'PRODUCE') {
+      return 'default'; // For Produce Coils
     } else {
       return 'outline';
     }

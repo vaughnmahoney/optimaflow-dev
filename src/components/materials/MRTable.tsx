@@ -47,6 +47,19 @@ export const MRTable = ({ data }: MRTableProps) => {
       }
       return `Fiberglass: ${formattedSize}`;
     }
+    // Handle Frames
+    else if (type.startsWith('F')) {
+      // Extract the size part (after F)
+      const sizeCode = type.substring(1);
+      // Format dimensions based on length of the size code
+      let formattedSize = sizeCode;
+      if (sizeCode.length === 5) { // e.g., 24242 for 24x24x2
+        formattedSize = `${sizeCode.substring(0, 2)}x${sizeCode.substring(2, 4)}x${sizeCode.substring(4, 5)}`;
+      } else if (sizeCode.length === 4) { // e.g., 2025 for 20x25
+        formattedSize = `${sizeCode.substring(0, 2)}x${sizeCode.substring(2, 4)}`;
+      }
+      return `Frame: ${formattedSize}`;
+    }
     // Handle other material types
     else if (type.includes('FREEZER') || type.includes('FREEZECOOL') || type.includes('COOLER')) {
       return 'Refrigerator Coils';
@@ -55,7 +68,7 @@ export const MRTable = ({ data }: MRTableProps) => {
     } else if (type === 'P-TRAP') {
       return 'P-Trap';
     } else if (type === 'PRODUCE') {
-      return 'Produce Filter';
+      return 'Produce Coil';
     } else {
       return type;
     }
@@ -73,6 +86,10 @@ export const MRTable = ({ data }: MRTableProps) => {
       return 'warning'; // For regular Poly filters
     } else if (type.startsWith('G') && type.endsWith('B')) {
       return 'secondary'; // For Fiberglass filters
+    } else if (type.startsWith('F')) {
+      return 'destructive'; // For Frames
+    } else if (type === 'PRODUCE') {
+      return 'default'; // For Produce Coils
     } else {
       return 'outline';
     }
