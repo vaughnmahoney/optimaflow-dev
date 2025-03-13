@@ -30,7 +30,6 @@ export type NavigationItem = {
   url?: string;
   icon: any;
   items?: NavigationItem[];
-  roles?: string[];
 };
 
 export const navigationConfig: NavigationItem[] = [
@@ -109,10 +108,5 @@ export const navigationConfig: NavigationItem[] = [
       { title: "Verisae", url: "/apps/verisae", icon: Link },
     ],
   },
-  {
-    title: "Materials Requirement",
-    url: "/materials",
-    icon: Package,
-    roles: ["admin", "manager", "supervisor"],
-  },
 ];
+
