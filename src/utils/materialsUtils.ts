@@ -62,16 +62,19 @@ export const formatSizeCode = (sizeCode: string): string => {
   return formattedSize;
 };
 
+// Define valid badge variants
+type BadgeVariant = 'success' | 'info' | 'purple' | 'warning' | 'secondary' | 'primary' | 'destructive' | 'default' | 'outline';
+
 /**
  * Get badge variant based on material type
  */
-export const getBadgeVariant = (type: string): string => {
+export const getBadgeVariant = (type: string): BadgeVariant => {
   if (type === 'CONDCOIL') {
     return 'success';
   } else if (type === 'REFRIGERATOR_COILS' || type.includes('FREEZER') || type.includes('FREEZECOOL') || type.includes('COOLER')) {
     return 'info';
   } else if (type.startsWith('S') && type.endsWith('MEND')) {
-    return 'purple'; // For Poly MEND filters
+    return 'purple';  // For Poly MEND filters
   } else if (type.startsWith('S')) {
     return 'warning'; // For regular Poly filters
   } else if (type.startsWith('G') && type.endsWith('B')) {

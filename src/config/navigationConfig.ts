@@ -1,3 +1,4 @@
+
 import {
   LayoutDashboard,
   CheckCircle,
@@ -29,6 +30,7 @@ export type NavigationItem = {
   url?: string;
   icon: any;
   items?: NavigationItem[];
+  roles?: string[];
 };
 
 export const navigationConfig: NavigationItem[] = [
@@ -109,8 +111,8 @@ export const navigationConfig: NavigationItem[] = [
   },
   {
     title: "Materials Requirement",
-    path: "/materials",
-    icon: "Package",
+    url: "/materials",
+    icon: Package,
     roles: ["admin", "manager", "supervisor"],
   },
 ];
