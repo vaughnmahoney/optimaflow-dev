@@ -4,6 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 export interface GetRoutesParams {
   date: string;
   driverSerial?: string;
+  dateRange?: {
+    from: string;
+    to: string;
+  };
 }
 
 export interface RouteStop {
@@ -33,18 +37,27 @@ export interface GetRoutesResponse {
 
 export const getRoutes = async (params: GetRoutesParams): Promise<GetRoutesResponse> => {
   try {
-    const { date, driverSerial } = params;
+    const { date, driverSerial, dateRange } = params;
     
-    if (!date) {
-      return { success: false, error: "Date is required" };
+    if (!date && !dateRange) {
+      return { success: false, error: "Either date or dateRange is required" };
+    }
+    
+    // Prepare the request body
+    const requestBody: any = {
+      driverSerial
+    };
+    
+    // Use dateRange if provided, otherwise use single date
+    if (dateRange) {
+      requestBody.dateRange = dateRange;
+    } else {
+      requestBody.date = date;
     }
     
     // Call the Supabase Edge Function
     const { data, error } = await supabase.functions.invoke('get-optimoroute-routes', {
-      body: {
-        date,
-        driverSerial
-      }
+      body: requestBody
     });
     
     if (error) {

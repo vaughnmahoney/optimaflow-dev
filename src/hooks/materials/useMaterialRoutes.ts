@@ -42,6 +42,17 @@ const parseMaterialsFromNotes = (notes: string, orderNo: string): MaterialItem[]
   return materials;
 };
 
+/**
+ * Creates a date range object from a single date
+ * Uses the same date for both start and end of the range
+ */
+const createDateRangeFromSingleDate = (date: string): { from: string, to: string } => {
+  return {
+    from: date,
+    to: date // Using same date for both start and end
+  };
+};
+
 export const useMaterialRoutes = (): RouteMaterialsResponse => {
   const [isLoading, setIsLoading] = useState(false);
   const [routes, setRoutes] = useState<DriverRoute[]>([]);
@@ -54,8 +65,15 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
     setIsLoading(true);
     
     try {
+      // Create a date range from the single selected date
+      const dateRange = createDateRangeFromSingleDate(params.date);
+      console.log("Using date range:", dateRange);
+      
       // Step 1: Get routes for the selected date
-      const routesResponse = await getRoutes(params);
+      const routesResponse = await getRoutes({
+        ...params,
+        dateRange // Pass the date range instead of a single date
+      });
       
       // Store the raw response for debugging
       setRawRoutesResponse(routesResponse);
