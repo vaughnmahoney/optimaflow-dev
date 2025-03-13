@@ -1,4 +1,3 @@
-
 import {
   LayoutDashboard,
   CheckCircle,
@@ -108,5 +107,10 @@ export const navigationConfig: NavigationItem[] = [
       { title: "Verisae", url: "/apps/verisae", icon: Link },
     ],
   },
+  {
+    title: "Materials Requirement",
+    path: "/materials",
+    icon: "Package",
+    roles: ["admin", "manager", "supervisor"],
+  },
 ];
-
