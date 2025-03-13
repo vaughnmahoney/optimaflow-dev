@@ -25,6 +25,8 @@ export const MRApiLoader = () => {
   const handleGenerateMR = async () => {
     if (!selectedDate) return;
     
+    console.log(`Generating MR for date: ${selectedDate}`);
+    
     await fetchRouteMaterials({
       date: selectedDate
     });

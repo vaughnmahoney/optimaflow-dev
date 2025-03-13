@@ -80,6 +80,8 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
         return;
       }
       
+      console.log(`Found ${orderNumbers.length} order numbers in routes:`, orderNumbers);
+      
       // Step 3: Get order details for all order numbers
       const orderDetailsResponse = await getOrderDetails(orderNumbers);
       
@@ -87,6 +89,7 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
       setRawOrderDetailsResponse(orderDetailsResponse);
       
       if (!orderDetailsResponse.success || !orderDetailsResponse.orders?.length) {
+        console.error("Order details error:", orderDetailsResponse);
         toast.error(orderDetailsResponse.error || "Failed to fetch order details");
         setIsLoading(false);
         return;
