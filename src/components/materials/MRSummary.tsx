@@ -3,6 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MaterialItem } from "@/hooks/materials/useMRStore";
+import { formatMaterialType, getBadgeVariant } from "@/utils/materialsUtils";
 
 interface MRSummaryProps {
   data: MaterialItem[];
@@ -48,6 +49,10 @@ export const MRSummary = ({ data }: MRSummaryProps) => {
       if (a.type.startsWith('S') && !b.type.startsWith('S')) return -1;
       if (!a.type.startsWith('S') && b.type.startsWith('S')) return 1;
       
+      // Sort pleated filters after fiberglass but before frames
+      if (a.type.startsWith('P') && b.type.startsWith('F')) return -1;
+      if (a.type.startsWith('F') && b.type.startsWith('P')) return 1;
+      
       // Sort fiberglass filters before frames
       if (a.type.startsWith('G') && b.type.startsWith('F')) return -1;
       if (a.type.startsWith('F') && b.type.startsWith('G')) return 1;
@@ -55,95 +60,71 @@ export const MRSummary = ({ data }: MRSummaryProps) => {
       return a.type.localeCompare(b.type);
     });
   
-  // Format material type for display
-  const formatMaterialType = (type: string) => {
-    // Handle Polyester MEND filters
-    if (type.startsWith('S') && type.endsWith('MEND')) {
-      // Extract the size part (between S and MEND)
-      const sizeCode = type.substring(1, type.length - 4);
-      // Format dimensions based on length of the size code
-      let formattedSize = sizeCode;
-      if (sizeCode.length === 5) { // e.g., 24242 for 24x24x2
-        formattedSize = `${sizeCode.substring(0, 2)}x${sizeCode.substring(2, 4)}x${sizeCode.substring(4, 5)}`;
-      } else if (sizeCode.length === 4) { // e.g., 2025 for 20x25
-        formattedSize = `${sizeCode.substring(0, 2)}x${sizeCode.substring(2, 4)}`;
-      }
-      return `Poly MEND: ${formattedSize}`;
-    } 
-    // Handle regular Polyester filters
-    else if (type.startsWith('S')) {
-      // Extract the size part (after S)
-      const sizeCode = type.substring(1);
-      // Format dimensions based on length of the size code
-      let formattedSize = sizeCode;
-      if (sizeCode.length === 5) { // e.g., 24242 for 24x24x2
-        formattedSize = `${sizeCode.substring(0, 2)}x${sizeCode.substring(2, 4)}x${sizeCode.substring(4, 5)}`;
-      } else if (sizeCode.length === 4) { // e.g., 2025 for 20x25
-        formattedSize = `${sizeCode.substring(0, 2)}x${sizeCode.substring(2, 4)}`;
-      }
-      return `Poly: ${formattedSize}`;
-    } 
-    // Handle Fiberglass filters 
-    else if (type.startsWith('G') && type.endsWith('B')) {
-      // Extract the size part (between G and B)
-      const sizeCode = type.substring(1, type.length - 1);
-      // Format dimensions based on length of the size code
-      let formattedSize = sizeCode;
-      if (sizeCode.length === 4) { // e.g., 2025 for 20x25
-        formattedSize = `${sizeCode.substring(0, 2)}x${sizeCode.substring(2, 4)}`;
-      }
-      return `Fiberglass: ${formattedSize}`;
-    }
-    // Handle Frames
-    else if (type.startsWith('F')) {
-      // Extract the size part (after F)
-      const sizeCode = type.substring(1);
-      // Format dimensions based on length of the size code
-      let formattedSize = sizeCode;
-      if (sizeCode.length === 5) { // e.g., 24242 for 24x24x2
-        formattedSize = `${sizeCode.substring(0, 2)}x${sizeCode.substring(2, 4)}x${sizeCode.substring(4, 5)}`;
-      } else if (sizeCode.length === 4) { // e.g., 2025 for 20x25
-        formattedSize = `${sizeCode.substring(0, 2)}x${sizeCode.substring(2, 4)}`;
-      }
-      return `Frame: ${formattedSize}`;
-    }
-    else if (type === 'REFRIGERATOR_COILS') {
-      return 'Refrigerator Coils';
-    } else if (type === 'CONDCOIL') {
-      return 'Condenser Coil';
-    } else if (type === 'P-TRAP') {
-      return 'P-Trap';
-    } else if (type === 'PRODUCE') {
-      return 'Produce Coil';
-    } else {
-      return type;
-    }
-  };
-  
-  // Get badge variant based on material type
-  const getBadgeVariant = (type: string) => {
-    if (type === 'CONDCOIL') {
-      return 'success';
-    } else if (type === 'REFRIGERATOR_COILS') {
-      return 'info';
-    } else if (type.startsWith('S') && type.endsWith('MEND')) {
-      return 'purple'; // For Poly MEND filters
-    } else if (type.startsWith('S')) {
-      return 'warning'; // For regular Poly filters
-    } else if (type.startsWith('G') && type.endsWith('B')) {
-      return 'secondary'; // For Fiberglass filters
-    } else if (type.startsWith('F')) {
-      return 'destructive'; // For Frames
-    } else if (type === 'PRODUCE') {
-      return 'default'; // For Produce Coils
-    } else {
-      return 'outline';
-    }
-  };
-  
   // Calculate totals
   const totalQuantity = summaryItems.reduce((sum, item) => sum + item.quantity, 0);
   const uniqueMaterialTypes = summaryItems.length;
+  
+  // Calculate packaging units needed
+  const packagingNeeded: Record<string, { label: string, filters: number, packSize: number, units: number }> = {};
+  
+  // Filter counts by type
+  const polyMendTotal = summaryItems
+    .filter(item => item.type.startsWith('S') && item.type.endsWith('MEND'))
+    .reduce((sum, item) => sum + item.quantity, 0);
+    
+  const polyTotal = summaryItems
+    .filter(item => item.type.startsWith('S') && !item.type.endsWith('MEND'))
+    .reduce((sum, item) => sum + item.quantity, 0);
+    
+  const fiberglassTotal = summaryItems
+    .filter(item => item.type.startsWith('G') && item.type.endsWith('B'))
+    .reduce((sum, item) => sum + item.quantity, 0);
+    
+  const pleatedTotal = summaryItems
+    .filter(item => item.type.startsWith('P') && item.type.includes('INS'))
+    .reduce((sum, item) => sum + item.quantity, 0);
+  
+  // Define pack sizes
+  const POLY_PACK_SIZE = 50;
+  const FIBERGLASS_PACK_SIZE = 50;
+  const PLEATED_PACK_SIZE = 50;
+  
+  // Calculate packaging units
+  if (polyMendTotal > 0) {
+    packagingNeeded['POLY_MEND'] = {
+      label: 'Polyester MEND Bags',
+      filters: polyMendTotal,
+      packSize: POLY_PACK_SIZE,
+      units: Math.ceil(polyMendTotal / POLY_PACK_SIZE)
+    };
+  }
+  
+  if (polyTotal > 0) {
+    packagingNeeded['POLY'] = {
+      label: 'Polyester Bags',
+      filters: polyTotal,
+      packSize: POLY_PACK_SIZE,
+      units: Math.ceil(polyTotal / POLY_PACK_SIZE)
+    };
+  }
+  
+  if (fiberglassTotal > 0) {
+    packagingNeeded['FIBERGLASS'] = {
+      label: 'Fiberglass Boxes',
+      filters: fiberglassTotal,
+      packSize: FIBERGLASS_PACK_SIZE,
+      units: Math.ceil(fiberglassTotal / FIBERGLASS_PACK_SIZE)
+    };
+  }
+  
+  if (pleatedTotal > 0) {
+    packagingNeeded['PLEATED'] = {
+      label: 'Pleated Bundles',
+      filters: pleatedTotal,
+      packSize: PLEATED_PACK_SIZE,
+      units: Math.ceil(pleatedTotal / PLEATED_PACK_SIZE)
+    };
+  }
   
   return (
     <div className="space-y-6">
@@ -163,6 +144,37 @@ export const MRSummary = ({ data }: MRSummaryProps) => {
         </Card>
       </div>
       
+      {/* Packaging units section */}
+      {Object.keys(packagingNeeded).length > 0 && (
+        <Card className="mt-4">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Packaging Units Needed</CardTitle>
+            <CardDescription>For loading your van</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Package Type</TableHead>
+                  <TableHead>Total Filters</TableHead>
+                  <TableHead className="text-right">Units Needed</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {Object.entries(packagingNeeded).map(([key, data]) => (
+                  <TableRow key={key}>
+                    <TableCell className="font-medium">{data.label}</TableCell>
+                    <TableCell>{data.filters}</TableCell>
+                    <TableCell className="text-right font-bold">{data.units}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+      
+      {/* Materials summary table */}
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
