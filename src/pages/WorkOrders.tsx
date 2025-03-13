@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useWorkOrderData } from "@/hooks/useWorkOrderData";
 import { useQueryClient } from "@tanstack/react-query";
-import { SortDirection, SortField, WorkOrder } from "@/components/workorders/types";
+import { SortDirection, SortField } from "@/components/workorders/types";
 import { useWorkOrderMutations } from "@/hooks/useWorkOrderMutations";
 
 const WorkOrders = () => {
@@ -15,8 +15,8 @@ const WorkOrders = () => {
   const queryClient = useQueryClient();
   const { resolveWorkOrderFlag } = useWorkOrderMutations();
   
-  // For demo purposes, load and display all orders without pagination
-  const [showAll, setShowAll] = useState(true);
+  // For demo purposes, always show all orders without pagination
+  const [showAll] = useState(true);
   
   const {
     data: workOrders,
@@ -34,9 +34,6 @@ const WorkOrders = () => {
     sortField,
     sortDirection,
     setSort,
-    pagination,
-    handlePageChange,
-    handlePageSizeChange,
     refetch
   } = useWorkOrderData();
 

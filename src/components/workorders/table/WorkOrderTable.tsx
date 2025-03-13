@@ -36,9 +36,6 @@ export const WorkOrderTable = ({
   sortField: externalSortField,
   sortDirection: externalSortDirection,
   onSort: externalOnSort,
-  pagination,
-  onPageChange,
-  onPageSizeChange,
   filters,
   onColumnFilterChange,
   onColumnFilterClear,
@@ -112,7 +109,7 @@ export const WorkOrderTable = ({
           </TableBody>
         </Table>
         
-        {/* Removed pagination for Work Orders/QC section */}
+        {/* Pagination removed as requested */}
       </div>
     </div>
   );
