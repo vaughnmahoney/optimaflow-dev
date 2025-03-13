@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { WorkOrder } from "../types";
@@ -12,8 +13,9 @@ import { NotesTab } from "./tabs/NotesTab";
 import { SignatureTab } from "./tabs/SignatureTab";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { PenLine, MessageSquare } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 interface ImageViewModalProps {
   workOrder: WorkOrder | null;
@@ -46,6 +48,7 @@ export const ImageViewModal = ({
   const [resolutionNotes, setResolutionNotes] = useState("");
   const isMobile = useIsMobile();
   
+  // Refs for scroll-based tab tracking
   const detailsSectionRef = useRef<HTMLDivElement>(null);
   const notesSectionRef = useRef<HTMLDivElement>(null);
   const signatureSectionRef = useRef<HTMLDivElement>(null);
@@ -89,6 +92,7 @@ export const ImageViewModal = ({
     onNavigate(index);
   };
   
+  // Function to handle scrolling to tabs
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     switch (value) {
@@ -106,6 +110,7 @@ export const ImageViewModal = ({
   
   const handleSaveQcNotes = () => {
     if (currentWorkOrder.id && onStatusUpdate) {
+      // Save QC notes logic would go here
       console.log("Saving QC notes:", qcNotes);
       setIsQcNotesOpen(false);
     }
@@ -118,6 +123,7 @@ export const ImageViewModal = ({
     }
   };
   
+  // Set up scroll observation to update active tab
   useEffect(() => {
     if (!isOpen || !contentScrollRef.current) return;
     
@@ -158,6 +164,7 @@ export const ImageViewModal = ({
           <ModalHeader workOrder={currentWorkOrder} onClose={onClose} />
           
           <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+            {/* Left side - Image viewer (60% width on desktop, full width on mobile) */}
             <div className={`${isMobile ? 'w-full h-1/2' : 'w-[60%] h-full'} overflow-hidden`}>
               <ModalContent
                 workOrder={currentWorkOrder}
@@ -169,8 +176,10 @@ export const ImageViewModal = ({
               />
             </div>
             
+            {/* Right side - Information (40% width on desktop, full width on mobile) */}
             <div className={`${isMobile ? 'w-full h-1/2' : 'w-[40%] h-full'} border-l`}>
               <div className="h-full flex flex-col">
+                {/* Horizontal tabs */}
                 <div className="flex border-b">
                   <div 
                     className={`px-3 md:px-6 py-3 font-medium cursor-pointer text-sm md:text-base ${activeTab === 'details' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}
@@ -192,18 +201,22 @@ export const ImageViewModal = ({
                   </div>
                 </div>
                 
+                {/* Tab content with scroll observation */}
                 <ScrollArea className="flex-1 overflow-auto" ref={contentScrollRef}>
-                  <div className="space-y-4">
-                    <div id="details-section" ref={detailsSectionRef} className="scroll-m-12">
-                      {activeTab === 'details' && <OrderDetailsTab workOrder={currentWorkOrder} />}
+                  <div className="space-y-4 pt-4">
+                    {/* Order Details Section */}
+                    <div id="details-section" ref={detailsSectionRef} className="px-4 pb-6 scroll-m-12">
+                      <OrderDetailsTab workOrder={currentWorkOrder} />
                     </div>
                     
-                    <div id="notes-section" ref={notesSectionRef} className="scroll-m-12">
-                      {activeTab === 'notes' && <NotesTab workOrder={currentWorkOrder} />}
+                    {/* Notes Section */}
+                    <div id="notes-section" ref={notesSectionRef} className="px-4 pb-6 scroll-m-12">
+                      <NotesTab workOrder={currentWorkOrder} />
                     </div>
                     
-                    <div id="signature-section" ref={signatureSectionRef} className="scroll-m-12">
-                      {activeTab === 'signature' && <SignatureTab workOrder={currentWorkOrder} />}
+                    {/* Signature Section */}
+                    <div id="signature-section" ref={signatureSectionRef} className="px-4 pb-6 scroll-m-12">
+                      <SignatureTab workOrder={currentWorkOrder} />
                     </div>
                   </div>
                 </ScrollArea>
@@ -211,7 +224,28 @@ export const ImageViewModal = ({
             </div>
           </div>
           
-          <div className="border-t">
+          <div className="border-t p-4 flex flex-wrap items-center justify-between">
+            <div className="flex flex-wrap gap-2 mb-2 md:mb-0">
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                onClick={() => setIsQcNotesOpen(true)}
+                className="flex items-center gap-1"
+              >
+                <PenLine className="h-4 w-4" />
+                Edit QC Notes
+              </Button>
+              <Button 
+                variant="default" 
+                size="sm" 
+                onClick={() => setIsResolutionNotesOpen(true)}
+                className="flex items-center gap-1"
+              >
+                <MessageSquare className="h-4 w-4" />
+                Edit Resolution Notes
+              </Button>
+            </div>
+            
             <ModalFooter 
               workOrderId={currentWorkOrder.id} 
               onStatusUpdate={onStatusUpdate} 
@@ -232,6 +266,7 @@ export const ImageViewModal = ({
         </DialogContent>
       </Dialog>
       
+      {/* QC Notes Sheet */}
       <Sheet open={isQcNotesOpen} onOpenChange={setIsQcNotesOpen}>
         <SheetContent className="w-full md:max-w-md">
           <SheetHeader>
@@ -251,6 +286,7 @@ export const ImageViewModal = ({
         </SheetContent>
       </Sheet>
       
+      {/* Resolution Notes Sheet */}
       <Sheet open={isResolutionNotesOpen} onOpenChange={setIsResolutionNotesOpen}>
         <SheetContent className="w-full md:max-w-md">
           <SheetHeader>
