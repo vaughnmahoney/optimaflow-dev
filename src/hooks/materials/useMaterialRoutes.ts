@@ -19,7 +19,7 @@ export interface RouteMaterialsResponse {
 }
 
 // Parse material requirements from order notes
-const parseMaterialsFromNotes = (notes: string, orderNo: string): MaterialItem[] => {
+const parseMaterialsFromNotes = (notes: string, orderNo: string, driverSerial?: string): MaterialItem[] => {
   if (!notes) return [];
   
   // Parse format like "(0) COOLER, (15) FREEZER, (2) G2063B, (2) G2563B"
@@ -36,7 +36,8 @@ const parseMaterialsFromNotes = (notes: string, orderNo: string): MaterialItem[]
         id: uuidv4(),
         type,
         quantity,
-        workOrderId: orderNo
+        workOrderId: orderNo,
+        driverSerial
       });
     }
   }
@@ -98,7 +99,9 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
           totalBatches: orderDetailsResponse.batchStats.totalBatches,
           completedBatches: orderDetailsResponse.batchStats.completedBatches,
           successfulBatches: orderDetailsResponse.batchStats.successfulBatches,
-          failedBatches: orderDetailsResponse.batchStats.failedBatches
+          failedBatches: orderDetailsResponse.batchStats.failedBatches,
+          totalOrdersProcessed: orderDetailsResponse.batchStats.totalOrdersProcessed || 0,
+          errors: orderDetailsResponse.batchStats.errors || []
         });
         
         // Log batch statistics if available
@@ -124,10 +127,25 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
       const materials: MaterialItem[] = [];
       const notes: string[] = [];
       
+      // Create a map of orderNo to driverSerial for associating materials with drivers
+      const orderToDriverMap: Record<string, string> = {};
+      routesResponse.routes.forEach(route => {
+        route.stops.forEach(stop => {
+          if (stop.orderNo !== "-") {
+            orderToDriverMap[stop.orderNo] = route.driverSerial;
+          }
+        });
+      });
+      
       orderDetailsResponse.orders.forEach(order => {
         if (order.data?.notes) {
           notes.push(`${order.data.orderNo}: ${order.data.notes}`);
-          materials.push(...parseMaterialsFromNotes(order.data.notes, order.data.orderNo));
+          
+          // Get the driver serial for this order
+          const driverSerial = orderToDriverMap[order.data.orderNo];
+          
+          // Parse materials and associate them with the driver
+          materials.push(...parseMaterialsFromNotes(order.data.notes, order.data.orderNo, driverSerial));
         }
       });
       

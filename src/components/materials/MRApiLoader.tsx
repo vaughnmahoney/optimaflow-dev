@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +10,8 @@ import { MRDriverList } from './MRDriverList';
 import { MRDriverOrders } from './MRDriverOrders';
 import { DriverRoute } from '@/services/optimoroute/getRoutesService';
 import { FetchProgressBar } from '../bulk-orders/FetchProgressBar';
+import { useMRStore } from '@/hooks/materials/useMRStore';
+import { toast } from 'sonner';
 
 export const MRApiLoader = () => {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -24,10 +27,17 @@ export const MRApiLoader = () => {
     rawOrderDetailsResponse,
     batchStats
   } = useMaterialRoutes();
+  
+  const { 
+    materialsData, 
+    setSelectedDrivers: storeSaveSelectedDrivers,
+    clearSelectedDrivers
+  } = useMRStore();
 
   const handleDateSelect = (date: string) => {
     setSelectedDate(date);
     setSelectedDrivers([]);
+    clearSelectedDrivers();
     reset();
   };
 
@@ -49,12 +59,32 @@ export const MRApiLoader = () => {
   };
 
   const handleBatchGenerate = () => {
-    console.log(`Generating materials for ${selectedDrivers.length} drivers`);
+    if (selectedDrivers.length === 0) {
+      toast.error("Please select at least one driver");
+      return;
+    }
+    
+    // Save the selected drivers to the MR store
+    storeSaveSelectedDrivers(selectedDrivers);
+    
+    // Show success message with count of materials
+    const driverMaterialsCount = materialsData.filter(
+      item => item.driverSerial && selectedDrivers.includes(item.driverSerial)
+    ).length;
+    
+    if (driverMaterialsCount > 0) {
+      toast.success(`Generated material requirements for ${selectedDrivers.length} drivers (${driverMaterialsCount} items)`);
+    } else {
+      toast.warning(`No materials found for the selected ${selectedDrivers.length} drivers`);
+    }
+    
+    console.log(`Generated materials for ${selectedDrivers.length} drivers`);
   };
 
   const handleReset = () => {
     setSelectedDate(null);
     setSelectedDrivers([]);
+    clearSelectedDrivers();
     reset();
   };
 
@@ -121,7 +151,9 @@ export const MRApiLoader = () => {
           <MRDriverOrders 
             selectedDriver={getSelectedDriver()}
             orderDetails={orderDetails}
-            materials={[]} // This will be filled with material data from the MRStore
+            materials={materialsData.filter(
+              material => material.driverSerial === getSelectedDriver()?.driverSerial
+            )}
           />
         </div>
       )}
