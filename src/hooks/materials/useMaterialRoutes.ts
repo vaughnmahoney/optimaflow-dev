@@ -82,7 +82,7 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
       
       console.log(`Collected ${orderNumbers.length} order numbers from routes`);
       
-      // Step 3: Get order details for all order numbers (now with batching)
+      // Step 3: Get order details for all order numbers (now with parallel batch processing)
       const orderDetailsResponse = await getOrderDetails(orderNumbers);
       
       // Store the raw response for debugging
@@ -90,10 +90,13 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
       
       // Log batch statistics if available
       if (orderDetailsResponse.batchStats) {
-        console.log(`Batch processing stats: ${orderDetailsResponse.batchStats.completedBatches}/${orderDetailsResponse.batchStats.totalBatches} batches completed`);
+        console.log(`Batch processing stats: ${orderDetailsResponse.batchStats.successfulBatches}/${orderDetailsResponse.batchStats.totalBatches} batches successful`);
         
-        if (orderDetailsResponse.batchStats.totalBatches > 1) {
-          toast.info(`Processed ${orderDetailsResponse.batchStats.completedBatches} of ${orderDetailsResponse.batchStats.totalBatches} batches`);
+        // Show toast with batch processing info
+        if (orderDetailsResponse.batchStats.failedBatches > 0) {
+          toast.warning(`Processed ${orderDetailsResponse.batchStats.successfulBatches} of ${orderDetailsResponse.batchStats.totalBatches} batches successfully (${orderDetailsResponse.batchStats.failedBatches} failed)`);
+        } else {
+          toast.success(`Processed all ${orderDetailsResponse.batchStats.totalBatches} batches successfully`);
         }
       }
       

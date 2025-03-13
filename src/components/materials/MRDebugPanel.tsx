@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useState } from "react";
-import { ChevronDown, ChevronRight, AlertTriangle } from "lucide-react";
+import { ChevronDown, ChevronRight, AlertTriangle, CheckCircle } from "lucide-react";
 
 interface MRDebugPanelProps {
   routesResponse: any;
@@ -19,11 +19,13 @@ export const MRDebugPanel = ({
   
   // Determine if there's an error to highlight
   const hasError = orderDetailsResponse?.error || (orderDetailsResponse?.success === false);
+  const hasPartialSuccess = orderDetailsResponse?.batchStats?.successfulBatches > 0 && 
+                            orderDetailsResponse?.batchStats?.failedBatches > 0;
 
   if (!isVisible) return null;
 
   return (
-    <Card className={`mt-4 ${hasError ? 'bg-red-50' : 'bg-slate-50'}`}>
+    <Card className={`mt-4 ${hasError ? 'bg-red-50' : hasPartialSuccess ? 'bg-amber-50' : 'bg-slate-50'}`}>
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center text-base">
           <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
@@ -37,17 +39,29 @@ export const MRDebugPanel = ({
               {hasError && (
                 <AlertTriangle className="h-4 w-4 ml-2 text-red-600" />
               )}
+              {hasPartialSuccess && (
+                <AlertTriangle className="h-4 w-4 ml-2 text-amber-600" />
+              )}
+              {!hasError && !hasPartialSuccess && orderDetailsResponse?.success && (
+                <CheckCircle className="h-4 w-4 ml-2 text-green-600" />
+              )}
             </CollapsibleTrigger>
             <CollapsibleContent>
               <div className="mt-4 space-y-4">
                 {/* Batch statistics section (if available) */}
                 {orderDetailsResponse?.batchStats && (
-                  <div className={`${hasError ? 'bg-red-100' : 'bg-blue-100'} border border-blue-300 p-3 rounded-md`}>
+                  <div className={`${hasError ? 'bg-red-100' : hasPartialSuccess ? 'bg-amber-100' : 'bg-blue-100'} 
+                    border ${hasError ? 'border-red-300' : hasPartialSuccess ? 'border-amber-300' : 'border-blue-300'} 
+                    p-3 rounded-md`}>
                     <h3 className="text-sm font-semibold mb-1">Batch Statistics:</h3>
                     <ul className="text-sm space-y-1">
                       <li>Total Batches: {orderDetailsResponse.batchStats.totalBatches}</li>
-                      <li>Completed Batches: {orderDetailsResponse.batchStats.completedBatches}</li>
-                      <li>Failed Batches: {orderDetailsResponse.batchStats.failedBatches}</li>
+                      <li>Completed Batches: {orderDetailsResponse.batchStats.completedBatches}/{orderDetailsResponse.batchStats.totalBatches}</li>
+                      <li>Successful Batches: {orderDetailsResponse.batchStats.successfulBatches}/{orderDetailsResponse.batchStats.totalBatches}</li>
+                      <li>Failed Batches: {orderDetailsResponse.batchStats.failedBatches}/{orderDetailsResponse.batchStats.totalBatches}</li>
+                      {orderDetailsResponse.batchStats.totalOrdersProcessed > 0 && (
+                        <li>Total Orders Processed: {orderDetailsResponse.batchStats.totalOrdersProcessed}</li>
+                      )}
                     </ul>
                   </div>
                 )}
@@ -129,7 +143,7 @@ export const MRDebugPanel = ({
                           <li>Order Summary Available: Yes</li>
                         )}
                         {orderDetailsResponse.batchStats && (
-                          <li>Batches: {orderDetailsResponse.batchStats.completedBatches}/{orderDetailsResponse.batchStats.totalBatches}</li>
+                          <li>Batches: {orderDetailsResponse.batchStats.successfulBatches}/{orderDetailsResponse.batchStats.totalBatches} successful</li>
                         )}
                       </ul>
                     </div>
