@@ -46,8 +46,6 @@ export const useMRStore = create<MRState>((set, get) => ({
   })),
   
   setDrivers: (drivers) => set({ 
-    drivers,
-    // Initialize drivers with expanded=false and selected=false
     drivers: drivers.map(driver => ({
       ...driver,
       expanded: false,
