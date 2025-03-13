@@ -10,30 +10,42 @@ interface MRSummaryProps {
 
 export const MRSummary = ({ data }: MRSummaryProps) => {
   // Group materials by type and calculate totals
-  const materialTotals = data.reduce((acc: Record<string, number>, item) => {
+  const materialTotals: Record<string, number> = {};
+  
+  // First pass: Group refrigerator coils
+  data.forEach(item => {
     const type = item.type;
     
-    if (!acc[type]) {
-      acc[type] = 0;
+    // Group refrigerator coils types together
+    let normalizedType = type;
+    if (type.includes('FREEZER') || type.includes('FREEZECOOL') || type.includes('COOLER')) {
+      normalizedType = 'REFRIGERATOR_COILS';
     }
     
-    acc[type] += item.quantity;
-    return acc;
-  }, {});
+    if (!materialTotals[normalizedType]) {
+      materialTotals[normalizedType] = 0;
+    }
+    
+    materialTotals[normalizedType] += item.quantity;
+  });
   
   // Convert to array for rendering and sort by type
   const summaryItems = Object.entries(materialTotals)
     .map(([type, quantity]) => ({ type, quantity }))
-    .sort((a, b) => a.type.localeCompare(b.type));
+    .sort((a, b) => {
+      // Sort CONDCOIL first, then REFRIGERATOR_COILS, then others alphabetically
+      if (a.type === 'CONDCOIL') return -1;
+      if (b.type === 'CONDCOIL') return 1;
+      if (a.type === 'REFRIGERATOR_COILS') return -1;
+      if (b.type === 'REFRIGERATOR_COILS') return 1;
+      return a.type.localeCompare(b.type);
+    });
   
   // Format material type for display
   const formatMaterialType = (type: string) => {
-    // Add special formatting based on known material types
-    if (type.includes('FREEZER') || type.includes('FREEZECOOL')) {
-      return 'Freezer Filter';
-    } else if (type.includes('COOLER')) {
-      return 'Cooler Filter';
-    } else if (type.includes('CONDCOIL')) {
+    if (type === 'REFRIGERATOR_COILS') {
+      return 'Refrigerator Coils';
+    } else if (type === 'CONDCOIL') {
       return 'Condenser Coil';
     } else if (type.startsWith('G')) {
       return 'Standard Filter';
@@ -45,6 +57,17 @@ export const MRSummary = ({ data }: MRSummaryProps) => {
       return 'Produce Filter';
     } else {
       return type;
+    }
+  };
+  
+  // Get badge variant based on material type
+  const getBadgeVariant = (type: string) => {
+    if (type === 'CONDCOIL') {
+      return 'success';
+    } else if (type === 'REFRIGERATOR_COILS') {
+      return 'info';
+    } else {
+      return 'outline';
     }
   };
   
@@ -89,7 +112,7 @@ export const MRSummary = ({ data }: MRSummaryProps) => {
               summaryItems.map((item, index) => (
                 <TableRow key={index}>
                   <TableCell>
-                    <Badge variant={item.type === 'CONDCOIL' ? 'success' : 'outline'} className="font-normal">
+                    <Badge variant={getBadgeVariant(item.type)} className="font-normal">
                       {formatMaterialType(item.type)}
                     </Badge>
                   </TableCell>

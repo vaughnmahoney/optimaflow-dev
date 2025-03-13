@@ -10,12 +10,9 @@ interface MRTableProps {
 export const MRTable = ({ data }: MRTableProps) => {
   // Format material type for display
   const formatMaterialType = (type: string) => {
-    // Add special formatting based on known material types
-    if (type.includes('FREEZER') || type.includes('FREEZECOOL')) {
-      return 'Freezer Filter';
-    } else if (type.includes('COOLER')) {
-      return 'Cooler Filter';
-    } else if (type.includes('CONDCOIL')) {
+    if (type.includes('FREEZER') || type.includes('FREEZECOOL') || type.includes('COOLER')) {
+      return 'Refrigerator Coils';
+    } else if (type === 'CONDCOIL') {
       return 'Condenser Coil';
     } else if (type.startsWith('G')) {
       return 'Standard Filter';
@@ -27,6 +24,17 @@ export const MRTable = ({ data }: MRTableProps) => {
       return 'Produce Filter';
     } else {
       return type;
+    }
+  };
+
+  // Get badge variant based on material type
+  const getBadgeVariant = (type: string) => {
+    if (type === 'CONDCOIL') {
+      return 'success';
+    } else if (type.includes('FREEZER') || type.includes('FREEZECOOL') || type.includes('COOLER')) {
+      return 'info';
+    } else {
+      return 'outline';
     }
   };
 
@@ -51,7 +59,7 @@ export const MRTable = ({ data }: MRTableProps) => {
             data.map((item) => (
               <TableRow key={item.id}>
                 <TableCell>
-                  <Badge variant="outline" className="font-normal">
+                  <Badge variant={getBadgeVariant(item.type)} className="font-normal">
                     {formatMaterialType(item.type)}
                   </Badge>
                 </TableCell>
