@@ -8,6 +8,7 @@ import { WorkOrderTableHeader } from "./TableHeader";
 import { WorkOrderRow } from "./WorkOrderRow";
 import { EmptyState } from "./EmptyState";
 import { useSortableTable } from "./useSortableTable";
+import { Pagination } from "./Pagination";
 import { Button } from "@/components/ui/button";
 import { FilterX } from "lucide-react";
 
@@ -36,6 +37,9 @@ export const WorkOrderTable = ({
   sortField: externalSortField,
   sortDirection: externalSortDirection,
   onSort: externalOnSort,
+  pagination,
+  onPageChange,
+  onPageSizeChange,
   filters,
   onColumnFilterChange,
   onColumnFilterClear,
@@ -109,7 +113,13 @@ export const WorkOrderTable = ({
           </TableBody>
         </Table>
         
-        {/* Pagination removed as requested */}
+        {pagination && onPageChange && onPageSizeChange && (
+          <Pagination 
+            pagination={pagination}
+            onPageChange={onPageChange}
+            onPageSizeChange={onPageSizeChange}
+          />
+        )}
       </div>
     </div>
   );
