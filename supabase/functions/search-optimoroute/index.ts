@@ -1,119 +1,224 @@
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { corsHeaders } from "../_shared/cors.ts";
+import { baseUrl, endpoints } from "../_shared/optimoroute.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
-Deno.serve(async (req) => {
+serve(async (req) => {
   // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    const { searchQuery } = await req.json();
-    console.log('Received search query:', searchQuery);
-    
-    const optimoRouteApiKey = Deno.env.get('OPTIMOROUTE_API_KEY');
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-
-    if (!optimoRouteApiKey || !supabaseUrl || !supabaseKey) {
-      console.error('Required environment variables not found');
+    const apiKey = Deno.env.get("OPTIMOROUTE_API_KEY");
+    if (!apiKey) {
       return new Response(
-        JSON.stringify({ error: 'Server configuration error', success: false }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+        JSON.stringify({
+          success: false,
+          error: "OptimoRoute API key not configured",
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 500,
+        }
       );
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    // Parse request body
+    const requestData = await req.json();
+    const { searchQuery, orderNumbers } = requestData;
 
-    // 1. First get the order details with correct format
-    const searchResponse = await fetch(
-      `https://api.optimoroute.com/v1/search_orders?key=${optimoRouteApiKey}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          orders: [{ orderNo: searchQuery }],
-          includeOrderData: true,
-          includeScheduleInformation: true
-        })
+    // Logic for searching by query string
+    if (searchQuery) {
+      console.log(`Searching for order: ${searchQuery}`);
+
+      // Build the search request payload
+      const searchPayload = {
+        query: searchQuery,
+        includeOrderData: true,
+        includeScheduleInformation: true,
+      };
+
+      // Make the search API request
+      const searchResponse = await fetch(
+        `${baseUrl}${endpoints.search}?key=${apiKey}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(searchPayload),
+        }
+      );
+
+      if (!searchResponse.ok) {
+        const errorText = await searchResponse.text();
+        console.error("OptimoRoute search API error:", searchResponse.status, errorText);
+        
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: `OptimoRoute Search API Error: ${searchResponse.status} ${errorText}`,
+          }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: searchResponse.status,
+          }
+        );
       }
-    );
 
-    const searchData = await searchResponse.json();
-    console.log('Search response:', searchData);
-    
-    // Check if we found any orders
-    if (!searchData.orders || searchData.orders.length === 0) {
-      return new Response(
-        JSON.stringify({ error: 'Order not found', success: false }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
-      );
-    }
-
-    // Get the first matching order
-    const order = searchData.orders[0];
-
-    // 2. Then get the completion details with correct format
-    const completionResponse = await fetch(
-      `https://api.optimoroute.com/v1/get_completion_details?key=${optimoRouteApiKey}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          orders: [{ orderNo: searchQuery }]
-        })
+      // Process search results to get work order ID
+      const searchData = await searchResponse.json();
+      
+      if (!searchData.orders || searchData.orders.length === 0) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: "No matching work orders found",
+          }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
       }
-    );
 
-    const completionData = await completionResponse.json();
-    console.log('Completion data:', completionData);
-
-    // 3. Store the data in Supabase
-    const { data: workOrder, error: upsertError } = await supabase
-      .from('work_orders')
-      .upsert({
-        order_no: searchQuery,
-        search_response: order,
-        completion_response: completionData,
-        status: 'pending_review',
-        timestamp: new Date().toISOString()
-      })
-      .select()
-      .single();
-
-    if (upsertError) {
-      console.error('Error storing work order:', upsertError);
+      // Return the first matching order
+      const firstOrder = searchData.orders[0];
+      
       return new Response(
-        JSON.stringify({ error: 'Failed to store work order', success: false }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+        JSON.stringify({
+          success: true,
+          workOrderId: firstOrder.id,
+          orderNo: firstOrder.data?.orderNo,
+          searchResponse: searchData,
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    } 
+    // Logic for searching by array of order numbers
+    else if (orderNumbers && Array.isArray(orderNumbers)) {
+      console.log(`Searching for ${orderNumbers.length} order numbers`);
+      
+      // For multiple order numbers, we need to make a search request for each one
+      // But there's a more efficient way by using a date range search and filtering
+      // the results by orderNo
+      
+      const today = new Date();
+      const oneYearAgo = new Date();
+      oneYearAgo.setFullYear(today.getFullYear() - 1);
+      
+      // Format dates as YYYY-MM-DD
+      const startDate = oneYearAgo.toISOString().split('T')[0];
+      const endDate = today.toISOString().split('T')[0];
+      
+      // Build the search request payload for a date range
+      const searchPayload = {
+        dateRange: {
+          from: startDate,
+          to: endDate,
+        },
+        includeOrderData: true,
+        includeScheduleInformation: true,
+      };
+      
+      // Make the search API request
+      const searchResponse = await fetch(
+        `${baseUrl}${endpoints.search}?key=${apiKey}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(searchPayload),
+        }
+      );
+      
+      if (!searchResponse.ok) {
+        const errorText = await searchResponse.text();
+        console.error("OptimoRoute search API error:", searchResponse.status, errorText);
+        
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: `OptimoRoute Search API Error: ${searchResponse.status} ${errorText}`,
+          }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: searchResponse.status,
+          }
+        );
+      }
+      
+      // Process search results to find matching order numbers
+      const searchData = await searchResponse.json();
+      
+      if (!searchData.orders || searchData.orders.length === 0) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: "No orders found in date range",
+          }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
+      
+      // Filter orders to only include those with matching order numbers
+      const matchingOrders = searchData.orders.filter(order => 
+        orderNumbers.includes(order.data?.orderNo)
+      );
+      
+      if (matchingOrders.length === 0) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: "No matching orders found for the provided order numbers",
+          }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
+      
+      return new Response(
+        JSON.stringify({
+          success: true,
+          orders: matchingOrders,
+          totalFound: matchingOrders.length,
+          totalRequested: orderNumbers.length,
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
       );
     }
-
-    // 4. Return the work order ID along with the data
+    else {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Either searchQuery or orderNumbers must be provided",
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        }
+      );
+    }
+  } catch (error) {
+    console.error("Error in search-optimoroute:", error);
+    
     return new Response(
       JSON.stringify({
-        success: true,
-        workOrderId: workOrder.id,
-        order: order,
-        completion_data: completionData
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-
-  } catch (error) {
-    console.error('Error:', error);
-    return new Response(
-      JSON.stringify({ error: error.message, success: false }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      }
     );
   }
 });
