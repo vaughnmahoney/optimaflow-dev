@@ -8,7 +8,6 @@ import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { PenLine, StickyNote, Save } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ResolutionNotesSheetProps {
   workOrder: WorkOrder;
@@ -19,7 +18,6 @@ export const ResolutionNotesSheet = ({ workOrder }: ResolutionNotesSheetProps) =
   const [isSaving, setIsSaving] = useState(false);
   const { updateWorkOrderResolutionNotes } = useWorkOrderMutations();
   const [isOpen, setIsOpen] = useState(false);
-  const isMobile = useIsMobile();
   
   // Reset notes when the workOrder changes
   useEffect(() => {
@@ -65,7 +63,7 @@ export const ResolutionNotesSheet = ({ workOrder }: ResolutionNotesSheetProps) =
           )}
         </Button>
       </DialogTrigger>
-      <DialogContent className={`${isMobile ? 'w-[95vw]' : 'max-w-md'} mx-auto px-6 py-6`}>
+      <DialogContent className="max-w-md mx-auto px-6 py-6">
         <DialogHeader className="pb-2 border-b mb-4">
           <DialogTitle className="flex items-center gap-2 text-blue-700">
             <StickyNote className="h-5 w-5 text-blue-500" />
