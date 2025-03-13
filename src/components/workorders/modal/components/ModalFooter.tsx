@@ -1,9 +1,13 @@
 
 import { Button } from "@/components/ui/button";
 import { Check, Download, Flag, ThumbsDown, CheckCheck, Clock } from "lucide-react";
+import { QcNotesSheet } from "./QcNotesSheet";
+import { ResolutionNotesSheet } from "./ResolutionNotesSheet";
+import { WorkOrder } from "../../types";
 
 interface ModalFooterProps {
   workOrderId: string;
+  workOrder: WorkOrder;
   onStatusUpdate?: (workOrderId: string, status: string) => void;
   onDownloadAll?: () => void;
   hasImages: boolean;
@@ -13,6 +17,7 @@ interface ModalFooterProps {
 
 export const ModalFooter = ({
   workOrderId,
+  workOrder,
   onStatusUpdate,
   onDownloadAll,
   hasImages,
@@ -110,7 +115,12 @@ export const ModalFooter = ({
           </Button>
         )}
       </div>
-      <div>
+      
+      {/* Right side - Notes and download actions */}
+      <div className="flex items-center gap-2">
+        <QcNotesSheet workOrder={workOrder} />
+        <ResolutionNotesSheet workOrder={workOrder} />
+
         {onDownloadAll && hasImages && (
           <Button 
             variant="outline"

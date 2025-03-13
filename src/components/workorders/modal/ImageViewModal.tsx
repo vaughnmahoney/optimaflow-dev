@@ -124,6 +124,7 @@ export const ImageViewModal = ({
         
         <ModalFooter 
           workOrderId={currentWorkOrder.id} 
+          workOrder={currentWorkOrder}
           onStatusUpdate={onStatusUpdate} 
           onDownloadAll={onDownloadAll}
           hasImages={images.length > 0}
