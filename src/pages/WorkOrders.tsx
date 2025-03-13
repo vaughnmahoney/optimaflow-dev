@@ -2,7 +2,7 @@
 import { Layout } from "@/components/Layout";
 import { WorkOrderContent } from "@/components/workorders/WorkOrderContent";
 import { WorkOrderHeader } from "@/components/workorders/WorkOrderHeader";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useWorkOrderData } from "@/hooks/useWorkOrderData";
 import { useQueryClient } from "@tanstack/react-query";
@@ -14,6 +14,9 @@ const WorkOrders = () => {
   const location = useLocation();
   const queryClient = useQueryClient();
   const { resolveWorkOrderFlag } = useWorkOrderMutations();
+  
+  // For demo purposes, always show all orders without pagination
+  const [showAll] = useState(true);
   
   const {
     data: workOrders,
@@ -31,9 +34,6 @@ const WorkOrders = () => {
     sortField,
     sortDirection,
     setSort,
-    pagination,
-    handlePageChange,
-    handlePageSizeChange,
     refetch
   } = useWorkOrderData();
 
@@ -64,7 +64,7 @@ const WorkOrders = () => {
     >
       <div className="space-y-8">
         <WorkOrderContent 
-          workOrders={workOrders}
+          workOrders={workOrders} // All work orders without pagination
           isLoading={isLoading}
           filters={filters}
           onFiltersChange={setFilters}
@@ -76,9 +76,6 @@ const WorkOrders = () => {
           sortField={sortField}
           sortDirection={sortDirection}
           onSort={handleSort}
-          pagination={pagination}
-          onPageChange={handlePageChange}
-          onPageSizeChange={handlePageSizeChange}
           onColumnFilterChange={onColumnFilterChange}
           clearColumnFilter={clearColumnFilter}
           clearAllFilters={clearAllFilters}

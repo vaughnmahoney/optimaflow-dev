@@ -6,6 +6,7 @@ import { DebugDataDisplay } from "./debug/DebugDataDisplay";
 import { WorkOrderTable } from "./table/WorkOrderTable";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { ImageViewModal } from "./modal/ImageViewModal";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const WorkOrderList = ({ 
   workOrders, 
@@ -33,6 +34,7 @@ export const WorkOrderList = ({
   const [transformedData, setTransformedData] = useState<any>(null);
   const [selectedWorkOrder, setSelectedWorkOrder] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   if (isLoading) {
     return <LoadingSkeleton />;
@@ -86,16 +88,13 @@ export const WorkOrderList = ({
       />
 
       <WorkOrderTable 
-        workOrders={workOrders}
+        workOrders={workOrders} // Display all work orders without pagination
         onStatusUpdate={onStatusUpdate}
         onImageView={handleImageView}
         onDelete={onDelete}
         sortField={sortField}
         sortDirection={sortDirection}
         onSort={onSort}
-        pagination={pagination}
-        onPageChange={onPageChange}
-        onPageSizeChange={onPageSizeChange}
         filters={filters}
         onColumnFilterChange={onColumnFilterChange}
         onColumnFilterClear={clearColumnFilter}

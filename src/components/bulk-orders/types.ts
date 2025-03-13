@@ -33,12 +33,12 @@ export interface CompletionStatus {
   timestamp?: string;
 }
 
-// New interface for batched completion processing
+// Updated interface for batched completion processing
 export interface BatchProcessingStats {
   totalBatches: number;
   completedBatches: number;
   successfulBatches: number;
   failedBatches: number;
   totalOrdersProcessed: number;
-  errors?: string[]; // Added the errors property as optional
+  errors?: string[]; // Added the errors property
 }
