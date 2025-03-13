@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { WorkOrder } from "../types";
@@ -11,7 +10,7 @@ import { useWorkOrderNavigation } from "@/hooks/useWorkOrderNavigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OrderDetailsTab } from "./tabs/OrderDetailsTab";
 import { NotesTab } from "./tabs/NotesTab";
-import { SignatureTab } from "./modal/SignatureTab";
+import { SignatureTab } from "./tabs/SignatureTab";
 
 interface ImageViewModalProps {
   workOrder: WorkOrder | null;
@@ -60,14 +59,11 @@ export const ImageViewModal = ({
     setIsImageExpanded(!isImageExpanded);
   };
 
-  // Get images from the work order
   const completionData = currentWorkOrder?.completion_response?.orders?.[0]?.data;
   const images = completionData?.form?.images || [];
   
-  // Status color for border
   const statusBorderColor = getStatusBorderColor(currentWorkOrder.status || "pending_review");
 
-  // Sync navigation with parent component
   const handleNavigate = (index: number) => {
     handleSetOrder(index);
     onNavigate(index);
