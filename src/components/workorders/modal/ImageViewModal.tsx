@@ -193,17 +193,17 @@ export const ImageViewModal = ({
                 </div>
                 
                 <ScrollArea className="flex-1 overflow-auto" ref={contentScrollRef}>
-                  <div className="space-y-4 pt-4">
-                    <div id="details-section" ref={detailsSectionRef} className="px-4 pb-6 scroll-m-12">
-                      <OrderDetailsTab workOrder={currentWorkOrder} />
+                  <div className="space-y-4">
+                    <div id="details-section" ref={detailsSectionRef} className="scroll-m-12">
+                      {activeTab === 'details' && <OrderDetailsTab workOrder={currentWorkOrder} />}
                     </div>
                     
-                    <div id="notes-section" ref={notesSectionRef} className="px-4 pb-6 scroll-m-12">
-                      <NotesTab workOrder={currentWorkOrder} />
+                    <div id="notes-section" ref={notesSectionRef} className="scroll-m-12">
+                      {activeTab === 'notes' && <NotesTab workOrder={currentWorkOrder} />}
                     </div>
                     
-                    <div id="signature-section" ref={signatureSectionRef} className="px-4 pb-6 scroll-m-12">
-                      <SignatureTab workOrder={currentWorkOrder} />
+                    <div id="signature-section" ref={signatureSectionRef} className="scroll-m-12">
+                      {activeTab === 'signature' && <SignatureTab workOrder={currentWorkOrder} />}
                     </div>
                   </div>
                 </ScrollArea>
@@ -211,7 +211,7 @@ export const ImageViewModal = ({
             </div>
           </div>
           
-          <div className="border-t p-4 flex items-center justify-end">
+          <div className="border-t">
             <ModalFooter 
               workOrderId={currentWorkOrder.id} 
               onStatusUpdate={onStatusUpdate} 
