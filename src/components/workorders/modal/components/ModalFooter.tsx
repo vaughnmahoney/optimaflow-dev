@@ -1,6 +1,8 @@
 
 import { Button } from "@/components/ui/button";
 import { Check, Download, Flag, ThumbsDown, CheckCheck, Clock } from "lucide-react";
+import { QcNotesSheet } from "./QcNotesSheet";
+import { ResolutionNotesSheet } from "./ResolutionNotesSheet";
 
 interface ModalFooterProps {
   workOrderId: string;
@@ -9,6 +11,7 @@ interface ModalFooterProps {
   hasImages: boolean;
   status?: string;
   onResolveFlag?: (workOrderId: string, resolution: string) => void;
+  workOrder: any; // Need to pass the full work order for notes components
 }
 
 export const ModalFooter = ({
@@ -17,7 +20,8 @@ export const ModalFooter = ({
   onDownloadAll,
   hasImages,
   status,
-  onResolveFlag
+  onResolveFlag,
+  workOrder
 }: ModalFooterProps) => {
   // Determine if this order is in a specific state
   const isFlagged = status === "flagged" || status === "flagged_followup";
@@ -36,7 +40,7 @@ export const ModalFooter = ({
   };
   
   return (
-    <div className="p-3 bg-white dark:bg-gray-950 border-t flex justify-between items-center">
+    <div className="p-3 bg-white dark:bg-gray-950 border-t flex flex-wrap justify-between items-center gap-2">
       <div className="flex gap-2 flex-wrap">
         {/* Current Status Button - always show and disabled, clicking returns to pending */}
         {onStatusUpdate && !isPending && (
@@ -110,7 +114,12 @@ export const ModalFooter = ({
           </Button>
         )}
       </div>
-      <div>
+
+      <div className="flex gap-2">
+        {/* Notes buttons restored to the footer */}
+        <QcNotesSheet workOrder={workOrder} />
+        <ResolutionNotesSheet workOrder={workOrder} />
+        
         {onDownloadAll && hasImages && (
           <Button 
             variant="outline"

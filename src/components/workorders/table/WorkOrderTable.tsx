@@ -8,7 +8,6 @@ import { WorkOrderTableHeader } from "./TableHeader";
 import { WorkOrderRow } from "./WorkOrderRow";
 import { EmptyState } from "./EmptyState";
 import { useSortableTable } from "./useSortableTable";
-import { Pagination } from "./Pagination";
 import { Button } from "@/components/ui/button";
 import { FilterX } from "lucide-react";
 
@@ -113,13 +112,7 @@ export const WorkOrderTable = ({
           </TableBody>
         </Table>
         
-        {pagination && onPageChange && onPageSizeChange && (
-          <Pagination 
-            pagination={pagination}
-            onPageChange={onPageChange}
-            onPageSizeChange={onPageSizeChange}
-          />
-        )}
+        {/* Removed pagination for Work Orders/QC section */}
       </div>
     </div>
   );
