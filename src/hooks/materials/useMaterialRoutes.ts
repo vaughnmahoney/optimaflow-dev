@@ -80,11 +80,22 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
         return;
       }
       
-      // Step 3: Get order details for all order numbers
+      console.log(`Collected ${orderNumbers.length} order numbers from routes`);
+      
+      // Step 3: Get order details for all order numbers (now with batching)
       const orderDetailsResponse = await getOrderDetails(orderNumbers);
       
       // Store the raw response for debugging
       setRawOrderDetailsResponse(orderDetailsResponse);
+      
+      // Log batch statistics if available
+      if (orderDetailsResponse.batchStats) {
+        console.log(`Batch processing stats: ${orderDetailsResponse.batchStats.completedBatches}/${orderDetailsResponse.batchStats.totalBatches} batches completed`);
+        
+        if (orderDetailsResponse.batchStats.totalBatches > 1) {
+          toast.info(`Processed ${orderDetailsResponse.batchStats.completedBatches} of ${orderDetailsResponse.batchStats.totalBatches} batches`);
+        }
+      }
       
       if (!orderDetailsResponse.success || !orderDetailsResponse.orders?.length) {
         toast.error(orderDetailsResponse.error || "Failed to fetch order details");

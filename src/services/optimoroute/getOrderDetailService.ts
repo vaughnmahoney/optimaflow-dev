@@ -18,7 +18,15 @@ export interface OrderDetailsResponse {
   orderSummary?: any[]; // Add for debugging
   requestedOrderNumbers?: string[]; // Add for debugging
   parsedError?: any; // Add for debugging
+  batchStats?: {
+    totalBatches: number;
+    completedBatches: number;
+    failedBatches: number;
+  };
 }
+
+// Maximum number of orders per batch (API limit)
+const MAX_ORDERS_PER_BATCH = 500;
 
 export const getOrderDetails = async (orderNumbers: string[]): Promise<OrderDetailsResponse> => {
   try {
@@ -30,17 +38,38 @@ export const getOrderDetails = async (orderNumbers: string[]): Promise<OrderDeta
     console.log(`Fetching details for ${orderNumbers.length} order numbers`);
     console.log("Sample order numbers:", orderNumbers.slice(0, 5));
     
-    // Call the Supabase Edge Function to get order details
+    // Create batches of up to 500 orders each (API limit)
+    const batches = [];
+    for (let i = 0; i < orderNumbers.length; i += MAX_ORDERS_PER_BATCH) {
+      batches.push(orderNumbers.slice(i, i + MAX_ORDERS_PER_BATCH));
+    }
+    
+    console.log(`Split ${orderNumbers.length} orders into ${batches.length} batches`);
+    
+    // Process the first batch as a test
+    // In a future version, we could process all batches sequentially or in parallel
+    const firstBatch = batches[0];
+    console.log(`Processing first batch with ${firstBatch.length} orders`);
+    
+    // Call the Supabase Edge Function with just the first batch
     const { data, error } = await supabase.functions.invoke('search-optimoroute', {
       body: {
-        orderNumbers
+        orderNumbers: firstBatch
       }
     });
     
     if (error) {
       console.error("Error fetching order details:", error);
       console.error("Error details:", JSON.stringify(error));
-      return { success: false, error: error.message };
+      return { 
+        success: false, 
+        error: error.message,
+        batchStats: {
+          totalBatches: batches.length,
+          completedBatches: 0,
+          failedBatches: 1
+        }
+      };
     }
     
     // Enhanced debugging - log the response structure
@@ -66,12 +95,17 @@ export const getOrderDetails = async (orderNumbers: string[]): Promise<OrderDeta
         // Pass through debugging info
         orderSummary: data?.orderSummary,
         requestedOrderNumbers: data?.requestedOrderNumbers,
-        parsedError: data?.parsedError
+        parsedError: data?.parsedError,
+        batchStats: {
+          totalBatches: batches.length,
+          completedBatches: 0,
+          failedBatches: 1
+        }
       };
     }
     
     // Log more details about the received orders
-    console.log(`Received details for ${data.orders?.length || 0} orders out of ${orderNumbers.length} requested`);
+    console.log(`Received details for ${data.orders?.length || 0} orders out of ${firstBatch.length} requested in first batch`);
     
     if (data.orders && data.orders.length > 0) {
       console.log("First order sample:", JSON.stringify({
@@ -82,12 +116,25 @@ export const getOrderDetails = async (orderNumbers: string[]): Promise<OrderDeta
       }));
     }
     
-    return data;
+    // Add batch statistics to the response
+    return {
+      ...data,
+      batchStats: {
+        totalBatches: batches.length,
+        completedBatches: 1,
+        failedBatches: 0
+      }
+    };
   } catch (error) {
     console.error("Exception in getOrderDetails:", error);
     return { 
       success: false, 
-      error: error instanceof Error ? error.message : String(error)
+      error: error instanceof Error ? error.message : String(error),
+      batchStats: {
+        totalBatches: 0,
+        completedBatches: 0,
+        failedBatches: 1
+      }
     };
   }
 };

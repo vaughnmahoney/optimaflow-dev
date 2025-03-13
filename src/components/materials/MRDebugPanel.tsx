@@ -40,6 +40,18 @@ export const MRDebugPanel = ({
             </CollapsibleTrigger>
             <CollapsibleContent>
               <div className="mt-4 space-y-4">
+                {/* Batch statistics section (if available) */}
+                {orderDetailsResponse?.batchStats && (
+                  <div className={`${hasError ? 'bg-red-100' : 'bg-blue-100'} border border-blue-300 p-3 rounded-md`}>
+                    <h3 className="text-sm font-semibold mb-1">Batch Statistics:</h3>
+                    <ul className="text-sm space-y-1">
+                      <li>Total Batches: {orderDetailsResponse.batchStats.totalBatches}</li>
+                      <li>Completed Batches: {orderDetailsResponse.batchStats.completedBatches}</li>
+                      <li>Failed Batches: {orderDetailsResponse.batchStats.failedBatches}</li>
+                    </ul>
+                  </div>
+                )}
+                
                 {/* Error display section */}
                 {hasError && (
                   <div className="bg-red-100 border border-red-300 text-red-800 p-3 rounded-md">
@@ -115,6 +127,9 @@ export const MRDebugPanel = ({
                         <li>Total Requested: {orderDetailsResponse.totalRequested || 'Unknown'}</li>
                         {orderDetailsResponse.orderSummary && (
                           <li>Order Summary Available: Yes</li>
+                        )}
+                        {orderDetailsResponse.batchStats && (
+                          <li>Batches: {orderDetailsResponse.batchStats.completedBatches}/{orderDetailsResponse.batchStats.totalBatches}</li>
                         )}
                       </ul>
                     </div>
