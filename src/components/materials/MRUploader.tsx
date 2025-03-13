@@ -5,11 +5,52 @@ import { Button } from "@/components/ui/button";
 import { Upload, FileSpreadsheet, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
-import { useMRStore } from "@/hooks/materials/useMRStore";
+import { useMRStore, MaterialItem } from "@/hooks/materials/useMRStore";
 
 export const MRUploader = () => {
   const [isUploading, setIsUploading] = useState(false);
-  const { setMaterialsData, setTechnicians } = useMRStore();
+  const { setMaterialsData, setRawNotes, setTechnicians } = useMRStore();
+  
+  const parseNotesData = (notes: string[]): MaterialItem[] => {
+    const materialItems: MaterialItem[] = [];
+    let technicianIndex = 0;
+    
+    notes.forEach((note, index) => {
+      if (!note.trim()) return;
+      
+      // Add technician name as index since we don't have real names
+      const driverName = `Technician ${technicianIndex + 1}`;
+      
+      // Split the note by commas and process each item
+      const items = note.split(',').map(item => item.trim());
+      
+      items.forEach(item => {
+        // Try to extract quantity and item type
+        const match = item.match(/\((\d+)\)\s+([^\s]+)/);
+        
+        if (match) {
+          const quantity = parseInt(match[1], 10);
+          const type = match[2];
+          
+          // Generate a unique ID
+          const id = `${type}-${Math.random().toString(36).substring(2, 9)}`;
+          
+          materialItems.push({
+            id,
+            type,
+            size: type, // Using type as size for now
+            quantity,
+            driverName
+          });
+        }
+      });
+      
+      // Increment technician counter for next note
+      technicianIndex++;
+    });
+    
+    return materialItems;
+  };
   
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -32,26 +73,42 @@ export const MRUploader = () => {
         return;
       }
       
-      // Check if the data has the expected format
-      const firstRow = jsonData[0] as any;
-      if (!firstRow.txtBulkCode && !firstRow.Inventory_SKU && !firstRow.SumOfnbrQty) {
-        toast.error("Invalid file format. Please upload a valid MR Excel file");
-        return;
-      }
+      // Check if the data has Notes column
+      let notesData: string[] = [];
       
-      // Extract technician names (unique driverName values if present)
-      const technicians = new Set<string>();
       jsonData.forEach((row: any) => {
-        if (row.driverName) {
-          technicians.add(row.driverName);
+        // Check for Notes column (case-insensitive)
+        const notesKey = Object.keys(row).find(key => 
+          key.toLowerCase() === 'notes'
+        );
+        
+        if (notesKey && row[notesKey]) {
+          notesData.push(row[notesKey]);
         }
       });
       
-      // Store the data
-      setMaterialsData(jsonData);
-      setTechnicians(Array.from(technicians));
+      if (notesData.length === 0) {
+        toast.error("No 'Notes' column found in the Excel file");
+        return;
+      }
       
-      toast.success(`Successfully loaded ${jsonData.length} material items`);
+      // Parse the notes into material items
+      const materialItems = parseNotesData(notesData);
+      
+      if (materialItems.length === 0) {
+        toast.error("Couldn't extract material items from the Notes column");
+        return;
+      }
+      
+      // Get unique technician names
+      const technicians = [...new Set(materialItems.map(item => item.driverName || ''))].filter(Boolean);
+      
+      // Store the data
+      setMaterialsData(materialItems);
+      setRawNotes(notesData);
+      setTechnicians(technicians);
+      
+      toast.success(`Successfully loaded ${materialItems.length} material items for ${technicians.length} technicians`);
     } catch (error) {
       console.error("Error processing Excel file:", error);
       toast.error("Failed to process the Excel file");
@@ -67,7 +124,7 @@ export const MRUploader = () => {
       <CardHeader>
         <CardTitle>Upload Materials Data</CardTitle>
         <CardDescription>
-          Upload an Excel file containing materials requirements data
+          Upload an Excel file containing materials requirements in the Notes column
         </CardDescription>
       </CardHeader>
       <CardContent>

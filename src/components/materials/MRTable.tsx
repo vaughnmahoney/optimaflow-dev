@@ -1,28 +1,33 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { MaterialItem } from "@/hooks/materials/useMRStore";
 
 interface MRTableProps {
-  data: any[];
+  data: MaterialItem[];
   technician: string | null;
 }
 
 export const MRTable = ({ data, technician }: MRTableProps) => {
   // Format material type for display
   const formatMaterialType = (type: string) => {
-    switch (type?.toLowerCase()) {
-      case 'poly':
-        return 'Standard Filter';
-      case 'poly menar':
-        return 'Specialty Filter';
-      case 'fg-blue':
-        return 'Fiberglass Filter';
-      case 'pleat-ins':
-        return 'Pleated Insert';
-      case 'frame':
-        return 'Filter Frame';
-      default:
-        return type || 'Unknown';
+    // Add special formatting based on known material types
+    if (type.includes('FREEZER') || type.includes('FREEZECOOL')) {
+      return 'Freezer Filter';
+    } else if (type.includes('COOLER')) {
+      return 'Cooler Filter';
+    } else if (type.includes('CONDCOIL')) {
+      return 'Condenser Coil';
+    } else if (type.startsWith('G')) {
+      return 'Standard Filter';
+    } else if (type.startsWith('S')) {
+      return 'Specialty Filter';
+    } else if (type === 'P-TRAP') {
+      return 'P-Trap';
+    } else if (type === 'PRODUCE') {
+      return 'Produce Filter';
+    } else {
+      return type;
     }
   };
 
@@ -32,7 +37,7 @@ export const MRTable = ({ data, technician }: MRTableProps) => {
         <TableHeader>
           <TableRow>
             <TableHead>Material Type</TableHead>
-            <TableHead>SKU/Size</TableHead>
+            <TableHead>Size/SKU</TableHead>
             <TableHead className="text-right">Quantity</TableHead>
             {!technician && <TableHead>Technician</TableHead>}
           </TableRow>
@@ -45,16 +50,16 @@ export const MRTable = ({ data, technician }: MRTableProps) => {
               </TableCell>
             </TableRow>
           ) : (
-            data.map((item, index) => (
-              <TableRow key={index}>
+            data.map((item) => (
+              <TableRow key={item.id}>
                 <TableCell>
                   <Badge variant="outline" className="font-normal">
-                    {formatMaterialType(item.txtBulkCode)}
+                    {formatMaterialType(item.type)}
                   </Badge>
                 </TableCell>
-                <TableCell>{item.Inventory_SKU || item.SKU || item.Size || 'N/A'}</TableCell>
+                <TableCell>{item.size}</TableCell>
                 <TableCell className="text-right font-medium">
-                  {item.SumOfnbrQty || item.Quantity || 0}
+                  {item.quantity}
                 </TableCell>
                 {!technician && (
                   <TableCell>{item.driverName || 'Unassigned'}</TableCell>

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Printer, Download, UserCircle } from "lucide-react";
+import { Printer, Download, UserCircle, Package } from "lucide-react";
 import { useMRStore } from "@/hooks/materials/useMRStore";
 import { MRTable } from "./MRTable";
 import { MREmptyState } from "./MREmptyState";
@@ -22,14 +22,31 @@ export const MRContent = () => {
   };
   
   const handleExport = () => {
-    // Implementation for exporting data
-    console.log("Export functionality to be implemented");
+    // Create a CSV string
+    let csvContent = "Material Type,Size/SKU,Quantity,Technician\n";
+    
+    materialsData.forEach(item => {
+      csvContent += `"${item.type}","${item.size}",${item.quantity},"${item.driverName || 'Unassigned'}"\n`;
+    });
+    
+    // Create a blob and download link
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'materials_requirements.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
   
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Materials Requirements</CardTitle>
+        <CardTitle className="flex items-center">
+          <Package className="h-5 w-5 mr-2" />
+          Materials Requirements
+        </CardTitle>
         
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={handlePrint}>
@@ -38,7 +55,7 @@ export const MRContent = () => {
           </Button>
           <Button variant="outline" size="sm" onClick={handleExport}>
             <Download className="h-4 w-4 mr-2" />
-            Export
+            Export CSV
           </Button>
         </div>
       </CardHeader>
@@ -69,7 +86,7 @@ export const MRContent = () => {
           {technicians.map(tech => (
             <TabsContent key={tech} value={tech}>
               <MRTable 
-                data={materialsData.filter((item: any) => item.driverName === tech)} 
+                data={materialsData.filter(item => item.driverName === tech)} 
                 technician={tech}
               />
             </TabsContent>
