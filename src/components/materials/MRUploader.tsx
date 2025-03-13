@@ -9,44 +9,41 @@ import { useMRStore, MaterialItem } from "@/hooks/materials/useMRStore";
 
 export const MRUploader = () => {
   const [isUploading, setIsUploading] = useState(false);
-  const { setMaterialsData, setRawNotes, setTechnicians } = useMRStore();
+  const { setMaterialsData, setRawNotes, setTechnicianName } = useMRStore();
   
-  const parseNotesData = (notes: string[]): MaterialItem[] => {
+  const extractMaterialItems = (notes: string[]): MaterialItem[] => {
     const materialItems: MaterialItem[] = [];
-    let technicianIndex = 0;
     
-    notes.forEach((note, index) => {
+    notes.forEach((note, workOrderIndex) => {
       if (!note.trim()) return;
       
-      // Add technician name as index since we don't have real names
-      const driverName = `Technician ${technicianIndex + 1}`;
+      // Generate a work order ID for tracking
+      const workOrderId = `wo-${workOrderIndex + 1}`;
       
-      // Split the note by commas and process each item
-      const items = note.split(',').map(item => item.trim());
+      // Look for patterns like (X) MATERIALTYPE
+      const materialMatches = note.match(/\((\d+)\)\s*([A-Za-z0-9-]+)/g);
       
-      items.forEach(item => {
-        // Try to extract quantity and item type
-        const match = item.match(/\((\d+)\)\s+([^\s]+)/);
-        
-        if (match) {
-          const quantity = parseInt(match[1], 10);
-          const type = match[2];
+      if (materialMatches) {
+        materialMatches.forEach(match => {
+          // Extract quantity and type
+          const detailMatch = match.match(/\((\d+)\)\s*([A-Za-z0-9-]+)/);
           
-          // Generate a unique ID
-          const id = `${type}-${Math.random().toString(36).substring(2, 9)}`;
-          
-          materialItems.push({
-            id,
-            type,
-            size: type, // Using type as size for now
-            quantity,
-            driverName
-          });
-        }
-      });
-      
-      // Increment technician counter for next note
-      technicianIndex++;
+          if (detailMatch) {
+            const quantity = parseInt(detailMatch[1], 10);
+            const type = detailMatch[2].trim().toUpperCase();
+            
+            // Only add items with quantity > 0
+            if (quantity > 0) {
+              materialItems.push({
+                id: `${type}-${workOrderId}-${Math.random().toString(36).substring(2, 9)}`,
+                type,
+                quantity,
+                workOrderId
+              });
+            }
+          }
+        });
+      }
     });
     
     return materialItems;
@@ -92,23 +89,23 @@ export const MRUploader = () => {
         return;
       }
       
+      // Extract technician name from filename (if possible)
+      const techName = file.name.split('.')[0].replace(/_/g, ' ');
+      setTechnicianName(techName || 'Technician');
+      
       // Parse the notes into material items
-      const materialItems = parseNotesData(notesData);
+      const materialItems = extractMaterialItems(notesData);
       
       if (materialItems.length === 0) {
         toast.error("Couldn't extract material items from the Notes column");
         return;
       }
       
-      // Get unique technician names
-      const technicians = [...new Set(materialItems.map(item => item.driverName || ''))].filter(Boolean);
-      
       // Store the data
       setMaterialsData(materialItems);
       setRawNotes(notesData);
-      setTechnicians(technicians);
       
-      toast.success(`Successfully loaded ${materialItems.length} material items for ${technicians.length} technicians`);
+      toast.success(`Successfully loaded ${materialItems.length} material items from ${notesData.length} work orders`);
     } catch (error) {
       console.error("Error processing Excel file:", error);
       toast.error("Failed to process the Excel file");
@@ -122,9 +119,9 @@ export const MRUploader = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Upload Materials Data</CardTitle>
+        <CardTitle>Upload Technician Work Order Data</CardTitle>
         <CardDescription>
-          Upload an Excel file containing materials requirements in the Notes column
+          Upload an Excel file containing work orders with materials in the Notes column
         </CardDescription>
       </CardHeader>
       <CardContent>

@@ -5,10 +5,9 @@ import { MaterialItem } from "@/hooks/materials/useMRStore";
 
 interface MRTableProps {
   data: MaterialItem[];
-  technician: string | null;
 }
 
-export const MRTable = ({ data, technician }: MRTableProps) => {
+export const MRTable = ({ data }: MRTableProps) => {
   // Format material type for display
   const formatMaterialType = (type: string) => {
     // Add special formatting based on known material types
@@ -37,15 +36,14 @@ export const MRTable = ({ data, technician }: MRTableProps) => {
         <TableHeader>
           <TableRow>
             <TableHead>Material Type</TableHead>
-            <TableHead>Size/SKU</TableHead>
+            <TableHead>Work Order ID</TableHead>
             <TableHead className="text-right">Quantity</TableHead>
-            {!technician && <TableHead>Technician</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
           {data.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={technician ? 3 : 4} className="text-center py-6 text-muted-foreground">
+              <TableCell colSpan={3} className="text-center py-6 text-muted-foreground">
                 No materials data available
               </TableCell>
             </TableRow>
@@ -57,13 +55,10 @@ export const MRTable = ({ data, technician }: MRTableProps) => {
                     {formatMaterialType(item.type)}
                   </Badge>
                 </TableCell>
-                <TableCell>{item.size}</TableCell>
+                <TableCell>{item.workOrderId || 'Unknown'}</TableCell>
                 <TableCell className="text-right font-medium">
                   {item.quantity}
                 </TableCell>
-                {!technician && (
-                  <TableCell>{item.driverName || 'Unassigned'}</TableCell>
-                )}
               </TableRow>
             ))
           )}

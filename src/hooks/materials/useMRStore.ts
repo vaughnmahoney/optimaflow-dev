@@ -5,27 +5,26 @@ import { create } from 'zustand';
 export interface MaterialItem {
   id: string;
   type: string;
-  size: string;
   quantity: number;
-  driverName?: string;
+  workOrderId?: string;
 }
 
 interface MRState {
   materialsData: MaterialItem[];
   rawNotes: string[];
-  technicians: string[];
+  technicianName: string;
   setMaterialsData: (data: MaterialItem[]) => void;
   setRawNotes: (notes: string[]) => void;
-  setTechnicians: (techs: string[]) => void;
+  setTechnicianName: (name: string) => void;
   clearData: () => void;
 }
 
 export const useMRStore = create<MRState>((set) => ({
   materialsData: [],
   rawNotes: [],
-  technicians: [],
+  technicianName: 'Technician',
   setMaterialsData: (data) => set({ materialsData: data }),
   setRawNotes: (notes) => set({ rawNotes: notes }),
-  setTechnicians: (techs) => set({ technicians: techs }),
-  clearData: () => set({ materialsData: [], rawNotes: [], technicians: [] })
+  setTechnicianName: (name) => set({ technicianName: name }),
+  clearData: () => set({ materialsData: [], rawNotes: [], technicianName: 'Technician' })
 }));

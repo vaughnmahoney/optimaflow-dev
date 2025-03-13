@@ -3,15 +3,15 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Printer, Download, UserCircle, Package } from "lucide-react";
+import { Printer, Download, Package } from "lucide-react";
 import { useMRStore } from "@/hooks/materials/useMRStore";
 import { MRTable } from "./MRTable";
 import { MREmptyState } from "./MREmptyState";
 import { MRSummary } from "./MRSummary";
 
 export const MRContent = () => {
-  const { materialsData, technicians } = useMRStore();
-  const [activeTab, setActiveTab] = useState("all");
+  const { materialsData, technicianName } = useMRStore();
+  const [activeTab, setActiveTab] = useState("summary");
   
   if (!materialsData.length) {
     return <MREmptyState />;
@@ -23,10 +23,10 @@ export const MRContent = () => {
   
   const handleExport = () => {
     // Create a CSV string
-    let csvContent = "Material Type,Size/SKU,Quantity,Technician\n";
+    let csvContent = "Material Type,Quantity,Work Order ID\n";
     
     materialsData.forEach(item => {
-      csvContent += `"${item.type}","${item.size}",${item.quantity},"${item.driverName || 'Unassigned'}"\n`;
+      csvContent += `"${item.type}",${item.quantity},"${item.workOrderId || 'Unknown'}"\n`;
     });
     
     // Create a blob and download link
@@ -34,7 +34,7 @@ export const MRContent = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', 'materials_requirements.csv');
+    link.setAttribute('download', `materials_requirements_${technicianName.replace(/\s+/g, '_')}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -45,7 +45,7 @@ export const MRContent = () => {
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center">
           <Package className="h-5 w-5 mr-2" />
-          Materials Requirements
+          Materials Requirements for {technicianName}
         </CardTitle>
         
         <div className="flex gap-2">
@@ -60,37 +60,19 @@ export const MRContent = () => {
         </div>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
+        <Tabs defaultValue="summary" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-4">
-            <TabsTrigger value="all">All Materials</TabsTrigger>
             <TabsTrigger value="summary">Summary</TabsTrigger>
-            {technicians.map(tech => (
-              <TabsTrigger key={tech} value={tech}>
-                <UserCircle className="h-4 w-4 mr-2" />
-                {tech}
-              </TabsTrigger>
-            ))}
+            <TabsTrigger value="all">All Materials</TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="all">
-            <MRTable 
-              data={materialsData} 
-              technician={null}
-            />
-          </TabsContent>
           
           <TabsContent value="summary">
             <MRSummary data={materialsData} />
           </TabsContent>
           
-          {technicians.map(tech => (
-            <TabsContent key={tech} value={tech}>
-              <MRTable 
-                data={materialsData.filter(item => item.driverName === tech)} 
-                technician={tech}
-              />
-            </TabsContent>
-          ))}
+          <TabsContent value="all">
+            <MRTable data={materialsData} />
+          </TabsContent>
         </Tabs>
       </CardContent>
     </Card>
