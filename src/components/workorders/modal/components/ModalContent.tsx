@@ -30,7 +30,7 @@ export const ModalContent = ({
   };
 
   return (
-    <div className="flex-1 overflow-hidden flex">
+    <div className="flex-1 overflow-hidden flex h-full">
       {!isImageExpanded && (
         <ImageThumbnails
           images={images}
