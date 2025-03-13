@@ -10,6 +10,8 @@ export interface RouteMaterialsResponse {
   isLoading: boolean;
   routes: DriverRoute[];
   orderDetails: OrderDetail[];
+  rawRoutesResponse: any; // Added to store raw API response
+  rawOrderDetailsResponse: any; // Added to store raw API response
   fetchRouteMaterials: (params: GetRoutesParams) => Promise<void>;
   reset: () => void;
 }
@@ -44,6 +46,8 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
   const [isLoading, setIsLoading] = useState(false);
   const [routes, setRoutes] = useState<DriverRoute[]>([]);
   const [orderDetails, setOrderDetails] = useState<OrderDetail[]>([]);
+  const [rawRoutesResponse, setRawRoutesResponse] = useState<any>(null);
+  const [rawOrderDetailsResponse, setRawOrderDetailsResponse] = useState<any>(null);
   const { setMaterialsData, setRawNotes, setTechnicianName, clearData } = useMRStore();
 
   const fetchRouteMaterials = async (params: GetRoutesParams) => {
@@ -52,6 +56,9 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
     try {
       // Step 1: Get routes for the selected date
       const routesResponse = await getRoutes(params);
+      
+      // Store the raw response for debugging
+      setRawRoutesResponse(routesResponse);
       
       if (!routesResponse.success || !routesResponse.routes?.length) {
         toast.error(routesResponse.error || "No routes found for the selected date");
@@ -75,6 +82,9 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
       
       // Step 3: Get order details for all order numbers
       const orderDetailsResponse = await getOrderDetails(orderNumbers);
+      
+      // Store the raw response for debugging
+      setRawOrderDetailsResponse(orderDetailsResponse);
       
       if (!orderDetailsResponse.success || !orderDetailsResponse.orders?.length) {
         toast.error(orderDetailsResponse.error || "Failed to fetch order details");
@@ -119,6 +129,8 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
   const reset = () => {
     setRoutes([]);
     setOrderDetails([]);
+    setRawRoutesResponse(null);
+    setRawOrderDetailsResponse(null);
     clearData();
   };
 
@@ -126,6 +138,8 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
     isLoading,
     routes,
     orderDetails,
+    rawRoutesResponse,
+    rawOrderDetailsResponse,
     fetchRouteMaterials,
     reset
   };
