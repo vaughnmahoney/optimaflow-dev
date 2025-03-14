@@ -15,8 +15,7 @@ import Dashboard from "./pages/Dashboard";
 import Payroll from "./pages/Payroll";
 import VehicleMaintenance from "./pages/VehicleMaintenance";
 import Storage from "./pages/Storage";
-import Receipts from "./pages/Receipts";
-import Integrations from "./pages/Integrations";
+import Expenses from "./pages/Receipts"; // Renamed to Expenses but keeping the file name
 import Calendar from "./pages/Calendar";
 import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
@@ -124,15 +123,7 @@ const App = () => (
               path="/receipts"
               element={
                 <ProtectedRoute>
-                  <Receipts />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/integrations"
-              element={
-                <ProtectedRoute>
-                  <Integrations />
+                  <Expenses />
                 </ProtectedRoute>
               }
             />

@@ -2,7 +2,7 @@
 import { useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, AlertCircle, CreditCard, Car, 
-  Package2, Clock, Users, Receipt, ExternalLink,
+  Package2, Clock, Users, Receipt, 
   CalendarDays, LucideIcon, Database
 } from "lucide-react";
 import { SidebarNavItem } from "./SidebarNavItem";
@@ -82,14 +82,8 @@ export function SidebarNavigation({
     { 
       to: "/receipts", 
       icon: Receipt, 
-      label: "Receipts", 
+      label: "Expenses", 
       isActive: location.pathname.startsWith("/receipts") || location.pathname.startsWith("/reports")
-    },
-    { 
-      to: "/integrations", 
-      icon: ExternalLink, 
-      label: "Integrations", 
-      isActive: location.pathname.startsWith("/integrations") || location.pathname.startsWith("/api") 
     },
     { 
       to: "/calendar", 
