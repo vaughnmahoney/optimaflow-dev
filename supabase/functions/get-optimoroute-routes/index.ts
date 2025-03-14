@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -55,12 +56,13 @@ serve(async (req) => {
     const routesData = await routesResponse.json();
     console.log(`Fetched ${routesData.routes?.length || 0} routes from OptimoRoute`);
     
-    // Extract order numbers from all stops
+    // Extract order numbers from all stops and include all stops regardless of orderNo value
     const orderNumbers = [];
     const routesByDriver = {};
     
     // Process routes to extract order numbers and organize by driver
     if (routesData.routes && routesData.routes.length > 0) {
+      console.log(`Processing ${routesData.routes.length} routes`);
       routesData.routes.forEach(route => {
         const driverId = route.driverSerial || route.driverName;
         
@@ -75,11 +77,12 @@ serve(async (req) => {
         
         // Process stops and collect order numbers
         if (route.stops && route.stops.length > 0) {
+          console.log(`Processing ${route.stops.length} stops for driver ${driverId}`);
           route.stops.forEach(stop => {
-            // Add stop to driver's stops
+            // Add stop to driver's stops regardless of orderNo value
             routesByDriver[driverId].stops.push(stop);
             
-            // Collect order numbers for search query (skip entries with "-" as orderNo)
+            // Collect real order numbers for search query (skip entries with "-" as orderNo)
             if (stop.orderNo && stop.orderNo !== "-") {
               orderNumbers.push(stop.orderNo);
             }
@@ -89,11 +92,13 @@ serve(async (req) => {
     }
     
     console.log(`Extracted ${orderNumbers.length} order numbers for search`);
+    console.log(`Created ${Object.keys(routesByDriver).length} driver entries`);
     
-    // Prepare orders response
+    // Prepare orders response - will include ALL stops, not just those with orderNo values
     const orders = [];
     
-    // If we have order numbers, call search_orders API
+    // If we have order numbers, call search_orders API for additional data enrichment
+    let orderDetailsMap = {};
     if (orderNumbers.length > 0) {
       console.log('Making search_orders API call with order numbers');
       
@@ -111,106 +116,74 @@ serve(async (req) => {
       });
 
       // Check response
-      if (!searchResponse.ok) {
-        const errorText = await searchResponse.text();
-        console.error(`OptimoRoute search_orders API error: ${searchResponse.status} - ${errorText}`);
-        console.log('Will proceed with routes data only');
-      } else {
+      if (searchResponse.ok) {
         // Parse search response
         const searchData = await searchResponse.json();
         console.log(`Fetched ${searchData.orders?.length || 0} orders from search_orders`);
         
-        // Process orders and match with routes
+        // Create a map of order numbers to order details
         if (searchData.orders && searchData.orders.length > 0) {
-          // Create a map of order numbers to order details
-          const orderDetailsMap = {};
           searchData.orders.forEach(order => {
             if (order.data && order.data.orderNo) {
               orderDetailsMap[order.data.orderNo] = order;
             }
           });
-          
-          // Prepare the final orders with combined data
-          Object.values(routesByDriver).forEach(driver => {
-            driver.stops.forEach(stop => {
-              if (stop.orderNo && stop.orderNo !== "-" && orderDetailsMap[stop.orderNo]) {
-                const orderDetails = orderDetailsMap[stop.orderNo];
-                
-                // Create a complete order object with data from both APIs
-                const order = {
-                  id: stop.id || orderDetails.id,
-                  orderNumber: stop.orderNo,
-                  driverId: driver.id,
-                  driverName: driver.name,
-                  date: date,
-                  type: orderDetails.data?.type || '',
-                  location: {
-                    name: stop.locationName || orderDetails.data?.location?.locationName || 'Unknown',
-                    address: stop.address || orderDetails.data?.location?.address || 'Unknown Address',
-                    latitude: stop.latitude || orderDetails.data?.location?.latitude,
-                    longitude: stop.longitude || orderDetails.data?.location?.longitude
-                  },
-                  scheduledAt: stop.scheduledAtDt || stop.scheduledAt,
-                  notes: orderDetails.data?.notes || '',
-                  customFields: {
-                    // Include any relevant custom fields from orderDetails
-                    customField1: orderDetails.data?.customField1,
-                    customField2: orderDetails.data?.customField2,
-                    customField3: orderDetails.data?.customField3,
-                    customField4: orderDetails.data?.customField4,
-                    customField5: orderDetails.data?.customField5,
-                  }
-                };
-                
-                orders.push(order);
-              } else if (stop.orderNo && stop.orderNo !== "-") {
-                // Create an order with just the route stop data
-                orders.push({
-                  id: stop.id,
-                  orderNumber: stop.orderNo,
-                  driverId: driver.id,
-                  driverName: driver.name,
-                  date: date,
-                  location: {
-                    name: stop.locationName || 'Unknown',
-                    address: stop.address || 'Unknown Address',
-                    latitude: stop.latitude,
-                    longitude: stop.longitude
-                  },
-                  scheduledAt: stop.scheduledAtDt || stop.scheduledAt
-                });
-              }
-            });
-          });
         }
+      } else {
+        const errorText = await searchResponse.text();
+        console.error(`OptimoRoute search_orders API error: ${searchResponse.status} - ${errorText}`);
+        console.log('Will proceed with routes data only');
       }
     }
     
-    // If we didn't get any orders from search_orders, use just the route data
-    if (orders.length === 0) {
-      console.log('Using route data only to build orders response');
-      
-      Object.values(routesByDriver).forEach(driver => {
-        driver.stops.forEach(stop => {
-          if (stop.orderNo && stop.orderNo !== "-") {
-            orders.push({
-              id: stop.id,
-              orderNumber: stop.orderNo,
-              driverId: driver.id,
-              driverName: driver.name,
-              date: date,
-              location: {
-                name: stop.locationName || 'Unknown',
-                address: stop.address || 'Unknown Address',
-                latitude: stop.latitude,
-                longitude: stop.longitude
-              },
-              scheduledAt: stop.scheduledAtDt || stop.scheduledAt
-            });
-          }
-        });
+    // Process all stops from all drivers, regardless of orderNo
+    console.log(`Building orders from all stops for ${Object.keys(routesByDriver).length} drivers`);
+    Object.values(routesByDriver).forEach(driver => {
+      driver.stops.forEach(stop => {
+        // For stops with valid orderNo, enrich with search_orders data if available
+        if (stop.orderNo && stop.orderNo !== "-" && orderDetailsMap[stop.orderNo]) {
+          const orderDetails = orderDetailsMap[stop.orderNo];
+          
+          orders.push({
+            id: stop.id || orderDetails.id,
+            orderNumber: stop.orderNo,
+            driverId: driver.id,
+            driverName: driver.name,
+            date: date,
+            type: orderDetails.data?.type || '',
+            location: {
+              name: stop.locationName || orderDetails.data?.location?.locationName || 'Unknown',
+              address: stop.address || orderDetails.data?.location?.address || 'Unknown Address',
+              latitude: stop.latitude || orderDetails.data?.location?.latitude,
+              longitude: stop.longitude || orderDetails.data?.location?.longitude
+            },
+            scheduledAt: stop.scheduledAtDt || stop.scheduledAt,
+            notes: orderDetails.data?.notes || '',
+            customFields: orderDetails.data?.customFields || {}
+          });
+        } 
+        // For ALL stops, including those with orderNo as "-", create basic order records
+        else {
+          orders.push({
+            id: stop.id,
+            orderNumber: stop.orderNo !== "-" ? stop.orderNo : `stop-${stop.id}`, // Create a unique identifier for stops without real order numbers
+            driverId: driver.id,
+            driverName: driver.name,
+            date: date,
+            type: 'route-stop', // Add a default type for stops without real order numbers
+            location: {
+              name: stop.locationName || 'Unknown',
+              address: stop.address || 'Unknown Address',
+              latitude: stop.latitude,
+              longitude: stop.longitude
+            },
+            scheduledAt: stop.scheduledAtDt || stop.scheduledAt,
+            notes: '',
+            customFields: {}
+          });
+        }
       });
-    }
+    });
     
     console.log(`Prepared ${orders.length} combined orders for response`);
 
