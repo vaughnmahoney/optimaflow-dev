@@ -6,7 +6,7 @@ import { WorkOrder } from "../../types";
 import { useWorkOrderMutations } from "@/hooks/useWorkOrderMutations";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { PenLine, StickyNote, Save } from "lucide-react";
+import { MessageSquare, Save } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface ResolutionNotesSheetProps {
@@ -19,7 +19,7 @@ export const ResolutionNotesSheet = ({ workOrder }: ResolutionNotesSheetProps) =
   const { updateWorkOrderResolutionNotes } = useWorkOrderMutations();
   const [isOpen, setIsOpen] = useState(false);
   
-  // Reset notes when the workOrder changes
+  // Reset resolutionNotes when the workOrder changes
   useEffect(() => {
     setResolutionNotes(workOrder.resolution_notes || "");
   }, [workOrder.id, workOrder.resolution_notes]);
@@ -53,7 +53,7 @@ export const ResolutionNotesSheet = ({ workOrder }: ResolutionNotesSheetProps) =
               : "bg-white text-blue-600 border border-blue-200 hover:bg-blue-50"
           }`}
         >
-          {hasNotes ? <PenLine className="h-3.5 w-3.5" /> : <StickyNote className="h-3.5 w-3.5" />}
+          <MessageSquare className="h-3.5 w-3.5" />
           <span className="text-xs font-medium">{hasNotes ? "Edit Resolution Notes" : "Add Resolution Notes"}</span>
           {hasNotes && (
             <Badge 
@@ -66,13 +66,13 @@ export const ResolutionNotesSheet = ({ workOrder }: ResolutionNotesSheetProps) =
       <DialogContent className="max-w-md mx-auto px-6 py-6">
         <DialogHeader className="pb-2 border-b mb-4">
           <DialogTitle className="flex items-center gap-2 text-blue-700">
-            <StickyNote className="h-5 w-5 text-blue-500" />
+            <MessageSquare className="h-5 w-5 text-blue-500" />
             Resolution Notes
           </DialogTitle>
         </DialogHeader>
         <div className="py-2">
           <Textarea 
-            placeholder="Add notes about resolution decision..."
+            placeholder="Add your resolution notes here..."
             className="min-h-[250px] mb-4 border-blue-200 focus-visible:border-blue-400 focus-visible:ring-0"
             value={resolutionNotes}
             onChange={(e) => setResolutionNotes(e.target.value)}
