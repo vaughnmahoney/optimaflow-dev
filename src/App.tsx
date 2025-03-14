@@ -21,8 +21,7 @@ import Calendar from "./pages/Calendar";
 import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
 import BulkOrdersTest from "./pages/BulkOrdersTest";
-// Import the old materials requirement component instead
-import MaterialsRequirement from "../oldmr/src/pages/MaterialsRequirement";
+import MaterialRequirements from "./pages/MaterialRequirements";
 
 const queryClient = new QueryClient();
 
@@ -60,7 +59,7 @@ const App = () => (
               path="/material-requirements"
               element={
                 <ProtectedRoute>
-                  <MaterialsRequirement />
+                  <MaterialRequirements />
                 </ProtectedRoute>
               }
             />

@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { useMRStore } from "@/store/useMRStore";
 
 interface Material {
   id: string;
@@ -24,9 +25,12 @@ interface WorkOrder {
 
 interface WorkOrderListProps {
   workOrders: WorkOrder[];
+  driverId?: string;
 }
 
-export const WorkOrderList = ({ workOrders }: WorkOrderListProps) => {
+export const WorkOrderList = ({ workOrders, driverId }: WorkOrderListProps) => {
+  const { selectedWorkOrders, toggleWorkOrderSelection } = useMRStore();
+  
   if (!workOrders || workOrders.length === 0) {
     return (
       <div className="text-center p-4">

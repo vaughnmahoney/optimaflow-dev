@@ -1,162 +1,132 @@
 
 import { create } from 'zustand';
-import { Driver, MaterialSummary, MRState, WorkOrder } from '@/types/material-requirements';
+import { Driver, MaterialSummary, MaterialType } from '@/types/material-requirements';
 
-const initialSummary: MaterialSummary = {
-  totalFilters: 0,
-  totalCoils: 0,
-  totalDrivers: 0,
-  totalWorkOrders: 0
-};
-
-export const useMRStore = create<MRState & {
+interface MRState {
+  isLoading: boolean;
+  error: string | null;
+  drivers: Driver[];
+  selectedDrivers: string[];
+  selectedWorkOrders: string[];
+  summary: MaterialSummary;
+  selectedDriver: Driver | null;
+  
   setDrivers: (drivers: Driver[]) => void;
   toggleDriverSelection: (driverId: string) => void;
-  toggleWorkOrderSelection: (workOrderId: string) => void;
   selectAllDrivers: (selected: boolean) => void;
-  selectAllWorkOrders: (driverId: string, selected: boolean) => void;
-  setImportDate: (date: Date | null) => void;
-  setIsLoading: (isLoading: boolean) => void;
-  setError: (error: string | null) => void;
+  toggleWorkOrderSelection: (workOrderId: string) => void;
   calculateSummary: () => void;
-  reset: () => void;
-}>((set, get) => ({
+  setSelectedDriver: (driverId: string | null) => void;
+  clearAll: () => void;
+}
+
+export const useMRStore = create<MRState>((set, get) => ({
+  isLoading: false,
+  error: null,
   drivers: [],
   selectedDrivers: [],
   selectedWorkOrders: [],
-  importDate: null,
-  isLoading: false,
-  error: null,
-  summary: initialSummary,
-
+  selectedDriver: null,
+  summary: {
+    totalDrivers: 0,
+    totalWorkOrders: 0,
+    totalFilters: 0,
+    totalCoils: 0
+  },
+  
   setDrivers: (drivers) => set({ drivers }),
   
-  toggleDriverSelection: (driverId) => set((state) => {
-    const isSelected = state.selectedDrivers.includes(driverId);
-    const newSelectedDrivers = isSelected
-      ? state.selectedDrivers.filter(id => id !== driverId)
-      : [...state.selectedDrivers, driverId];
-    
-    // If deselecting a driver, also remove all of its work orders from selection
-    const driver = state.drivers.find(d => d.id === driverId);
-    let newSelectedWorkOrders = [...state.selectedWorkOrders];
-    
-    if (isSelected && driver) {
-      newSelectedWorkOrders = newSelectedWorkOrders.filter(
-        woId => !driver.workOrders.some(wo => wo.id === woId)
-      );
-    }
-    
-    return { 
-      selectedDrivers: newSelectedDrivers,
-      selectedWorkOrders: newSelectedWorkOrders
-    };
-  }),
-  
-  toggleWorkOrderSelection: (workOrderId) => set((state) => {
-    const isSelected = state.selectedWorkOrders.includes(workOrderId);
-    const newSelectedWorkOrders = isSelected
-      ? state.selectedWorkOrders.filter(id => id !== workOrderId)
-      : [...state.selectedWorkOrders, workOrderId];
-    
-    return { selectedWorkOrders: newSelectedWorkOrders };
-  }),
-  
-  selectAllDrivers: (selected) => set((state) => {
-    if (selected) {
-      const allDriverIds = state.drivers.map(driver => driver.id);
-      const allWorkOrderIds = state.drivers.flatMap(driver => 
-        driver.workOrders.map(wo => wo.id)
-      );
-      return { 
-        selectedDrivers: allDriverIds,
-        selectedWorkOrders: allWorkOrderIds
-      };
-    }
-    return { 
-      selectedDrivers: [],
-      selectedWorkOrders: []
-    };
-  }),
-  
-  selectAllWorkOrders: (driverId, selected) => set((state) => {
-    const driver = state.drivers.find(d => d.id === driverId);
-    if (!driver) return state;
-    
-    const driverWorkOrderIds = driver.workOrders.map(wo => wo.id);
-    let newSelectedWorkOrders = [...state.selectedWorkOrders];
-    
-    if (selected) {
-      // Add work orders that aren't already selected
-      driverWorkOrderIds.forEach(woId => {
-        if (!newSelectedWorkOrders.includes(woId)) {
-          newSelectedWorkOrders.push(woId);
-        }
-      });
-      
-      // Make sure driver is selected
-      let newSelectedDrivers = state.selectedDrivers.includes(driverId)
-        ? state.selectedDrivers
+  toggleDriverSelection: (driverId) => {
+    set((state) => {
+      const isSelected = state.selectedDrivers.includes(driverId);
+      const selectedDrivers = isSelected
+        ? state.selectedDrivers.filter(id => id !== driverId)
         : [...state.selectedDrivers, driverId];
         
-      return { 
-        selectedWorkOrders: newSelectedWorkOrders,
-        selectedDrivers: newSelectedDrivers
-      };
-    } else {
-      // Remove all of this driver's work orders from selection
-      newSelectedWorkOrders = newSelectedWorkOrders.filter(
-        woId => !driverWorkOrderIds.includes(woId)
-      );
-      
-      return { selectedWorkOrders: newSelectedWorkOrders };
-    }
-  }),
+      return { selectedDrivers };
+    });
+  },
   
-  setImportDate: (date) => set({ importDate: date }),
+  selectAllDrivers: (selected) => {
+    set((state) => {
+      if (selected) {
+        const allDriverIds = state.drivers.map(driver => driver.id);
+        return { selectedDrivers: allDriverIds };
+      }
+      return { selectedDrivers: [] };
+    });
+  },
   
-  setIsLoading: (isLoading) => set({ isLoading }),
+  toggleWorkOrderSelection: (workOrderId) => {
+    set((state) => {
+      const isSelected = state.selectedWorkOrders.includes(workOrderId);
+      const selectedWorkOrders = isSelected
+        ? state.selectedWorkOrders.filter(id => id !== workOrderId)
+        : [...state.selectedWorkOrders, workOrderId];
+        
+      return { selectedWorkOrders };
+    });
+  },
   
-  setError: (error) => set({ error }),
-  
-  calculateSummary: () => set((state) => {
-    const selectedDriverIds = new Set(state.selectedDrivers);
-    const selectedWorkOrderIds = new Set(state.selectedWorkOrders);
+  calculateSummary: () => {
+    const state = get();
     
-    let totalFilters = 0;
-    let totalCoils = 0;
-    
+    // Filter selected work orders
+    const workOrders = [];
     state.drivers.forEach(driver => {
-      if (selectedDriverIds.has(driver.id)) {
-        driver.workOrders.forEach(workOrder => {
-          if (selectedWorkOrderIds.has(workOrder.id)) {
-            workOrder.materials.forEach(material => {
-              if (material.type === 'filter') {
-                totalFilters += material.quantity;
-              } else if (material.type === 'coil') {
-                totalCoils += material.quantity;
-              }
-            });
+      if (state.selectedDrivers.includes(driver.id)) {
+        driver.workOrders.forEach(wo => {
+          if (state.selectedWorkOrders.includes(wo.id)) {
+            workOrders.push(wo);
           }
         });
       }
     });
     
-    const summary: MaterialSummary = {
-      totalFilters,
-      totalCoils,
-      totalDrivers: state.selectedDrivers.length,
-      totalWorkOrders: state.selectedWorkOrders.length
-    };
+    // Count materials
+    let totalFilters = 0;
+    let totalCoils = 0;
     
-    return { summary };
-  }),
+    workOrders.forEach(wo => {
+      wo.materials.forEach(material => {
+        if (material.type === MaterialType.Filter) {
+          totalFilters += material.quantity;
+        } else if (material.type === MaterialType.Coil) {
+          totalCoils += material.quantity;
+        }
+      });
+    });
+    
+    set({
+      summary: {
+        totalDrivers: state.selectedDrivers.length,
+        totalWorkOrders: workOrders.length,
+        totalFilters,
+        totalCoils
+      }
+    });
+  },
   
-  reset: () => set({
+  setSelectedDriver: (driverId) => {
+    set((state) => {
+      if (!driverId) {
+        return { selectedDriver: null };
+      }
+      
+      const driver = state.drivers.find(d => d.id === driverId) || null;
+      return { selectedDriver: driver };
+    });
+  },
+  
+  clearAll: () => set({
     selectedDrivers: [],
     selectedWorkOrders: [],
-    importDate: null,
-    error: null,
-    summary: initialSummary
+    selectedDriver: null,
+    summary: {
+      totalDrivers: 0,
+      totalWorkOrders: 0,
+      totalFilters: 0,
+      totalCoils: 0
+    }
   })
 }));
