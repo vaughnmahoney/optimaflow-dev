@@ -73,37 +73,17 @@ export const applyDateRangeFilter = (
   fromDate: Date | null, 
   toDate: Date | null
 ) => {
-  // Apply date range filter using both potential date fields
-  // and use OR conditions to match on either field
   if (fromDate) {
-    const fromDateStr = fromDate.toISOString().split('T')[0];
-    
-    // Create OR condition for date filtering across both possible date fields
-    countQuery = countQuery.or(
-      `and(completion_response->orders->0->data->endTime->localTime.gte.${fromDateStr},completion_response->orders->0->data->endTime->localTime.not.is.null),` +
-      `and(completion_response->orders->0->data->endTime->localTime.is.null,search_response->data->date.gte.${fromDateStr})`
-    );
-    dataQuery = dataQuery.or(
-      `and(completion_response->orders->0->data->endTime->localTime.gte.${fromDateStr},completion_response->orders->0->data->endTime->localTime.not.is.null),` +
-      `and(completion_response->orders->0->data->endTime->localTime.is.null,search_response->data->date.gte.${fromDateStr})`
-    );
+    countQuery = countQuery.gte('search_response->data->date', fromDate.toISOString().split('T')[0]);
+    dataQuery = dataQuery.gte('search_response->data->date', fromDate.toISOString().split('T')[0]);
   }
   
   if (toDate) {
     // Add a day to the end date to include that day (inclusive range)
     const inclusiveToDate = new Date(toDate);
     inclusiveToDate.setDate(inclusiveToDate.getDate() + 1);
-    const toDateStr = inclusiveToDate.toISOString().split('T')[0];
-    
-    // Create OR condition for date filtering across both possible date fields
-    countQuery = countQuery.or(
-      `and(completion_response->orders->0->data->endTime->localTime.lt.${toDateStr},completion_response->orders->0->data->endTime->localTime.not.is.null),` +
-      `and(completion_response->orders->0->data->endTime->localTime.is.null,search_response->data->date.lt.${toDateStr})`
-    );
-    dataQuery = dataQuery.or(
-      `and(completion_response->orders->0->data->endTime->localTime.lt.${toDateStr},completion_response->orders->0->data->endTime->localTime.not.is.null),` +
-      `and(completion_response->orders->0->data->endTime->localTime.is.null,search_response->data->date.lt.${toDateStr})`
-    );
+    countQuery = countQuery.lt('search_response->data->date', inclusiveToDate.toISOString().split('T')[0]);
+    dataQuery = dataQuery.lt('search_response->data->date', inclusiveToDate.toISOString().split('T')[0]);
   }
   
   return { countQuery, dataQuery };
@@ -123,24 +103,9 @@ export const applyTextSearchFilter = (
   searchText: string | null,
   field: 'driver' | 'location'
 ) => {
-  if (searchText && searchText.trim()) {
-    const searchValue = searchText.trim().toLowerCase();
-    
-    if (field === 'driver') {
-      // Search in the driver name field of the nested search_response JSON
-      countQuery = countQuery.ilike('search_response->scheduleInformation->driverName', `%${searchValue}%`);
-      dataQuery = dataQuery.ilike('search_response->scheduleInformation->driverName', `%${searchValue}%`);
-    } else if (field === 'location') {
-      // Search in the location name field of the nested search_response JSON
-      countQuery = countQuery.or(
-        `search_response->data->location->name.ilike.%${searchValue}%,` +
-        `search_response->data->location->locationName.ilike.%${searchValue}%`
-      );
-      dataQuery = dataQuery.or(
-        `search_response->data->location->name.ilike.%${searchValue}%,` +
-        `search_response->data->location->locationName.ilike.%${searchValue}%`
-      );
-    }
+  if (searchText) {
+    countQuery = countQuery.textSearch('search_response', searchText, { config: 'english' });
+    dataQuery = dataQuery.textSearch('search_response', searchText, { config: 'english' });
   }
   
   return { countQuery, dataQuery };
