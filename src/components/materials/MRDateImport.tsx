@@ -26,7 +26,7 @@ export const MRDateImport = () => {
       
       console.log(`Calling get-optimoroute-routes with date: ${formattedDate}`);
       
-      // Call the correct edge function to fetch route data
+      // Call the updated edge function to fetch route data
       const { data, error } = await supabase.functions.invoke('get-optimoroute-routes', {
         body: { date: formattedDate }
       });
@@ -34,144 +34,20 @@ export const MRDateImport = () => {
       console.log('Edge function response:', data, error);
       
       if (error) throw new Error(error.message);
-      if (!data || !data.orders) throw new Error('No data returned from API');
+      if (!data || !data.success) throw new Error(data?.error || 'Failed to retrieve data from OptimoRoute');
+      if (!data.drivers || data.drivers.length === 0) throw new Error('No drivers or routes found for this date');
       
-      // Process the response to extract drivers and their work orders
-      const processedDrivers = processOptimoRouteData(data.orders, formattedDate);
-      setDrivers(processedDrivers);
+      // Use the drivers data directly from the response
+      setDrivers(data.drivers);
       
-      toast.success(`Successfully imported ${processedDrivers.length} drivers with ${data.orders.length} orders`);
+      toast.success(`Successfully imported ${data.driverCount} drivers with ${data.orderCount} orders`);
     } catch (err) {
       console.error('Error importing route data:', err);
       setError(err.message || 'Failed to import route data');
-      toast.error('Failed to import route data');
+      toast.error('Failed to import route data: ' + (err.message || 'Unknown error'));
     } finally {
       setIsLoading(false);
     }
-  };
-
-  // Process the OptimoRoute response into our Driver/WorkOrder structure
-  const processOptimoRouteData = (orders, formattedDate) => {
-    const driversMap = new Map();
-    
-    console.log(`Processing ${orders.length} orders for drivers`);
-    
-    // Group orders by driver
-    orders.forEach(order => {
-      if (!order.driverName) return; // Skip orders without a driver
-      
-      const driverId = order.driverId?.toString() || order.driverName;
-      
-      if (!driversMap.has(driverId)) {
-        driversMap.set(driverId, {
-          id: driverId,
-          name: order.driverName,
-          workOrders: []
-        });
-      }
-      
-      // Extract or create default materials based on order type
-      const materials = [];
-      
-      // First try to extract materials from customFields if present
-      if (order.customFields) {
-        // Extract filters if present
-        if (order.customFields.filters) {
-          try {
-            const filterData = JSON.parse(order.customFields.filters);
-            if (Array.isArray(filterData)) {
-              filterData.forEach(filter => {
-                materials.push({
-                  id: `filter-${order.id}-${materials.length}`,
-                  name: filter.name || 'Air Filter',
-                  type: 'filter',
-                  size: filter.size || 'Standard',
-                  quantity: filter.quantity || 1,
-                  unit: 'piece'
-                });
-              });
-            }
-          } catch (e) {
-            console.warn('Error parsing filter data:', e);
-          }
-        }
-        
-        // Extract coils if present
-        if (order.customFields.coils) {
-          try {
-            const coilData = JSON.parse(order.customFields.coils);
-            if (Array.isArray(coilData)) {
-              coilData.forEach(coil => {
-                materials.push({
-                  id: `coil-${order.id}-${materials.length}`,
-                  name: coil.name || 'HVAC Coil',
-                  type: 'coil',
-                  size: coil.size,
-                  quantity: coil.quantity || 1,
-                  unit: 'piece'
-                });
-              });
-            }
-          } catch (e) {
-            console.warn('Error parsing coil data:', e);
-          }
-        }
-      }
-      
-      // If no materials were found but we have an order type,
-      // add default materials based on service type
-      if (materials.length === 0 && order.type) {
-        if (order.type.toLowerCase().includes('filter')) {
-          materials.push({
-            id: `filter-${order.id}-default`,
-            name: 'Standard Air Filter',
-            type: 'filter',
-            quantity: 1,
-            unit: 'piece'
-          });
-        }
-        
-        if (order.type.toLowerCase().includes('coil')) {
-          materials.push({
-            id: `coil-${order.id}-default`,
-            name: 'Standard HVAC Coil',
-            type: 'coil',
-            quantity: 1,
-            unit: 'piece'
-          });
-        }
-      }
-      
-      // For unknown or 'route-stop' type, add a default "service materials" placeholder
-      // This ensures all stops have at least one material for UI display
-      if (materials.length === 0) {
-        materials.push({
-          id: `service-${order.id}-default`,
-          name: 'Service Visit',
-          type: 'supplies',
-          quantity: 1,
-          unit: 'visit'
-        });
-      }
-      
-      // Create work order object
-      const workOrder = {
-        id: order.id.toString(),
-        orderId: order.orderNumber || order.id.toString(),
-        locationName: order.location?.name || 'Unknown Location',
-        address: order.location?.address || 'No Address',
-        date: order.date || formattedDate,
-        materials
-      };
-      
-      // Add to driver's work orders
-      driversMap.get(driverId).workOrders.push(workOrder);
-    });
-    
-    console.log(`Created ${driversMap.size} drivers with work orders`);
-    
-    // Convert map to array
-    return Array.from(driversMap.values());
   };
 
   return (
