@@ -23,6 +23,7 @@ export interface Material {
   size?: string;
   quantity: number;
   unit: string;
+  locations?: Set<string>;
 }
 
 export enum MaterialType {

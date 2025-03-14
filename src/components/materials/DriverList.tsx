@@ -1,9 +1,11 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Driver } from '@/types/material-requirements';
 import { useMRStore } from '@/store/useMRStore';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ChevronRight, ChevronDown } from 'lucide-react';
+import { WorkOrderList } from './WorkOrderList';
 
 interface DriverListProps {
   drivers: Driver[];
@@ -12,6 +14,19 @@ interface DriverListProps {
 
 export const DriverList = ({ drivers, isLoading }: DriverListProps) => {
   const { selectedDrivers, toggleDriverSelection, selectAllDrivers } = useMRStore();
+  const [expandedDrivers, setExpandedDrivers] = useState<Set<string>>(new Set());
+
+  const toggleDriverExpand = (driverId: string) => {
+    setExpandedDrivers(prev => {
+      const newExpanded = new Set(prev);
+      if (newExpanded.has(driverId)) {
+        newExpanded.delete(driverId);
+      } else {
+        newExpanded.add(driverId);
+      }
+      return newExpanded;
+    });
+  };
 
   if (isLoading) {
     return (
@@ -51,21 +66,43 @@ export const DriverList = ({ drivers, isLoading }: DriverListProps) => {
         </label>
       </div>
       
-      {drivers.map(driver => (
-        <div key={driver.id} className="flex items-center gap-2 py-1">
-          <Checkbox 
-            id={`driver-${driver.id}`}
-            checked={selectedDrivers.includes(driver.id)}
-            onCheckedChange={() => toggleDriverSelection(driver.id)}
-          />
-          <label 
-            htmlFor={`driver-${driver.id}`}
-            className="flex-1 text-sm cursor-pointer"
-          >
-            {driver.name} ({driver.workOrders.length} orders)
-          </label>
-        </div>
-      ))}
+      {drivers.map(driver => {
+        const isExpanded = expandedDrivers.has(driver.id);
+        
+        return (
+          <div key={driver.id} className="space-y-1">
+            <div className="flex items-center gap-2 py-1">
+              <Checkbox 
+                id={`driver-${driver.id}`}
+                checked={selectedDrivers.includes(driver.id)}
+                onCheckedChange={() => toggleDriverSelection(driver.id)}
+              />
+              <button 
+                type="button"
+                onClick={() => toggleDriverExpand(driver.id)}
+                className="flex items-center gap-1 flex-1 text-left"
+              >
+                {isExpanded ? (
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                )}
+                <span className="text-sm font-medium">{driver.name}</span>
+                <span className="text-xs text-muted-foreground ml-1">
+                  ({driver.workOrders.length} orders)
+                </span>
+              </button>
+            </div>
+            
+            {isExpanded && (
+              <WorkOrderList 
+                driverId={driver.id} 
+                workOrders={driver.workOrders}
+              />
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 };

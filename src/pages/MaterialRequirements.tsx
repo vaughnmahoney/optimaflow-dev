@@ -7,6 +7,8 @@ import { DriverList } from '@/components/materials/DriverList';
 import { useMRStore } from '@/store/useMRStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { MaterialRequirementsSummary } from '@/components/materials/MaterialRequirementsSummary';
+import { AlertCircle } from 'lucide-react';
 
 const MaterialRequirements = () => {
   const { isLoading, error, drivers, summary, calculateSummary } = useMRStore();
@@ -30,7 +32,8 @@ const MaterialRequirements = () => {
           </CardHeader>
           <CardContent>
             {error ? (
-              <div className="rounded-md bg-destructive/15 p-4">
+              <div className="rounded-md bg-destructive/15 p-4 flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
                 <p className="text-destructive">{error}</p>
               </div>
             ) : (
@@ -52,9 +55,7 @@ const MaterialRequirements = () => {
               </TabsList>
 
               <TabsContent value="summary">
-                <p className="text-sm text-muted-foreground">
-                  Select drivers and work orders above to view material summary.
-                </p>
+                <MaterialRequirementsSummary />
               </TabsContent>
 
               <TabsContent value="drivers">
