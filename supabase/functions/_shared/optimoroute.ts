@@ -61,10 +61,16 @@ export const mergeOrderData = (searchOrders: any[], completionMap: Record<string
     const orderNo = searchOrder.data?.orderNo;
     const completionDetails = orderNo ? completionMap[orderNo] : null;
     
+    // Explicitly extract the status from completion details to make it more accessible
+    let completionStatus = null;
+    if (completionDetails && completionDetails.data && completionDetails.data.status) {
+      completionStatus = completionDetails.data.status;
+    }
+    
     return {
       ...searchOrder,
       completion_details: completionDetails || null,
-      completion_status: completionDetails?.data?.status || null
+      completion_status: completionStatus
     };
   });
 };
@@ -84,27 +90,40 @@ export const filterOrdersByStatus = (orders: any[], validStatuses: string[]): an
   
   // Sample first 5 orders for debugging
   if (orders.length > 0) {
-    console.log("Sample order structure:", JSON.stringify(orders[0], null, 2).substring(0, 500) + "...");
+    const sampleOrder = orders[0];
+    console.log("Sample order structure:", {
+      orderNo: sampleOrder.data?.orderNo,
+      completionStatus: sampleOrder.completion_status,
+      completionDetails: sampleOrder.completion_details ? {
+        status: sampleOrder.completion_details.data?.status,
+        timestamp: sampleOrder.completion_details.data?.timestamp
+      } : null,
+      dataStatus: sampleOrder.data?.status,
+      extractedStatus: sampleOrder.extracted?.completionStatus
+    });
   }
   
   return orders.filter(order => {
     // Check multiple possible paths for status value in each order
     // Convert to lowercase for case-insensitive comparison
     const status = 
-      // Direct status field
-      (order.status?.toLowerCase()) || 
-      // Check data.status (from get_completion_details)
-      (order.data?.status?.toLowerCase()) || 
-      // Check completion_status from merged data
+      // Primary path: check completion_status (set during mergeOrderData)
       (order.completion_status?.toLowerCase()) || 
       // Check completion_details nested data
       (order.completion_details?.data?.status?.toLowerCase()) ||
+      // Fallback: check data.status
+      (order.data?.status?.toLowerCase()) || 
       // Check extracted completionStatus 
       (order.extracted?.completionStatus?.toLowerCase()) ||
       // Check search_response scheduleInformation
       (order.search_response?.scheduleInformation?.status?.toLowerCase()) ||
       // If we can't find a status, return null
       null;
+    
+    // Log status for debugging
+    if (orders.indexOf(order) < 5) {
+      console.log(`Order ${order.data?.orderNo} status: ${status}`);
+    }
     
     // Check if the status is in our valid list (case insensitive)
     const isValid = status && validStatuses.some(

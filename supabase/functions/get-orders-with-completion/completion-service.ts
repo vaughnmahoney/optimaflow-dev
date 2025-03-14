@@ -71,26 +71,26 @@ async function processBatch(
   console.log(`Processing batch ${batchIndex+1}/${totalBatches} with ${batch.length} orders`);
   
   try {
-    // Build the URL with repeated orderNo query parameters for this batch
-    let url = `${baseUrl}${endpoints.completion}?key=${apiKey}`;
+    // Build the URL for the completion details endpoint
+    const url = `${baseUrl}${endpoints.completion}?key=${apiKey}`;
     
-    // Add each order number from this batch as a separate query parameter
-    batch.forEach(orderNo => {
-      url += `&orderNo=${encodeURIComponent(orderNo)}`;
-    });
+    // Create the request payload with order numbers in the format expected by the API
+    const payload = {
+      orders: batch.map(orderNo => ({ orderNo }))
+    };
     
-    // Log the request URL (truncated for readability)
-    const truncatedUrl = url.length > 150 ? 
-      `${url.substring(0, 150)}...&orderNo=X (truncated, ${batch.length} total parameters)` : 
-      url;
-    console.log(`Making GET request for batch ${batchIndex+1}: ${truncatedUrl}`);
+    console.log(`Making POST request for batch ${batchIndex+1} with ${batch.length} orders`);
     
-    // Make the GET request for this batch with a timeout
+    // Make the POST request for this batch with a timeout
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
     
     const response = await fetch(url, {
-      method: 'GET',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload),
       signal: controller.signal
     });
     
@@ -135,7 +135,7 @@ async function processBatch(
   }
 }
 
-// Handle the get_completion_details API call using GET method with batching
+// Handle the get_completion_details API call using POST method with batching
 export async function fetchCompletionDetails(apiKey: string, orderNumbers: string[]) {
   if (!orderNumbers || orderNumbers.length === 0) {
     console.log("No order numbers provided for completion details");
