@@ -3,9 +3,10 @@ import { useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, AlertCircle, CreditCard, Car, 
   Package2, Clock, Users, Receipt, ExternalLink,
-  CalendarDays, LucideIcon
+  CalendarDays, LucideIcon, PackageCheck
 } from "lucide-react";
 import { SidebarNavItem } from "./SidebarNavItem";
+import { navigationConfig } from "@/config/navigationConfig";
 
 interface SidebarNavigationProps {
   isCollapsed: boolean;
@@ -90,6 +91,12 @@ export function SidebarNavigation({
       icon: CalendarDays, 
       label: "Calendar", 
       isActive: location.pathname.startsWith("/calendar")
+    },
+    { 
+      to: "/materials", 
+      icon: PackageCheck, 
+      label: "Materials", 
+      isActive: location.pathname.startsWith("/materials")
     },
   ];
 

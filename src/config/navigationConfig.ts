@@ -1,4 +1,3 @@
-
 import {
   LayoutDashboard,
   CheckCircle,
@@ -22,7 +21,8 @@ import {
   Receipt,
   CreditCard,
   Link,
-  LogOut
+  LogOut,
+  PackageCheck
 } from "lucide-react";
 
 export type NavigationItem = {
@@ -112,7 +112,7 @@ export const navigationConfig: NavigationItem[] = [
   {
     title: "Materials Requirement",
     url: "/materials",
-    icon: Package,
+    icon: PackageCheck,
     roles: ["admin", "manager", "supervisor"],
   },
 ];

@@ -12,8 +12,9 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
+    // Disable the Lovable tagger in development mode
     mode === 'development' &&
-    componentTagger(),
+    componentTagger({ disable: true }),
   ].filter(Boolean),
   resolve: {
     alias: {
