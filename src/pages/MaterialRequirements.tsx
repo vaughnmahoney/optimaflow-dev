@@ -12,7 +12,7 @@ import { AlertCircle } from 'lucide-react';
 import { WorkOrderList } from '@/components/materials/WorkOrderList';
 
 const MaterialRequirements = () => {
-  const { isLoading, error, drivers, summary, calculateSummary, selectedDriver, setSelectedDriver } = useMRStore();
+  const { isLoading, error, drivers, summary, calculateSummary, selectedDriver } = useMRStore();
 
   useEffect(() => {
     // Calculate summary whenever selections change
