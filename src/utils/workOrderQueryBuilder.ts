@@ -131,11 +131,20 @@ export const applySorting = (
       dataQuery = dataQuery.order(sortField, { ascending: isAscending });
     } 
     else if (sortField === 'service_date') {
-      // For service_date, apply a multi-level sorting approach
-      // First sort by the date field
-      dataQuery = dataQuery.order('search_response->data->date', { ascending: isAscending });
+      // For service_date, apply a multi-level sorting approach using the actual paths in the database
+      // First try to sort by completion time if available
+      dataQuery = dataQuery.order('completion_response->orders->0->data->endTime->localTime', { 
+        ascending: isAscending,
+        nullsFirst: !isAscending // Put nulls last when sorting desc (newest first)
+      });
       
-      // Add a secondary sort using timestamp for consistent ordering within same date
+      // Then try the search_response date as backup
+      dataQuery = dataQuery.order('search_response->data->date', { 
+        ascending: isAscending,
+        nullsFirst: !isAscending
+      });
+      
+      // Add a final fallback sort using timestamp for consistent ordering
       dataQuery = dataQuery.order('timestamp', { ascending: isAscending });
     }
     else if (sortField === 'driver') {
@@ -152,7 +161,15 @@ export const applySorting = (
     }
   } else {
     // Default sort if no criteria specified - newest first
-    dataQuery = dataQuery.order('search_response->data->date', { ascending: false });
+    // Apply the same multi-level sorting as above but with fixed direction
+    dataQuery = dataQuery.order('completion_response->orders->0->data->endTime->localTime', { 
+      ascending: false,
+      nullsFirst: false // Keep nulls last when sorting newest first
+    });
+    dataQuery = dataQuery.order('search_response->data->date', { 
+      ascending: false,
+      nullsFirst: false
+    });
     dataQuery = dataQuery.order('timestamp', { ascending: false });
   }
   
