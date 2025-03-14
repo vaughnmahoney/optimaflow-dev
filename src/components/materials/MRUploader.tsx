@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
@@ -73,8 +72,8 @@ export const MRUploader = () => {
   };
 
   return (
-    <Tabs defaultValue="upload">
-      <TabsList className="grid w-full grid-cols-2 mb-4">
+    <Tabs defaultValue="upload" className="w-full">
+      <TabsList className="grid w-full max-w-md grid-cols-2 mb-4">
         <TabsTrigger value="upload" className="flex items-center">
           <FileSpreadsheet className="mr-2 h-4 w-4" />
           Upload Excel
