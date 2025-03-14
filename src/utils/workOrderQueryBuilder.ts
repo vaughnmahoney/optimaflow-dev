@@ -140,12 +140,6 @@ export const applySorting = (
         nullsLast: true 
       });
       
-      // Then fallback to service_date field
-      dataQuery = dataQuery.order('service_date', { 
-        ascending: isAscending,
-        nullsLast: true 
-      });
-      
       // Then try search response date field
       dataQuery = dataQuery.order('search_response->data->date', { 
         ascending: isAscending,
@@ -174,10 +168,6 @@ export const applySorting = (
     // Default sort if no criteria specified - newest first
     // Use the same sorting logic as above for consistency
     dataQuery = dataQuery.order('completion_response->orders->0->data->endTime->localTime', { 
-      ascending: false,
-      nullsLast: true 
-    });
-    dataQuery = dataQuery.order('service_date', { 
       ascending: false,
       nullsLast: true 
     });

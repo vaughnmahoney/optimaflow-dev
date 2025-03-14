@@ -28,19 +28,7 @@ export const extractServiceDate = (order: WorkOrder): Date | null => {
     }
   }
   
-  // 2. Try to use service_date if available
-  if (order.service_date) {
-    try {
-      const date = new Date(order.service_date);
-      if (!isNaN(date.getTime())) {
-        return date;
-      }
-    } catch (error) {
-      // If parsing fails, continue to fallbacks
-    }
-  }
-  
-  // 3. Try to get date from search_response
+  // 2. Try to get date from search_response
   const searchDate = order.search_response?.data?.date;
   if (searchDate) {
     try {
@@ -53,7 +41,7 @@ export const extractServiceDate = (order: WorkOrder): Date | null => {
     }
   }
   
-  // 4. Finally, fall back to timestamp if available
+  // 3. Finally, fall back to timestamp if available
   if (order.timestamp) {
     try {
       const date = new Date(order.timestamp);
