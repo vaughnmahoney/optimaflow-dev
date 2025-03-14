@@ -6,6 +6,7 @@ import { useBulkOrdersAdapter } from "@/hooks/useBulkOrdersAdapter";
 import { BulkOrdersForm } from "@/components/bulk-orders/BulkOrdersForm";
 import { ApiResponseDisplay } from "@/components/bulk-orders/ApiResponseDisplay";
 import { WorkOrderInfoCard } from "@/components/workorders/InfoCard";
+import { BulkOrdersInfoCard } from "@/components/bulk-orders/BulkOrdersInfoCard";
 
 const BulkOrdersTest = () => {
   // Use the adapter to get access to raw data for the raw view tab
@@ -14,8 +15,11 @@ const BulkOrdersTest = () => {
   return (
     <Layout title="Bulk Orders Processing">
       <div className="space-y-6">
-        {/* Add the info card */}
+        {/* Work Order Info Card */}
         <WorkOrderInfoCard />
+        
+        {/* Bulk Orders Specific Instructions */}
+        <BulkOrdersInfoCard />
         
         <BulkOrdersForm />
         

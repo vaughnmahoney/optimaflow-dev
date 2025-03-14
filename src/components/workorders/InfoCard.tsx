@@ -28,7 +28,7 @@ export const WorkOrderInfoCard = () => {
               <div className="flex items-start">
                 <Clock className="h-4 w-4 mr-2 text-amber-500 mt-0.5" />
                 <div>
-                  <span className="font-medium">Bulk import</span> - Orders are processed in the background. <span className="text-amber-700 font-medium">It may take a few minutes</span> for orders to appear in the frontend (performance improvements in progress).
+                  <span className="font-medium">Bulk import</span> - Orders are processed from bulk import test page. <span className="text-amber-700 font-medium">It may take a few minutes</span> for orders to appear in the frontend (performance improvements in progress).
                 </div>
               </div>
             </div>
@@ -49,7 +49,7 @@ export const WorkOrderInfoCard = () => {
 
           <div className="text-sm mt-2 pt-2 border-t border-slate-200">
             <p className="text-slate-600 italic">
-              Note: All orders are stored in the database. Post-QC processes (billing, reporting, etc.) are currently under development.
+              Note: All orders are stored in the database. Post-QC processes (billing, reporting, etc.) are for future development.
             </p>
           </div>
         </div>
