@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -34,14 +33,12 @@ serve(async (req) => {
     
     console.log(`Fetching routes for date: ${date}`);
     
-    // Step 1: Call OptimoRoute get_routes API
-    const routesResponse = await fetch('https://api.optimoroute.com/v1/get_routes', {
-      method: 'POST',
+    // Step 1: Call OptimoRoute get_routes API - Changed from POST to GET
+    const routesResponse = await fetch(`https://api.optimoroute.com/v1/get_routes?date=${date}`, {
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${OPTIMOROUTE_API_KEY}`
-      },
-      body: JSON.stringify({ date })
+      }
     });
 
     // Check response
