@@ -1,17 +1,17 @@
 
-import React, { useEffect } from 'react';
-import { Layout } from '@/components/Layout';
-import { MRDateImport } from '@/components/materials/MRDateImport';
-import { MRSummary } from '@/components/materials/MRSummary';
-import { DriverList } from '@/components/materials/DriverList';
-import { useMRStore } from '@/store/useMRStore';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MaterialRequirementsSummary } from '@/components/materials/MaterialRequirementsSummary';
-import { AlertCircle } from 'lucide-react';
-import { WorkOrderList } from '@/components/materials/WorkOrderList';
+import { useEffect } from 'react';
+import { Layout } from "@/components/Layout";
+import { MRDateImport } from "@/components/materials/MRDateImport";
+import { MRSummary } from "@/components/materials/MRSummary";
+import { DriverList } from "@/components/materials/DriverList";
+import { useMRStore } from "@/store/useMRStore";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MaterialRequirementsSummary } from "@/components/materials/MaterialRequirementsSummary";
+import { AlertCircle } from "lucide-react";
+import { WorkOrderList } from "@/components/materials/WorkOrderList";
 
-const MaterialRequirements = () => {
+export default function MaterialRequirements() {
   const { isLoading, error, drivers, summary, calculateSummary, selectedDriver } = useMRStore();
 
   useEffect(() => {
@@ -20,8 +20,12 @@ const MaterialRequirements = () => {
   }, [calculateSummary]);
 
   return (
-    <Layout title="Material Requirements">
-      <div className="grid gap-6">
+    <Layout>
+      <div className="container py-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold tracking-tight">Material Requirements</h1>
+        </div>
+        
         <div className="grid gap-6 md:grid-cols-2">
           <MRDateImport />
           <MRSummary summary={summary} />
@@ -87,6 +91,4 @@ const MaterialRequirements = () => {
       </div>
     </Layout>
   );
-};
-
-export default MaterialRequirements;
+}

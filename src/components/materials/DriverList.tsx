@@ -1,41 +1,25 @@
 
-import React, { useState } from 'react';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Driver } from '@/types/material-requirements';
-import { useMRStore } from '@/store/useMRStore';
-import { Skeleton } from '@/components/ui/skeleton';
-import { ChevronRight, ChevronDown } from 'lucide-react';
-import { WorkOrderList } from './WorkOrderList';
+import { useMRStore } from "@/store/useMRStore";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Truck, Package } from "lucide-react";
 
 interface DriverListProps {
-  drivers: Driver[];
+  drivers: any[];
   isLoading: boolean;
 }
 
 export const DriverList = ({ drivers, isLoading }: DriverListProps) => {
-  const { selectedDrivers, toggleDriverSelection, selectAllDrivers } = useMRStore();
-  const [expandedDrivers, setExpandedDrivers] = useState<Set<string>>(new Set());
-
-  const toggleDriverExpand = (driverId: string) => {
-    setExpandedDrivers(prev => {
-      const newExpanded = new Set(prev);
-      if (newExpanded.has(driverId)) {
-        newExpanded.delete(driverId);
-      } else {
-        newExpanded.add(driverId);
-      }
-      return newExpanded;
-    });
-  };
+  const { selectedDrivers, setSelectedDrivers, setSelectedDriver } = useMRStore();
 
   if (isLoading) {
     return (
       <div className="space-y-2">
-        {Array.from({ length: 5 }).map((_, index) => (
-          <div key={index} className="flex items-center gap-4">
-            <Skeleton className="h-4 w-4" />
-            <Skeleton className="h-4 w-[250px]" />
-          </div>
+        {[1, 2, 3, 4].map((i) => (
+          <Skeleton key={i} className="h-14 w-full" />
         ))}
       </div>
     );
@@ -43,66 +27,96 @@ export const DriverList = ({ drivers, isLoading }: DriverListProps) => {
 
   if (drivers.length === 0) {
     return (
-      <div className="text-center py-8">
-        <p className="text-muted-foreground">Select a date and import routes to see drivers</p>
+      <div className="flex flex-col items-center justify-center p-8 text-center">
+        <Truck className="h-12 w-12 text-muted-foreground mb-4" />
+        <h3 className="font-medium text-lg">No drivers available</h3>
+        <p className="text-muted-foreground">
+          Import material requirements to view drivers
+        </p>
       </div>
     );
   }
 
-  const allSelected = drivers.length > 0 && drivers.every(driver => 
-    selectedDrivers.includes(driver.id)
-  );
+  const handleSelectDriver = (driverId: string) => {
+    const driver = drivers.find(d => d.id === driverId);
+    if (driver) {
+      setSelectedDriver(driver);
+    }
+  };
+
+  const handleSelectAllDrivers = () => {
+    if (selectedDrivers.length === drivers.length) {
+      setSelectedDrivers([]);
+    } else {
+      setSelectedDrivers(drivers.map(d => d.id));
+    }
+  };
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2 pb-2 border-b mb-4">
-        <Checkbox 
-          id="select-all"
-          checked={allSelected}
-          onCheckedChange={(checked) => selectAllDrivers(!!checked)}
-        />
-        <label htmlFor="select-all" className="text-sm font-medium">
-          Select All Drivers
-        </label>
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center space-x-2">
+          <Checkbox 
+            id="select-all"
+            checked={selectedDrivers.length > 0 && selectedDrivers.length === drivers.length}
+            onCheckedChange={handleSelectAllDrivers}
+          />
+          <label htmlFor="select-all" className="text-sm font-medium">
+            Select All Drivers
+          </label>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setSelectedDrivers([])}
+          disabled={selectedDrivers.length === 0}
+        >
+          Clear Selection
+        </Button>
       </div>
       
-      {drivers.map(driver => {
-        const isExpanded = expandedDrivers.has(driver.id);
-        
-        return (
-          <div key={driver.id} className="space-y-1">
-            <div className="flex items-center gap-2 py-1">
-              <Checkbox 
-                id={`driver-${driver.id}`}
-                checked={selectedDrivers.includes(driver.id)}
-                onCheckedChange={() => toggleDriverSelection(driver.id)}
-              />
-              <button 
-                type="button"
-                onClick={() => toggleDriverExpand(driver.id)}
-                className="flex items-center gap-1 flex-1 text-left"
-              >
-                {isExpanded ? (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                )}
-                <span className="text-sm font-medium">{driver.name}</span>
-                <span className="text-xs text-muted-foreground ml-1">
-                  ({driver.workOrders.length} orders)
-                </span>
-              </button>
-            </div>
-            
-            {isExpanded && (
-              <WorkOrderList 
-                driverId={driver.id} 
-                workOrders={driver.workOrders}
-              />
-            )}
-          </div>
-        );
-      })}
+      <ScrollArea className="h-[350px]">
+        <div className="space-y-2">
+          {drivers.map((driver) => (
+            <Card
+              key={driver.id}
+              className={`border cursor-pointer transition-colors ${
+                selectedDrivers.includes(driver.id) ? 'border-primary bg-primary/5' : ''
+              }`}
+            >
+              <CardContent className="p-3 flex justify-between items-center">
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id={`driver-${driver.id}`}
+                    checked={selectedDrivers.includes(driver.id)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setSelectedDrivers([...selectedDrivers, driver.id]);
+                      } else {
+                        setSelectedDrivers(selectedDrivers.filter(id => id !== driver.id));
+                      }
+                    }}
+                  />
+                  <div className="flex-1 ml-2" onClick={() => handleSelectDriver(driver.id)}>
+                    <p className="font-medium">{driver.name}</p>
+                    <div className="flex items-center text-xs text-muted-foreground mt-1">
+                      <Package className="h-3 w-3 mr-1" />
+                      <span>{driver.workOrders?.length || 0} work orders</span>
+                    </div>
+                  </div>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => handleSelectDriver(driver.id)}
+                >
+                  View
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </ScrollArea>
     </div>
   );
 };
