@@ -24,10 +24,10 @@ export const MRDateImport = () => {
       // Format date as YYYY-MM-DD for the API
       const formattedDate = format(importDate, 'yyyy-MM-dd');
       
-      console.log(`Calling fetch-optimoroute with date: ${formattedDate}`);
+      console.log(`Calling get-optimoroute-routes with date: ${formattedDate}`);
       
-      // Call the edge function to fetch route data
-      const { data, error } = await supabase.functions.invoke('fetch-optimoroute', {
+      // Call the correct edge function to fetch route data
+      const { data, error } = await supabase.functions.invoke('get-optimoroute-routes', {
         body: { date: formattedDate }
       });
       
