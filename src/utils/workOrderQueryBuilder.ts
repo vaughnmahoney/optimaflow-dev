@@ -31,7 +31,6 @@ export const initializeDataQuery = () => {
  */
 export const applyStatusFilter = (countQuery: any, dataQuery: any, status: string | null) => {
   if (status) {
-    console.log(`Applying status filter: ${status}`);
     if (status === 'flagged') {
       countQuery = countQuery.or('status.eq.flagged,status.eq.flagged_followup');
       dataQuery = dataQuery.or('status.eq.flagged,status.eq.flagged_followup');
@@ -53,7 +52,6 @@ export const applyStatusFilter = (countQuery: any, dataQuery: any, status: strin
  */
 export const applyOrderNoFilter = (countQuery: any, dataQuery: any, orderNo: string | null) => {
   if (orderNo) {
-    console.log(`Applying order number filter: ${orderNo}`);
     countQuery = countQuery.ilike('order_no', `%${orderNo}%`);
     dataQuery = dataQuery.ilike('order_no', `%${orderNo}%`);
   }
@@ -75,30 +73,17 @@ export const applyDateRangeFilter = (
   fromDate: Date | null, 
   toDate: Date | null
 ) => {
-  // Format the date as YYYY-MM-DD for database query
-  const formatDateForQuery = (date: Date | null): string | null => {
-    if (!date) return null;
-    return date.toISOString().split('T')[0];
-  };
-
-  const fromDateStr = formatDateForQuery(fromDate);
-  if (fromDateStr) {
-    console.log(`Applying from date filter: ${fromDateStr}`);
-    countQuery = countQuery.gte('search_response->data->date', fromDateStr);
-    dataQuery = dataQuery.gte('search_response->data->date', fromDateStr);
+  if (fromDate) {
+    countQuery = countQuery.gte('search_response->data->date', fromDate.toISOString().split('T')[0]);
+    dataQuery = dataQuery.gte('search_response->data->date', fromDate.toISOString().split('T')[0]);
   }
   
   if (toDate) {
     // Add a day to the end date to include that day (inclusive range)
     const inclusiveToDate = new Date(toDate);
     inclusiveToDate.setDate(inclusiveToDate.getDate() + 1);
-    const toDateStr = formatDateForQuery(inclusiveToDate);
-    
-    if (toDateStr) {
-      console.log(`Applying to date filter: ${toDateStr} (inclusive of original date: ${formatDateForQuery(toDate)})`);
-      countQuery = countQuery.lt('search_response->data->date', toDateStr);
-      dataQuery = dataQuery.lt('search_response->data->date', toDateStr);
-    }
+    countQuery = countQuery.lt('search_response->data->date', inclusiveToDate.toISOString().split('T')[0]);
+    dataQuery = dataQuery.lt('search_response->data->date', inclusiveToDate.toISOString().split('T')[0]);
   }
   
   return { countQuery, dataQuery };
@@ -119,7 +104,6 @@ export const applyTextSearchFilter = (
   field: 'driver' | 'location'
 ) => {
   if (searchText) {
-    console.log(`Applying ${field} text search filter: ${searchText}`);
     countQuery = countQuery.textSearch('search_response', searchText, { config: 'english' });
     dataQuery = dataQuery.textSearch('search_response', searchText, { config: 'english' });
   }
@@ -141,7 +125,6 @@ export const applySorting = (
 ) => {
   if (sortField && sortDirection) {
     const isAscending = sortDirection === 'asc';
-    console.log(`Applying sorting: ${sortField} ${sortDirection}`);
     
     if (sortField === 'order_no' || sortField === 'status') {
       // Direct column sort
@@ -169,7 +152,6 @@ export const applySorting = (
     }
   } else {
     // Default sort if no criteria specified - newest first
-    console.log("Applying default sorting: service_date desc");
     dataQuery = dataQuery.order('search_response->data->date', { ascending: false });
     dataQuery = dataQuery.order('timestamp', { ascending: false });
   }
@@ -187,7 +169,6 @@ export const applySorting = (
 export const applyPagination = (dataQuery: any, page: number = 1, pageSize: number = 10) => {
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
-  console.log(`Applying pagination: page ${page}, size ${pageSize}, range ${from}-${to}`);
   
   return dataQuery.range(from, to);
 };
