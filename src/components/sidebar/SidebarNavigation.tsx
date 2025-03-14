@@ -46,7 +46,7 @@ export function SidebarNavigation({
     { 
       to: "/bulk-orders-test", 
       icon: Database, 
-      label: "Bulk Import", 
+      label: "Bulk Import Test", 
       isActive: location.pathname.startsWith("/bulk-orders-test") 
     },
     { 
