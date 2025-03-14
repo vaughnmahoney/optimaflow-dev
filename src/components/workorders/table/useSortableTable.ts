@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from 'react';
 import { WorkOrder, SortDirection, SortField } from '../types';
-import { extractServiceDate, compareDates } from '@/utils/dateExtraction';
 
 export const useSortableTable = (
   initialWorkOrders: WorkOrder[], 
@@ -22,6 +21,48 @@ export const useSortableTable = (
       setSortDirection(externalSortDirection);
     }
   }, [externalSortField, externalSortDirection]);
+
+  // Get best available date from work order data
+  const getServiceDateValue = (order: WorkOrder): Date | null => {
+    // First try to use service_date if available
+    if (order.service_date) {
+      try {
+        const date = new Date(order.service_date);
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
+      } catch (error) {
+        // If parsing fails, continue to fallbacks
+      }
+    }
+    
+    // Try to get the end date from completion data as fallback
+    const endTime = order.completion_response?.orders?.[0]?.data?.endTime?.localTime;
+    if (endTime) {
+      try {
+        const date = new Date(endTime);
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
+      } catch (error) {
+        // If date parsing fails, continue to fallback
+      }
+    }
+    
+    // Finally, fall back to timestamp if available
+    if (order.timestamp) {
+      try {
+        const date = new Date(order.timestamp);
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
+      } catch (error) {
+        // If parsing fails, return null
+      }
+    }
+    
+    return null;
+  };
 
   // Only perform client-side sorting if we're NOT using external sorting
   // This prevents double-sorting (once on server, once on client)
@@ -45,12 +86,30 @@ export const useSortableTable = (
             valueB = b.order_no || '';
             break;
           case 'service_date':
-            // Use our unified date extraction logic
-            const dateA = extractServiceDate(a);
-            const dateB = extractServiceDate(b);
+            // Use our updated date extraction logic
+            const dateA = getServiceDateValue(a);
+            const dateB = getServiceDateValue(b);
             
-            // Use our date comparison utility with the correct sort direction
-            return compareDates(dateA, dateB, sortDirection === 'asc');
+            // Check if dates are valid
+            const validA = dateA !== null;
+            const validB = dateB !== null;
+            
+            // If one date is valid and the other isn't, the valid one comes first
+            if (validA && !validB) return sortDirection === 'asc' ? -1 : 1;
+            if (!validA && validB) return sortDirection === 'asc' ? 1 : -1;
+            // If both are invalid, use alphabetical sorting on the raw strings
+            if (!validA && !validB) {
+              valueA = a.service_date || '';
+              valueB = b.service_date || '';
+              return sortDirection === 'asc' 
+                ? valueA.localeCompare(valueB)
+                : valueB.localeCompare(valueA);
+            }
+            
+            // If both dates are valid, compare timestamps
+            return sortDirection === 'asc' 
+              ? dateA!.getTime() - dateB!.getTime()
+              : dateB!.getTime() - dateA!.getTime();
           case 'driver':
             valueA = getDriverName(a).toLowerCase();
             valueB = getDriverName(b).toLowerCase();
@@ -82,11 +141,17 @@ export const useSortableTable = (
     } else {
       // Default sort if no sort criteria provided - sort by service_date descending
       sortedWorkOrders.sort((a, b) => {
-        const dateA = extractServiceDate(a);
-        const dateB = extractServiceDate(b);
+        const dateA = getServiceDateValue(a);
+        const dateB = getServiceDateValue(b);
         
-        // Default to descending sort (newest first)
-        return compareDates(dateA, dateB, false);
+        const validA = dateA !== null;
+        const validB = dateB !== null;
+        
+        if (validA && !validB) return -1;
+        if (!validA && validB) return 1;
+        if (!validA && !validB) return 0;
+        
+        return dateB!.getTime() - dateA!.getTime();
       });
     }
     

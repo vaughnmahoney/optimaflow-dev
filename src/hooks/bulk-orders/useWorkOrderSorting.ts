@@ -1,6 +1,5 @@
 
 import { WorkOrder, SortDirection, SortField } from "@/components/workorders/types";
-import { extractServiceDate, compareDates } from "@/utils/dateExtraction";
 
 /**
  * Sorts work orders based on the provided sort field and direction
@@ -13,11 +12,18 @@ export const sortWorkOrders = (
   // Default sort - if no sort specified, sort by service_date descending (newest first)
   if (!sortField || !sortDirection) {
     return [...orders].sort((a, b) => {
-      const dateA = extractServiceDate(a);
-      const dateB = extractServiceDate(b);
+      const dateA = a.service_date ? new Date(a.service_date) : null;
+      const dateB = b.service_date ? new Date(b.service_date) : null;
       
-      // Default to descending sort (newest first)
-      return compareDates(dateA, dateB, false);
+      const validA = dateA && !isNaN(dateA.getTime());
+      const validB = dateB && !isNaN(dateB.getTime());
+      
+      if (validA && !validB) return -1; // Valid dates come first
+      if (!validA && validB) return 1;
+      if (!validA && !validB) return 0;
+      
+      // Sort descending by default (newest first)
+      return dateB!.getTime() - dateA!.getTime();
     });
   }
   
@@ -31,11 +37,19 @@ export const sortWorkOrders = (
         valueB = b.order_no || '';
         break;
       case 'service_date':
-        const dateA = extractServiceDate(a);
-        const dateB = extractServiceDate(b);
+        const dateA = a.service_date ? new Date(a.service_date) : null;
+        const dateB = b.service_date ? new Date(b.service_date) : null;
         
-        // Use our date comparison utility with the correct sort direction
-        return compareDates(dateA, dateB, sortDirection === 'asc');
+        const validA = dateA && !isNaN(dateA.getTime());
+        const validB = dateB && !isNaN(dateB.getTime());
+        
+        if (validA && !validB) return sortDirection === 'asc' ? -1 : 1;
+        if (!validA && validB) return sortDirection === 'asc' ? 1 : -1;
+        if (!validA && !validB) return 0;
+        
+        return sortDirection === 'asc' 
+          ? dateA!.getTime() - dateB!.getTime()
+          : dateB!.getTime() - dateA!.getTime();
       case 'driver':
         valueA = a.driver && typeof a.driver === 'object' && a.driver.name
           ? a.driver.name.toLowerCase() : '';

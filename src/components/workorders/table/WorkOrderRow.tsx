@@ -1,3 +1,4 @@
+
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
@@ -5,7 +6,6 @@ import { format } from "date-fns";
 import { StatusBadge } from "../StatusBadge";
 import { WorkOrder } from "../types";
 import { ActionsMenu } from "./ActionsMenu";
-import { extractServiceDate } from "@/utils/dateExtraction";
 
 interface WorkOrderRowProps {
   workOrder: WorkOrder;
@@ -43,12 +43,28 @@ export const WorkOrderRow = ({ workOrder, onStatusUpdate, onImageView, onDelete 
            (order.search_response?.scheduleInformation?.status);
   };
 
-  // Get formatted date from service date extraction utility
+  // Get end date from completion data, or fall back to service_date
   const getServiceDate = (order: WorkOrder): string => {
-    const date = extractServiceDate(order);
+    // Try to get the end date from completion data first
+    const endTime = order.completion_response?.orders?.[0]?.data?.endTime?.localTime;
     
-    if (date && !isNaN(date.getTime())) {
-      return format(date, "MMM d, yyyy");
+    if (endTime) {
+      try {
+        return format(new Date(endTime), "MMM d, yyyy");
+      } catch (error) {
+        // If date parsing fails, fall back to service_date
+        console.error("Error formatting end date:", error);
+      }
+    }
+    
+    // Fall back to service_date if end date is not available or invalid
+    if (order.service_date) {
+      try {
+        return format(new Date(order.service_date), "MMM d, yyyy");
+      } catch (error) {
+        console.error("Error formatting service date:", error);
+        return "N/A";
+      }
     }
     
     return "N/A";

@@ -131,26 +131,12 @@ export const applySorting = (
       dataQuery = dataQuery.order(sortField, { ascending: isAscending });
     } 
     else if (sortField === 'service_date') {
-      // For service_date, apply a multi-level sorting approach using the same
-      // priority order as our extractServiceDate utility function
+      // For service_date, apply a multi-level sorting approach
+      // First sort by the date field
+      dataQuery = dataQuery.order('search_response->data->date', { ascending: isAscending });
       
-      // First try end time from completion data (most accurate for service completion)
-      dataQuery = dataQuery.order('completion_response->orders->0->data->endTime->localTime', { 
-        ascending: isAscending,
-        nullsLast: true 
-      });
-      
-      // Then try search response date field
-      dataQuery = dataQuery.order('search_response->data->date', { 
-        ascending: isAscending,
-        nullsLast: true 
-      });
-      
-      // Finally use the timestamp field for consistent ordering within same date
-      dataQuery = dataQuery.order('timestamp', { 
-        ascending: isAscending,
-        nullsLast: true 
-      });
+      // Add a secondary sort using timestamp for consistent ordering within same date
+      dataQuery = dataQuery.order('timestamp', { ascending: isAscending });
     }
     else if (sortField === 'driver') {
       // Sort by driver name
@@ -166,19 +152,8 @@ export const applySorting = (
     }
   } else {
     // Default sort if no criteria specified - newest first
-    // Use the same sorting logic as above for consistency
-    dataQuery = dataQuery.order('completion_response->orders->0->data->endTime->localTime', { 
-      ascending: false,
-      nullsLast: true 
-    });
-    dataQuery = dataQuery.order('search_response->data->date', { 
-      ascending: false,
-      nullsLast: true 
-    });
-    dataQuery = dataQuery.order('timestamp', { 
-      ascending: false,
-      nullsLast: true 
-    });
+    dataQuery = dataQuery.order('search_response->data->date', { ascending: false });
+    dataQuery = dataQuery.order('timestamp', { ascending: false });
   }
   
   return dataQuery;
