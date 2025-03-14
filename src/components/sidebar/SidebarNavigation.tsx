@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, AlertCircle, CreditCard, Car, 
   Package2, Clock, Users, Receipt, ExternalLink,
-  CalendarDays, LucideIcon
+  CalendarDays, LucideIcon, Database
 } from "lucide-react";
 import { SidebarNavItem } from "./SidebarNavItem";
 
@@ -42,6 +42,12 @@ export function SidebarNavigation({
       label: "Quality Control", 
       isActive: location.pathname.startsWith("/work-orders"),
       badge: flaggedWorkOrdersCount > 0 ? flaggedWorkOrdersCount : undefined
+    },
+    { 
+      to: "/bulk-orders-test", 
+      icon: Database, 
+      label: "Bulk Import", 
+      isActive: location.pathname.startsWith("/bulk-orders-test") 
     },
     { 
       to: "/payroll", 
