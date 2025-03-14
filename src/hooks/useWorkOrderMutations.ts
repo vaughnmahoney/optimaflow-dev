@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 /**
- * Hook for work order mutations (update status, delete)
+ * Hook for work order mutations (update status, delete, flag images)
  */
 export const useWorkOrderMutations = () => {
   const queryClient = useQueryClient();
@@ -29,59 +29,69 @@ export const useWorkOrderMutations = () => {
     }
   };
 
-  const updateWorkOrderQcNotes = async (workOrderId: string, qcNotes: string) => {
+  const deleteWorkOrder = async (workOrderId: string) => {
     try {
       const { error } = await supabase
         .from('work_orders')
-        .update({ qc_notes: qcNotes })
+        .delete()
         .eq('id', workOrderId);
 
       if (error) throw error;
 
-      // Refetch work orders to update UI
+      toast.success('Work order deleted');
       queryClient.invalidateQueries({ queryKey: ["workOrders"] });
-      
-      // Also directly update this specific work order if it's being viewed
-      const cachedWorkOrders = queryClient.getQueryData(["workOrders"]) as any[];
-      if (cachedWorkOrders) {
-        queryClient.setQueryData(
-          ["workOrders"], 
-          cachedWorkOrders.map(wo => 
-            wo.id === workOrderId ? { ...wo, qc_notes: qcNotes } : wo
-          )
-        );
-      }
+      queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
     } catch (error) {
-      console.error('QC notes update error:', error);
-      throw error; // We'll handle this in the component
+      console.error('Delete error:', error);
+      toast.error('Failed to delete work order');
     }
   };
 
-  const updateWorkOrderResolutionNotes = async (workOrderId: string, resolutionNotes: string) => {
+  const toggleImageFlag = async (workOrderId: string, imageIndex: number, isFlagged: boolean) => {
     try {
-      const { error } = await supabase
+      // Get the current work order to access the completion_response
+      const { data: workOrder, error: fetchError } = await supabase
         .from('work_orders')
-        .update({ resolution_notes: resolutionNotes })
-        .eq('id', workOrderId);
-
-      if (error) throw error;
-
-      // Refetch work orders to update UI
-      queryClient.invalidateQueries({ queryKey: ["workOrders"] });
+        .select('completion_response')
+        .eq('id', workOrderId)
+        .single();
       
-      // Also directly update this specific work order if it's being viewed
-      const cachedWorkOrders = queryClient.getQueryData(["workOrders"]) as any[];
-      if (cachedWorkOrders) {
-        queryClient.setQueryData(
-          ["workOrders"], 
-          cachedWorkOrders.map(wo => 
-            wo.id === workOrderId ? { ...wo, resolution_notes: resolutionNotes } : wo
-          )
-        );
+      if (fetchError) throw fetchError;
+      
+      if (!workOrder?.completion_response) {
+        throw new Error("Work order data not found");
+      }
+      
+      // Clone the completion response to modify it
+      const updatedCompletion = JSON.parse(JSON.stringify(workOrder.completion_response));
+      
+      // Make sure the needed structure exists
+      if (updatedCompletion?.orders?.[0]?.data?.form?.images) {
+        // Initialize flagged status if it doesn't exist
+        if (!updatedCompletion.orders[0].data.form.images[imageIndex].flagged) {
+          updatedCompletion.orders[0].data.form.images[imageIndex].flagged = false;
+        }
+        
+        // Toggle the flag status
+        updatedCompletion.orders[0].data.form.images[imageIndex].flagged = isFlagged;
+        
+        // Update the work order with the modified completion response
+        const { error: updateError } = await supabase
+          .from('work_orders')
+          .update({ completion_response: updatedCompletion })
+          .eq('id', workOrderId);
+        
+        if (updateError) throw updateError;
+        
+        // Show success toast
+        toast.success(isFlagged ? 'Image flagged' : 'Image flag removed');
+        
+        // Refetch work orders to update UI
+        queryClient.invalidateQueries({ queryKey: ["workOrders"] });
       }
     } catch (error) {
-      console.error('Resolution notes update error:', error);
-      throw error;
+      console.error('Image flag toggle error:', error);
+      toast.error('Failed to update image flag');
     }
   };
 
@@ -127,29 +137,10 @@ export const useWorkOrderMutations = () => {
     }
   };
 
-  const deleteWorkOrder = async (workOrderId: string) => {
-    try {
-      const { error } = await supabase
-        .from('work_orders')
-        .delete()
-        .eq('id', workOrderId);
-
-      if (error) throw error;
-
-      toast.success('Work order deleted');
-      queryClient.invalidateQueries({ queryKey: ["workOrders"] });
-      queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
-    } catch (error) {
-      console.error('Delete error:', error);
-      toast.error('Failed to delete work order');
-    }
-  };
-
   return {
     updateWorkOrderStatus,
-    updateWorkOrderQcNotes,
-    updateWorkOrderResolutionNotes,
-    resolveWorkOrderFlag,
-    deleteWorkOrder
+    deleteWorkOrder,
+    toggleImageFlag,
+    resolveWorkOrderFlag
   };
 };
