@@ -1,205 +1,83 @@
-
-import { useState, useCallback } from "react";
-import { SortField, SortDirection, PaginationState, WorkOrderFilters } from "@/components/workorders/types";
-import { useWorkOrderFetch } from "./useWorkOrderFetch";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { WorkOrder } from "@/components/workorders/types";
 import { useWorkOrderStatusCounts } from "./useWorkOrderStatusCounts";
 import { useWorkOrderMutations } from "./useWorkOrderMutations";
-import { useWorkOrderImport } from "./useWorkOrderImport";
 
 export const useWorkOrderData = () => {
-  // Initialize filters state
-  const [filters, setFilters] = useState<WorkOrderFilters>({
-    status: null,
-    dateRange: { from: null, to: null },
-    driver: null,
-    location: null,
-    orderNo: null
-  });
-  
-  // Initialize sorting state
-  const [sortField, setSortField] = useState<SortField>('service_date');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-  
-  // Initialize pagination state
-  const [pagination, setPagination] = useState<PaginationState>({
-    page: 1,
-    pageSize: 10,
-    total: 0
-  });
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch work orders with all necessary parameters
+  // Fetch all work orders without filtering or pagination
   const { 
-    data: workOrdersData = { data: [], total: 0 }, 
-    isLoading, 
+    data: workOrders = [], 
+    isLoading: isQueryLoading, 
     refetch 
-  } = useWorkOrderFetch(
-    filters, 
-    pagination.page, 
-    pagination.pageSize,
-    sortField,
-    sortDirection
-  );
-  
-  // Extract work orders and total count
-  const workOrders = workOrdersData.data;
-  const total = workOrdersData.total;
-  
-  // Update pagination total if it has changed
-  if (pagination.total !== total) {
-    setPagination(prev => ({ ...prev, total }));
-  }
+  } = useQuery({
+    queryKey: ["workOrders"],
+    queryFn: async () => {
+      console.log("Fetching all work orders without filtering or pagination");
+      
+      const { data, error } = await supabase
+        .from("work_orders")
+        .select("*");
+      
+      if (error) {
+        console.error("Error fetching work orders:", error);
+        throw error;
+      }
+      
+      return data || [];
+    },
+    placeholderData: [],
+    staleTime: 30000,
+    gcTime: 600000
+  });
   
   // Calculate status counts
-  const statusCounts = useWorkOrderStatusCounts(workOrders, filters.status);
+  const statusCounts = useWorkOrderStatusCounts(workOrders);
   
-  // Import utility hooks
-  const { searchOptimoRoute } = useWorkOrderImport();
+  // Import utility hooks for mutations
   const { updateWorkOrderStatus, deleteWorkOrder } = useWorkOrderMutations();
 
-  // Reset page when filters change
-  const resetPage = useCallback(() => {
-    setPagination(prev => ({ ...prev, page: 1 }));
-  }, []);
+  // Import function from OptimoRoute integration
+  const searchOptimoRoute = async (orderNumber: string) => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('search-optimoroute', {
+        body: { searchQuery: orderNumber }
+      });
 
-  // Handle column filter changes
-  const handleColumnFilterChange = useCallback((column: string, value: any) => {
-    console.log(`Column filter changed: ${column} = `, value);
-    setFilters(prev => {
-      const newFilters = { ...prev };
-      
-      switch (column) {
-        case 'order_no':
-          newFilters.orderNo = value;
-          break;
-        case 'service_date':
-          // Ensure date objects are properly handled
-          if (value === null || typeof value === 'string') {
-            newFilters.dateRange = { from: null, to: null };
-          } else {
-            newFilters.dateRange = {
-              from: value.from ? new Date(value.from) : null,
-              to: value.to ? new Date(value.to) : null
-            };
-          }
-          break;
-        case 'driver':
-          newFilters.driver = value;
-          break;
-        case 'location':
-          newFilters.location = value;
-          break;
-        case 'status':
-          newFilters.status = value;
-          break;
+      if (error) throw error;
+
+      if (data.success && data.workOrderId) {
+        toast.success('OptimoRoute order found');
+        refetch();
+      } else {
+        toast.error(data.error || 'Failed to find OptimoRoute order');
       }
-      
-      return newFilters;
-    });
-    
-    resetPage();
-  }, [resetPage]);
+    } catch (error) {
+      console.error('OptimoRoute search error:', error);
+      toast.error('Failed to search OptimoRoute');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  // Clear a single column filter
-  const clearColumnFilter = useCallback((column: string) => {
-    console.log(`Clearing column filter: ${column}`);
-    setFilters(prev => {
-      const newFilters = { ...prev };
-      
-      switch (column) {
-        case 'order_no':
-          newFilters.orderNo = null;
-          break;
-        case 'service_date':
-          newFilters.dateRange = { from: null, to: null };
-          break;
-        case 'driver':
-          newFilters.driver = null;
-          break;
-        case 'location':
-          newFilters.location = null;
-          break;
-        case 'status':
-          newFilters.status = null;
-          break;
-      }
-      
-      return newFilters;
-    });
-    
-    resetPage();
-  }, [resetPage]);
-
-  // Clear all filters
-  const clearAllFilters = useCallback(() => {
-    console.log("Clearing all filters");
-    setFilters({
-      status: null,
-      dateRange: { from: null, to: null },
-      driver: null,
-      location: null,
-      orderNo: null
-    });
-    
-    resetPage();
-  }, [resetPage]);
-
-  // Open image viewer (placeholder for now)
-  const openImageViewer = useCallback((workOrderId: string) => {
+  // Placeholder for image viewer (to be implemented)
+  const openImageViewer = (workOrderId: string) => {
     console.log(`Opening images for work order: ${workOrderId}`);
-  }, []);
+  };
 
-  // Handle sorting changes
-  const handleSort = useCallback((field: SortField, direction: SortDirection) => {
-    console.log(`Sorting changed: ${field} ${direction}`);
-    setSortField(field);
-    setSortDirection(direction);
-    resetPage();
-  }, [resetPage]);
-  
-  // Handle page changes
-  const handlePageChange = useCallback((page: number) => {
-    console.log(`Page changed to: ${page}`);
-    const newPage = Math.max(1, page);
-    setPagination(prev => ({ ...prev, page: newPage }));
-  }, []);
-  
-  // Handle page size changes
-  const handlePageSizeChange = useCallback((pageSize: number) => {
-    console.log(`Page size changed to: ${pageSize}`);
-    setPagination(prev => ({ ...prev, pageSize, page: 1 }));
-  }, []);
-  
-  // Handle filter changes (used by status cards)
-  const handleFiltersChange = useCallback((newFilters: WorkOrderFilters) => {
-    console.log("Filters changed:", newFilters);
-    setFilters(newFilters);
-    resetPage();
-  }, [resetPage]);
-
-  // Return all necessary data and handlers
   return {
     data: workOrders,
-    isLoading,
-    filters,
-    setFilters: handleFiltersChange,
-    onColumnFilterChange: handleColumnFilterChange,
-    clearColumnFilter,
-    clearAllFilters,
+    isLoading: isLoading || isQueryLoading,
     searchOptimoRoute,
     updateWorkOrderStatus,
     openImageViewer,
     deleteWorkOrder,
     statusCounts,
-    sortField,
-    sortDirection,
-    setSort: handleSort,
-    pagination: {
-      page: pagination.page,
-      pageSize: pagination.pageSize,
-      total: pagination.total
-    },
-    handlePageChange,
-    handlePageSizeChange,
     refetch
   };
 };
