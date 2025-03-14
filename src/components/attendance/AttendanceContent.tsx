@@ -46,8 +46,8 @@ export const AttendanceContent = ({
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-      <h3 className="text-lg font-semibold text-gray-800 mb-4">Attendance History</h3>
-      <Accordion type="single" collapsible className="space-y-4">
+      <h3 className="text-lg font-semibold text-gray-800 mb-6">Attendance History</h3>
+      <Accordion type="single" collapsible className="space-y-6">
         {groupedRecords.map((yearGroup) => (
           <YearGroup
             key={yearGroup.year}

@@ -29,7 +29,7 @@ const AttendanceHistory = () => {
       <Layout>
         <div className="space-y-8 animate-fade-in">
           <AttendanceHeader />
-          <Card className="border-destructive/50">
+          <Card className="border-destructive/50 shadow-sm">
             <CardContent className="p-6">
               <div className="text-center text-destructive font-medium">
                 Failed to load attendance records
@@ -48,7 +48,7 @@ const AttendanceHistory = () => {
         
         <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm mb-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-1">Attendance Records</h2>
-          <p className="text-gray-600 mb-4">
+          <p className="text-gray-600">
             View and manage employee attendance history by date
           </p>
         </div>

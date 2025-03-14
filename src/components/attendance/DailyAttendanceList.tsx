@@ -1,4 +1,6 @@
+
 import type { DailyAttendanceRecord } from "@/types/attendance";
+import { Badge } from "@/components/ui/badge";
 
 interface DailyAttendanceListProps {
   records: DailyAttendanceRecord["records"];
@@ -11,34 +13,35 @@ export const DailyAttendanceList = ({
 }: DailyAttendanceListProps) => {
   if (records.length === 0) {
     return (
-      <div className="text-center py-4 text-gray-500">
+      <div className="text-center py-4 text-gray-500 bg-gray-50 rounded-md border border-gray-200">
         No technicians found matching your search
       </div>
     );
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2.5">
       {records.map((attendance) => (
         <div
           key={attendance.id}
-          className="flex justify-between items-center p-2 bg-gray-50 rounded"
+          className="flex justify-between items-center p-3 bg-gray-50 rounded-md border border-gray-100"
         >
-          <span className="font-medium">
+          <span className="font-medium text-gray-800">
             {getTechnicianName(attendance.technician_id)}
           </span>
-          <span
-            className={`px-3 py-1 rounded-full text-sm font-medium ${
+          <Badge
+            variant={
               attendance.status === "present"
-                ? "bg-green-100 text-green-800"
+                ? "success"
                 : attendance.status === "absent"
-                ? "bg-red-100 text-red-800"
-                : "bg-gray-100 text-gray-800"
-            }`}
+                ? "destructive"
+                : "warning"
+            }
+            className="px-3 py-1 text-xs font-medium"
           >
             {attendance.status.charAt(0).toUpperCase() +
               attendance.status.slice(1)}
-          </span>
+          </Badge>
         </div>
       ))}
     </div>

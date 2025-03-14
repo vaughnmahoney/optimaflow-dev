@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   AccordionItem,
@@ -33,15 +34,15 @@ export const YearGroup: React.FC<YearGroupProps> = ({
   getTechnicianName,
 }) => {
   return (
-    <AccordionItem value={year} className="border rounded-lg p-4">
-      <AccordionTrigger className="hover:no-underline">
-        <div className="flex items-center gap-2">
+    <AccordionItem value={year} className="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+      <AccordionTrigger className="hover:no-underline px-6 py-4 bg-gray-50">
+        <div className="flex items-center gap-3">
           <Folder className="h-5 w-5 text-primary" />
-          <span className="font-semibold">{year}</span>
+          <span className="font-semibold text-gray-800">{year}</span>
         </div>
       </AccordionTrigger>
-      <AccordionContent>
-        <div className="pl-6 space-y-4">
+      <AccordionContent className="px-4 py-2 bg-white">
+        <div className="space-y-5 pt-2 pb-3">
           {months.map((monthGroup) => (
             <MonthGroup
               key={monthGroup.month}

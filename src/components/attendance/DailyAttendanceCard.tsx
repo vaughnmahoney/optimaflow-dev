@@ -66,9 +66,9 @@ export const DailyAttendanceCard = ({
         onSearchChange={setSearchQuery}
         onEdit={() => onEdit(record.date)}
       />
-      <CardContent className="p-5">
+      <CardContent className="p-4">
         <AttendanceStats stats={record.stats} />
-        <div className="mt-4">
+        <div className="mt-3">
           <DailyAttendanceList
             records={filteredRecords}
             getTechnicianName={getTechnicianName}
