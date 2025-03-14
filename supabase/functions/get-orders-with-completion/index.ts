@@ -39,6 +39,11 @@ Deno.serve(async (req) => {
     const allOrdersFromSearch = allSearchOrders.orders;
     console.log(`Successfully collected ${allOrdersFromSearch.length} orders from all search pages`);
     
+    // DEBUG: Log a sample search result to see structure
+    if (allOrdersFromSearch.length > 0) {
+      console.log("Sample search order:", JSON.stringify(allOrdersFromSearch[0], null, 2).substring(0, 300) + "...");
+    }
+    
     // If no orders found across all pages, return empty result
     if (allOrdersFromSearch.length === 0) {
       console.log("No orders found in search results");
@@ -86,6 +91,11 @@ Deno.serve(async (req) => {
     const completionData = completionResult.data;
     console.log(`Got completion details for ${completionData?.orders?.length || 0} orders across batches`);
     
+    // DEBUG: Log a sample completion order to see structure
+    if (completionData?.orders && completionData.orders.length > 0) {
+      console.log("Sample completion order:", JSON.stringify(completionData.orders[0], null, 2).substring(0, 300) + "...");
+    }
+    
     // Create batch stats for response
     const batchStats = {
       totalBatches: Math.ceil(uniqueOrderNumbers.length / 500),
@@ -107,13 +117,33 @@ Deno.serve(async (req) => {
     const mergedOrders = mergeOrderData(allOrdersFromSearch, completionMap);
     console.log(`Successfully merged data for ${mergedOrders.length} orders`);
     
+    // DEBUG: Log a sample merged order to see structure
+    if (mergedOrders.length > 0) {
+      console.log("Sample merged order:", JSON.stringify(mergedOrders[0], null, 2).substring(0, 300) + "...");
+    }
+    
     // STEP 5: Filter orders by status ONCE
     console.log('STEP 5: Filtering final merged dataset by status...');
+    
+    // Add debug for status values before filtering
+    if (mergedOrders.length > 0) {
+      console.log("Status values found in first 10 orders:");
+      mergedOrders.slice(0, 10).forEach((order, index) => {
+        console.log(`Order ${index}: data.status="${order.data?.status}", completion_status="${order.completion_status}"`);
+      });
+    }
+    
     const filteredOrders = filterOrdersByStatus(mergedOrders, validStatuses);
     console.log(`After status filtering: ${filteredOrders.length} orders of ${mergedOrders.length} total remain`);
     
     // STEP 6: Return the FINAL filtered dataset with batch stats
     console.log('STEP 6: Returning final filtered dataset with batch stats...');
+    
+    // Add raw data samples for debugging client-side
+    const rawDataSamples = {
+      searchSample: allOrdersFromSearch.length > 0 ? allOrdersFromSearch[0] : null,
+      completionSample: completionData?.orders?.length > 0 ? completionData.orders[0] : null
+    };
     
     // Use the new response formatter to get the response data object
     const formattedResponse = formatSuccessResponse(
@@ -126,9 +156,10 @@ Deno.serve(async (req) => {
       true // isComplete = true
     );
     
-    // Add batch stats to the data object
+    // Add batch stats and raw samples to the data object
     const responseData = formattedResponse.data;
     responseData.batchStats = batchStats;
+    responseData.rawDataSamples = rawDataSamples;
     
     // Return the response with the updated data
     return new Response(

@@ -107,6 +107,22 @@ export const useOrdersApi = () => {
         }
       }
 
+      // DEBUG: Log a sample of the first order to check structure
+      if (data.orders && data.orders.length > 0) {
+        console.log("First order sample:", JSON.stringify(data.orders[0]).substring(0, 500) + "...");
+      } else {
+        console.log("No orders returned after filtering");
+        
+        // If we have raw data samples, log them for debugging
+        if (data.rawDataSamples) {
+          console.log("Search sample:", data.rawDataSamples.searchSample ? 
+            JSON.stringify(data.rawDataSamples.searchSample).substring(0, 500) + "..." : "None");
+            
+          console.log("Completion sample:", data.rawDataSamples.completionSample ?
+            JSON.stringify(data.rawDataSamples.completionSample).substring(0, 500) + "..." : "None");
+        }
+      }
+
       return { data, error: null };
     } catch (error) {
       console.error("Exception fetching orders:", error);

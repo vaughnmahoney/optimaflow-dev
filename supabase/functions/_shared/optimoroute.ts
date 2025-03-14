@@ -70,7 +70,7 @@ export const mergeOrderData = (searchOrders: any[], completionMap: Record<string
 };
 
 /**
- * Filters orders by status
+ * Filters orders by status with improved path checking
  * @param orders Array of orders
  * @param validStatuses Array of valid statuses to include
  * @returns Filtered array of orders
@@ -80,11 +80,37 @@ export const filterOrdersByStatus = (orders: any[], validStatuses: string[]): an
     return [];
   }
   
+  console.log(`Filtering ${orders.length} orders by statuses: ${validStatuses.join(', ')}`);
+  
+  // Sample first 5 orders for debugging
+  if (orders.length > 0) {
+    console.log("Sample order structure:", JSON.stringify(orders[0], null, 2).substring(0, 500) + "...");
+  }
+  
   return orders.filter(order => {
-    const status = order.completion_status || 
-                  order.completion_details?.data?.status || 
-                  null;
+    // Check multiple possible paths for status value in each order
+    // Convert to lowercase for case-insensitive comparison
+    const status = 
+      // Direct status field
+      (order.status?.toLowerCase()) || 
+      // Check data.status (from get_completion_details)
+      (order.data?.status?.toLowerCase()) || 
+      // Check completion_status from merged data
+      (order.completion_status?.toLowerCase()) || 
+      // Check completion_details nested data
+      (order.completion_details?.data?.status?.toLowerCase()) ||
+      // Check extracted completionStatus 
+      (order.extracted?.completionStatus?.toLowerCase()) ||
+      // Check search_response scheduleInformation
+      (order.search_response?.scheduleInformation?.status?.toLowerCase()) ||
+      // If we can't find a status, return null
+      null;
     
-    return status && validStatuses.includes(status);
+    // Check if the status is in our valid list (case insensitive)
+    const isValid = status && validStatuses.some(
+      validStatus => validStatus.toLowerCase() === status
+    );
+    
+    return isValid;
   });
 };
