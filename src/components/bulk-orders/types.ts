@@ -40,5 +40,5 @@ export interface BatchProcessingStats {
   successfulBatches: number;
   failedBatches: number;
   totalOrdersProcessed: number;
-  errors?: string[];
+  errors?: string[]; // Added the errors property as optional
 }
