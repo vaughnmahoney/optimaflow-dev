@@ -1,6 +1,7 @@
 
 import type { DailyAttendanceRecord } from "@/types/attendance";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface DailyAttendanceListProps {
   records: DailyAttendanceRecord["records"];
@@ -20,24 +21,24 @@ export const DailyAttendanceList = ({
   }
 
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-2.5 p-2">
       {records.map((attendance) => (
         <div
           key={attendance.id}
-          className="flex justify-between items-center p-3 bg-gray-50 rounded-md border border-gray-100"
+          className="flex justify-between items-center p-3 bg-gray-50/70 rounded-md border border-gray-100"
         >
-          <span className="font-medium text-gray-800">
+          <span className="font-medium text-gray-800 pl-2">
             {getTechnicianName(attendance.technician_id)}
           </span>
           <Badge
-            variant={
-              attendance.status === "present"
-                ? "success"
+            className={cn(
+              "px-4 py-1 text-xs font-medium",
+              attendance.status === "present" 
+                ? "bg-green-100 text-green-800 hover:bg-green-200" 
                 : attendance.status === "absent"
-                ? "destructive"
-                : "warning"
-            }
-            className="px-3 py-1 text-xs font-medium"
+                ? "bg-red-100 text-red-800 hover:bg-red-200"
+                : "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+            )}
           >
             {attendance.status.charAt(0).toUpperCase() +
               attendance.status.slice(1)}

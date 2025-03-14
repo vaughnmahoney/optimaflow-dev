@@ -68,7 +68,7 @@ export const DailyAttendanceCard = ({
       />
       <CardContent className="p-4">
         <AttendanceStats stats={record.stats} />
-        <div className="mt-3">
+        <div className="mt-4">
           <DailyAttendanceList
             records={filteredRecords}
             getTechnicianName={getTechnicianName}
