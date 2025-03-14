@@ -24,16 +24,20 @@ export const MRDateImport = () => {
       // Format date as YYYY-MM-DD for the API
       const formattedDate = format(importDate, 'yyyy-MM-dd');
       
+      console.log(`Calling fetch-optimoroute with date: ${formattedDate}`);
+      
       // Call the edge function to fetch route data
       const { data, error } = await supabase.functions.invoke('fetch-optimoroute', {
         body: { date: formattedDate }
       });
       
+      console.log('Edge function response:', data, error);
+      
       if (error) throw new Error(error.message);
       if (!data || !data.orders) throw new Error('No data returned from API');
       
       // Process the response to extract drivers and their work orders
-      const processedDrivers = processOptimoRouteData(data.orders);
+      const processedDrivers = processOptimoRouteData(data.orders, formattedDate);
       setDrivers(processedDrivers);
       
       toast.success(`Successfully imported ${processedDrivers.length} drivers`);
@@ -47,7 +51,7 @@ export const MRDateImport = () => {
   };
 
   // Process the OptimoRoute response into our Driver/WorkOrder structure
-  const processOptimoRouteData = (orders) => {
+  const processOptimoRouteData = (orders, formattedDate) => {
     const driversMap = new Map();
     
     // Group orders by driver
