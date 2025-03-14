@@ -22,8 +22,7 @@ import {
   Receipt,
   CreditCard,
   Link,
-  LogOut,
-  HardHat
+  LogOut
 } from "lucide-react";
 
 export type NavigationItem = {
@@ -59,11 +58,6 @@ export const navigationConfig: NavigationItem[] = [
       { title: "Approved Orders", url: "/billing/approved", icon: Check },
       { title: "Pricing", url: "/billing/pricing", icon: DollarSign },
     ],
-  },
-  {
-    title: "Material Requirements",
-    url: "/material-requirements",
-    icon: HardHat,
   },
   {
     title: "Vehicle Maintenance",
@@ -115,3 +109,4 @@ export const navigationConfig: NavigationItem[] = [
     ],
   },
 ];
+
