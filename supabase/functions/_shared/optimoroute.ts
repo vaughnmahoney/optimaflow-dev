@@ -1,135 +1,158 @@
 
-export const baseUrl = "https://api.optimoroute.com/v1";
+// Shared OptimoRoute API utilities
+
+export const baseUrl = 'https://api.optimoroute.com/v1';
 
 export const endpoints = {
-  search: "/search_orders",
-  completion: "/get_completion_details",
-  routes: "/get_routes",
+  search: '/search_orders',
+  completion: '/get_completion_details',
+  routes: '/get_routes'
 };
 
 /**
- * Extracts order numbers from a list of orders
- * @param orders Array of orders from the API response
- * @returns Array of order numbers
+ * Extract order numbers from search results for use in completion API
+ * The OptimoRoute API nests orderNo under the data property
  */
-export const extractOrderNumbers = (orders: any[]): string[] => {
+export function extractOrderNumbers(orders: any[]): string[] {
   if (!orders || orders.length === 0) {
     return [];
   }
   
   return orders
-    .map(order => {
-      // Check if orderNo exists in the expected data property
-      return order.data?.orderNo || null;
+    .filter(order => {
+      // Check if orderNo exists in data property (correct structure from API)
+      return order.data && order.data.orderNo;
     })
-    .filter(Boolean); // Remove null/undefined values
-};
+    .map(order => order.data.orderNo);
+}
 
 /**
- * Creates a map of order numbers to completion details for faster lookups
- * @param completionData Completion details data from API
- * @returns Map of order numbers to completion details
+ * Do not filter by status at this stage - pass all orders to completion API
  */
-export const createCompletionMap = (completionData: any): Record<string, any> => {
-  const completionMap: Record<string, any> = {};
-  
+export function extractFilteredOrderNumbers(orders: any[]): string[] {
+  console.log(`Extracting order numbers without status filtering from ${orders?.length || 0} orders`);
+  return extractOrderNumbers(orders);
+}
+
+/**
+ * Create a map of orderNo to completion details for faster lookups
+ */
+export function createCompletionMap(completionData: any): Record<string, any> {
   if (!completionData || !completionData.orders || !Array.isArray(completionData.orders)) {
-    return completionMap;
+    return {};
   }
   
-  completionData.orders.forEach(order => {
-    if (order.data && order.data.orderNo) {
-      completionMap[order.data.orderNo] = order;
+  const map: Record<string, any> = {};
+  
+  completionData.orders.forEach((order: any) => {
+    if (order.orderNo) {
+      map[order.orderNo] = order;
     }
   });
   
-  return completionMap;
-};
+  console.log(`Created completion map with ${Object.keys(map).length} entries`);
+  
+  return map;
+}
 
 /**
- * Merges search order data with completion details
- * @param searchOrders Array of orders from search response
- * @param completionMap Map of order numbers to completion details
- * @returns Array of merged order data
+ * Merge search results with completion details
+ * Collect and log data from various locations to help with debugging
  */
-export const mergeOrderData = (searchOrders: any[], completionMap: Record<string, any>): any[] => {
-  if (!searchOrders || searchOrders.length === 0) {
+export function mergeOrderData(orders: any[], completionMap: Record<string, any>): any[] {
+  if (!orders || orders.length === 0) {
     return [];
   }
   
-  return searchOrders.map(searchOrder => {
-    const orderNo = searchOrder.data?.orderNo;
+  console.log(`Merging ${orders.length} orders with completion details`);
+  
+  return orders.map(order => {
+    // Get orderNo from the correct location (inside data object)
+    const orderNo = order.data?.orderNo;
     const completionDetails = orderNo ? completionMap[orderNo] : null;
     
-    // Explicitly extract the status from completion details to make it more accessible
-    let completionStatus = null;
-    if (completionDetails && completionDetails.data && completionDetails.data.status) {
-      completionStatus = completionDetails.data.status;
-    }
+    // Extract key fields from different possible locations
+    const extractedData = {
+      orderNo: orderNo || order.orderNo || "Unknown",
+      tracking_url: completionDetails?.data?.tracking_url || null,
+      driverName: order.scheduleInformation?.driverName || null,
+      completionStatus: completionDetails?.data?.status || null
+    };
     
     return {
-      ...searchOrder,
-      completion_details: completionDetails || null,
-      completion_status: completionStatus
+      ...order,
+      completionDetails,
+      extracted: extractedData,
+      completion_response: completionDetails ? { success: true, orders: [completionDetails] } : null,
+      completion_status: completionDetails?.data?.status || null
     };
   });
-};
+}
 
 /**
- * Filters orders by status with improved path checking
- * @param orders Array of orders
- * @param validStatuses Array of valid statuses to include
- * @returns Filtered array of orders
+ * Improved version of filterOrdersByStatus that handles all possible status locations
+ * and correctly handles case-insensitive comparison
  */
-export const filterOrdersByStatus = (orders: any[], validStatuses: string[]): any[] => {
-  if (!orders || orders.length === 0 || !validStatuses || validStatuses.length === 0) {
+export function filterOrdersByStatus(orders: any[], validStatuses: string[] = ['success', 'failed', 'rejected']): any[] {
+  if (!orders || !Array.isArray(orders)) {
+    console.log("No orders to filter by status");
     return [];
   }
   
-  console.log(`Filtering ${orders.length} orders by statuses: ${validStatuses.join(', ')}`);
+  // Convert valid statuses to lowercase for case-insensitive comparison
+  const normalizedValidStatuses = validStatuses.map(status => status.toLowerCase());
   
-  // Sample first 5 orders for debugging
+  console.log(`Filtering ${orders.length} orders by status: ${normalizedValidStatuses.join(', ')}`);
+  
+  // Inspect a sample order to help debug status locations
   if (orders.length > 0) {
-    const sampleOrder = orders[0];
-    console.log("Sample order structure:", {
-      orderNo: sampleOrder.data?.orderNo,
-      completionStatus: sampleOrder.completion_status,
-      completionDetails: sampleOrder.completion_details ? {
-        status: sampleOrder.completion_details.data?.status,
-        timestamp: sampleOrder.completion_details.data?.timestamp
-      } : null,
-      dataStatus: sampleOrder.data?.status,
-      extractedStatus: sampleOrder.extracted?.completionStatus
-    });
+    const sample = orders[0];
+    console.log("Sample order structure for status debugging:", JSON.stringify({
+      hasCompletionDetails: !!sample.completionDetails,
+      completionDetailsDataStatus: sample.completionDetails?.data?.status,
+      completionStatus: sample.completion_status,
+      extractedStatus: sample.extracted?.completionStatus,
+      directDataStatus: sample.data?.status,
+      completionResponseStatus: sample.completion_response?.orders?.[0]?.data?.status
+    }, null, 2));
   }
   
-  return orders.filter(order => {
-    // Check multiple possible paths for status value in each order
-    // Convert to lowercase for case-insensitive comparison
-    const status = 
-      // Primary path: check completion_status (set during mergeOrderData)
-      (order.completion_status?.toLowerCase()) || 
-      // Check completion_details nested data
-      (order.completion_details?.data?.status?.toLowerCase()) ||
-      // Fallback: check data.status
-      (order.data?.status?.toLowerCase()) || 
-      // Check extracted completionStatus 
-      (order.extracted?.completionStatus?.toLowerCase()) ||
-      // Check search_response scheduleInformation
-      (order.search_response?.scheduleInformation?.status?.toLowerCase()) ||
-      // If we can't find a status, return null
-      null;
+  // Track status distribution for logging
+  const statusCounts: Record<string, number> = {};
+  const filteredOrders = orders.filter(order => {
+    // Enhanced logic to find status in all possible locations
+    let status = "unknown";
     
-    // Log status for debugging
-    if (orders.indexOf(order) < 5) {
-      console.log(`Order ${order.data?.orderNo} status: ${status}`);
+    // First check the most likely location based on API docs: completionDetails.data.status
+    if (order.completionDetails?.data?.status) {
+      status = order.completionDetails.data.status;
+    } 
+    // Then check other possible locations
+    else if (order.completion_status) {
+      status = order.completion_status;
+    } 
+    else if (order.extracted?.completionStatus) {
+      status = order.extracted.completionStatus;
+    } 
+    else if (order.completion_response?.orders?.[0]?.data?.status) {
+      status = order.completion_response.orders[0].data.status;
+    }
+    else if (order.data?.status) {
+      status = order.data.status;
     }
     
-    // Check if the status is in our valid list (case insensitive)
-    const isValid = status && validStatuses.some(
-      validStatus => validStatus.toLowerCase() === status
-    );
+    // Normalize status to lowercase for comparison
+    const normalizedStatus = String(status).toLowerCase();
     
-    return isValid;
+    // Count statuses for logging
+    statusCounts[normalizedStatus] = (statusCounts[normalizedStatus] || 0) + 1;
+    
+    // Keep only orders with status in normalizedValidStatuses array
+    return normalizedValidStatuses.includes(normalizedStatus);
   });
-};
+  
+  console.log("Status distribution in data:", JSON.stringify(statusCounts, null, 2));
+  console.log(`After filtering: ${filteredOrders.length} of ${orders.length} orders match valid statuses (${normalizedValidStatuses.join(', ')})`);
+  
+  return filteredOrders;
+}
