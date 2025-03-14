@@ -24,6 +24,7 @@ export const useMRStore = create<MRState & {
   drivers: [],
   selectedDrivers: [],
   selectedWorkOrders: [],
+  selectedDriver: null,
   importDate: null,
   isLoading: false,
   error: null,
@@ -47,9 +48,13 @@ export const useMRStore = create<MRState & {
       );
     }
     
+    // Update selectedDriver when selecting/deselecting
+    const newSelectedDriver = isSelected ? null : driver || null;
+    
     return { 
       selectedDrivers: newSelectedDrivers,
-      selectedWorkOrders: newSelectedWorkOrders
+      selectedWorkOrders: newSelectedWorkOrders,
+      selectedDriver: newSelectedDriver
     };
   }),
   
@@ -70,12 +75,14 @@ export const useMRStore = create<MRState & {
       );
       return { 
         selectedDrivers: allDriverIds,
-        selectedWorkOrders: allWorkOrderIds
+        selectedWorkOrders: allWorkOrderIds,
+        selectedDriver: state.drivers[0] || null
       };
     }
     return { 
       selectedDrivers: [],
-      selectedWorkOrders: []
+      selectedWorkOrders: [],
+      selectedDriver: null
     };
   }),
   
@@ -101,7 +108,8 @@ export const useMRStore = create<MRState & {
         
       return { 
         selectedWorkOrders: newSelectedWorkOrders,
-        selectedDrivers: newSelectedDrivers
+        selectedDrivers: newSelectedDrivers,
+        selectedDriver: driver
       };
     } else {
       // Remove all of this driver's work orders from selection
@@ -155,6 +163,7 @@ export const useMRStore = create<MRState & {
   reset: () => set({
     selectedDrivers: [],
     selectedWorkOrders: [],
+    selectedDriver: null,
     importDate: null,
     error: null,
     summary: initialSummary

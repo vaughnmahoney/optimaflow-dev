@@ -2,7 +2,7 @@
 import React from "react";
 import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Car, Tool, AlertTriangle, Calendar } from "lucide-react";
+import { Car, Wrench, AlertTriangle, Calendar } from "lucide-react";
 
 const VehicleMaintenance = () => {
   return (
@@ -31,7 +31,7 @@ const VehicleMaintenance = () => {
                 <span>Alert when vehicles need immediate attention</span>
               </li>
               <li className="flex items-center gap-2">
-                <Tool className="h-4 w-4 text-muted-foreground" />
+                <Wrench className="h-4 w-4 text-muted-foreground" />
                 <span>Track repair history for each vehicle</span>
               </li>
             </ul>
@@ -55,7 +55,7 @@ const VehicleMaintenance = () => {
           </div>
           <div className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
             <h3 className="font-medium mb-2 flex items-center gap-2">
-              <Tool className="h-4 w-4" />
+              <Wrench className="h-4 w-4" />
               Out of Service
             </h3>
             <p className="text-sm text-gray-500">2 vehicles in repair</p>

@@ -96,7 +96,6 @@ export const DriverList = ({ drivers, isLoading }: DriverListProps) => {
             
             {isExpanded && (
               <WorkOrderList 
-                driverId={driver.id} 
                 workOrders={driver.workOrders}
               />
             )}

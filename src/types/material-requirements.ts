@@ -44,6 +44,7 @@ export interface MRState {
   drivers: Driver[];
   selectedDrivers: string[];
   selectedWorkOrders: string[];
+  selectedDriver: Driver | null;
   importDate: Date | null;
   isLoading: boolean;
   error: string | null;
