@@ -5,24 +5,29 @@ import { Driver, MaterialSummary, MaterialType } from '@/types/material-requirem
 interface MRState {
   isLoading: boolean;
   error: string | null;
+  importDate: Date | null;
   drivers: Driver[];
   selectedDrivers: string[];
   selectedWorkOrders: string[];
   summary: MaterialSummary;
   selectedDriver: Driver | null;
   
+  setImportDate: (date: Date | null) => void;
   setDrivers: (drivers: Driver[]) => void;
   toggleDriverSelection: (driverId: string) => void;
   selectAllDrivers: (selected: boolean) => void;
   toggleWorkOrderSelection: (workOrderId: string) => void;
   calculateSummary: () => void;
   setSelectedDriver: (driverId: string | null) => void;
+  setIsLoading: (isLoading: boolean) => void;
+  setError: (error: string | null) => void;
   clearAll: () => void;
 }
 
 export const useMRStore = create<MRState>((set, get) => ({
   isLoading: false,
   error: null,
+  importDate: null,
   drivers: [],
   selectedDrivers: [],
   selectedWorkOrders: [],
@@ -33,6 +38,8 @@ export const useMRStore = create<MRState>((set, get) => ({
     totalFilters: 0,
     totalCoils: 0
   },
+  
+  setImportDate: (date) => set({ importDate: date }),
   
   setDrivers: (drivers) => set({ drivers }),
   
@@ -117,6 +124,10 @@ export const useMRStore = create<MRState>((set, get) => ({
       return { selectedDriver: driver };
     });
   },
+  
+  setIsLoading: (isLoading) => set({ isLoading }),
+  
+  setError: (error) => set({ error }),
   
   clearAll: () => set({
     selectedDrivers: [],
