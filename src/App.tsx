@@ -22,7 +22,7 @@ import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
 import BulkOrdersTest from "./pages/BulkOrdersTest";
 // Import the old materials requirement component instead
-import MaterialsRequirement from "./oldmr/src/pages/MaterialsRequirement";
+import MaterialsRequirement from "../oldmr/src/pages/MaterialsRequirement";
 
 const queryClient = new QueryClient();
 
