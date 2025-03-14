@@ -60,6 +60,11 @@ export const navigationConfig: NavigationItem[] = [
     ],
   },
   {
+    title: "Material Requirements",
+    url: "/material-requirements",
+    icon: Package,
+  },
+  {
     title: "Vehicle Maintenance",
     url: "/vehicles",
     icon: Truck,
@@ -109,4 +114,3 @@ export const navigationConfig: NavigationItem[] = [
     ],
   },
 ];
-

@@ -21,6 +21,7 @@ import Calendar from "./pages/Calendar";
 import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
 import BulkOrdersTest from "./pages/BulkOrdersTest";
+import MaterialRequirements from "./pages/MaterialRequirements";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <WorkOrders />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/material-requirements"
+              element={
+                <ProtectedRoute>
+                  <MaterialRequirements />
                 </ProtectedRoute>
               }
             />
