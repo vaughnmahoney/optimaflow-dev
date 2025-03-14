@@ -40,6 +40,12 @@ export const MRDateImport = () => {
       // Use the drivers data directly from the response
       setDrivers(data.drivers);
       
+      // If we have order IDs and notes aren't already included, fetch order details in batches
+      if (data.orderIds && data.orderIds.length > 0 && !data.notesIncluded) {
+        toast.info(`Fetching additional order details for ${data.orderIds.length} orders...`);
+        await fetchOrderDetailsInBatches(data.orderIds, data.drivers);
+      }
+      
       toast.success(`Successfully imported ${data.driverCount} drivers with ${data.orderCount} orders`);
     } catch (err) {
       console.error('Error importing route data:', err);
@@ -47,6 +53,87 @@ export const MRDateImport = () => {
       toast.error('Failed to import route data: ' + (err.message || 'Unknown error'));
     } finally {
       setIsLoading(false);
+    }
+  };
+  
+  // Function to fetch order details in batches of 500 (API limit)
+  const fetchOrderDetailsInBatches = async (orderIds: string[], driversData: any[]) => {
+    if (!orderIds.length) return;
+    
+    try {
+      // Create batches of max 500 orders (API limit)
+      const batchSize = 500;
+      const batches = [];
+      
+      for (let i = 0; i < orderIds.length; i += batchSize) {
+        batches.push(orderIds.slice(i, i + batchSize));
+      }
+      
+      console.log(`Split ${orderIds.length} orders into ${batches.length} batches for processing`);
+      
+      // Process all batches in parallel
+      const batchResults = await Promise.all(
+        batches.map(async (batchOrderIds, index) => {
+          console.log(`Processing batch ${index + 1}/${batches.length} with ${batchOrderIds.length} orders`);
+          
+          try {
+            const { data, error } = await supabase.functions.invoke('search-optimoroute', {
+              body: { orderNumbers: batchOrderIds }
+            });
+            
+            if (error) throw new Error(`Batch ${index + 1} error: ${error.message}`);
+            if (!data.success) throw new Error(`Batch ${index + 1} failed: ${data.error || 'Unknown error'}`);
+            
+            return data.orders || [];
+          } catch (err) {
+            console.error(`Error processing batch ${index + 1}:`, err);
+            // Return empty array for failed batch instead of failing completely
+            return [];
+          }
+        })
+      );
+      
+      // Flatten results from all batches
+      const allOrders = batchResults.flat();
+      console.log(`Retrieved ${allOrders.length} order details from ${batches.length} batches`);
+      
+      // Create a map for quick orderNo lookup
+      const orderDetailsMap = new Map();
+      allOrders.forEach(order => {
+        if (order.data && order.data.orderNo) {
+          orderDetailsMap.set(order.data.orderNo, order);
+        }
+      });
+      
+      // Update drivers with notes from order details
+      const updatedDrivers = driversData.map(driver => {
+        // Update each work order with notes if available
+        const updatedWorkOrders = driver.workOrders.map(workOrder => {
+          const orderDetails = orderDetailsMap.get(workOrder.orderId);
+          if (orderDetails && orderDetails.data) {
+            return {
+              ...workOrder,
+              notes: orderDetails.data.notes || '',
+              searchResponse: orderDetails
+            };
+          }
+          return workOrder;
+        });
+        
+        return {
+          ...driver,
+          workOrders: updatedWorkOrders
+        };
+      });
+      
+      // Update the store with enhanced data
+      setDrivers(updatedDrivers);
+      console.log('Updated drivers with order notes data', updatedDrivers);
+      
+    } catch (err) {
+      console.error('Error fetching order details:', err);
+      toast.error('Error fetching additional order details. Some information may be incomplete.');
+      // Don't throw here - we want to continue with at least the basic data
     }
   };
 

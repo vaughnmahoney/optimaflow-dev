@@ -90,6 +90,7 @@ serve(async (req) => {
 function processOptimoRouteResponse(data: any, date: string) {
   const drivers: any[] = [];
   const orders: any[] = [];
+  const orderIds: string[] = [];
   const routesByDriver: Record<string, any> = {};
   
   // Check if we have routes data
@@ -124,6 +125,11 @@ function processOptimoRouteResponse(data: any, date: string) {
         // Create a work order for each stop
         const workOrderId = stop.id || `stop-${Math.random().toString(36).substring(2, 10)}`;
         const orderNo = stop.orderNo && stop.orderNo !== "-" ? stop.orderNo : `stop-${workOrderId}`;
+        
+        // Collect all order numbers for batch processing
+        if (orderNo && orderNo !== "-") {
+          orderIds.push(orderNo);
+        }
         
         // Extract location information
         const location = {
@@ -177,7 +183,8 @@ function processOptimoRouteResponse(data: any, date: string) {
           locationName: location.name,
           address: location.address,
           date: stop.date || date,
-          materials
+          materials,
+          notes: stop.notes || '' // Initial notes from stop data
         };
         
         // Add to driver's work orders
@@ -214,8 +221,10 @@ function processOptimoRouteResponse(data: any, date: string) {
     success: true,
     drivers: drivers,
     orders: orders,
+    orderIds: orderIds, // Include all order IDs for batch processing
     driverCount: drivers.length,
     orderCount: orders.length,
+    notesIncluded: false, // Flag indicating detailed notes aren't included yet
     message: 'Successfully fetched and processed route data'
   };
 }

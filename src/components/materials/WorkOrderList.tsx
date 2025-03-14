@@ -1,90 +1,80 @@
 
-import React from 'react';
-import { Checkbox } from '@/components/ui/checkbox';
-import { WorkOrder } from '@/types/material-requirements';
-import { useMRStore } from '@/store/useMRStore';
-import { MaterialType } from '@/types/material-requirements';
-import { Package } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+
+interface Material {
+  id: string;
+  name: string;
+  type: string;
+  quantity: number;
+  unit: string;
+}
+
+interface WorkOrder {
+  id: string;
+  orderId: string;
+  locationName: string;
+  address: string;
+  date: string;
+  materials: Material[];
+  notes?: string;
+}
 
 interface WorkOrderListProps {
-  driverId: string;
   workOrders: WorkOrder[];
 }
 
-export const WorkOrderList = ({ driverId, workOrders }: WorkOrderListProps) => {
-  const { selectedWorkOrders, toggleWorkOrderSelection, selectAllWorkOrders } = useMRStore();
-
-  const allSelected = workOrders.length > 0 && 
-    workOrders.every(wo => selectedWorkOrders.includes(wo.id));
-
-  // Count materials by type
-  const countMaterials = (wo: WorkOrder) => {
-    const counts = {
-      filter: 0,
-      coil: 0
-    };
-    
-    wo.materials.forEach(material => {
-      if (material.type === MaterialType.Filter) {
-        counts.filter += material.quantity;
-      } else if (material.type === MaterialType.Coil) {
-        counts.coil += material.quantity;
-      }
-    });
-    
-    return counts;
-  };
+export const WorkOrderList = ({ workOrders }: WorkOrderListProps) => {
+  if (!workOrders || workOrders.length === 0) {
+    return (
+      <div className="text-center p-4">
+        <p className="text-muted-foreground">No work orders to display</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="ml-6 mt-2 space-y-2">
-      <div className="flex items-center gap-2 pb-1 border-b">
-        <Checkbox 
-          id={`select-all-${driverId}`}
-          checked={allSelected}
-          onCheckedChange={(checked) => selectAllWorkOrders(driverId, !!checked)}
-        />
-        <label htmlFor={`select-all-${driverId}`} className="text-sm font-medium">
-          Select All Work Orders
-        </label>
-      </div>
-      
-      {workOrders.map(wo => {
-        const materialCounts = countMaterials(wo);
-        
-        return (
-          <div key={wo.id} className="flex items-start gap-2 py-1 pl-1 pr-2 rounded-md hover:bg-accent/50">
-            <Checkbox 
-              id={`wo-${wo.id}`}
-              checked={selectedWorkOrders.includes(wo.id)}
-              onCheckedChange={() => toggleWorkOrderSelection(wo.id)}
-              className="mt-0.5"
-            />
-            <div className="flex-1">
-              <label 
-                htmlFor={`wo-${wo.id}`}
-                className="flex flex-col text-sm cursor-pointer"
-              >
-                <span className="font-medium">{wo.locationName}</span>
-                <span className="text-xs text-muted-foreground">{wo.address}</span>
-                <div className="flex gap-3 mt-1">
-                  {materialCounts.filter > 0 && (
-                    <div className="flex items-center gap-1 text-xs">
-                      <Package className="h-3 w-3" />
-                      <span>{materialCounts.filter} filters</span>
-                    </div>
-                  )}
-                  {materialCounts.coil > 0 && (
-                    <div className="flex items-center gap-1 text-xs">
-                      <Package className="h-3 w-3" />
-                      <span>{materialCounts.coil} coils</span>
-                    </div>
-                  )}
+    <ScrollArea className="h-[calc(100vh-20rem)] pr-4">
+      <div className="space-y-4">
+        {workOrders.map((workOrder) => (
+          <Card key={workOrder.id} className="shadow-sm">
+            <CardHeader className="pb-2">
+              <div className="flex justify-between items-start">
+                <div>
+                  <CardTitle className="text-base">{workOrder.locationName}</CardTitle>
+                  <CardDescription className="text-xs">{workOrder.address}</CardDescription>
                 </div>
-              </label>
-            </div>
-          </div>
-        );
-      })}
-    </div>
+                <Badge variant="outline">{workOrder.orderId}</Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {/* Notes section */}
+              {workOrder.notes && (
+                <div className="mb-3">
+                  <h4 className="text-sm font-medium mb-1">Notes:</h4>
+                  <p className="text-sm text-muted-foreground bg-slate-50 p-2 rounded">
+                    {workOrder.notes}
+                  </p>
+                </div>
+              )}
+              
+              <h4 className="text-sm font-medium mb-2">Materials:</h4>
+              <div className="space-y-1">
+                {workOrder.materials.map((material) => (
+                  <div key={material.id} className="flex justify-between items-center">
+                    <span className="text-sm">{material.name}</span>
+                    <Badge variant="secondary">
+                      {material.quantity} {material.unit}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </ScrollArea>
   );
 };

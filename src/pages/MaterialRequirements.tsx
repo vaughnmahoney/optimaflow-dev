@@ -9,9 +9,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MaterialRequirementsSummary } from '@/components/materials/MaterialRequirementsSummary';
 import { AlertCircle } from 'lucide-react';
+import { WorkOrderList } from '@/components/materials/WorkOrderList';
 
 const MaterialRequirements = () => {
-  const { isLoading, error, drivers, summary, calculateSummary } = useMRStore();
+  const { isLoading, error, drivers, summary, calculateSummary, selectedDriver } = useMRStore();
 
   useEffect(() => {
     // Calculate summary whenever selections change
@@ -50,12 +51,23 @@ const MaterialRequirements = () => {
             <Tabs defaultValue="summary">
               <TabsList className="mb-4">
                 <TabsTrigger value="summary">Summary</TabsTrigger>
+                <TabsTrigger value="workorders">Work Orders</TabsTrigger>
                 <TabsTrigger value="drivers">By Driver</TabsTrigger>
                 <TabsTrigger value="materials">By Material</TabsTrigger>
               </TabsList>
 
               <TabsContent value="summary">
                 <MaterialRequirementsSummary />
+              </TabsContent>
+              
+              <TabsContent value="workorders">
+                {selectedDriver ? (
+                  <WorkOrderList workOrders={selectedDriver.workOrders} />
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Select a driver to view their work orders
+                  </p>
+                )}
               </TabsContent>
 
               <TabsContent value="drivers">
