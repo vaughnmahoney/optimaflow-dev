@@ -37,18 +37,21 @@ const WorkOrders = () => {
     refetch
   } = useWorkOrderData();
 
+  // Prefetch flagged work order count
   useEffect(() => {
     queryClient.prefetchQuery({ 
       queryKey: ["flaggedWorkOrdersCount"]
     });
   }, [queryClient]);
 
+  // Redirect to main work orders page if on a nested route
   useEffect(() => {
     if (location.pathname.match(/\/work-orders\/[^/]+$/)) {
       navigate("/work-orders", { replace: true });
     }
   }, [location.pathname, navigate]);
 
+  // Handle sorting
   const handleSort = (field: SortField, direction: SortDirection) => {
     setSort(field, direction);
   };

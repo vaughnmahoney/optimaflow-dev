@@ -29,8 +29,18 @@ export const useWorkOrderFetch = (
   return useQuery({
     queryKey: ["workOrders", filters, page, pageSize, sortField, sortDirection],
     queryFn: async () => {
+      console.log("======= Work Order Fetch =======");
       console.log("Fetching work orders with:", { 
-        filters, 
+        filters: {
+          status: filters.status,
+          orderNo: filters.orderNo,
+          driver: filters.driver,
+          location: filters.location,
+          dateRange: {
+            from: filters.dateRange.from ? filters.dateRange.from.toISOString() : null,
+            to: filters.dateRange.to ? filters.dateRange.to.toISOString() : null
+          }
+        },
         page, 
         pageSize, 
         sortField, 
@@ -61,6 +71,7 @@ export const useWorkOrderFetch = (
       const data = await executeDataQuery(dataQuery);
       
       console.log(`Fetched ${data.length} work orders out of ${count} total matching records`);
+      console.log(`Current page: ${page}, Page size: ${pageSize}`);
       
       if (data.length > 0) {
         // Log first and last dates for debugging
@@ -79,6 +90,8 @@ export const useWorkOrderFetch = (
       
       // Apply any additional client-side filtering if needed
       const filteredData = processFilteredData(transformedOrders);
+      
+      console.log("======= End Work Order Fetch =======");
       
       // Return both the data and total count for pagination
       return {

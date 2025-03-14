@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ColumnFilterProps } from "./types";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -8,10 +8,28 @@ import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 
 export const DateFilter = ({ column, value, onChange, onClear }: ColumnFilterProps) => {
+  // Initialize date range state from prop value
   const [dateRange, setDateRange] = useState({
-    from: value?.from || null,
-    to: value?.to || null
+    from: value?.from ? new Date(value.from) : null,
+    to: value?.to ? new Date(value.to) : null
   });
+  
+  // Sync local state with prop changes
+  useEffect(() => {
+    const newFrom = value?.from ? new Date(value.from) : null;
+    const newTo = value?.to ? new Date(value.to) : null;
+    
+    // Only update if values are actually different
+    if (
+      (dateRange.from?.getTime() !== newFrom?.getTime()) || 
+      (dateRange.to?.getTime() !== newTo?.getTime())
+    ) {
+      setDateRange({
+        from: newFrom,
+        to: newTo
+      });
+    }
+  }, [value]);
   
   const handleClear = () => {
     setDateRange({ from: null, to: null });

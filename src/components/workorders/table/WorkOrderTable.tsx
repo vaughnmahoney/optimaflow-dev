@@ -63,8 +63,7 @@ export const WorkOrderTable = ({
     filters.orderNo !== null || 
     filters.driver !== null || 
     filters.location !== null || 
-    filters.dateRange.from !== null || 
-    filters.dateRange.to !== null;
+    (filters.dateRange.from !== null || filters.dateRange.to !== null);
 
   return (
     <div className="space-y-2">

@@ -25,15 +25,17 @@ export const Pagination = ({
   const currentPage = Math.min(page, totalPages);
   
   // If the current page is different from the page prop, adjust it
-  if (currentPage !== page && totalPages > 0) {
-    // This will trigger a re-render with the correct page
-    setTimeout(() => onPageChange(currentPage), 0);
-  }
+  React.useEffect(() => {
+    if (currentPage !== page && totalPages > 0) {
+      console.log(`Adjusting page from ${page} to ${currentPage} (totalPages: ${totalPages})`);
+      onPageChange(currentPage);
+    }
+  }, [currentPage, page, totalPages, onPageChange]);
   
   // Calculate displayed page range
   const firstItem = total === 0 ? 0 : Math.min((page - 1) * pageSize + 1, total);
   const lastItem = Math.min(page * pageSize, total);
-  
+
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between py-4 px-2 border-t">
       <div className="text-sm text-muted-foreground mb-4 sm:mb-0">
@@ -66,7 +68,7 @@ export const Pagination = ({
             size="icon"
             className="h-8 w-8"
             onClick={() => onPageChange(1)}
-            disabled={page === 1}
+            disabled={page <= 1}
           >
             <span className="sr-only">Go to first page</span>
             <ChevronsLeft className="h-4 w-4" />
@@ -76,7 +78,7 @@ export const Pagination = ({
             size="icon"
             className="h-8 w-8"
             onClick={() => onPageChange(page - 1)}
-            disabled={page === 1}
+            disabled={page <= 1}
           >
             <span className="sr-only">Go to previous page</span>
             <ChevronLeft className="h-4 w-4" />

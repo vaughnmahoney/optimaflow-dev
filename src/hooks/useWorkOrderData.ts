@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { SortField, SortDirection, PaginationState, WorkOrderFilters } from "@/components/workorders/types";
 import { useWorkOrderFetch } from "./useWorkOrderFetch";
 import { useWorkOrderStatusCounts } from "./useWorkOrderStatusCounts";
@@ -7,6 +7,7 @@ import { useWorkOrderMutations } from "./useWorkOrderMutations";
 import { useWorkOrderImport } from "./useWorkOrderImport";
 
 export const useWorkOrderData = () => {
+  // Initialize filters state
   const [filters, setFilters] = useState<WorkOrderFilters>({
     status: null,
     dateRange: { from: null, to: null },
@@ -15,15 +16,23 @@ export const useWorkOrderData = () => {
     orderNo: null
   });
   
+  // Initialize sorting state
   const [sortField, setSortField] = useState<SortField>('service_date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  
+  // Initialize pagination state
   const [pagination, setPagination] = useState<PaginationState>({
     page: 1,
     pageSize: 10,
     total: 0
   });
 
-  const { data: workOrdersData = { data: [], total: 0 }, isLoading, refetch } = useWorkOrderFetch(
+  // Fetch work orders with all necessary parameters
+  const { 
+    data: workOrdersData = { data: [], total: 0 }, 
+    isLoading, 
+    refetch 
+  } = useWorkOrderFetch(
     filters, 
     pagination.page, 
     pagination.pageSize,
@@ -31,20 +40,30 @@ export const useWorkOrderData = () => {
     sortDirection
   );
   
+  // Extract work orders and total count
   const workOrders = workOrdersData.data;
   const total = workOrdersData.total;
   
-  // Update total in pagination if it's changed
+  // Update pagination total if it has changed
   if (pagination.total !== total) {
     setPagination(prev => ({ ...prev, total }));
   }
   
+  // Calculate status counts
   const statusCounts = useWorkOrderStatusCounts(workOrders, filters.status);
   
+  // Import utility hooks
   const { searchOptimoRoute } = useWorkOrderImport();
   const { updateWorkOrderStatus, deleteWorkOrder } = useWorkOrderMutations();
 
-  const handleColumnFilterChange = (column: string, value: any) => {
+  // Reset page when filters change
+  const resetPage = useCallback(() => {
+    setPagination(prev => ({ ...prev, page: 1 }));
+  }, []);
+
+  // Handle column filter changes
+  const handleColumnFilterChange = useCallback((column: string, value: any) => {
+    console.log(`Column filter changed: ${column} = `, value);
     setFilters(prev => {
       const newFilters = { ...prev };
       
@@ -54,10 +73,14 @@ export const useWorkOrderData = () => {
           break;
         case 'service_date':
           // Ensure date objects are properly handled
-          newFilters.dateRange = {
-            from: value.from ? new Date(value.from) : null,
-            to: value.to ? new Date(value.to) : null
-          };
+          if (value === null || typeof value === 'string') {
+            newFilters.dateRange = { from: null, to: null };
+          } else {
+            newFilters.dateRange = {
+              from: value.from ? new Date(value.from) : null,
+              to: value.to ? new Date(value.to) : null
+            };
+          }
           break;
         case 'driver':
           newFilters.driver = value;
@@ -73,11 +96,12 @@ export const useWorkOrderData = () => {
       return newFilters;
     });
     
-    // Reset to first page when filtering
-    handlePageChange(1);
-  };
+    resetPage();
+  }, [resetPage]);
 
-  const clearColumnFilter = (column: string) => {
+  // Clear a single column filter
+  const clearColumnFilter = useCallback((column: string) => {
+    console.log(`Clearing column filter: ${column}`);
     setFilters(prev => {
       const newFilters = { ...prev };
       
@@ -102,11 +126,12 @@ export const useWorkOrderData = () => {
       return newFilters;
     });
     
-    // Reset to first page when clearing filters
-    handlePageChange(1);
-  };
+    resetPage();
+  }, [resetPage]);
 
-  const clearAllFilters = () => {
+  // Clear all filters
+  const clearAllFilters = useCallback(() => {
+    console.log("Clearing all filters");
     setFilters({
       status: null,
       dateRange: { from: null, to: null },
@@ -115,36 +140,43 @@ export const useWorkOrderData = () => {
       orderNo: null
     });
     
-    // Reset to first page when clearing all filters
-    handlePageChange(1);
-  };
+    resetPage();
+  }, [resetPage]);
 
-  const openImageViewer = (workOrderId: string) => {
+  // Open image viewer (placeholder for now)
+  const openImageViewer = useCallback((workOrderId: string) => {
     console.log(`Opening images for work order: ${workOrderId}`);
-  };
+  }, []);
 
-  const handleSort = (field: SortField, direction: SortDirection) => {
+  // Handle sorting changes
+  const handleSort = useCallback((field: SortField, direction: SortDirection) => {
+    console.log(`Sorting changed: ${field} ${direction}`);
     setSortField(field);
     setSortDirection(direction);
-    // Reset to first page when sorting
-    handlePageChange(1);
-  };
+    resetPage();
+  }, [resetPage]);
   
-  const handlePageChange = (page: number) => {
+  // Handle page changes
+  const handlePageChange = useCallback((page: number) => {
+    console.log(`Page changed to: ${page}`);
     const newPage = Math.max(1, page);
     setPagination(prev => ({ ...prev, page: newPage }));
-  };
+  }, []);
   
-  const handlePageSizeChange = (pageSize: number) => {
+  // Handle page size changes
+  const handlePageSizeChange = useCallback((pageSize: number) => {
+    console.log(`Page size changed to: ${pageSize}`);
     setPagination(prev => ({ ...prev, pageSize, page: 1 }));
-  };
+  }, []);
   
-  const handleFiltersChange = (newFilters: WorkOrderFilters) => {
+  // Handle filter changes (used by status cards)
+  const handleFiltersChange = useCallback((newFilters: WorkOrderFilters) => {
+    console.log("Filters changed:", newFilters);
     setFilters(newFilters);
-    // Reset to first page when filters change
-    handlePageChange(1);
-  };
+    resetPage();
+  }, [resetPage]);
 
+  // Return all necessary data and handlers
   return {
     data: workOrders,
     isLoading,
