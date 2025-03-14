@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { SortField, SortDirection, PaginationState, WorkOrderFilters } from "@/components/workorders/types";
 import { useWorkOrderFetch } from "./useWorkOrderFetch";
@@ -33,6 +34,7 @@ export const useWorkOrderData = () => {
   const workOrders = workOrdersData.data;
   const total = workOrdersData.total;
   
+  // Update total in pagination if it's changed
   if (pagination.total !== total) {
     setPagination(prev => ({ ...prev, total }));
   }
@@ -51,7 +53,11 @@ export const useWorkOrderData = () => {
           newFilters.orderNo = value;
           break;
         case 'service_date':
-          newFilters.dateRange = value;
+          // Ensure date objects are properly handled
+          newFilters.dateRange = {
+            from: value.from ? new Date(value.from) : null,
+            to: value.to ? new Date(value.to) : null
+          };
           break;
         case 'driver':
           newFilters.driver = value;
@@ -67,6 +73,7 @@ export const useWorkOrderData = () => {
       return newFilters;
     });
     
+    // Reset to first page when filtering
     handlePageChange(1);
   };
 
@@ -95,6 +102,7 @@ export const useWorkOrderData = () => {
       return newFilters;
     });
     
+    // Reset to first page when clearing filters
     handlePageChange(1);
   };
 
@@ -107,6 +115,7 @@ export const useWorkOrderData = () => {
       orderNo: null
     });
     
+    // Reset to first page when clearing all filters
     handlePageChange(1);
   };
 
@@ -117,6 +126,7 @@ export const useWorkOrderData = () => {
   const handleSort = (field: SortField, direction: SortDirection) => {
     setSortField(field);
     setSortDirection(direction);
+    // Reset to first page when sorting
     handlePageChange(1);
   };
   
@@ -131,6 +141,7 @@ export const useWorkOrderData = () => {
   
   const handleFiltersChange = (newFilters: WorkOrderFilters) => {
     setFilters(newFilters);
+    // Reset to first page when filters change
     handlePageChange(1);
   };
 
