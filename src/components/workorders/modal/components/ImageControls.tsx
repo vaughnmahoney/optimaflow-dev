@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Maximize2, Minimize2, ZoomIn, Move } from "lucide-react";
+import { ChevronLeft, ChevronRight, Maximize2, Minimize2, ZoomIn, Flag, FlagOff } from "lucide-react";
 
 interface ImageControlsProps {
   imagesCount: number;
@@ -12,6 +12,8 @@ interface ImageControlsProps {
   zoomModeEnabled: boolean;
   toggleZoomMode: () => void;
   zoomLevel: number;
+  isFlagged: boolean;
+  onToggleFlag: () => void;
 }
 
 export const ImageControls = ({
@@ -23,7 +25,9 @@ export const ImageControls = ({
   toggleImageExpand,
   zoomModeEnabled,
   toggleZoomMode,
-  zoomLevel
+  zoomLevel,
+  isFlagged,
+  onToggleFlag
 }: ImageControlsProps) => {
   return (
     <>
@@ -57,7 +61,21 @@ export const ImageControls = ({
       
       {/* Control buttons */}
       <div className="absolute top-4 left-4 flex gap-2">
-        {/* Expand/Collapse button - removed aria-label tooltip */}
+        {/* Flag button */}
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={onToggleFlag}
+          className={`h-10 w-10 rounded-full bg-white/90 hover:bg-white border-gray-200 shadow-md ${isFlagged ? 'bg-red-100 border-red-300' : ''}`}
+        >
+          {isFlagged ? (
+            <Flag className="h-4 w-4 text-red-500" />
+          ) : (
+            <FlagOff className="h-4 w-4" />
+          )}
+        </Button>
+        
+        {/* Expand/Collapse button */}
         <Button
           variant="outline"
           size="icon"
@@ -71,7 +89,7 @@ export const ImageControls = ({
           )}
         </Button>
         
-        {/* Zoom toggle button - only show when expanded - removed aria-label tooltip */}
+        {/* Zoom toggle button - only show when expanded */}
         {isImageExpanded && (
           <Button
             variant="outline"
@@ -90,10 +108,6 @@ export const ImageControls = ({
           {Math.round(zoomLevel * 100)}%
         </div>
       )}
-      
-      {/* Zoom mode instruction - removed as requested */}
-      
-      {/* Drag instruction when zoomed in - removed as requested */}
     </>
   );
 };
