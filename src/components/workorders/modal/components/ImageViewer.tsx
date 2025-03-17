@@ -5,13 +5,11 @@ import { ImageControls } from "./ImageControls";
 import { ImageEmptyState } from "./ImageEmptyState";
 
 interface ImageViewerProps {
-  images: Array<{ url: string; flagged?: boolean }>;
+  images: Array<{ url: string }>;
   currentImageIndex: number;
   setCurrentImageIndex: (index: number) => void;
   isImageExpanded: boolean;
   toggleImageExpand: () => void;
-  onToggleFlag?: (index: number, flagged: boolean) => void;
-  workOrderId?: string;
 }
 
 export const ImageViewer = ({
@@ -20,8 +18,6 @@ export const ImageViewer = ({
   setCurrentImageIndex,
   isImageExpanded,
   toggleImageExpand,
-  onToggleFlag,
-  workOrderId
 }: ImageViewerProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -70,17 +66,6 @@ export const ImageViewer = ({
     setIsLoading(false);
   };
 
-  // Handle flag toggle
-  const handleToggleFlag = () => {
-    if (onToggleFlag && images[currentImageIndex]) {
-      const currentFlaggedStatus = images[currentImageIndex].flagged || false;
-      onToggleFlag(currentImageIndex, !currentFlaggedStatus);
-    }
-  };
-
-  const currentImage = images[currentImageIndex];
-  const isFlagged = currentImage?.flagged || false;
-
   return (
     <div 
       ref={containerRef}
@@ -99,13 +84,6 @@ export const ImageViewer = ({
             {isLoading && (
               <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
                 <div className="h-16 w-16 border-4 border-t-blue-500 border-r-transparent border-b-blue-500 border-l-transparent rounded-full animate-spin"></div>
-              </div>
-            )}
-            
-            {/* Flagged indicator */}
-            {isFlagged && (
-              <div className="absolute top-14 left-14 z-10 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium animate-pulse">
-                Flagged
               </div>
             )}
             
@@ -146,8 +124,6 @@ export const ImageViewer = ({
             zoomModeEnabled={zoomModeEnabled}
             toggleZoomMode={toggleZoomMode}
             zoomLevel={zoomLevel}
-            isFlagged={isFlagged}
-            onToggleFlag={handleToggleFlag}
           />
         </>
       ) : (

@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,143 +15,132 @@ import Dashboard from "./pages/Dashboard";
 import Payroll from "./pages/Payroll";
 import VehicleMaintenance from "./pages/VehicleMaintenance";
 import Storage from "./pages/Storage";
-import Receipts from "./pages/Receipts";
-import Integrations from "./pages/Integrations";
+import Expenses from "./pages/Receipts"; // Renamed to Expenses but keeping the file name
 import Calendar from "./pages/Calendar";
 import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
 import BulkOrdersTest from "./pages/BulkOrdersTest";
-import MaterialsRequirement from "./pages/MaterialsRequirement";
+import MaterialRequirements from "./pages/MaterialRequirements";
 
 const queryClient = new QueryClient();
 
-function App() {
-  return (
-    <main className="app">
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <AuthProvider>
-              <Routes>
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                <Route path="/landing" element={<Index />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/bulk-orders-test" element={<BulkOrdersTest />} />
-                
-                <Route
-                  path="/dashboard"
-                  element={
-                    <ProtectedRoute>
-                      <Dashboard />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/work-orders"
-                  element={
-                    <ProtectedRoute>
-                      <WorkOrders />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/payroll"
-                  element={
-                    <ProtectedRoute>
-                      <Payroll />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/vehicle-maintenance"
-                  element={
-                    <ProtectedRoute>
-                      <VehicleMaintenance />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/storage"
-                  element={
-                    <ProtectedRoute>
-                      <Storage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/attendance"
-                  element={
-                    <ProtectedRoute>
-                      <Attendance />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/supervisor"
-                  element={<Navigate to="/attendance" replace />}
-                />
-                <Route
-                  path="/admin"
-                  element={<Navigate to="/employees" replace />}
-                />
-                <Route
-                  path="/employees"
-                  element={
-                    <ProtectedRoute>
-                      <Employees />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/attendance-history"
-                  element={
-                    <ProtectedRoute>
-                      <AttendanceHistory />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/receipts"
-                  element={
-                    <ProtectedRoute>
-                      <Receipts />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/integrations"
-                  element={
-                    <ProtectedRoute>
-                      <Integrations />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/calendar"
-                  element={
-                    <ProtectedRoute>
-                      <Calendar />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/materials"
-                  element={
-                    <ProtectedRoute>
-                      <MaterialsRequirement />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </AuthProvider>
-          </BrowserRouter>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </main>
-  );
-}
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/landing" element={<Index />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/bulk-orders-test" element={<BulkOrdersTest />} />
+            
+            {/* Main application routes */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/work-orders"
+              element={
+                <ProtectedRoute>
+                  <WorkOrders />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/material-requirements"
+              element={
+                <ProtectedRoute>
+                  <MaterialRequirements />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/payroll"
+              element={
+                <ProtectedRoute>
+                  <Payroll />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/vehicle-maintenance"
+              element={
+                <ProtectedRoute>
+                  <VehicleMaintenance />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/storage"
+              element={
+                <ProtectedRoute>
+                  <Storage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/attendance"
+              element={
+                <ProtectedRoute>
+                  <Attendance />
+                </ProtectedRoute>
+              }
+            />
+            {/* Legacy routes redirected to new paths */}
+            <Route
+              path="/supervisor"
+              element={<Navigate to="/attendance" replace />}
+            />
+            <Route
+              path="/admin"
+              element={<Navigate to="/employees" replace />}
+            />
+            <Route
+              path="/employees"
+              element={
+                <ProtectedRoute>
+                  <Employees />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/attendance-history"
+              element={
+                <ProtectedRoute>
+                  <AttendanceHistory />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/receipts"
+              element={
+                <ProtectedRoute>
+                  <Expenses />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/calendar"
+              element={
+                <ProtectedRoute>
+                  <Calendar />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
 export default App;
