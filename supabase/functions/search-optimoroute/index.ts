@@ -12,6 +12,7 @@ serve(async (req) => {
   try {
     const apiKey = Deno.env.get("OPTIMOROUTE_API_KEY");
     if (!apiKey) {
+      console.error("OptimoRoute API key not configured");
       return new Response(
         JSON.stringify({
           success: false,
@@ -138,7 +139,6 @@ serve(async (req) => {
       // Debug the raw response
       console.log("Search response status:", searchResponse.status);
       console.log("Search response statusText:", searchResponse.statusText);
-      console.log("Search response headers:", JSON.stringify(Object.fromEntries([...searchResponse.headers])));
       
       if (!searchResponse.ok) {
         const errorText = await searchResponse.text();
@@ -195,7 +195,7 @@ serve(async (req) => {
         );
       }
       
-      // Enhanced response with more debugging information
+      // Return success response with orders
       return new Response(
         JSON.stringify({
           success: true,
