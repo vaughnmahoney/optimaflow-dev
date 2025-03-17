@@ -1,4 +1,3 @@
-
 import {
   LayoutDashboard,
   CheckCircle,
@@ -22,7 +21,8 @@ import {
   Receipt,
   CreditCard,
   Link,
-  LogOut
+  LogOut,
+  PackageCheck
 } from "lucide-react";
 
 export type NavigationItem = {
@@ -30,6 +30,7 @@ export type NavigationItem = {
   url?: string;
   icon: any;
   items?: NavigationItem[];
+  roles?: string[];
 };
 
 export const navigationConfig: NavigationItem[] = [
@@ -58,11 +59,6 @@ export const navigationConfig: NavigationItem[] = [
       { title: "Approved Orders", url: "/billing/approved", icon: Check },
       { title: "Pricing", url: "/billing/pricing", icon: DollarSign },
     ],
-  },
-  {
-    title: "Material Requirements",
-    url: "/material-requirements",
-    icon: Package,
   },
   {
     title: "Vehicle Maintenance",
@@ -112,5 +108,11 @@ export const navigationConfig: NavigationItem[] = [
       { title: "Service Channel", url: "/apps/service-channel", icon: Link },
       { title: "Verisae", url: "/apps/verisae", icon: Link },
     ],
+  },
+  {
+    title: "Materials Requirement",
+    url: "/materials",
+    icon: PackageCheck,
+    roles: ["admin", "manager", "supervisor"],
   },
 ];
