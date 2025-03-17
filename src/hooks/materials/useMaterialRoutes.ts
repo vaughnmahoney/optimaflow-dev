@@ -101,7 +101,7 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
           successfulBatches: orderDetailsResponse.batchStats.successfulBatches,
           failedBatches: orderDetailsResponse.batchStats.failedBatches,
           totalOrdersProcessed: orderDetailsResponse.batchStats.totalOrdersProcessed || 0,
-          errors: orderDetailsResponse.batchStats.errors || []
+          errors: [] // Fix: Initialize with empty array since the property is expected but not provided
         });
         
         // Log batch statistics if available
