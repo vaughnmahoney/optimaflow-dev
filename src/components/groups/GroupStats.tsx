@@ -1,5 +1,5 @@
 
-import { Users, CheckCircle } from "lucide-react";
+import { Users } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,7 +19,7 @@ export const GroupStats = ({ groupId }: GroupStatsProps) => {
         .select('id', { count: 'exact' })
         .eq('group_id', groupId);
 
-      // Get attendance stats for the last 30 days if there are technicians
+      // This section is kept but not displayed in the UI
       let attendanceRate = '0';
       if (technicians?.length) {
         const technicianIds = technicians.map(t => t.id);
@@ -85,20 +85,13 @@ export const GroupStats = ({ groupId }: GroupStatsProps) => {
     fetchTechnicianIds();
   }, [groupId, refetch]);
 
+  // Return only the technician count, hiding the attendance percentage
   return (
-    <div className="grid grid-cols-2 gap-4">
-      <div className="flex items-center gap-2">
-        <Users className="h-4 w-4 text-muted-foreground" />
-        <span className="text-sm">
-          {stats?.techniciansCount || 0} Technicians
-        </span>
-      </div>
-      <div className="flex items-center gap-2">
-        <CheckCircle className="h-4 w-4 text-muted-foreground" />
-        <span className="text-sm">
-          {stats?.attendanceRate || 0}% Attendance
-        </span>
-      </div>
+    <div className="flex items-center gap-2">
+      <Users className="h-4 w-4 text-muted-foreground" />
+      <span className="text-sm">
+        {stats?.techniciansCount || 0} Technicians
+      </span>
     </div>
   );
 };

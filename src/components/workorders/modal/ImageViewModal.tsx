@@ -8,9 +8,6 @@ import { ModalFooter } from "./components/ModalFooter";
 import { NavigationControls } from "./components/NavigationControls";
 import { getStatusBorderColor } from "./utils/modalUtils";
 import { useWorkOrderNavigation } from "@/hooks/useWorkOrderNavigation";
-import { OrderDetailsTab } from "./tabs/OrderDetailsTab";
-import { NotesTab } from "./tabs/NotesTab";
-import { SignatureTab } from "./tabs/SignatureTab";
 
 interface ImageViewModalProps {
   workOrder: WorkOrder | null;
@@ -36,7 +33,6 @@ export const ImageViewModal = ({
   onResolveFlag,
 }: ImageViewModalProps) => {
   const [isImageExpanded, setIsImageExpanded] = useState(false);
-  const [activeTab, setActiveTab] = useState("details");
   
   const {
     currentWorkOrder,
@@ -59,11 +55,14 @@ export const ImageViewModal = ({
     setIsImageExpanded(!isImageExpanded);
   };
 
+  // Get images from the work order
   const completionData = currentWorkOrder?.completion_response?.orders?.[0]?.data;
   const images = completionData?.form?.images || [];
   
+  // Status color for border
   const statusBorderColor = getStatusBorderColor(currentWorkOrder.status || "pending_review");
 
+  // Sync navigation with parent component
   const handleNavigate = (index: number) => {
     handleSetOrder(index);
     onNavigate(index);
@@ -74,53 +73,14 @@ export const ImageViewModal = ({
       <DialogContent className={`max-w-6xl p-0 h-[90vh] flex flex-col rounded-lg overflow-hidden border-t-4 ${statusBorderColor}`}>
         <ModalHeader workOrder={currentWorkOrder} onClose={onClose} />
         
-        <div className="flex-1 flex overflow-hidden">
-          {/* Left side - Image viewer (60% width) */}
-          <div className="w-[60%] h-full overflow-hidden">
-            <ModalContent
-              workOrder={currentWorkOrder}
-              images={images}
-              currentImageIndex={currentImageIndex}
-              setCurrentImageIndex={setCurrentImageIndex}
-              isImageExpanded={isImageExpanded}
-              toggleImageExpand={toggleImageExpand}
-            />
-          </div>
-          
-          {/* Right side - Information (40% width) */}
-          <div className="w-[40%] h-full border-l">
-            <div className="h-full flex flex-col">
-              {/* Horizontal tabs */}
-              <div className="flex border-b">
-                <div 
-                  className={`px-6 py-3 font-medium cursor-pointer ${activeTab === 'details' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}
-                  onClick={() => setActiveTab('details')}
-                >
-                  Order Details
-                </div>
-                <div 
-                  className={`px-6 py-3 font-medium cursor-pointer ${activeTab === 'notes' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}
-                  onClick={() => setActiveTab('notes')}
-                >
-                  Notes
-                </div>
-                <div 
-                  className={`px-6 py-3 font-medium cursor-pointer ${activeTab === 'signature' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}
-                  onClick={() => setActiveTab('signature')}
-                >
-                  Signature
-                </div>
-              </div>
-              
-              {/* Tab content */}
-              <div className="flex-1 overflow-auto">
-                {activeTab === 'details' && <OrderDetailsTab workOrder={currentWorkOrder} />}
-                {activeTab === 'notes' && <NotesTab workOrder={currentWorkOrder} />}
-                {activeTab === 'signature' && <SignatureTab workOrder={currentWorkOrder} />}
-              </div>
-            </div>
-          </div>
-        </div>
+        <ModalContent
+          workOrder={currentWorkOrder}
+          images={images}
+          currentImageIndex={currentImageIndex}
+          setCurrentImageIndex={setCurrentImageIndex}
+          isImageExpanded={isImageExpanded}
+          toggleImageExpand={toggleImageExpand}
+        />
         
         <ModalFooter 
           workOrderId={currentWorkOrder.id} 

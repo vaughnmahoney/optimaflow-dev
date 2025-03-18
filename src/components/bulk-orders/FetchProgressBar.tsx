@@ -10,7 +10,7 @@ interface FetchProgressBarProps {
 export const FetchProgressBar = ({ processing, stats }: FetchProgressBarProps) => {
   if (!processing || !stats) return null;
   
-  const { completedBatches, totalBatches, successfulBatches, failedBatches } = stats;
+  const { completedBatches, totalBatches } = stats;
   const progress = Math.round((completedBatches / totalBatches) * 100);
   
   return (
@@ -19,12 +19,6 @@ export const FetchProgressBar = ({ processing, stats }: FetchProgressBarProps) =
         <span>Processing orders...</span>
         <span>
           {completedBatches}/{totalBatches} batches ({progress}%)
-          {completedBatches > 0 && (
-            <span className="ml-2">
-              (<span className="text-green-600">{successfulBatches}</span>
-              {failedBatches > 0 && <span className="text-red-600">/{failedBatches}</span>})
-            </span>
-          )}
         </span>
       </div>
       <Progress value={progress} className="h-2" />
