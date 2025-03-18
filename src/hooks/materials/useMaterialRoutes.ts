@@ -163,9 +163,10 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
         }
         
         const orderNo = order.data.orderNo;
-        const notes = order.data.notes;
+        const orderNotes = order.data.notes;
         
-        notes.push(`${orderNo}: ${notes}`);
+        // Fix: Add to notes array instead of using push on the notes string
+        notes.push(`${orderNo}: ${orderNotes}`);
         
         // Get the driver serial for this order
         const driverSerial = orderToDriverMap[orderNo];
@@ -175,7 +176,7 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
         }
         
         // Parse materials and associate them with the driver
-        const parsedMaterials = parseMaterialsFromNotes(notes, orderNo, driverSerial);
+        const parsedMaterials = parseMaterialsFromNotes(orderNotes, orderNo, driverSerial);
         
         // Update materials count per driver
         if (parsedMaterials.length > 0) {

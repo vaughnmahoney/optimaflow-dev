@@ -2,7 +2,7 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { DriverRoute } from "@/services/optimoroute/getRoutesService";
-import { useMRStore } from "@/hooks/materials/useMRStore";
+import { useMRStore, MaterialItem } from "@/hooks/materials/useMRStore";
 import { useEffect, useState } from "react";
 
 interface MRDriversTableProps {
