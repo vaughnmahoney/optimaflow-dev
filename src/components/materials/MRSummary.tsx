@@ -4,8 +4,8 @@ import { MaterialItem } from "@/hooks/materials/useMRStore";
 import { formatMaterialType, getBadgeVariant } from "@/utils/materialsUtils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
-import { exportSummarizedMaterialsToExcel } from "@/utils/materialsExportUtils";
+import { FileSpreadsheet } from "lucide-react";
+import { exportMaterialsToExcel } from "@/utils/materialsExportUtils";
 
 interface MRSummaryProps {
   data: MaterialItem[];
@@ -27,7 +27,7 @@ export const MRSummary = ({ data, technicianName = "Technician" }: MRSummaryProp
 
   // Handle export
   const handleExport = () => {
-    exportSummarizedMaterialsToExcel(materialCounts, technicianName);
+    exportMaterialsToExcel(data, technicianName);
   };
 
   return (
@@ -37,8 +37,8 @@ export const MRSummary = ({ data, technicianName = "Technician" }: MRSummaryProp
         
         {sortedMaterials.length > 0 && (
           <Button variant="outline" size="sm" onClick={handleExport}>
-            <Download className="h-4 w-4 mr-2" />
-            Export Summary
+            <FileSpreadsheet className="h-4 w-4 mr-2" />
+            Export Excel
           </Button>
         )}
       </div>

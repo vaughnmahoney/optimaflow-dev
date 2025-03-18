@@ -64,6 +64,12 @@ export default function MaterialsRequirement() {
           <TabsContent value="excel">
             <Card className="p-6">
               <MRUploader />
+              
+              {materialsData.length > 0 && (
+                <div className="mt-6">
+                  <MRContent />
+                </div>
+              )}
             </Card>
           </TabsContent>
         </Tabs>

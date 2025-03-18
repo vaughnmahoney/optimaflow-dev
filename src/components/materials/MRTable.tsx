@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { MaterialItem } from "@/hooks/materials/useMRStore";
 import { formatMaterialType, getBadgeVariant } from "@/utils/materialsUtils";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { FileSpreadsheet } from "lucide-react";
 import { exportMaterialsToExcel } from "@/utils/materialsExportUtils";
 
 interface MRTableProps {
@@ -23,7 +23,7 @@ export const MRTable = ({ data, showExport = true, technicianName = "Technician"
       {showExport && data.length > 0 && (
         <div className="flex justify-end">
           <Button variant="outline" size="sm" onClick={handleExport}>
-            <Download className="h-4 w-4 mr-2" />
+            <FileSpreadsheet className="h-4 w-4 mr-2" />
             Export to Excel
           </Button>
         </div>

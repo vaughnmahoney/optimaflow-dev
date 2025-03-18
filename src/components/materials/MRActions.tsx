@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Printer, Download } from "lucide-react";
+import { Printer, FileSpreadsheet } from "lucide-react";
 import { MaterialItem } from "@/hooks/materials/useMRStore";
 import { exportMaterialsToExcel } from "@/utils/materialsExportUtils";
 
@@ -25,7 +25,7 @@ export const MRActions = ({ materialsData, technicianName }: MRActionsProps) => 
         Print
       </Button>
       <Button variant="outline" size="sm" onClick={handleExport}>
-        <Download className="h-4 w-4 mr-2" />
+        <FileSpreadsheet className="h-4 w-4 mr-2" />
         Export Excel
       </Button>
     </div>
