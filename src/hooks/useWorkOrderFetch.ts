@@ -66,7 +66,10 @@ export const useWorkOrderFetch = (
         // Log first and last dates for debugging
         try {
           const dates = data.map(item => {
-            return item.search_response?.data?.date || 'unknown date';
+            // Try to get the most accurate date from the response
+            const endTime = item.completion_response?.orders?.[0]?.data?.endTime?.localTime;
+            const searchDate = item.search_response?.data?.date;
+            return endTime || searchDate || item.timestamp || 'unknown date';
           });
           console.log(`Date range in this page: ${dates[0]} to ${dates[dates.length - 1]}`);
         } catch (error) {

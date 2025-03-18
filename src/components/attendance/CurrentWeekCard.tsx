@@ -57,14 +57,14 @@ export const CurrentWeekCard: React.FC<CurrentWeekCardProps> = ({
   };
 
   return (
-    <Card className="mb-8">
-      <CardHeader className="pb-3">
-        <h3 className="text-lg font-semibold">This Week</h3>
-        <p className="text-sm text-muted-foreground">
+    <Card className="mb-8 border border-gray-200 shadow-sm overflow-hidden">
+      <CardHeader className="pb-3 bg-gray-50 border-b border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-800">This Week</h3>
+        <p className="text-sm text-gray-600">
           {format(weekStart, "MMM d")} - {format(weekEnd, "MMM d, yyyy")}
         </p>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-5">
         <div className="space-y-6">
           <div className="flex gap-2 justify-between">
             {weekDates.map((date) => {
@@ -77,14 +77,19 @@ export const CurrentWeekCard: React.FC<CurrentWeekCardProps> = ({
                 <Button
                   key={dateString}
                   variant={isSelected ? "default" : "outline"}
-                  className={`flex-1 ${isToday ? 'ring-2 ring-primary' : ''} ${record ? 'bg-secondary/10' : ''}`}
+                  className={`
+                    flex-1 font-medium 
+                    ${isToday ? 'ring-2 ring-primary/70' : ''}
+                    ${record ? 'bg-secondary/20' : ''}
+                    ${isSelected ? 'bg-primary text-primary-foreground shadow-md' : 'hover:bg-gray-100'}
+                  `}
                   onClick={() => handleDateClick(date)}
                 >
                   <div className="flex flex-col items-center">
-                    <span className="text-xs font-medium">
+                    <span className={`text-xs font-medium ${isSelected ? 'text-primary-foreground' : 'text-gray-600'}`}>
                       {format(date, 'EEE')}
                     </span>
-                    <span className="text-sm">
+                    <span className={`text-sm ${isSelected ? 'text-primary-foreground' : 'text-gray-800'}`}>
                       {format(date, 'd')}
                     </span>
                   </div>
@@ -110,7 +115,7 @@ export const CurrentWeekCard: React.FC<CurrentWeekCardProps> = ({
                 )
               ))}
               {!getRecord(selectedDate) && (
-                <div className="text-center py-6 text-muted-foreground">
+                <div className="text-center py-6 text-gray-500 bg-gray-50 rounded-md border border-gray-200">
                   No attendance records for {format(new Date(selectedDate), "EEEE, MMMM d, yyyy")}
                 </div>
               )}
@@ -118,7 +123,7 @@ export const CurrentWeekCard: React.FC<CurrentWeekCardProps> = ({
           )}
 
           {!selectedDate && (
-            <div className="text-center py-6 text-muted-foreground">
+            <div className="text-center py-6 text-gray-500 bg-gray-50 rounded-md border border-gray-200">
               Select a day to view attendance records
             </div>
           )}
