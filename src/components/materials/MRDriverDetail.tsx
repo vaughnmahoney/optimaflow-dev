@@ -1,33 +1,41 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { MaterialItem } from "@/hooks/materials/useMRStore";
 import { formatMaterialType } from "@/utils/materialsUtils";
-import { ArrowLeft, Download, Inbox } from "lucide-react";
+import { ArrowLeft, Download } from "lucide-react";
 import { DriverRoute } from "@/services/optimoroute/getRoutesService";
 import { format } from "date-fns";
-import { OrderDetails } from "@/types/optimoroute";
+import { OrderDetail } from "@/services/optimoroute/getOrderDetailService";
 import { exportMaterialsToExcel } from "@/utils/materialsExportUtils";
 import { Badge } from "@/components/ui/badge";
 
 interface MRDriverDetailProps {
   driver: DriverRoute;
-  orderDetails: OrderDetails[];
+  orderDetails: OrderDetail[];
+  onBack?: () => void;
 }
 
-export const MRDriverDetail = ({ driver, orderDetails }: MRDriverDetailProps) => {
+export const MRDriverDetail = ({ driver, orderDetails, onBack }: MRDriverDetailProps) => {
   const totalOrders = orderDetails.length;
-  const totalItems = orderDetails.reduce((sum, order) => sum + order.items.length, 0);
+  const totalItems = orderDetails.reduce((sum, order) => {
+    // Check if order.data and order.data.items exist
+    return sum + (order.data.items?.length || 0);
+  }, 0);
   
   const materialsData: MaterialItem[] = orderDetails.reduce((acc: MaterialItem[], order) => {
-    order.items.forEach(item => {
-      acc.push({
-        id: `${order.orderId}-${item.type}`,
-        type: item.type,
-        quantity: item.quantity,
-        workOrderId: order.orderId,
-        driverName: driver.driverName,
+    // Check if items exists before processing
+    if (order.data.items) {
+      order.data.items.forEach(item => {
+        acc.push({
+          id: `${order.data.orderNo}-${item.type}`,
+          type: item.type,
+          quantity: item.quantity,
+          workOrderId: order.data.orderNo,
+          driverName: driver.driverName,
+        });
       });
-    });
+    }
     return acc;
   }, []);
 
@@ -35,11 +43,16 @@ export const MRDriverDetail = ({ driver, orderDetails }: MRDriverDetailProps) =>
     exportMaterialsToExcel(materialsData, driver.driverName);
   };
 
+  // Format the date or use a fallback
+  const displayDate = driver.stops && driver.stops.length > 0 && driver.stops[0].scheduledAt 
+    ? format(new Date(driver.stops[0].scheduledAt.split('T')[0]), 'PPP')
+    : 'No date available';
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>
-          {driver.driverName} - {format(new Date(driver.date), 'PPP')}
+          {driver.driverName} - {displayDate}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -80,27 +93,45 @@ export const MRDriverDetail = ({ driver, orderDetails }: MRDriverDetailProps) =>
               </thead>
               <tbody>
                 {orderDetails.map(order => (
-                  order.items.map((item, index) => (
-                    <tr key={`${order.orderId}-${item.type}-${index}`} className="border-b">
-                      <td className="py-2">{order.orderId}</td>
-                      <td className="py-2">
-                        {formatMaterialType(item.type)}
-                      </td>
-                      <td className="py-2 text-right">{item.quantity}</td>
+                  // Check if items exists before mapping
+                  order.data.items ? (
+                    order.data.items.map((item, index) => (
+                      <tr key={`${order.data.orderNo}-${item.type}-${index}`} className="border-b">
+                        <td className="py-2">{order.data.orderNo}</td>
+                        <td className="py-2">
+                          {formatMaterialType(item.type)}
+                        </td>
+                        <td className="py-2 text-right">{item.quantity}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr key={order.data.orderNo} className="border-b">
+                      <td className="py-2">{order.data.orderNo}</td>
+                      <td className="py-2 text-muted-foreground">No materials</td>
+                      <td className="py-2 text-right">-</td>
                     </tr>
-                  ))
+                  )
                 ))}
+                {orderDetails.length === 0 && (
+                  <tr>
+                    <td colSpan={3} className="py-4 text-center text-muted-foreground">
+                      No order details available
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </CardContent>
         </Card>
       </CardContent>
       <CardFooter className="flex justify-between">
-        <Button variant="outline" onClick={() => window.history.back()}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </Button>
-        <Button variant="outline" onClick={handleExport}>
+        {onBack && (
+          <Button variant="outline" onClick={onBack}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+        )}
+        <Button variant="outline" onClick={handleExport} className={onBack ? '' : 'ml-auto'}>
           <Download className="h-4 w-4 mr-2" />
           Export Excel
         </Button>
