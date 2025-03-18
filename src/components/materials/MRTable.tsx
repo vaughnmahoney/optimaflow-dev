@@ -2,7 +2,7 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { MaterialItem } from "@/hooks/materials/useMRStore";
-import { formatMaterialType, getBadgeVariant } from "@/utils/materialsUtils";
+import { formatMaterialType, getBadgeVariant, isFilterType } from "@/utils/materialsUtils";
 import { Button } from "@/components/ui/button";
 import { FileSpreadsheet } from "lucide-react";
 import { exportMaterialsToExcel } from "@/utils/materialsExportUtils";
@@ -14,13 +14,16 @@ interface MRTableProps {
 }
 
 export const MRTable = ({ data, showExport = true, technicianName = "Technician" }: MRTableProps) => {
+  // Filter to only include filter type materials
+  const filteredData = data.filter(item => isFilterType(item.type));
+  
   const handleExport = () => {
-    exportMaterialsToExcel(data, technicianName);
+    exportMaterialsToExcel(filteredData, technicianName);
   };
 
   return (
     <div className="space-y-4">
-      {showExport && data.length > 0 && (
+      {showExport && filteredData.length > 0 && (
         <div className="flex justify-end">
           <Button variant="outline" size="sm" onClick={handleExport}>
             <FileSpreadsheet className="h-4 w-4 mr-2" />
@@ -39,14 +42,14 @@ export const MRTable = ({ data, showExport = true, technicianName = "Technician"
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.length === 0 ? (
+            {filteredData.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={3} className="text-center py-6 text-muted-foreground">
-                  No materials data available
+                  No filter materials available
                 </TableCell>
               </TableRow>
             ) : (
-              data.map((item) => (
+              filteredData.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell>
                     <Badge variant={getBadgeVariant(item.type)} className="font-normal">
@@ -66,3 +69,4 @@ export const MRTable = ({ data, showExport = true, technicianName = "Technician"
     </div>
   );
 };
+

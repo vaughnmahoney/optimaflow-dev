@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MaterialItem } from "@/hooks/materials/useMRStore";
-import { formatMaterialType, getBadgeVariant } from "@/utils/materialsUtils";
+import { formatMaterialType, getBadgeVariant, getFilterCategory, isFilterType } from "@/utils/materialsUtils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FileSpreadsheet } from "lucide-react";
@@ -13,8 +13,10 @@ interface MRSummaryProps {
 }
 
 export const MRSummary = ({ data, technicianName = "Technician" }: MRSummaryProps) => {
-  // Group materials by type
-  const materialCounts = data.reduce<Record<string, number>>((acc, item) => {
+  // Group materials by type - only filter types
+  const filteredData = data.filter(item => isFilterType(item.type));
+  
+  const materialCounts = filteredData.reduce<Record<string, number>>((acc, item) => {
     const { type, quantity } = item;
     acc[type] = (acc[type] || 0) + quantity;
     return acc;
@@ -27,7 +29,7 @@ export const MRSummary = ({ data, technicianName = "Technician" }: MRSummaryProp
 
   // Handle export
   const handleExport = () => {
-    exportMaterialsToExcel(data, technicianName);
+    exportMaterialsToExcel(filteredData, technicianName);
   };
 
   return (
@@ -46,7 +48,7 @@ export const MRSummary = ({ data, technicianName = "Technician" }: MRSummaryProp
       {sortedMaterials.length === 0 ? (
         <Card>
           <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">No materials data available</p>
+            <p className="text-center text-muted-foreground">No filter materials available</p>
           </CardContent>
         </Card>
       ) : (
@@ -71,3 +73,4 @@ export const MRSummary = ({ data, technicianName = "Technician" }: MRSummaryProp
     </div>
   );
 };
+

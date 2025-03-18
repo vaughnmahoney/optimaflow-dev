@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Printer, FileSpreadsheet } from "lucide-react";
 import { MaterialItem } from "@/hooks/materials/useMRStore";
 import { exportMaterialsToExcel } from "@/utils/materialsExportUtils";
+import { isFilterType } from "@/utils/materialsUtils";
 
 interface MRActionsProps {
   materialsData: MaterialItem[];
@@ -15,7 +16,9 @@ export const MRActions = ({ materialsData, technicianName }: MRActionsProps) => 
   };
   
   const handleExport = () => {
-    exportMaterialsToExcel(materialsData, technicianName);
+    // Filter to only include filter materials
+    const filterMaterials = materialsData.filter(item => isFilterType(item.type));
+    exportMaterialsToExcel(filterMaterials, technicianName);
   };
 
   return (
@@ -31,3 +34,4 @@ export const MRActions = ({ materialsData, technicianName }: MRActionsProps) => 
     </div>
   );
 };
+

@@ -8,12 +8,16 @@ import { MRTable } from "./MRTable";
 import { MREmptyState } from "./MREmptyState";
 import { MRSummary } from "./MRSummary";
 import { MRActions } from "./MRActions";
+import { isFilterType } from "@/utils/materialsUtils";
 
 export const MRContent = () => {
   const { materialsData, technicianName } = useMRStore();
   const [activeTab, setActiveTab] = useState("summary");
   
-  if (!materialsData.length) {
+  // Filter out non-filter materials
+  const filterMaterials = materialsData.filter(item => isFilterType(item.type));
+  
+  if (!filterMaterials.length) {
     return <MREmptyState />;
   }
   
@@ -26,7 +30,7 @@ export const MRContent = () => {
         </CardTitle>
         
         <MRActions 
-          materialsData={materialsData}
+          materialsData={filterMaterials}
           technicianName={technicianName}
         />
       </CardHeader>
@@ -38,14 +42,15 @@ export const MRContent = () => {
           </TabsList>
           
           <TabsContent value="summary">
-            <MRSummary data={materialsData} />
+            <MRSummary data={filterMaterials} technicianName={technicianName} />
           </TabsContent>
           
           <TabsContent value="all">
-            <MRTable data={materialsData} />
+            <MRTable data={filterMaterials} technicianName={technicianName} />
           </TabsContent>
         </Tabs>
       </CardContent>
     </Card>
   );
 };
+

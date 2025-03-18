@@ -1,111 +1,117 @@
 
 import * as XLSX from 'xlsx';
 import { MaterialItem } from '@/hooks/materials/useMRStore';
-import { formatMaterialType } from './materialsUtils';
+import { formatMaterialType, formatSizeCode, getFilterCategory, getPackagingInfo, isFilterType } from './materialsUtils';
 
 /**
  * Creates a formatted Excel workbook with proper styling and organization
+ * to match the client's required format
  */
 const createFormattedWorkbook = (
-  materialSummary: Record<string, number>,
   materials: MaterialItem[],
   technicianName: string = 'Technician'
 ) => {
+  // Filter out non-filter material types
+  const filterMaterials = materials.filter(item => isFilterType(item.type));
+  
+  // Create a new workbook
   const workbook = XLSX.utils.book_new();
   const today = new Date().toLocaleDateString();
   
-  // Create header rows
+  // Calculate totals by filter category
+  const totalsByCategory: Record<string, number> = {};
+  const detailedBreakdown: Record<string, number> = {};
+  
+  // Process materials to get totals and breakdowns
+  filterMaterials.forEach(item => {
+    const category = getFilterCategory(item.type);
+    const formattedType = formatMaterialType(item.type);
+    
+    // Add to category totals
+    totalsByCategory[category] = (totalsByCategory[category] || 0) + item.quantity;
+    
+    // Add to detailed breakdown
+    detailedBreakdown[formattedType] = (detailedBreakdown[formattedType] || 0) + item.quantity;
+  });
+  
+  // Create header rows for the worksheet
   const headerRows = [
     [`MR FOR ${technicianName.toUpperCase()}`],
-    [`DATE: ${today}`],
-    [],
+    [`Date: ${today}`],
+    [null],
     ['MATERIAL TOTALS:'],
-    []
+    ['--------------------']
   ];
   
-  // Create material summary data - sorted by material type
-  const summaryData = Object.entries(materialSummary)
-    .sort(([typeA], [typeB]) => formatMaterialType(typeA).localeCompare(formatMaterialType(typeB)))
-    .map(([type, quantity]) => [
-      formatMaterialType(type),
-      type, // Material code
-      quantity,
-      "PCS" // Unit of measurement
-    ]);
+  // Add category totals with packaging info
+  Object.entries(totalsByCategory).forEach(([category, count]) => {
+    headerRows.push([`${category}: ${getPackagingInfo(category, count)}`]);
+  });
   
-  // Add header row for summary data
-  summaryData.unshift(['Material Type', 'Material Code', 'Quantity', 'Unit']);
+  // Add spacing before detailed breakdown
+  headerRows.push([null]);
+  headerRows.push(['DETAILED BREAKDOWN:']);
+  headerRows.push(['--------------------']);
   
-  // Combine header rows and summary data
-  const combinedData = [...headerRows, ...summaryData, [], ['MATERIAL BREAKDOWN:']];
+  // Create columns for detailed breakdown
+  const detailedData = [['Type', 'Quantity']];
   
-  // Add material breakdown header
-  combinedData.push(['Work Order', 'Material Type', 'Material Code', 'Quantity', 'Unit', 'Driver']);
+  // Add detailed breakdown rows - sorted by formatted type
+  Object.entries(detailedBreakdown)
+    .sort(([typeA], [typeB]) => typeA.localeCompare(typeB))
+    .forEach(([formattedType, quantity]) => {
+      detailedData.push([formattedType, quantity]);
+    });
+
+  // Merge all data for the worksheet
+  const worksheetData = [...headerRows];
   
-  // Add detailed material breakdown - sorted first by work order, then by material type
-  const detailedData = [...materials]
-    .sort((a, b) => {
-      // Sort by work order ID first
-      const workOrderComp = (a.workOrderId || '').localeCompare(b.workOrderId || '');
-      if (workOrderComp !== 0) return workOrderComp;
-      
-      // Then sort by material type
-      return formatMaterialType(a.type).localeCompare(formatMaterialType(b.type));
-    })
-    .map(item => [
-      item.workOrderId || 'Unknown',
-      formatMaterialType(item.type),
-      item.type,
-      item.quantity,
-      "PCS",
-      item.driverName || technicianName
-    ]);
+  // Create worksheet for the first section
+  const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
   
-  // Add detailed data to combined data
-  combinedData.push(...detailedData);
+  // Create a separate range for the detailed breakdown
+  const detailedWorksheet = XLSX.utils.aoa_to_sheet(detailedData);
   
-  // Create worksheet
-  const worksheet = XLSX.utils.aoa_to_sheet(combinedData);
+  // Calculate position for detailed data (we'll place it starting at column D)
+  const detailedRange = XLSX.utils.decode_range(detailedWorksheet['!ref'] || 'A1');
+  
+  // Merge the detailed breakdown into the main worksheet at column D
+  for (let R = detailedRange.s.r; R <= detailedRange.e.r; R++) {
+    for (let C = detailedRange.s.c; C <= detailedRange.e.c; C++) {
+      const detailedCell = XLSX.utils.encode_cell({ r: R, c: C });
+      const targetCell = XLSX.utils.encode_cell({ r: R + 7, c: C + 3 }); // +7 rows down, +3 columns to the right (to D column)
+      worksheet[targetCell] = detailedWorksheet[detailedCell];
+    }
+  }
   
   // Set column widths
   const columnWidths = [
-    { wch: 15 }, // Work Order / First column
-    { wch: 25 }, // Material Type
-    { wch: 15 }, // Material Code
-    { wch: 10 }, // Quantity
-    { wch: 8 },  // Unit
-    { wch: 20 }  // Driver
+    { wch: 30 }, // Column A
+    { wch: 30 }, // Column B
+    { wch: 10 }, // Column C
+    { wch: 25 }, // Column D
+    { wch: 10 }, // Column E
+    { wch: 10 }  // Column F
   ];
   worksheet['!cols'] = columnWidths;
   
-  // Apply styling for header row - make it bold (limited styling options in xlsx)
+  // Apply styling for header row - make it bold
   const headerCellStyle = { font: { bold: true } };
   
-  // Apply styles to header cells
-  const applyStyles = (worksheet: XLSX.WorkSheet) => {
-    // Apply bold to header row cells
-    if (worksheet['A1']) worksheet['A1'].s = headerCellStyle;
-    if (worksheet['A2']) worksheet['A2'].s = headerCellStyle;
-    if (worksheet['A4']) worksheet['A4'].s = headerCellStyle;
-    
-    // Apply styles to material summary header
-    const summaryHeaderRowIndex = 6; // Header is at row 6 (0-based in the data, 1-based in the cell references)
-    ['A', 'B', 'C', 'D'].forEach(col => {
-      const cellRef = `${col}${summaryHeaderRowIndex}`;
-      if (worksheet[cellRef]) worksheet[cellRef].s = headerCellStyle;
-    });
-    
-    // Apply styles to material breakdown header
-    // Find the index of the breakdown header
-    let breakdownHeaderRowIndex = combinedData.findIndex(row => row[0] === 'MATERIAL BREAKDOWN:') + 2;
-    ['A', 'B', 'C', 'D', 'E', 'F'].forEach(col => {
-      const cellRef = `${col}${breakdownHeaderRowIndex}`;
-      if (worksheet[cellRef]) worksheet[cellRef].s = headerCellStyle;
-    });
-  };
+  // Apply styles to key cells
+  if (worksheet['A1']) worksheet['A1'].s = headerCellStyle; // MR FOR title
+  if (worksheet['A2']) worksheet['A2'].s = headerCellStyle; // Date
+  if (worksheet['A4']) worksheet['A4'].s = headerCellStyle; // MATERIAL TOTALS
+  if (worksheet['D8']) worksheet['D8'].s = headerCellStyle; // Type header
+  if (worksheet['E8']) worksheet['E8'].s = headerCellStyle; // Quantity header
   
-  // Apply styles
-  applyStyles(worksheet);
+  // Calculate the range for the worksheet (needed for proper display)
+  const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+  
+  // Update range to include our detailed breakdown section
+  range.e.c = Math.max(range.e.c, detailedRange.e.c + 3); // +3 columns (to account for starting at column D)
+  range.e.r = Math.max(range.e.r, detailedRange.e.r + 7); // +7 rows
+  worksheet['!ref'] = XLSX.utils.encode_range(range);
   
   // Add the worksheet to the workbook
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Materials Report');
@@ -120,15 +126,8 @@ export const exportMaterialsToExcel = (
   materials: MaterialItem[],
   technicianName: string = 'Technician'
 ) => {
-  // First, create the material summary by type
-  const materialSummary = materials.reduce<Record<string, number>>((acc, item) => {
-    const { type, quantity } = item;
-    acc[type] = (acc[type] || 0) + quantity;
-    return acc;
-  }, {});
-  
   // Create formatted workbook
-  const workbook = createFormattedWorkbook(materialSummary, materials, technicianName);
+  const workbook = createFormattedWorkbook(materials, technicianName);
   
   // Generate a file name with date
   const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
@@ -158,3 +157,4 @@ export const exportSummarizedMaterialsToExcel = (
   // Use the new format but with empty details section
   exportMaterialsToExcel(emptyMaterials, technicianName);
 };
+
