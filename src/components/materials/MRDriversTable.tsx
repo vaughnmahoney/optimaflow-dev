@@ -43,20 +43,6 @@ export const MRDriversTable = ({
       counts[driverName] = totalQuantity;
       
       console.log(`[DEBUG-TABLE] Driver ${driverName}: ${driverMaterials.length} material items, total quantity: ${totalQuantity}`);
-      
-      // Additional debugging for high counts
-      if (totalQuantity > 1000) {
-        console.log(`[DEBUG-TABLE] ⚠️ ANOMALY: Very high material count for driver ${driverName}`);
-        
-        // Analyze by type
-        const byType = driverMaterials.reduce((acc, item) => {
-          if (!acc[item.type]) acc[item.type] = 0;
-          acc[item.type] += item.quantity;
-          return acc;
-        }, {} as Record<string, number>);
-        
-        console.log(`[DEBUG-TABLE] Material breakdown by type:`, byType);
-      }
     });
     
     // Verify all routes have an entry, even if zero
@@ -92,15 +78,7 @@ export const MRDriversTable = ({
                   {route.driverName}
                 </TableCell>
                 <TableCell>{route.stops.length}</TableCell>
-                <TableCell>
-                  {materialCount > 1000 ? (
-                    <span className="text-red-500 font-medium">
-                      {materialCount} (⚠️ Unusually high)
-                    </span>
-                  ) : (
-                    materialCount
-                  )}
-                </TableCell>
+                <TableCell>{materialCount}</TableCell>
                 <TableCell className="text-right">
                   <Button
                     variant="ghost"
@@ -118,3 +96,4 @@ export const MRDriversTable = ({
     </div>
   );
 };
+
