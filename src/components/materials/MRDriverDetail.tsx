@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,14 +6,37 @@ import { DriverRoute } from "@/services/optimoroute/getRoutesService";
 import { OrderDetail } from "@/services/optimoroute/getOrderDetailService";
 import { useMRStore } from "@/hooks/materials/useMRStore";
 import { ArrowLeft, Download, MapPin, Package, Printer } from "lucide-react";
-import { formatMaterialType, getBadgeVariant } from "@/utils/materialsUtils";
-import { Badge } from "@/components/ui/badge";
+import { formatMaterialType } from "@/utils/materialsUtils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
 import { MRMaterialSummary } from "./MRMaterialSummary";
 import { exportMaterialsToExcel } from "@/utils/materialsExportUtils";
+import { CustomBadge } from "@/components/ui/custom-badge";
+
+// Map material types to our custom badge variants
+const getCustomBadgeVariant = (type: string): "success" | "info" | "purple" | "warning" | "primary" | undefined => {
+  if (type === 'CONDCOIL') {
+    return 'success';
+  } else if (type === 'REFRIGERATOR_COILS' || type.includes('FREEZER') || type.includes('FREEZECOOL') || type.includes('COOLER')) {
+    return 'info';
+  } else if (type.startsWith('S') && type.endsWith('MEND')) {
+    return 'purple';
+  } else if (type.startsWith('S')) {
+    return 'warning';
+  } else if (type.startsWith('G') && type.endsWith('B')) {
+    return undefined; // Use default style
+  } else if (type.startsWith('P') && type.includes('INS')) {
+    return 'primary';
+  } else if (type.startsWith('F')) {
+    return undefined; // Use default style
+  } else if (type === 'PRODUCE') {
+    return 'success';
+  } else {
+    return undefined;
+  }
+};
 
 interface MRDriverDetailProps {
   driver: DriverRoute;
@@ -161,13 +185,13 @@ export const MRDriverDetail = ({ driver, orderDetails, onBack }: MRDriverDetailP
                               <div className="flex flex-wrap gap-1">
                                 {orderMaterials.length > 0 ? (
                                   orderMaterials.map((material, idx) => (
-                                    <Badge 
+                                    <CustomBadge 
                                       key={idx} 
-                                      variant={getBadgeVariant(material.type)}
+                                      customVariant={getCustomBadgeVariant(material.type)}
                                       className="font-normal"
                                     >
                                       {material.quantity} × {formatMaterialType(material.type)}
-                                    </Badge>
+                                    </CustomBadge>
                                   ))
                                 ) : (
                                   <span className="text-muted-foreground text-xs">

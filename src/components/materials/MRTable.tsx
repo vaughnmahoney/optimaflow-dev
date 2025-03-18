@@ -1,8 +1,31 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { MaterialItem } from "@/hooks/materials/useMRStore";
-import { formatMaterialType, getBadgeVariant } from "@/utils/materialsUtils";
+import { formatMaterialType } from "@/utils/materialsUtils";
+import { CustomBadge } from "@/components/ui/custom-badge";
+
+// Map material types to our custom badge variants
+const getCustomBadgeVariant = (type: string): "success" | "info" | "purple" | "warning" | "primary" | undefined => {
+  if (type === 'CONDCOIL') {
+    return 'success';
+  } else if (type === 'REFRIGERATOR_COILS' || type.includes('FREEZER') || type.includes('FREEZECOOL') || type.includes('COOLER')) {
+    return 'info';
+  } else if (type.startsWith('S') && type.endsWith('MEND')) {
+    return 'purple';
+  } else if (type.startsWith('S')) {
+    return 'warning';
+  } else if (type.startsWith('G') && type.endsWith('B')) {
+    return undefined; // Use default style
+  } else if (type.startsWith('P') && type.includes('INS')) {
+    return 'primary';
+  } else if (type.startsWith('F')) {
+    return undefined; // Use default style
+  } else if (type === 'PRODUCE') {
+    return 'success';
+  } else {
+    return undefined;
+  }
+};
 
 interface MRTableProps {
   data: MaterialItem[];
@@ -30,9 +53,12 @@ export const MRTable = ({ data }: MRTableProps) => {
             data.map((item) => (
               <TableRow key={item.id}>
                 <TableCell>
-                  <Badge variant={getBadgeVariant(item.type)} className="font-normal">
+                  <CustomBadge 
+                    customVariant={getCustomBadgeVariant(item.type)} 
+                    className="font-normal"
+                  >
                     {formatMaterialType(item.type)}
-                  </Badge>
+                  </CustomBadge>
                 </TableCell>
                 <TableCell>{item.workOrderId || 'Unknown'}</TableCell>
                 <TableCell className="text-right font-medium">
