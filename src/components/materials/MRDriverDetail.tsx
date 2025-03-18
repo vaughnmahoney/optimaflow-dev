@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
 import { MRMaterialSummary } from "./MRMaterialSummary";
+import { exportMaterialsToExcel } from "@/utils/materialsExportUtils";
 
 interface MRDriverDetailProps {
   driver: DriverRoute;
@@ -43,67 +43,10 @@ export const MRDriverDetail = ({ driver, orderDetails, onBack }: MRDriverDetailP
     window.print();
   };
   
-  // Handle export
+  // Handle export - updated to use Excel export
   const handleExport = () => {
-    // Group materials by type
-    const materialsByType: Record<string, number> = {};
-    
-    driverMaterials.forEach(material => {
-      const type = material.type;
-      if (!materialsByType[type]) {
-        materialsByType[type] = 0;
-      }
-      materialsByType[type] += material.quantity;
-    });
-    
-    // Format CSV content
-    let csvContent = `MATERIALS REQUIREMENTS FOR: ${driver.driverName}\n`;
-    csvContent += `Date: ${new Date().toLocaleDateString()}\n`;
-    csvContent += `Total Stops: ${driver.stops.length}\n\n`;
-    
-    // Material summary
-    csvContent += "MATERIAL SUMMARY:\n";
-    csvContent += "-----------------\n";
-    
-    Object.entries(materialsByType)
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .forEach(([type, quantity]) => {
-        csvContent += `${formatMaterialType(type)}: ${quantity}\n`;
-      });
-    
-    // Work order details
-    csvContent += "\nWORK ORDER DETAILS:\n";
-    csvContent += "------------------\n";
-    csvContent += "Order #,Location,Address,Materials,Notes\n";
-    
-    driverOrders.forEach(order => {
-      const orderNo = order.data.orderNo;
-      const locationName = order.data.locationName || "Unknown";
-      const address = order.data.address || "No address";
-      
-      // Find materials for this work order
-      const orderMaterials = driverMaterials
-        .filter(m => m.workOrderId === orderNo)
-        .map(m => `${m.quantity} x ${formatMaterialType(m.type)}`)
-        .join("; ");
-      
-      // Clean notes for CSV
-      const notes = order.data.notes 
-        ? `"${order.data.notes.replace(/"/g, '""')}"`
-        : "";
-      
-      csvContent += `${orderNo},"${locationName}","${address}","${orderMaterials}",${notes}\n`;
-    });
-    
-    // Create and trigger download
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `materials_${driver.driverName.replace(/\s+/g, '_')}_${format(new Date(), 'yyyy-MM-dd')}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Use the same Excel export function used in MRActions
+    exportMaterialsToExcel(driverMaterials, driver.driverName);
   };
   
   return (
@@ -132,7 +75,7 @@ export const MRDriverDetail = ({ driver, orderDetails, onBack }: MRDriverDetailP
               onClick={handleExport}
             >
               <Download className="mr-2 h-4 w-4" />
-              Export CSV
+              Export Excel
             </Button>
             <Button 
               variant="outline" 
