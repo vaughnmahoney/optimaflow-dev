@@ -62,28 +62,30 @@ export const formatSizeCode = (sizeCode: string): string => {
   return formattedSize;
 };
 
+// Define valid badge variants
+type BadgeVariant = 'success' | 'info' | 'purple' | 'warning' | 'secondary' | 'primary' | 'destructive' | 'default' | 'outline';
+
 /**
- * Get badge variant based on material type - only using valid variants
- * The valid variants are: "default", "destructive", "outline", "secondary"
+ * Get badge variant based on material type
  */
-export const getBadgeVariant = (type: string): "default" | "destructive" | "outline" | "secondary" => {
+export const getBadgeVariant = (type: string): BadgeVariant => {
   if (type === 'CONDCOIL') {
-    return 'default'; // Was 'success', now 'default'
+    return 'success';
   } else if (type === 'REFRIGERATOR_COILS' || type.includes('FREEZER') || type.includes('FREEZECOOL') || type.includes('COOLER')) {
-    return 'secondary'; // Was 'info', now 'secondary'
+    return 'info';
   } else if (type.startsWith('S') && type.endsWith('MEND')) {
-    return 'destructive';  // Was 'purple', now 'destructive'
+    return 'purple';  // For Poly MEND filters
   } else if (type.startsWith('S')) {
-    return 'default'; // Was 'warning', now 'default'
+    return 'warning'; // For regular Poly filters
   } else if (type.startsWith('G') && type.endsWith('B')) {
-    return 'secondary'; // Was 'secondary', kept as 'secondary'
+    return 'secondary'; // For Fiberglass filters
   } else if (type.startsWith('P') && type.includes('INS')) {
-    return 'default'; // Was 'primary', now 'default'
+    return 'primary'; // For Pleated filters
   } else if (type.startsWith('F')) {
-    return 'destructive'; // Was 'destructive', kept as 'destructive'
+    return 'destructive'; // For Frames
   } else if (type === 'PRODUCE') {
-    return 'default'; // Was 'default', kept as 'default'
+    return 'default'; // For Produce Coils
   } else {
-    return 'outline'; // Was 'outline', kept as 'outline'
+    return 'outline';
   }
 };

@@ -23,9 +23,3 @@ export interface FormattedOrder {
   signatures?: string[];
   driverNotes?: string;
 }
-
-// Add missing OrderItem interface for material orders
-export interface OrderItem {
-  type: string;
-  quantity: number;
-}
