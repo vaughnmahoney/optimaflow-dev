@@ -19,26 +19,33 @@ export const MRDriversTable = ({
   
   // Calculate material counts for each driver
   useEffect(() => {
-    console.log("[DEBUG-TABLE] Calculating material counts for drivers");
+    console.log("[DEBUG-TABLE] Calculating distinct material counts for drivers");
     
+    // Count materials by driver serial, ensuring each driver has its own count
     const counts: Record<string, number> = {};
     
-    routes.forEach(route => {
-      // Get materials for this driver
-      const driverMaterials = materialsData.filter(item => 
-        item.driverSerial === route.driverSerial
-      );
+    // Group materials by driver serial
+    const materialsByDriver = materialsData.reduce((acc, item) => {
+      if (!item.driverSerial) return acc;
       
-      // Sum up quantities
-      const totalCount = driverMaterials.reduce((sum, item) => sum + item.quantity, 0);
-      counts[route.driverSerial] = totalCount;
+      if (!acc[item.driverSerial]) {
+        acc[item.driverSerial] = [];
+      }
+      acc[item.driverSerial].push(item);
+      return acc;
+    }, {} as Record<string, MaterialItem[]>);
+    
+    // Calculate total material counts per driver
+    Object.entries(materialsByDriver).forEach(([driverSerial, driverMaterials]) => {
+      // Sum up quantities for this driver
+      const totalQuantity = driverMaterials.reduce((sum, item) => sum + item.quantity, 0);
+      counts[driverSerial] = totalQuantity;
       
-      console.log(`[DEBUG-TABLE] Driver ${route.driverName} (${route.driverSerial}): ${driverMaterials.length} material items, total quantity: ${totalCount}`);
+      console.log(`[DEBUG-TABLE] Driver ${driverSerial}: ${driverMaterials.length} material items, total quantity: ${totalQuantity}`);
       
       // Additional debugging for high counts
-      if (totalCount > 1000) {
-        console.log(`[DEBUG-TABLE] ⚠️ ANOMALY: Very high material count for driver ${route.driverName}`);
-        console.log(`[DEBUG-TABLE] Material items:`, driverMaterials);
+      if (totalQuantity > 1000) {
+        console.log(`[DEBUG-TABLE] ⚠️ ANOMALY: Very high material count for driver ${driverSerial}`);
         
         // Analyze by type
         const byType = driverMaterials.reduce((acc, item) => {
@@ -65,6 +72,14 @@ export const MRDriversTable = ({
         if (suspiciousOrders.length > 0) {
           console.log(`[DEBUG-TABLE] Suspicious orders with many materials:`, suspiciousOrders);
         }
+      }
+    });
+    
+    // Verify all routes have an entry, even if zero
+    routes.forEach(route => {
+      if (counts[route.driverSerial] === undefined) {
+        counts[route.driverSerial] = 0;
+        console.log(`[DEBUG-TABLE] Driver ${route.driverName} (${route.driverSerial}) has no materials`);
       }
     });
     

@@ -7,7 +7,7 @@ export interface MaterialItem {
   type: string;
   quantity: number;
   workOrderId?: string;
-  driverSerial?: string; // Add driver information
+  driverSerial?: string; // Driver identifier for material assignment
 }
 
 // Enhanced state to handle multiple drivers
@@ -78,11 +78,21 @@ export const useMRStore = create<MRState>((set, get) => ({
     selectedDrivers: []
   }),
   
-  // Get materials for a specific driver
+  // Get materials for a specific driver - ensure strict filtering by driverSerial
   getMaterialsForDriver: (driverSerial) => {
     const { materialsData } = get();
+    
+    // Only include materials that have a matching driverSerial (strict equality)
     const materials = materialsData.filter(item => item.driverSerial === driverSerial);
+    
     console.log(`[DEBUG-STORE] Getting materials for driver ${driverSerial}: ${materials.length} items`);
+    
+    // Additional verification that all returned materials have the right driver
+    const incorrectlyAssigned = materials.filter(m => m.driverSerial !== driverSerial);
+    if (incorrectlyAssigned.length > 0) {
+      console.error(`[DEBUG-STORE] ⚠️ Found ${incorrectlyAssigned.length} materials incorrectly assigned!`);
+    }
+    
     return materials;
   },
   
