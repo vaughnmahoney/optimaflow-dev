@@ -30,7 +30,7 @@ export const MRContent = () => {
         </CardTitle>
         
         <MRActions 
-          materialsData={filterMaterials}
+          materialsData={materialsData}
           technicianName={technicianName}
         />
       </CardHeader>
@@ -53,4 +53,3 @@ export const MRContent = () => {
     </Card>
   );
 };
-

@@ -1,4 +1,3 @@
-
 /**
  * Format material type codes into human-readable strings
  */
@@ -28,7 +27,7 @@ export const formatMaterialType = (type: string): string => {
     return `Pleated: ${formatSizeCode(sizeCode)}`;
   }
   // Handle Frames
-  else if (type.startsWith('F')) {
+  else if (type.startsWith('F') && !type.includes('FREEZER') && !type.includes('FREEZECOOL') && !type.includes('COOLER')) {
     // Extract the size part (after F)
     const sizeCode = type.substring(1);
     return `Frame: ${formatSizeCode(sizeCode)}`;
@@ -101,7 +100,7 @@ export const isFilterType = (type: string): boolean => {
     (type.startsWith('S') && !type.endsWith('MEND')) || // Regular Polyester
     (type.startsWith('G') && type.endsWith('B')) || // Fiberglass
     (type.startsWith('P') && type.includes('INS')) || // Pleated
-    type.startsWith('F') // Frames
+    (type.startsWith('F') && !type.includes('FREEZER') && !type.includes('FREEZECOOL') && !type.includes('COOLER')) // Frames only, not freezer or cooler
   );
 };
 
@@ -117,7 +116,7 @@ export const getFilterCategory = (type: string): string => {
     return 'Fiberglass';
   } else if (type.startsWith('P') && type.includes('INS')) {
     return 'Pleated';
-  } else if (type.startsWith('F')) {
+  } else if (type.startsWith('F') && !type.includes('FREEZER') && !type.includes('FREEZECOOL') && !type.includes('COOLER')) {
     return 'Frame';
   } else {
     return 'Other';
@@ -147,4 +146,3 @@ export const getPackagingInfo = (category: string, count: number): string => {
       return `${count} unit${count > 1 ? 's' : ''}`;
   }
 };
-

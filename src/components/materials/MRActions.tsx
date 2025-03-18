@@ -34,4 +34,3 @@ export const MRActions = ({ materialsData, technicianName }: MRActionsProps) => 
     </div>
   );
 };
-

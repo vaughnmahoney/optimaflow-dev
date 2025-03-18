@@ -69,4 +69,3 @@ export const MRTable = ({ data, showExport = true, technicianName = "Technician"
     </div>
   );
 };
-
