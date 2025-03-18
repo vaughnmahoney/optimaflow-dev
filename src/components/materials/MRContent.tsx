@@ -9,6 +9,7 @@ import { MRTable } from "./MRTable";
 import { MREmptyState } from "./MREmptyState";
 import { MRSummary } from "./MRSummary";
 import { formatMaterialType } from "@/utils/materialsUtils";
+import * as XLSX from 'xlsx';
 
 export const MRContent = () => {
   const { materialsData, technicianName } = useMRStore();
@@ -79,41 +80,41 @@ export const MRContent = () => {
       }
     });
     
-    // Format the CSV content to match the example
     const formattedDate = new Date().toLocaleDateString('en-US', {
       month: 'numeric',
       day: 'numeric',
       year: 'numeric'
     });
     
-    // Build CSV content with proper formatting
-    let csvContent = '';
+    // Create workbook and worksheet
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([]);
     
-    // HEADER SECTION
-    csvContent += `HYLAND FILTER SERVICE - MATERIALS REQUIREMENTS\n`;
-    csvContent += `===============================================\n\n`;
-    csvContent += `TECHNICIAN: ${technicianName.toUpperCase()}\n`;
-    csvContent += `DATE: ${formattedDate}\n\n`;
+    // Add header rows
+    let rowIndex = 0;
+    XLSX.utils.sheet_add_aoa(ws, [
+      [`HYLAND FILTER SERVICE - MATERIALS REQUIREMENTS`],
+      [`===============================================`],
+      [``],
+      [`TECHNICIAN: ${technicianName.toUpperCase()}`],
+      [`DATE: ${formattedDate}`],
+      [``],
+    ], { origin: { r: rowIndex, c: 0 } });
+    rowIndex += 6;
     
     // MATERIAL SUMMARY SECTION
-    csvContent += `MATERIAL SUMMARY\n`;
-    csvContent += `---------------\n`;
+    XLSX.utils.sheet_add_aoa(ws, [
+      [`MATERIAL SUMMARY`],
+      [`---------------`],
+    ], { origin: { r: rowIndex, c: 0 } });
+    rowIndex += 2;
     
-    // Category order for clear organization
-    const categoryGroups = [
-      {
-        title: "COIL CLEANING",
-        types: ['CONDCOIL', 'REFRIGERATOR_COILS', 'PRODUCE', 'P-TRAP']
-      },
-      {
-        title: "FILTERS",
-        types: []  // Will be calculated dynamically
-      }
-    ];
-    
-    // Add coil cleaning items
+    // Coil cleaning section
     let coilCleaningTotal = 0;
-    csvContent += `${categoryGroups[0].title}:\n`;
+    XLSX.utils.sheet_add_aoa(ws, [
+      [`COIL CLEANING:`],
+    ], { origin: { r: rowIndex, c: 0 } });
+    rowIndex += 1;
     
     const coilMappings = {
       'CONDCOIL': 'Condenser Coils',
@@ -124,11 +125,19 @@ export const MRContent = () => {
     
     Object.entries(coilMappings).forEach(([type, label]) => {
       if (materialsByType[type]) {
-        csvContent += `  ${label}: ${materialsByType[type]}\n`;
+        XLSX.utils.sheet_add_aoa(ws, [
+          [`  ${label}: ${materialsByType[type]}`],
+        ], { origin: { r: rowIndex, c: 0 } });
+        rowIndex += 1;
         coilCleaningTotal += materialsByType[type];
       }
     });
-    csvContent += `  TOTAL COIL CLEANING: ${coilCleaningTotal}\n\n`;
+    
+    XLSX.utils.sheet_add_aoa(ws, [
+      [`  TOTAL COIL CLEANING: ${coilCleaningTotal}`],
+      [``],
+    ], { origin: { r: rowIndex, c: 0 } });
+    rowIndex += 2;
     
     // Group filter types
     const polyMendTotal = Object.entries(materialsByType)
@@ -155,39 +164,98 @@ export const MRContent = () => {
     const totalFilters = polyMendTotal + polyTotal + fiberglassTotal + pleatedTotal;
     
     // Add filter summary
-    csvContent += `FILTERS:\n`;
-    if (polyMendTotal > 0) csvContent += `  Polyester MEND: ${polyMendTotal}\n`;
-    if (polyTotal > 0) csvContent += `  Polyester Standard: ${polyTotal}\n`;
-    if (fiberglassTotal > 0) csvContent += `  Fiberglass: ${fiberglassTotal}\n`;
-    if (pleatedTotal > 0) csvContent += `  Pleated: ${pleatedTotal}\n`;
-    if (frameTotal > 0) csvContent += `  Frames: ${frameTotal}\n`;
-    csvContent += `  TOTAL FILTERS: ${totalFilters}\n\n`;
+    XLSX.utils.sheet_add_aoa(ws, [
+      [`FILTERS:`],
+    ], { origin: { r: rowIndex, c: 0 } });
+    rowIndex += 1;
+    
+    if (polyMendTotal > 0) {
+      XLSX.utils.sheet_add_aoa(ws, [
+        [`  Polyester MEND: ${polyMendTotal}`],
+      ], { origin: { r: rowIndex, c: 0 } });
+      rowIndex += 1;
+    }
+    
+    if (polyTotal > 0) {
+      XLSX.utils.sheet_add_aoa(ws, [
+        [`  Polyester Standard: ${polyTotal}`],
+      ], { origin: { r: rowIndex, c: 0 } });
+      rowIndex += 1;
+    }
+    
+    if (fiberglassTotal > 0) {
+      XLSX.utils.sheet_add_aoa(ws, [
+        [`  Fiberglass: ${fiberglassTotal}`],
+      ], { origin: { r: rowIndex, c: 0 } });
+      rowIndex += 1;
+    }
+    
+    if (pleatedTotal > 0) {
+      XLSX.utils.sheet_add_aoa(ws, [
+        [`  Pleated: ${pleatedTotal}`],
+      ], { origin: { r: rowIndex, c: 0 } });
+      rowIndex += 1;
+    }
+    
+    if (frameTotal > 0) {
+      XLSX.utils.sheet_add_aoa(ws, [
+        [`  Frames: ${frameTotal}`],
+      ], { origin: { r: rowIndex, c: 0 } });
+      rowIndex += 1;
+    }
+    
+    XLSX.utils.sheet_add_aoa(ws, [
+      [`  TOTAL FILTERS: ${totalFilters}`],
+      [``],
+    ], { origin: { r: rowIndex, c: 0 } });
+    rowIndex += 2;
     
     // PACKAGING SECTION
-    csvContent += `PACKAGING REQUIREMENTS\n`;
-    csvContent += `---------------------\n`;
+    XLSX.utils.sheet_add_aoa(ws, [
+      [`PACKAGING REQUIREMENTS`],
+      [`---------------------`],
+    ], { origin: { r: rowIndex, c: 0 } });
+    rowIndex += 2;
     
     if (packagingNeeded['POLY_MEND']?.units > 0) {
-      csvContent += `Polyester MEND Bags: ${packagingNeeded['POLY_MEND'].units} (${packagingNeeded['POLY_MEND'].quantity} filters @ ${POLY_PACK_SIZE}/bag)\n`;
+      XLSX.utils.sheet_add_aoa(ws, [
+        [`Polyester MEND Bags: ${packagingNeeded['POLY_MEND'].units} (${packagingNeeded['POLY_MEND'].quantity} filters @ ${POLY_PACK_SIZE}/bag)`],
+      ], { origin: { r: rowIndex, c: 0 } });
+      rowIndex += 1;
     }
     
     if (packagingNeeded['POLY']?.units > 0) {
-      csvContent += `Polyester Bags: ${packagingNeeded['POLY'].units} (${packagingNeeded['POLY'].quantity} filters @ ${POLY_PACK_SIZE}/bag)\n`;
+      XLSX.utils.sheet_add_aoa(ws, [
+        [`Polyester Bags: ${packagingNeeded['POLY'].units} (${packagingNeeded['POLY'].quantity} filters @ ${POLY_PACK_SIZE}/bag)`],
+      ], { origin: { r: rowIndex, c: 0 } });
+      rowIndex += 1;
     }
     
     if (packagingNeeded['FIBERGLASS']?.units > 0) {
-      csvContent += `Fiberglass Boxes: ${packagingNeeded['FIBERGLASS'].units} (${packagingNeeded['FIBERGLASS'].quantity} filters @ ${FIBERGLASS_PACK_SIZE}/box)\n`;
+      XLSX.utils.sheet_add_aoa(ws, [
+        [`Fiberglass Boxes: ${packagingNeeded['FIBERGLASS'].units} (${packagingNeeded['FIBERGLASS'].quantity} filters @ ${FIBERGLASS_PACK_SIZE}/box)`],
+      ], { origin: { r: rowIndex, c: 0 } });
+      rowIndex += 1;
     }
     
     if (packagingNeeded['PLEATED']?.units > 0) {
-      csvContent += `Pleated Bundles: ${packagingNeeded['PLEATED'].units} (${packagingNeeded['PLEATED'].quantity} filters @ ${PLEATED_PACK_SIZE}/bundle)\n`;
+      XLSX.utils.sheet_add_aoa(ws, [
+        [`Pleated Bundles: ${packagingNeeded['PLEATED'].units} (${packagingNeeded['PLEATED'].quantity} filters @ ${PLEATED_PACK_SIZE}/bundle)`],
+      ], { origin: { r: rowIndex, c: 0 } });
+      rowIndex += 1;
     }
     
-    csvContent += `\n`;
+    XLSX.utils.sheet_add_aoa(ws, [
+      [``],
+    ], { origin: { r: rowIndex, c: 0 } });
+    rowIndex += 1;
     
     // DETAILED BREAKDOWN SECTION
-    csvContent += `DETAILED BREAKDOWN\n`;
-    csvContent += `------------------\n`;
+    XLSX.utils.sheet_add_aoa(ws, [
+      [`DETAILED BREAKDOWN`],
+      [`------------------`],
+    ], { origin: { r: rowIndex, c: 0 } });
+    rowIndex += 2;
     
     // Group materials by their main type
     const materialGroups = {
@@ -229,10 +297,13 @@ export const MRContent = () => {
       }
     });
     
-    // Add each group to CSV with subtotals
+    // Add each group to the worksheet with subtotals
     Object.values(materialGroups).forEach(group => {
       if (group.items.length > 0) {
-        csvContent += `${group.title}:\n`;
+        XLSX.utils.sheet_add_aoa(ws, [
+          [`${group.title}:`],
+        ], { origin: { r: rowIndex, c: 0 } });
+        rowIndex += 1;
         
         // Sort items by size
         group.items.sort((a, b) => a[0].localeCompare(b[0]));
@@ -242,23 +313,29 @@ export const MRContent = () => {
         
         // Add each item
         group.items.forEach(([type, quantity]) => {
-          csvContent += `  ${formatMaterialType(type)}: ${quantity}\n`;
+          XLSX.utils.sheet_add_aoa(ws, [
+            [`  ${formatMaterialType(type)}: ${quantity}`],
+          ], { origin: { r: rowIndex, c: 0 } });
+          rowIndex += 1;
         });
         
         // Add subtotal
-        csvContent += `  Subtotal: ${groupTotal}\n\n`;
+        XLSX.utils.sheet_add_aoa(ws, [
+          [`  Subtotal: ${groupTotal}`],
+          [``],
+        ], { origin: { r: rowIndex, c: 0 } });
+        rowIndex += 2;
       }
     });
     
-    // Create download
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `materials_${technicianName.replace(/\s+/g, '_')}_${formattedDate.replace(/\//g, '-')}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Set column width
+    ws['!cols'] = [{ wch: 80 }]; // Set first column width to 80 characters
+    
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(wb, ws, "Materials Report");
+    
+    // Generate Excel file and trigger download
+    XLSX.writeFile(wb, `materials_${technicianName.replace(/\s+/g, '_')}_${formattedDate.replace(/\//g, '-')}.xlsx`);
   };
   
   return (
@@ -276,7 +353,7 @@ export const MRContent = () => {
           </Button>
           <Button variant="outline" size="sm" onClick={handleExport}>
             <Download className="h-4 w-4 mr-2" />
-            Export CSV
+            Export Excel
           </Button>
         </div>
       </CardHeader>
@@ -299,4 +376,3 @@ export const MRContent = () => {
     </Card>
   );
 };
-
