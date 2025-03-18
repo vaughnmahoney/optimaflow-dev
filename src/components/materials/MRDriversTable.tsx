@@ -83,6 +83,7 @@ export const MRDriversTable = ({
       }
     });
     
+    console.log("[DEBUG-TABLE] Final driver material counts:", counts);
     setDriverMaterialCounts(counts);
   }, [routes, materialsData]);
 

@@ -126,7 +126,7 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
       
       // Step 4: Extract material requirements from order notes
       const materials: MaterialItem[] = [];
-      const notes: string[] = [];
+      const notesArray: string[] = []; // Create an array to store notes
       
       // Create a map of orderNo to driverSerial for associating materials with drivers
       const orderToDriverMap: Record<string, string> = {};
@@ -155,6 +155,17 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
       // Track materials per driver for debugging
       const materialsPerDriver: Record<string, number> = {};
       
+      // Debug: log a sample of the orders' notes
+      console.log("[DEBUG] Sample order notes format check:");
+      if (orderDetailsResponse.orders.length > 0) {
+        const sampleOrders = orderDetailsResponse.orders.slice(0, 3);
+        sampleOrders.forEach(order => {
+          if (order.data?.notes) {
+            console.log(`[DEBUG] Sample order ${order.data.orderNo} notes: "${order.data.notes}"`);
+          }
+        });
+      }
+      
       // Process each order and parse its materials
       orderDetailsResponse.orders.forEach(order => {
         if (!order.data?.orderNo || !order.data?.notes) {
@@ -165,8 +176,8 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
         const orderNo = order.data.orderNo;
         const orderNotes = order.data.notes;
         
-        // Fix: Add to notes array instead of using push on the notes string
-        notes.push(`${orderNo}: ${orderNotes}`);
+        // Add to notes array
+        notesArray.push(`${orderNo}: ${orderNotes}`);
         
         // Get the driver serial for this order
         const driverSerial = orderToDriverMap[orderNo];
@@ -180,7 +191,7 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
         
         // Update materials count per driver
         if (parsedMaterials.length > 0) {
-          materialsPerDriver[driverSerial] = (materialsPerDriver[driverSerial] || 0) + parsedMaterials.length;
+          materialsPerDriver[driverSerial] = (materialsPerDriver[driverSerial] || 0) + parsedMaterials.reduce((sum, item) => sum + item.quantity, 0);
           materials.push(...parsedMaterials);
         }
       });
@@ -200,7 +211,8 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
       
       console.log('[DEBUG] Final materials by driver:');
       Object.entries(materialsByDriver).forEach(([driverSerial, items]) => {
-        console.log(`[DEBUG] - Driver ${driverSerial}: ${items.length} materials`);
+        const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
+        console.log(`[DEBUG] - Driver ${driverSerial}: ${items.length} material items, total quantity: ${totalQuantity}`);
       });
       
       // Additional check for any anomalies in the data
@@ -221,7 +233,7 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
       // Step 5: Update the MR store with the materials data
       console.log(`[DEBUG] Setting ${materials.length} material items in store, properly associated with drivers`);
       setMaterialsData(materials);
-      setRawNotes(notes);
+      setRawNotes(notesArray); // Use the properly created array
       
       // Set technician name based on driver if available
       if (routesResponse.routes.length === 1) {
