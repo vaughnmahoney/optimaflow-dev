@@ -79,30 +79,58 @@ export const MRContent = () => {
       }
     });
     
-    // Format the CSV string for technician-friendly viewing
-    let csvContent = `MATERIALS REQUIREMENTS FOR: ${technicianName.toUpperCase()}\n`;
-    csvContent += `Date: ${new Date().toLocaleDateString()}\n\n`;
-    
-    // SECTION 1: Summary by filter type
-    csvContent += "MATERIAL TOTALS:\n";
-    csvContent += "----------------\n";
-    
-    // Order categories for the summary
-    const categoryOrder = [
-      { prefix: 'CONDCOIL', label: 'Condenser Coils' },
-      { prefix: 'REFRIGERATOR_COILS', label: 'Refrigerator Coils' },
-      { prefix: 'PRODUCE', label: 'Produce Coils' },
-      { prefix: 'P-TRAP', label: 'P-Traps' }
-    ];
-    
-    // Add the ordered categories first
-    categoryOrder.forEach(category => {
-      if (materialsByType[category.prefix]) {
-        csvContent += `${category.label}: ${materialsByType[category.prefix]}\n`;
-      }
+    // Format the CSV content to match the example
+    const formattedDate = new Date().toLocaleDateString('en-US', {
+      month: 'numeric',
+      day: 'numeric',
+      year: 'numeric'
     });
     
-    // Group filter types for cleaner display
+    // Build CSV content with proper formatting
+    let csvContent = '';
+    
+    // HEADER SECTION
+    csvContent += `HYLAND FILTER SERVICE - MATERIALS REQUIREMENTS\n`;
+    csvContent += `===============================================\n\n`;
+    csvContent += `TECHNICIAN: ${technicianName.toUpperCase()}\n`;
+    csvContent += `DATE: ${formattedDate}\n\n`;
+    
+    // MATERIAL SUMMARY SECTION
+    csvContent += `MATERIAL SUMMARY\n`;
+    csvContent += `---------------\n`;
+    
+    // Category order for clear organization
+    const categoryGroups = [
+      {
+        title: "COIL CLEANING",
+        types: ['CONDCOIL', 'REFRIGERATOR_COILS', 'PRODUCE', 'P-TRAP']
+      },
+      {
+        title: "FILTERS",
+        types: []  // Will be calculated dynamically
+      }
+    ];
+    
+    // Add coil cleaning items
+    let coilCleaningTotal = 0;
+    csvContent += `${categoryGroups[0].title}:\n`;
+    
+    const coilMappings = {
+      'CONDCOIL': 'Condenser Coils',
+      'REFRIGERATOR_COILS': 'Refrigerator Coils',
+      'PRODUCE': 'Produce Coils',
+      'P-TRAP': 'P-Traps'
+    };
+    
+    Object.entries(coilMappings).forEach(([type, label]) => {
+      if (materialsByType[type]) {
+        csvContent += `  ${label}: ${materialsByType[type]}\n`;
+        coilCleaningTotal += materialsByType[type];
+      }
+    });
+    csvContent += `  TOTAL COIL CLEANING: ${coilCleaningTotal}\n\n`;
+    
+    // Group filter types
     const polyMendTotal = Object.entries(materialsByType)
       .filter(([type]) => type.startsWith('S') && type.endsWith('MEND'))
       .reduce((sum, [_, qty]) => sum + qty, 0);
@@ -115,82 +143,111 @@ export const MRContent = () => {
       .filter(([type]) => type.startsWith('G') && type.endsWith('B'))
       .reduce((sum, [_, qty]) => sum + qty, 0);
       
-    const frameTotal = Object.entries(materialsByType)
-      .filter(([type]) => type.startsWith('F'))
-      .reduce((sum, [_, qty]) => sum + qty, 0);
-      
     const pleatedTotal = Object.entries(materialsByType)
       .filter(([type]) => type.startsWith('P') && type.includes('INS'))
       .reduce((sum, [_, qty]) => sum + qty, 0);
     
-    // Add filter group totals
-    if (polyMendTotal > 0) csvContent += `Polyester MEND Filters: ${polyMendTotal}\n`;
-    if (polyTotal > 0) csvContent += `Polyester Filters: ${polyTotal}\n`;
-    if (fiberglassTotal > 0) csvContent += `Fiberglass Filters: ${fiberglassTotal}\n`;
-    if (pleatedTotal > 0) csvContent += `Pleated Filters: ${pleatedTotal}\n`;
-    if (frameTotal > 0) csvContent += `Frames: ${frameTotal}\n`;
+    const frameTotal = Object.entries(materialsByType)
+      .filter(([type]) => type.startsWith('F'))
+      .reduce((sum, [_, qty]) => sum + qty, 0);
+      
+    // Calculate total filters
+    const totalFilters = polyMendTotal + polyTotal + fiberglassTotal + pleatedTotal;
     
-    // SECTION 2: Packaging units needed
-    csvContent += "\nPACKAGING UNITS NEEDED:\n";
-    csvContent += "----------------------\n";
+    // Add filter summary
+    csvContent += `FILTERS:\n`;
+    if (polyMendTotal > 0) csvContent += `  Polyester MEND: ${polyMendTotal}\n`;
+    if (polyTotal > 0) csvContent += `  Polyester Standard: ${polyTotal}\n`;
+    if (fiberglassTotal > 0) csvContent += `  Fiberglass: ${fiberglassTotal}\n`;
+    if (pleatedTotal > 0) csvContent += `  Pleated: ${pleatedTotal}\n`;
+    if (frameTotal > 0) csvContent += `  Frames: ${frameTotal}\n`;
+    csvContent += `  TOTAL FILTERS: ${totalFilters}\n\n`;
+    
+    // PACKAGING SECTION
+    csvContent += `PACKAGING REQUIREMENTS\n`;
+    csvContent += `---------------------\n`;
     
     if (packagingNeeded['POLY_MEND']?.units > 0) {
-      csvContent += `Polyester MEND: ${packagingNeeded['POLY_MEND'].units} bags (${packagingNeeded['POLY_MEND'].quantity} filters)\n`;
+      csvContent += `Polyester MEND Bags: ${packagingNeeded['POLY_MEND'].units} (${packagingNeeded['POLY_MEND'].quantity} filters @ ${POLY_PACK_SIZE}/bag)\n`;
     }
     
     if (packagingNeeded['POLY']?.units > 0) {
-      csvContent += `Polyester: ${packagingNeeded['POLY'].units} bags (${packagingNeeded['POLY'].quantity} filters)\n`;
+      csvContent += `Polyester Bags: ${packagingNeeded['POLY'].units} (${packagingNeeded['POLY'].quantity} filters @ ${POLY_PACK_SIZE}/bag)\n`;
     }
     
     if (packagingNeeded['FIBERGLASS']?.units > 0) {
-      csvContent += `Fiberglass: ${packagingNeeded['FIBERGLASS'].units} boxes (${packagingNeeded['FIBERGLASS'].quantity} filters)\n`;
+      csvContent += `Fiberglass Boxes: ${packagingNeeded['FIBERGLASS'].units} (${packagingNeeded['FIBERGLASS'].quantity} filters @ ${FIBERGLASS_PACK_SIZE}/box)\n`;
     }
     
     if (packagingNeeded['PLEATED']?.units > 0) {
-      csvContent += `Pleated: ${packagingNeeded['PLEATED'].units} bundles (${packagingNeeded['PLEATED'].quantity} filters)\n`;
+      csvContent += `Pleated Bundles: ${packagingNeeded['PLEATED'].units} (${packagingNeeded['PLEATED'].quantity} filters @ ${PLEATED_PACK_SIZE}/bundle)\n`;
     }
     
-    // SECTION 3: Detailed breakdown by size
-    csvContent += "\nDETAILED BREAKDOWN:\n";
-    csvContent += "------------------\n";
-    csvContent += "Type,Size,Quantity\n";
+    csvContent += `\n`;
     
-    // Sort entries by type for the detailed section
-    const sortedEntries = Object.entries(materialsByType).sort((a, b) => {
-      const typeA = a[0];
-      const typeB = b[0];
-      
-      // Sort CONDCOIL first, then REFRIGERATOR_COILS, then others
-      if (typeA === 'CONDCOIL') return -1;
-      if (typeB === 'CONDCOIL') return 1;
-      if (typeA === 'REFRIGERATOR_COILS') return -1;
-      if (typeB === 'REFRIGERATOR_COILS') return 1;
-      if (typeA === 'PRODUCE') return -1;
-      if (typeB === 'PRODUCE') return 1;
-      
-      // Sort polyester MEND filters before regular polyester filters
-      if (typeA.startsWith('S') && typeA.endsWith('MEND') && !(typeB.startsWith('S') && typeB.endsWith('MEND'))) return -1;
-      if (!(typeA.startsWith('S') && typeA.endsWith('MEND')) && typeB.startsWith('S') && typeB.endsWith('MEND')) return 1;
-      
-      // Sort regular polyester filters before fiberglass filters
-      if (typeA.startsWith('S') && !typeB.startsWith('S')) return -1;
-      if (!typeA.startsWith('S') && typeB.startsWith('S')) return 1;
-      
-      // Sort pleated filters after fiberglass but before frames
-      if (typeA.startsWith('P') && typeB.startsWith('F')) return -1;
-      if (typeA.startsWith('F') && typeB.startsWith('P')) return 1;
-      
-      // Sort fiberglass filters before frames
-      if (typeA.startsWith('G') && typeB.startsWith('F')) return -1;
-      if (typeA.startsWith('F') && typeB.startsWith('G')) return 1;
-      
-      return typeA.localeCompare(typeB);
+    // DETAILED BREAKDOWN SECTION
+    csvContent += `DETAILED BREAKDOWN\n`;
+    csvContent += `------------------\n`;
+    
+    // Group materials by their main type
+    const materialGroups = {
+      'COND': { title: 'CONDENSER COILS', items: [] as [string, number][] },
+      'REF': { title: 'REFRIGERATOR COILS', items: [] as [string, number][] },
+      'POLY_MEND': { title: 'POLYESTER MEND FILTERS', items: [] as [string, number][] },
+      'POLY': { title: 'POLYESTER STANDARD FILTERS', items: [] as [string, number][] },
+      'FIBER': { title: 'FIBERGLASS FILTERS', items: [] as [string, number][] },
+      'PLEAT': { title: 'PLEATED FILTERS', items: [] as [string, number][] },
+      'FRAME': { title: 'FRAMES', items: [] as [string, number][] },
+      'OTHER': { title: 'OTHER MATERIALS', items: [] as [string, number][] }
+    };
+    
+    // Sort materials into appropriate groups
+    Object.entries(materialsByType).forEach(([type, quantity]) => {
+      if (type === 'CONDCOIL') {
+        materialGroups['COND'].items.push([type, quantity]);
+      } 
+      else if (type === 'REFRIGERATOR_COILS' || type.includes('FREEZER') || type.includes('FREEZECOOL') || type.includes('COOLER')) {
+        materialGroups['REF'].items.push([type, quantity]);
+      }
+      else if (type.startsWith('S') && type.endsWith('MEND')) {
+        materialGroups['POLY_MEND'].items.push([type, quantity]);
+      }
+      else if (type.startsWith('S')) {
+        materialGroups['POLY'].items.push([type, quantity]);
+      }
+      else if (type.startsWith('G') && type.endsWith('B')) {
+        materialGroups['FIBER'].items.push([type, quantity]);
+      }
+      else if (type.startsWith('P') && type.includes('INS')) {
+        materialGroups['PLEAT'].items.push([type, quantity]);
+      }
+      else if (type.startsWith('F')) {
+        materialGroups['FRAME'].items.push([type, quantity]);
+      }
+      else {
+        materialGroups['OTHER'].items.push([type, quantity]);
+      }
     });
     
-    // Add detailed breakdown
-    sortedEntries.forEach(([type, quantity]) => {
-      const readableType = formatMaterialType(type);
-      csvContent += `"${readableType}",${quantity}\n`;
+    // Add each group to CSV with subtotals
+    Object.values(materialGroups).forEach(group => {
+      if (group.items.length > 0) {
+        csvContent += `${group.title}:\n`;
+        
+        // Sort items by size
+        group.items.sort((a, b) => a[0].localeCompare(b[0]));
+        
+        // Calculate group total
+        const groupTotal = group.items.reduce((sum, [_, qty]) => sum + qty, 0);
+        
+        // Add each item
+        group.items.forEach(([type, quantity]) => {
+          csvContent += `  ${formatMaterialType(type)}: ${quantity}\n`;
+        });
+        
+        // Add subtotal
+        csvContent += `  Subtotal: ${groupTotal}\n\n`;
+      }
     });
     
     // Create download
@@ -198,7 +255,7 @@ export const MRContent = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `van_loading_${technicianName.replace(/\s+/g, '_')}.csv`);
+    link.setAttribute('download', `materials_${technicianName.replace(/\s+/g, '_')}_${formattedDate.replace(/\//g, '-')}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -242,3 +299,4 @@ export const MRContent = () => {
     </Card>
   );
 };
+

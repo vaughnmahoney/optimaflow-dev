@@ -7,8 +7,6 @@ import { MRDriverDetail } from "@/components/materials/MRDriverDetail";
 import { useMaterialRoutes } from "@/hooks/materials/useMaterialRoutes";
 import { useState } from "react";
 import { DriverRoute } from "@/services/optimoroute/getRoutesService";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MRUploader } from "@/components/materials/MRUploader";
 import { Card } from "@/components/ui/card";
@@ -52,20 +50,11 @@ export default function MaterialsRequirement() {
             )}
             
             {selectedDriver && (
-              <>
-                <Alert variant="outline" className="bg-muted/50 border-primary/20">
-                  <AlertCircle className="h-4 w-4 text-primary" />
-                  <AlertDescription className="text-sm text-foreground">
-                    Viewing materials for {selectedDriver.driverName} ({selectedDriver.stops.length} stops)
-                  </AlertDescription>
-                </Alert>
-                
-                <MRDriverDetail 
-                  driver={selectedDriver}
-                  orderDetails={materialRoutes.orderDetails}
-                  onBack={() => setSelectedDriver(null)}
-                />
-              </>
+              <MRDriverDetail 
+                driver={selectedDriver}
+                orderDetails={materialRoutes.orderDetails}
+                onBack={() => setSelectedDriver(null)}
+              />
             )}
           </TabsContent>
           
