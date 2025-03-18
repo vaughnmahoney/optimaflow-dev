@@ -10,11 +10,14 @@ import { DriverRoute } from "@/services/optimoroute/getRoutesService";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MRUploader } from "@/components/materials/MRUploader";
 import { Card } from "@/components/ui/card";
+import { MRContent } from "@/components/materials/MRContent";
+import { useMRStore } from "@/hooks/materials/useMRStore";
 
 export default function MaterialsRequirement() {
   const [selectedDriver, setSelectedDriver] = useState<DriverRoute | null>(null);
   const [activeTab, setActiveTab] = useState<string>("routes");
   const materialRoutes = useMaterialRoutes();
+  const { materialsData } = useMRStore();
   
   const handleSelectDriver = (driver: DriverRoute | null) => {
     setSelectedDriver(driver);

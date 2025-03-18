@@ -1,3 +1,4 @@
+
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { useMRStore } from '@/hooks/materials/useMRStore';
@@ -8,15 +9,17 @@ import { v4 as uuidv4 } from 'uuid';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { MRContent } from './MRContent';
 
 export const MRUploader = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [dragActive, setDragActive] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [showMaterialContent, setShowMaterialContent] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const { setMaterialsData, setRawNotes, clearData } = useMRStore();
+  const { setMaterialsData, setRawNotes, clearData, materialsData, setTechnicianName } = useMRStore();
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -145,6 +148,7 @@ export const MRUploader = () => {
 
     setIsUploading(true);
     setProgress(0);
+    setShowMaterialContent(false);
     
     try {
       let allMaterials: any[] = [];
@@ -170,8 +174,15 @@ export const MRUploader = () => {
       console.log(`[DEBUG-EXCEL] All files processed. Total materials: ${allMaterials.length}`);
       setMaterialsData(allMaterials);
       setRawNotes(allNotes);
-      
-      toast.success(`Processed ${selectedFiles.length} files with ${allMaterials.length} material items`);
+      setTechnicianName(`Excel Upload - ${new Date().toLocaleDateString()}`);
+
+      // Only show content if materials were found
+      if (allMaterials.length > 0) {
+        setShowMaterialContent(true);
+        toast.success(`Processed ${selectedFiles.length} files with ${allMaterials.length} material items`);
+      } else {
+        toast.warning('No material items found in the uploaded files');
+      }
       setSelectedFiles([]);
     } catch (error) {
       console.error('[DEBUG-EXCEL] Error processing Excel files:', error);
@@ -304,6 +315,13 @@ export const MRUploader = () => {
           </Button>
         </div>
       </div>
+
+      {/* Show Material Content after successful upload */}
+      {showMaterialContent && materialsData.length > 0 && (
+        <div className="mt-8">
+          <MRContent />
+        </div>
+      )}
     </div>
   );
 };
