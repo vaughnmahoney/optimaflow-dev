@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { getRoutes, GetRoutesParams, DriverRoute } from '@/services/optimoroute/getRoutesService';
 import { getOrderDetails, OrderDetail } from '@/services/optimoroute/getOrderDetailService';
@@ -18,11 +17,24 @@ export interface RouteMaterialsResponse {
   reset: () => void;
 }
 
+// Generate a fallback driver identifier when driverSerial is missing
+const generateDriverId = (driver: DriverRoute): string => {
+  // If we have a valid driverSerial, use it
+  if (driver.driverSerial && driver.driverSerial.trim() !== '') {
+    return driver.driverSerial;
+  }
+  
+  // Otherwise, create a fallback ID using driver name and vehicle registration
+  const fallbackId = `driver_${driver.driverName.replace(/\s+/g, '_')}_${driver.vehicleRegistration || 'unknown'}`;
+  console.log(`[DEBUG] Creating fallback driver ID for ${driver.driverName}: ${fallbackId}`);
+  return fallbackId;
+};
+
 // Parse material requirements from order notes
-const parseMaterialsFromNotes = (notes: string, orderNo: string, driverSerial?: string): MaterialItem[] => {
+const parseMaterialsFromNotes = (notes: string, orderNo: string, driverId?: string): MaterialItem[] => {
   if (!notes) return [];
   
-  console.log(`[DEBUG] Parsing notes for order ${orderNo}, driver ${driverSerial || 'unknown'}:`, notes);
+  console.log(`[DEBUG] Parsing notes for order ${orderNo}, driver ${driverId || 'unknown'}:`, notes);
   
   // Parse format like "(0) COOLER, (15) FREEZER, (2) G2063B, (2) G2563B"
   const materialsPattern = /\((\d+)\)\s*([^,(]+)(?:,|$)/g;
@@ -41,7 +53,7 @@ const parseMaterialsFromNotes = (notes: string, orderNo: string, driverSerial?: 
         type,
         quantity,
         workOrderId: orderNo,
-        driverSerial // Ensure this is properly passed in
+        driverSerial: driverId // Use the possibly fallback driver ID
       });
     }
   }
@@ -128,24 +140,32 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
       const materials: MaterialItem[] = [];
       const notesArray: string[] = []; // Create an array to store notes
       
-      // Create a map of orderNo to driverSerial for associating materials with drivers
+      // Create a map of orderNo to driverId (using fallback IDs if necessary)
       const orderToDriverMap: Record<string, string> = {};
       
-      console.log('[DEBUG] Creating order-to-driver mapping');
+      console.log('[DEBUG] Creating order-to-driver mapping with fallback IDs if needed');
       
-      // Build a clean, non-duplicated order-to-driver mapping
+      // Build a clean, non-duplicated order-to-driver mapping with fallback IDs
       routesResponse.routes.forEach(route => {
-        const driverSerial = route.driverSerial;
-        console.log(`[DEBUG] Processing route for driver: ${route.driverName} (${driverSerial})`);
+        // Generate a unique driver ID (either real serial or fallback)
+        const driverId = generateDriverId(route);
+        const driverName = route.driverName;
+        
+        console.log(`[DEBUG] Processing route for driver: ${driverName} (ID: ${driverId})`);
+        
+        // For debugging: check if this is a fallback ID
+        if (driverId !== route.driverSerial) {
+          console.log(`[DEBUG] Using fallback ID for driver ${driverName}: ${driverId}`);
+        }
         
         // Ensure each order is only mapped to one driver by checking if it's already mapped
         route.stops.forEach(stop => {
           const orderNo = stop.orderNo;
           if (orderNo !== "-" && !orderToDriverMap[orderNo]) {
-            orderToDriverMap[orderNo] = driverSerial;
-            console.log(`[DEBUG] Mapped order ${orderNo} to driver ${driverSerial}`);
-          } else if (orderNo !== "-" && orderToDriverMap[orderNo] !== driverSerial) {
-            console.log(`[DEBUG] ⚠️ Order ${orderNo} already mapped to driver ${orderToDriverMap[orderNo]}, not remapping to ${driverSerial}`);
+            orderToDriverMap[orderNo] = driverId;
+            console.log(`[DEBUG] Mapped order ${orderNo} to driver ${driverId}`);
+          } else if (orderNo !== "-" && orderToDriverMap[orderNo] !== driverId) {
+            console.log(`[DEBUG] ⚠️ Order ${orderNo} already mapped to driver ${orderToDriverMap[orderNo]}, not remapping to ${driverId}`);
           }
         });
       });
@@ -179,26 +199,26 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
         // Add to notes array
         notesArray.push(`${orderNo}: ${orderNotes}`);
         
-        // Get the driver serial for this order
-        const driverSerial = orderToDriverMap[orderNo];
-        if (!driverSerial) {
+        // Get the driver ID for this order
+        const driverId = orderToDriverMap[orderNo];
+        if (!driverId) {
           console.log(`[DEBUG] ⚠️ No driver found for order ${orderNo}, skipping material parsing`);
           return;
         }
         
         // Parse materials and associate them with the driver
-        const parsedMaterials = parseMaterialsFromNotes(orderNotes, orderNo, driverSerial);
+        const parsedMaterials = parseMaterialsFromNotes(orderNotes, orderNo, driverId);
         
         // Update materials count per driver
         if (parsedMaterials.length > 0) {
-          materialsPerDriver[driverSerial] = (materialsPerDriver[driverSerial] || 0) + parsedMaterials.reduce((sum, item) => sum + item.quantity, 0);
+          materialsPerDriver[driverId] = (materialsPerDriver[driverId] || 0) + parsedMaterials.reduce((sum, item) => sum + item.quantity, 0);
           materials.push(...parsedMaterials);
         }
       });
       
       console.log('[DEBUG] Materials per driver after processing:');
-      Object.entries(materialsPerDriver).forEach(([driverSerial, count]) => {
-        console.log(`[DEBUG] - Driver ${driverSerial}: ${count} materials`);
+      Object.entries(materialsPerDriver).forEach(([driverId, count]) => {
+        console.log(`[DEBUG] - Driver ${driverId}: ${count} materials`);
       });
       
       // Double-check final materials for driver associations
@@ -210,9 +230,9 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
       }, {} as Record<string, MaterialItem[]>);
       
       console.log('[DEBUG] Final materials by driver:');
-      Object.entries(materialsByDriver).forEach(([driverSerial, items]) => {
+      Object.entries(materialsByDriver).forEach(([driverId, items]) => {
         const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
-        console.log(`[DEBUG] - Driver ${driverSerial}: ${items.length} material items, total quantity: ${totalQuantity}`);
+        console.log(`[DEBUG] - Driver ${driverId}: ${items.length} material items, total quantity: ${totalQuantity}`);
       });
       
       // Additional check for any anomalies in the data
@@ -233,7 +253,7 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
       // Step 5: Update the MR store with the materials data
       console.log(`[DEBUG] Setting ${materials.length} material items in store, properly associated with drivers`);
       setMaterialsData(materials);
-      setRawNotes(notesArray); // Use the properly created array
+      setRawNotes(notesArray);
       
       // Set technician name based on driver if available
       if (routesResponse.routes.length === 1) {

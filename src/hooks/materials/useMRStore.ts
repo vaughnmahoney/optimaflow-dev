@@ -10,6 +10,11 @@ export interface MaterialItem {
   driverSerial?: string; // Driver identifier for material assignment
 }
 
+// Helper function to determine if an ID is a fallback ID
+const isFallbackDriverId = (id: string): boolean => {
+  return id.startsWith('driver_');
+};
+
 // Enhanced state to handle multiple drivers
 interface MRState {
   materialsData: MaterialItem[];
@@ -47,7 +52,8 @@ export const useMRStore = create<MRState>((set, get) => ({
     
     console.log('[DEBUG-STORE] Materials by driver:');
     Object.entries(materialsByDriver).forEach(([driver, items]) => {
-      console.log(`[DEBUG-STORE] - Driver ${driver}: ${items.length} items`);
+      const isFallback = isFallbackDriverId(driver);
+      console.log(`[DEBUG-STORE] - Driver ${driver}${isFallback ? ' (fallback ID)' : ''}: ${items.length} items`);
     });
     
     set({ materialsData: data });
@@ -78,14 +84,26 @@ export const useMRStore = create<MRState>((set, get) => ({
     selectedDrivers: []
   }),
   
-  // Get materials for a specific driver - ensure strict filtering by driverSerial
+  // Get materials for a specific driver - enhanced to handle fallback IDs
   getMaterialsForDriver: (driverSerial) => {
     const { materialsData } = get();
     
-    // Only include materials that have a matching driverSerial (strict equality)
-    const materials = materialsData.filter(item => item.driverSerial === driverSerial);
+    // Check if this is a fallback ID
+    const isFallback = isFallbackDriverId(driverSerial);
     
-    console.log(`[DEBUG-STORE] Getting materials for driver ${driverSerial}: ${materials.length} items`);
+    // Only include materials that have a matching driverSerial (strict equality)
+    const materials = materialsData.filter(item => {
+      // Skip items with no driver assigned
+      if (!item.driverSerial) return false;
+      
+      // Direct match
+      if (item.driverSerial === driverSerial) return true;
+      
+      // No match, and not checking fallbacks
+      return false;
+    });
+    
+    console.log(`[DEBUG-STORE] Getting materials for driver ${driverSerial}${isFallback ? ' (fallback ID)' : ''}: ${materials.length} items`);
     
     // Additional verification that all returned materials have the right driver
     const incorrectlyAssigned = materials.filter(m => m.driverSerial !== driverSerial);

@@ -1,4 +1,3 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { DriverRoute } from "@/services/optimoroute/getRoutesService";
@@ -9,6 +8,17 @@ interface MRDriversTableProps {
   routes: DriverRoute[];
   onSelectDriver: (driver: DriverRoute | null) => void;
 }
+
+// Helper function to get a consistent driver ID even when driverSerial is missing
+const getDriverId = (driver: DriverRoute): string => {
+  // If we have a valid driverSerial, use it
+  if (driver.driverSerial && driver.driverSerial.trim() !== '') {
+    return driver.driverSerial;
+  }
+  
+  // Otherwise, create a fallback ID using driver name and vehicle registration
+  return `driver_${driver.driverName.replace(/\s+/g, '_')}_${driver.vehicleRegistration || 'unknown'}`;
+};
 
 export const MRDriversTable = ({ 
   routes, 
@@ -21,11 +31,24 @@ export const MRDriversTable = ({
   useEffect(() => {
     console.log("[DEBUG-TABLE] Calculating distinct material counts for drivers");
     
-    // Count materials by driver serial, ensuring each driver has its own count
+    // Count materials by driver ID, ensuring each driver has its own count
     const counts: Record<string, number> = {};
     
-    // Group materials by driver serial
+    // Create mapping between fallback IDs and real driver serials
+    const driverIdMap: Record<string, string> = {};
+    routes.forEach(route => {
+      const fallbackId = getDriverId(route);
+      driverIdMap[fallbackId] = route.driverSerial;
+      
+      // Log if we're using a fallback ID
+      if (fallbackId !== route.driverSerial) {
+        console.log(`[DEBUG-TABLE] Using fallback ID for ${route.driverName}: ${fallbackId} (original: ${route.driverSerial || 'empty'})`);
+      }
+    });
+    
+    // Group materials by driver ID (could be serial or fallback)
     const materialsByDriver = materialsData.reduce((acc, item) => {
+      // Skip if no driver ID at all
       if (!item.driverSerial) return acc;
       
       if (!acc[item.driverSerial]) {
@@ -36,16 +59,16 @@ export const MRDriversTable = ({
     }, {} as Record<string, MaterialItem[]>);
     
     // Calculate total material counts per driver
-    Object.entries(materialsByDriver).forEach(([driverSerial, driverMaterials]) => {
+    Object.entries(materialsByDriver).forEach(([driverIdOrSerial, driverMaterials]) => {
       // Sum up quantities for this driver
       const totalQuantity = driverMaterials.reduce((sum, item) => sum + item.quantity, 0);
-      counts[driverSerial] = totalQuantity;
+      counts[driverIdOrSerial] = totalQuantity;
       
-      console.log(`[DEBUG-TABLE] Driver ${driverSerial}: ${driverMaterials.length} material items, total quantity: ${totalQuantity}`);
+      console.log(`[DEBUG-TABLE] Driver ${driverIdOrSerial}: ${driverMaterials.length} material items, total quantity: ${totalQuantity}`);
       
       // Additional debugging for high counts
       if (totalQuantity > 1000) {
-        console.log(`[DEBUG-TABLE] ⚠️ ANOMALY: Very high material count for driver ${driverSerial}`);
+        console.log(`[DEBUG-TABLE] ⚠️ ANOMALY: Very high material count for driver ${driverIdOrSerial}`);
         
         // Analyze by type
         const byType = driverMaterials.reduce((acc, item) => {
@@ -77,9 +100,10 @@ export const MRDriversTable = ({
     
     // Verify all routes have an entry, even if zero
     routes.forEach(route => {
-      if (counts[route.driverSerial] === undefined) {
-        counts[route.driverSerial] = 0;
-        console.log(`[DEBUG-TABLE] Driver ${route.driverName} (${route.driverSerial}) has no materials`);
+      const driverId = getDriverId(route);
+      if (counts[driverId] === undefined && counts[route.driverSerial] === undefined) {
+        counts[driverId] = 0;
+        console.log(`[DEBUG-TABLE] Driver ${route.driverName} (ID: ${driverId}) has no materials`);
       }
     });
     
@@ -100,11 +124,27 @@ export const MRDriversTable = ({
         </TableHeader>
         <TableBody>
           {routes.map((route) => {
-            const materialCount = driverMaterialCounts[route.driverSerial] || 0;
+            // Get the driver ID - either serial or fallback
+            const driverId = getDriverId(route);
+            
+            // Try to find material count using serial first, then fallback ID if needed
+            const materialCount = driverMaterialCounts[route.driverSerial] || 
+                                  driverMaterialCounts[driverId] || 
+                                  0;
+            
+            // For debugging whether we're using the fallback ID
+            if (driverId !== route.driverSerial && materialCount > 0) {
+              console.log(`[DEBUG-TABLE] Found ${materialCount} materials using fallback ID for ${route.driverName}`);
+            }
             
             return (
-              <TableRow key={route.driverSerial}>
-                <TableCell className="font-medium">{route.driverName}</TableCell>
+              <TableRow key={route.driverSerial || driverId}>
+                <TableCell className="font-medium">
+                  {route.driverName}
+                  {driverId !== route.driverSerial && (
+                    <span className="ml-1 text-xs text-muted-foreground">(using fallback ID)</span>
+                  )}
+                </TableCell>
                 <TableCell>{route.stops.length}</TableCell>
                 <TableCell>
                   {materialCount > 1000 ? (
