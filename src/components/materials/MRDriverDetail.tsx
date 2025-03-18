@@ -33,9 +33,9 @@ export const MRDriverDetail = ({ driver, orderDetails, onBack }: MRDriverDetailP
     driverOrderNumbers.includes(order.data.orderNo)
   );
   
-  // Filter materials for this driver
+  // Filter materials for this driver by name
   const driverMaterials = materialsData.filter(material => 
-    material.driverSerial === driver.driverSerial
+    material.driverName === driver.driverName
   );
   
   // Handle printing
@@ -149,10 +149,6 @@ export const MRDriverDetail = ({ driver, orderDetails, onBack }: MRDriverDetailP
             <div className="flex items-center">
               <Badge variant="outline" className="mr-1">Stops</Badge>
               <span>{driver.stops.length}</span>
-            </div>
-            <div className="flex items-center">
-              <Badge variant="outline" className="mr-1">Driver Serial</Badge>
-              <span>{driver.driverSerial}</span>
             </div>
             <div className="flex items-center">
               <Badge variant="outline" className="mr-1">Total Materials</Badge>

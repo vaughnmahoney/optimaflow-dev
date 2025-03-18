@@ -7,15 +7,9 @@ export interface MaterialItem {
   type: string;
   quantity: number;
   workOrderId?: string;
-  driverSerial?: string; // Driver identifier for material assignment
+  driverName?: string; // Changed from driverSerial to driverName
 }
 
-// Helper function to determine if an ID is a fallback ID
-const isFallbackDriverId = (id: string): boolean => {
-  return id.startsWith('driver_');
-};
-
-// Enhanced state to handle multiple drivers
 interface MRState {
   materialsData: MaterialItem[];
   rawNotes: string[];
@@ -25,11 +19,11 @@ interface MRState {
   setRawNotes: (notes: string[]) => void;
   setTechnicianName: (name: string) => void;
   setSelectedDrivers: (drivers: string[]) => void;
-  addSelectedDriver: (driverSerial: string) => void;
-  removeSelectedDriver: (driverSerial: string) => void;
+  addSelectedDriver: (driverName: string) => void;
+  removeSelectedDriver: (driverName: string) => void;
   clearSelectedDrivers: () => void;
   clearData: () => void;
-  getMaterialsForDriver: (driverSerial: string) => MaterialItem[];
+  getMaterialsForDriver: (driverName: string) => MaterialItem[];
   getTotalMaterialsCount: () => Record<string, number>;
 }
 
@@ -44,16 +38,15 @@ export const useMRStore = create<MRState>((set, get) => ({
     
     // Check for any patterns or anomalies in the data
     const materialsByDriver = data.reduce((acc, item) => {
-      const driverSerial = item.driverSerial || 'unknown';
-      if (!acc[driverSerial]) acc[driverSerial] = [];
-      acc[driverSerial].push(item);
+      const driverName = item.driverName || 'unknown';
+      if (!acc[driverName]) acc[driverName] = [];
+      acc[driverName].push(item);
       return acc;
     }, {} as Record<string, MaterialItem[]>);
     
     console.log('[DEBUG-STORE] Materials by driver:');
     Object.entries(materialsByDriver).forEach(([driver, items]) => {
-      const isFallback = isFallbackDriverId(driver);
-      console.log(`[DEBUG-STORE] - Driver ${driver}${isFallback ? ' (fallback ID)' : ''}: ${items.length} items`);
+      console.log(`[DEBUG-STORE] - Driver ${driver}: ${items.length} items`);
     });
     
     set({ materialsData: data });
@@ -65,14 +58,14 @@ export const useMRStore = create<MRState>((set, get) => ({
   
   setSelectedDrivers: (drivers) => set({ selectedDrivers: drivers }),
   
-  addSelectedDriver: (driverSerial) => 
+  addSelectedDriver: (driverName) => 
     set(state => ({ 
-      selectedDrivers: [...state.selectedDrivers, driverSerial] 
+      selectedDrivers: [...state.selectedDrivers, driverName] 
     })),
   
-  removeSelectedDriver: (driverSerial) => 
+  removeSelectedDriver: (driverName) => 
     set(state => ({ 
-      selectedDrivers: state.selectedDrivers.filter(d => d !== driverSerial) 
+      selectedDrivers: state.selectedDrivers.filter(d => d !== driverName) 
     })),
   
   clearSelectedDrivers: () => set({ selectedDrivers: [] }),
@@ -84,32 +77,20 @@ export const useMRStore = create<MRState>((set, get) => ({
     selectedDrivers: []
   }),
   
-  // Get materials for a specific driver - enhanced to handle fallback IDs
-  getMaterialsForDriver: (driverSerial) => {
+  // Get materials for a specific driver by name
+  getMaterialsForDriver: (driverName) => {
     const { materialsData } = get();
     
-    // Check if this is a fallback ID
-    const isFallback = isFallbackDriverId(driverSerial);
-    
-    // Only include materials that have a matching driverSerial (strict equality)
+    // Only include materials that have a matching driverName
     const materials = materialsData.filter(item => {
       // Skip items with no driver assigned
-      if (!item.driverSerial) return false;
+      if (!item.driverName) return false;
       
-      // Direct match
-      if (item.driverSerial === driverSerial) return true;
-      
-      // No match, and not checking fallbacks
-      return false;
+      // Match by driver name
+      return item.driverName === driverName;
     });
     
-    console.log(`[DEBUG-STORE] Getting materials for driver ${driverSerial}${isFallback ? ' (fallback ID)' : ''}: ${materials.length} items`);
-    
-    // Additional verification that all returned materials have the right driver
-    const incorrectlyAssigned = materials.filter(m => m.driverSerial !== driverSerial);
-    if (incorrectlyAssigned.length > 0) {
-      console.error(`[DEBUG-STORE] ⚠️ Found ${incorrectlyAssigned.length} materials incorrectly assigned!`);
-    }
+    console.log(`[DEBUG-STORE] Getting materials for driver ${driverName}: ${materials.length} items`);
     
     return materials;
   },
@@ -123,7 +104,7 @@ export const useMRStore = create<MRState>((set, get) => ({
     // Filter materials by selected drivers if any are selected
     const filteredMaterials = selectedDrivers.length > 0
       ? materialsData.filter(item => 
-          item.driverSerial ? selectedDrivers.includes(item.driverSerial) : false
+          item.driverName ? selectedDrivers.includes(item.driverName) : false
         )
       : materialsData;
     

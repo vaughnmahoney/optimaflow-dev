@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { getRoutes, GetRoutesParams, DriverRoute } from '@/services/optimoroute/getRoutesService';
 import { getOrderDetails, OrderDetail } from '@/services/optimoroute/getOrderDetailService';
@@ -10,31 +11,18 @@ export interface RouteMaterialsResponse {
   isLoading: boolean;
   routes: DriverRoute[];
   orderDetails: OrderDetail[];
-  rawRoutesResponse: any; // Added to store raw API response
-  rawOrderDetailsResponse: any; // Added to store raw API response
+  rawRoutesResponse: any;
+  rawOrderDetailsResponse: any;
   batchStats: BatchProcessingStats | null;
   fetchRouteMaterials: (params: GetRoutesParams) => Promise<void>;
   reset: () => void;
 }
 
-// Generate a fallback driver identifier when driverSerial is missing
-const generateDriverId = (driver: DriverRoute): string => {
-  // If we have a valid driverSerial, use it
-  if (driver.driverSerial && driver.driverSerial.trim() !== '') {
-    return driver.driverSerial;
-  }
-  
-  // Otherwise, create a fallback ID using driver name and vehicle registration
-  const fallbackId = `driver_${driver.driverName.replace(/\s+/g, '_')}_${driver.vehicleRegistration || 'unknown'}`;
-  console.log(`[DEBUG] Creating fallback driver ID for ${driver.driverName}: ${fallbackId}`);
-  return fallbackId;
-};
-
 // Parse material requirements from order notes
-const parseMaterialsFromNotes = (notes: string, orderNo: string, driverId?: string): MaterialItem[] => {
+const parseMaterialsFromNotes = (notes: string, orderNo: string, driverName?: string): MaterialItem[] => {
   if (!notes) return [];
   
-  console.log(`[DEBUG] Parsing notes for order ${orderNo}, driver ${driverId || 'unknown'}:`, notes);
+  console.log(`[DEBUG] Parsing notes for order ${orderNo}, driver ${driverName || 'unknown'}:`, notes);
   
   // Parse format like "(0) COOLER, (15) FREEZER, (2) G2063B, (2) G2563B"
   const materialsPattern = /\((\d+)\)\s*([^,(]+)(?:,|$)/g;
@@ -53,14 +41,14 @@ const parseMaterialsFromNotes = (notes: string, orderNo: string, driverId?: stri
         type,
         quantity,
         workOrderId: orderNo,
-        driverSerial: driverId // Use the possibly fallback driver ID
+        driverName // Use driver name instead of serial
       });
     }
   }
   
   console.log(`[DEBUG] Total materials parsed for order ${orderNo}: ${materials.length}`);
   return materials;
-};
+}
 
 export const useMaterialRoutes = (): RouteMaterialsResponse => {
   const [isLoading, setIsLoading] = useState(false);
@@ -106,7 +94,7 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
       
       console.log(`[DEBUG] Collected ${orderNumbers.length} order numbers from routes`);
       
-      // Step 3: Get order details for all order numbers (now with parallel batch processing)
+      // Step 3: Get order details for all order numbers
       const orderDetailsResponse = await getOrderDetails(orderNumbers);
       
       // Store the raw response for debugging
@@ -120,10 +108,9 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
           successfulBatches: orderDetailsResponse.batchStats.successfulBatches,
           failedBatches: orderDetailsResponse.batchStats.failedBatches,
           totalOrdersProcessed: orderDetailsResponse.batchStats.totalOrdersProcessed || 0,
-          errors: [] // Fix: Initialize with empty array since the property is expected but not provided
+          errors: []
         });
         
-        // Log batch statistics if available
         console.log(`[DEBUG] Batch processing stats: ${orderDetailsResponse.batchStats.successfulBatches}/${orderDetailsResponse.batchStats.totalBatches} batches successful`);
       }
       
@@ -138,34 +125,27 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
       
       // Step 4: Extract material requirements from order notes
       const materials: MaterialItem[] = [];
-      const notesArray: string[] = []; // Create an array to store notes
+      const notesArray: string[] = [];
       
-      // Create a map of orderNo to driverId (using fallback IDs if necessary)
+      // Create a map of orderNo to driverName
       const orderToDriverMap: Record<string, string> = {};
       
-      console.log('[DEBUG] Creating order-to-driver mapping with fallback IDs if needed');
+      console.log('[DEBUG] Creating order-to-driver mapping using driver names');
       
-      // Build a clean, non-duplicated order-to-driver mapping with fallback IDs
+      // Build order-to-driver mapping using driver names
       routesResponse.routes.forEach(route => {
-        // Generate a unique driver ID (either real serial or fallback)
-        const driverId = generateDriverId(route);
         const driverName = route.driverName;
         
-        console.log(`[DEBUG] Processing route for driver: ${driverName} (ID: ${driverId})`);
+        console.log(`[DEBUG] Processing route for driver: ${driverName}`);
         
-        // For debugging: check if this is a fallback ID
-        if (driverId !== route.driverSerial) {
-          console.log(`[DEBUG] Using fallback ID for driver ${driverName}: ${driverId}`);
-        }
-        
-        // Ensure each order is only mapped to one driver by checking if it's already mapped
+        // Ensure each order is only mapped to one driver
         route.stops.forEach(stop => {
           const orderNo = stop.orderNo;
           if (orderNo !== "-" && !orderToDriverMap[orderNo]) {
-            orderToDriverMap[orderNo] = driverId;
-            console.log(`[DEBUG] Mapped order ${orderNo} to driver ${driverId}`);
-          } else if (orderNo !== "-" && orderToDriverMap[orderNo] !== driverId) {
-            console.log(`[DEBUG] ⚠️ Order ${orderNo} already mapped to driver ${orderToDriverMap[orderNo]}, not remapping to ${driverId}`);
+            orderToDriverMap[orderNo] = driverName;
+            console.log(`[DEBUG] Mapped order ${orderNo} to driver ${driverName}`);
+          } else if (orderNo !== "-" && orderToDriverMap[orderNo] !== driverName) {
+            console.log(`[DEBUG] ⚠️ Order ${orderNo} already mapped to driver ${orderToDriverMap[orderNo]}, not remapping to ${driverName}`);
           }
         });
       });
@@ -174,17 +154,6 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
       
       // Track materials per driver for debugging
       const materialsPerDriver: Record<string, number> = {};
-      
-      // Debug: log a sample of the orders' notes
-      console.log("[DEBUG] Sample order notes format check:");
-      if (orderDetailsResponse.orders.length > 0) {
-        const sampleOrders = orderDetailsResponse.orders.slice(0, 3);
-        sampleOrders.forEach(order => {
-          if (order.data?.notes) {
-            console.log(`[DEBUG] Sample order ${order.data.orderNo} notes: "${order.data.notes}"`);
-          }
-        });
-      }
       
       // Process each order and parse its materials
       orderDetailsResponse.orders.forEach(order => {
@@ -199,59 +168,30 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
         // Add to notes array
         notesArray.push(`${orderNo}: ${orderNotes}`);
         
-        // Get the driver ID for this order
-        const driverId = orderToDriverMap[orderNo];
-        if (!driverId) {
+        // Get the driver name for this order
+        const driverName = orderToDriverMap[orderNo];
+        if (!driverName) {
           console.log(`[DEBUG] ⚠️ No driver found for order ${orderNo}, skipping material parsing`);
           return;
         }
         
-        // Parse materials and associate them with the driver
-        const parsedMaterials = parseMaterialsFromNotes(orderNotes, orderNo, driverId);
+        // Parse materials and associate them with the driver name
+        const parsedMaterials = parseMaterialsFromNotes(orderNotes, orderNo, driverName);
         
         // Update materials count per driver
         if (parsedMaterials.length > 0) {
-          materialsPerDriver[driverId] = (materialsPerDriver[driverId] || 0) + parsedMaterials.reduce((sum, item) => sum + item.quantity, 0);
+          materialsPerDriver[driverName] = (materialsPerDriver[driverName] || 0) + parsedMaterials.reduce((sum, item) => sum + item.quantity, 0);
           materials.push(...parsedMaterials);
         }
       });
       
       console.log('[DEBUG] Materials per driver after processing:');
-      Object.entries(materialsPerDriver).forEach(([driverId, count]) => {
-        console.log(`[DEBUG] - Driver ${driverId}: ${count} materials`);
+      Object.entries(materialsPerDriver).forEach(([driverName, count]) => {
+        console.log(`[DEBUG] - Driver ${driverName}: ${count} materials`);
       });
-      
-      // Double-check final materials for driver associations
-      const materialsByDriver = materials.reduce((acc, item) => {
-        const ds = item.driverSerial || 'unknown';
-        if (!acc[ds]) acc[ds] = [];
-        acc[ds].push(item);
-        return acc;
-      }, {} as Record<string, MaterialItem[]>);
-      
-      console.log('[DEBUG] Final materials by driver:');
-      Object.entries(materialsByDriver).forEach(([driverId, items]) => {
-        const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
-        console.log(`[DEBUG] - Driver ${driverId}: ${items.length} material items, total quantity: ${totalQuantity}`);
-      });
-      
-      // Additional check for any anomalies in the data
-      const driverWithMostMaterials = Object.entries(materialsPerDriver).sort((a, b) => b[1] - a[1])[0];
-      if (driverWithMostMaterials && driverWithMostMaterials[1] > 1000) {
-        console.log(`[DEBUG] ⚠️ ANOMALY DETECTED: Driver ${driverWithMostMaterials[0]} has ${driverWithMostMaterials[1]} materials!`);
-        
-        // Detailed analysis of high-count driver's materials
-        const highCountDriverMaterials = materials.filter(m => m.driverSerial === driverWithMostMaterials[0]);
-        const materialTypeCounts = highCountDriverMaterials.reduce((acc, item) => {
-          acc[item.type] = (acc[item.type] || 0) + item.quantity;
-          return acc;
-        }, {} as Record<string, number>);
-        
-        console.log(`[DEBUG] Material type breakdown for high-count driver:`, materialTypeCounts);
-      }
       
       // Step 5: Update the MR store with the materials data
-      console.log(`[DEBUG] Setting ${materials.length} material items in store, properly associated with drivers`);
+      console.log(`[DEBUG] Setting ${materials.length} material items in store, associated with driver names`);
       setMaterialsData(materials);
       setRawNotes(notesArray);
       
