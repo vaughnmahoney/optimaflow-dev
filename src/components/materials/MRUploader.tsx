@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { useMRStore } from '@/hooks/materials/useMRStore';
@@ -54,7 +53,6 @@ export const MRUploader = () => {
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files);
       setSelectedFiles(prev => [...prev, ...newFiles]);
-      // Reset input value to allow selecting the same file again
       e.target.value = '';
     }
   };
@@ -67,10 +65,14 @@ export const MRUploader = () => {
     materials: any[],
     notes: string[]
   }> => {
+    console.log(`[DEBUG-EXCEL] Processing Excel file: ${file.name}`);
+    
     const data = await file.arrayBuffer();
     const workbook = XLSX.read(data);
     const worksheet = workbook.Sheets[workbook.SheetNames[0]];
     const jsonData = XLSX.utils.sheet_to_json<any>(worksheet);
+    
+    console.log(`[DEBUG-EXCEL] Extracted ${jsonData.length} rows from Excel`);
 
     // Extract raw notes for display
     const notes = jsonData.map((row) => {
@@ -81,14 +83,19 @@ export const MRUploader = () => {
 
     // Process notes to extract material requirements
     const materials = [];
+    let totalMaterialsFound = 0;
+    
     for (const row of jsonData) {
       const notes = row.Notes;
       const workOrderId = row.WorkOrderID || 'Unknown';
 
       if (notes) {
+        console.log(`[DEBUG-EXCEL] Processing notes for order ${workOrderId}: ${notes.substring(0, 100)}${notes.length > 100 ? '...' : ''}`);
+        
         // Parse notes in format "(0) COOLER, (15) FREEZER, (2) G2063B, (2) G2563B"
         const materialsPattern = /\((\d+)\)\s*([^,(]+)(?:,|$)/g;
         let match;
+        let materialsInThisRow = 0;
         
         while ((match = materialsPattern.exec(notes)) !== null) {
           const quantity = parseInt(match[1], 10);
@@ -101,10 +108,31 @@ export const MRUploader = () => {
               quantity,
               workOrderId
             });
+            materialsInThisRow++;
+            totalMaterialsFound++;
           }
+        }
+        
+        if (materialsInThisRow > 10) {
+          console.log(`[DEBUG-EXCEL] ⚠️ Found ${materialsInThisRow} materials in a single row for order ${workOrderId}`);
         }
       }
     }
+    
+    // Log summary of found materials
+    console.log(`[DEBUG-EXCEL] Total materials found in Excel: ${totalMaterialsFound} across ${materials.length} entries`);
+    
+    // Check for anomalies in material quantities
+    const materialsByType: Record<string, number> = {};
+    materials.forEach(material => {
+      materialsByType[material.type] = (materialsByType[material.type] || 0) + material.quantity;
+    });
+    
+    Object.entries(materialsByType).forEach(([type, quantity]) => {
+      if (quantity > 1000) {
+        console.log(`[DEBUG-EXCEL] ⚠️ ANOMALY: Material type "${type}" has total quantity ${quantity}`);
+      }
+    });
 
     return { materials, notes };
   };
@@ -125,6 +153,8 @@ export const MRUploader = () => {
       for (let i = 0; i < selectedFiles.length; i++) {
         const file = selectedFiles[i];
         try {
+          console.log(`[DEBUG-EXCEL] Processing file ${i+1}/${selectedFiles.length}: ${file.name}`);
+          
           const { materials, notes } = await processExcelFile(file);
           allMaterials = [...allMaterials, ...materials];
           allNotes = [...allNotes, ...notes];
@@ -132,18 +162,19 @@ export const MRUploader = () => {
           // Update progress
           setProgress(Math.round(((i + 1) / selectedFiles.length) * 100));
         } catch (fileError) {
-          console.error(`Error processing file ${file.name}:`, fileError);
+          console.error(`[DEBUG-EXCEL] Error processing file ${file.name}:`, fileError);
           toast.error(`Failed to process file ${file.name}`);
         }
       }
 
+      console.log(`[DEBUG-EXCEL] All files processed. Total materials: ${allMaterials.length}`);
       setMaterialsData(allMaterials);
       setRawNotes(allNotes);
       
       toast.success(`Processed ${selectedFiles.length} files with ${allMaterials.length} material items`);
       setSelectedFiles([]);
     } catch (error) {
-      console.error('Error processing Excel files:', error);
+      console.error('[DEBUG-EXCEL] Error processing Excel files:', error);
       toast.error('Failed to process Excel files');
     } finally {
       setIsUploading(false);
