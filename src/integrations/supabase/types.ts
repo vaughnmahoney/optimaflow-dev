@@ -453,6 +453,36 @@ export type Database = {
           },
         ]
       }
+      user_profiles: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          full_name: string | null
+          id: string
+          is_active: boolean
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          full_name?: string | null
+          id: string
+          is_active?: boolean
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          full_name?: string | null
+          id?: string
+          is_active?: boolean
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       work_order_images: {
         Row: {
           created_at: string | null
@@ -684,6 +714,19 @@ export type Database = {
       }
     }
     Functions: {
+      create_user: {
+        Args: {
+          email: string
+          password: string
+          full_name: string
+          role: Database["public"]["Enums"]["user_role"]
+        }
+        Returns: string
+      }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       submit_attendance_to_history: {
         Args: {
           submission_date: string
@@ -696,7 +739,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      user_role: "admin" | "qc_reviewer" | "supervisor"
     }
     CompositeTypes: {
       [_ in never]: never

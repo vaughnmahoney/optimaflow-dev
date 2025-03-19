@@ -1,18 +1,39 @@
+
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
 
-export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { session, loading } = useAuth();
+type ProtectedRouteProps = {
+  children: React.ReactNode;
+  allowedRoles?: Array<'admin' | 'qc_reviewer' | 'billing_admin' | 'supervisor'>;
+};
+
+export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
+  const { session, loading, profile } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    console.log("ProtectedRoute - session:", session, "loading:", loading);
-    if (!loading && !session) {
-      console.log("No session, redirecting to login");
-      navigate("/login", { replace: true });
+    console.log("ProtectedRoute - session:", session, "loading:", loading, "profile:", profile);
+    
+    if (!loading) {
+      // Check if user is authenticated
+      if (!session) {
+        console.log("No session, redirecting to login");
+        navigate("/login", { replace: true });
+        return;
+      }
+      
+      // If roles are specified, check if user has permission
+      if (allowedRoles && allowedRoles.length > 0 && profile) {
+        if (!allowedRoles.includes(profile.role)) {
+          console.log(`User role ${profile.role} not allowed, redirecting to dashboard`);
+          navigate("/dashboard", { replace: true });
+          return;
+        }
+      }
     }
-  }, [session, loading]);
+  }, [session, loading, profile, allowedRoles, navigate]);
 
   if (loading) {
     return (
@@ -25,5 +46,6 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
 
+  // Only render children if user is authenticated
   return session ? <>{children}</> : null;
 }
