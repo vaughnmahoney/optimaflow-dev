@@ -2,6 +2,7 @@
 import { Layout } from "@/components/Layout";
 import { WorkOrderContent } from "@/components/workorders/WorkOrderContent";
 import { WorkOrderHeader } from "@/components/workorders/WorkOrderHeader";
+import { WorkOrderInfoCard } from "@/components/workorders/InfoCard";
 import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useWorkOrderData } from "@/hooks/useWorkOrderData";
@@ -62,7 +63,10 @@ const WorkOrders = () => {
         />
       }
     >
-      <div className="space-y-8">
+      <div className="space-y-6">
+        {/* Add the new info card */}
+        <WorkOrderInfoCard />
+        
         <WorkOrderContent 
           workOrders={workOrders}
           isLoading={isLoading}
