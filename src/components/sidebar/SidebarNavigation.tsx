@@ -2,10 +2,11 @@
 import { useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, AlertCircle, CreditCard, Car, 
-  Package2, Clock, Users, Receipt, 
-  CalendarDays, LucideIcon, Database
+  Package2, Clock, Users, Receipt, ExternalLink,
+  CalendarDays, LucideIcon, PackageCheck
 } from "lucide-react";
 import { SidebarNavItem } from "./SidebarNavItem";
+import { navigationConfig } from "@/config/navigationConfig";
 
 interface SidebarNavigationProps {
   isCollapsed: boolean;
@@ -44,12 +45,6 @@ export function SidebarNavigation({
       badge: flaggedWorkOrdersCount > 0 ? flaggedWorkOrdersCount : undefined
     },
     { 
-      to: "/bulk-orders-test", 
-      icon: Database, 
-      label: "Bulk Import Test", 
-      isActive: location.pathname.startsWith("/bulk-orders-test") 
-    },
-    { 
       to: "/payroll", 
       icon: CreditCard, 
       label: "Payroll", 
@@ -82,14 +77,26 @@ export function SidebarNavigation({
     { 
       to: "/receipts", 
       icon: Receipt, 
-      label: "Expenses", 
+      label: "Receipts", 
       isActive: location.pathname.startsWith("/receipts") || location.pathname.startsWith("/reports")
+    },
+    { 
+      to: "/integrations", 
+      icon: ExternalLink, 
+      label: "Integrations", 
+      isActive: location.pathname.startsWith("/integrations") || location.pathname.startsWith("/api") 
     },
     { 
       to: "/calendar", 
       icon: CalendarDays, 
       label: "Calendar", 
       isActive: location.pathname.startsWith("/calendar")
+    },
+    { 
+      to: "/materials", 
+      icon: PackageCheck, 
+      label: "Materials", 
+      isActive: location.pathname.startsWith("/materials")
     },
   ];
 
