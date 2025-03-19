@@ -34,8 +34,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Function to fetch user profile
+  const fetchUserProfile = async (userId: string) => {
+    if (!userId) return null;
+    
+    setProfileLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+        
+      if (error) {
+        console.error("Error fetching user profile:", error);
+        return null;
+      }
+      
+      return data as UserProfile;
+    } catch (error) {
+      console.error("Exception fetching user profile:", error);
+      return null;
+    } finally {
+      setProfileLoading(false);
+    }
+  };
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -45,20 +72,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
+        // Handle profile fetching
         if (currentSession?.user) {
-          // Fetch user profile when authenticated
-          const { data, error } = await supabase
-            .from('user_profiles')
-            .select('*')
-            .eq('id', currentSession.user.id)
-            .single();
-            
-          if (error) {
-            console.error("Error fetching user profile:", error);
-            setProfile(null);
-          } else {
-            setProfile(data as UserProfile);
-          }
+          const userProfile = await fetchUserProfile(currentSession.user.id);
+          setProfile(userProfile);
         } else {
           setProfile(null);
         }
@@ -69,6 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           navigate('/dashboard', { replace: true });
         }
         
+        // Always update loading state, even if profile fetch fails
         setLoading(false);
       }
     );
@@ -79,20 +97,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       
+      // Handle profile fetching
       if (currentSession?.user) {
-        // Fetch user profile when authenticated
-        const { data, error } = await supabase
-          .from('user_profiles')
-          .select('*')
-          .eq('id', currentSession.user.id)
-          .single();
-          
-        if (error) {
-          console.error("Error fetching user profile:", error);
-          setProfile(null);
-        } else {
-          setProfile(data as UserProfile);
-        }
+        const userProfile = await fetchUserProfile(currentSession.user.id);
+        setProfile(userProfile);
       }
       
       // Only redirect if we're on the login page and have a session
@@ -101,6 +109,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         navigate('/dashboard', { replace: true });
       }
       
+      // Always update loading state, even if profile fetch fails
       setLoading(false);
     });
 

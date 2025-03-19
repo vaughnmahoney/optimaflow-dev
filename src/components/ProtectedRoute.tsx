@@ -24,7 +24,7 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
         return;
       }
       
-      // If roles are specified, check if user has permission
+      // If roles are specified and profile is loaded, check if user has permission
       if (allowedRoles && allowedRoles.length > 0 && profile) {
         if (!allowedRoles.includes(profile.role)) {
           console.log(`User role ${profile.role} not allowed, redirecting to dashboard`);
@@ -47,5 +47,6 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   }
 
   // Only render children if user is authenticated
+  // Important: We no longer require profile to be present
   return session ? <>{children}</> : null;
 }
