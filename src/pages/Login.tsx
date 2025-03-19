@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -6,9 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-const SUPERVISOR_PASSWORD = "demo123"; // This should be moved to an environment variable
-
 const Login = () => {
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -19,28 +19,21 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      if (password === SUPERVISOR_PASSWORD) {
-        // Use a shared supervisor account for authentication
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: "supervisor@example.com",
-          password: SUPERVISOR_PASSWORD,
-        });
+      // Authenticate with Supabase
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-        if (error) throw error;
+      if (error) throw error;
 
-        toast({
-          title: "Welcome back!",
-          description: "Successfully logged in.",
-        });
+      toast({
+        title: "Welcome back!",
+        description: "Successfully logged in.",
+      });
 
-        navigate("/supervisor");
-      } else {
-        toast({
-          title: "Invalid password",
-          description: "Please check your password and try again.",
-          variant: "destructive",
-        });
-      }
+      // Redirect based on user role
+      navigate("/work-orders");
     } catch (error: any) {
       toast({
         title: "Error",
@@ -57,15 +50,24 @@ const Login = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
-            Supervisor Login
+            OptimaFlow Login
           </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full"
+              />
+            </div>
+            <div className="space-y-2">
+              <Input
                 type="password"
-                placeholder="Enter supervisor password"
+                placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full"
