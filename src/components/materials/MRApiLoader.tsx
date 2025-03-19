@@ -49,12 +49,12 @@ export const MRApiLoader = () => {
     });
   };
 
-  const handleDriverSelect = (driverSerial: string) => {
+  const handleDriverSelect = (driverName: string) => {
     setSelectedDrivers(prevSelected => {
-      if (prevSelected.includes(driverSerial)) {
-        return prevSelected.filter(d => d !== driverSerial);
+      if (prevSelected.includes(driverName)) {
+        return prevSelected.filter(d => d !== driverName);
       } 
-      return [...prevSelected, driverSerial];
+      return [...prevSelected, driverName];
     });
   };
 
@@ -69,7 +69,7 @@ export const MRApiLoader = () => {
     
     // Show success message with count of materials
     const driverMaterialsCount = materialsData.filter(
-      item => item.driverSerial && selectedDrivers.includes(item.driverSerial)
+      item => item.driverName && selectedDrivers.includes(item.driverName)
     ).length;
     
     if (driverMaterialsCount > 0) {
@@ -90,7 +90,7 @@ export const MRApiLoader = () => {
 
   const getSelectedDriver = (): DriverRoute | null => {
     if (selectedDrivers.length !== 1) return null;
-    return routes.find(route => route.driverSerial === selectedDrivers[0]) || null;
+    return routes.find(route => route.driverName === selectedDrivers[0]) || null;
   };
 
   return (
@@ -152,7 +152,7 @@ export const MRApiLoader = () => {
             selectedDriver={getSelectedDriver()}
             orderDetails={orderDetails}
             materials={materialsData.filter(
-              material => material.driverSerial === getSelectedDriver()?.driverSerial
+              material => material.driverName === getSelectedDriver()?.driverName
             )}
           />
         </div>

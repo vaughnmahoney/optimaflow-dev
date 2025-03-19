@@ -11,7 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface MRDriverListProps {
   routes: DriverRoute[];
-  onDriverSelect: (driverSerial: string) => void;
+  onDriverSelect: (driverName: string) => void;
   selectedDrivers: string[];
   onBatchSelect: () => void;
 }
@@ -27,12 +27,11 @@ export const MRDriverList = ({
   
   // Filter drivers based on search query
   const filteredDrivers = routes.filter(route => 
-    route.driverName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    route.driverSerial.toLowerCase().includes(searchQuery.toLowerCase())
+    route.driverName.toLowerCase().includes(searchQuery.toLowerCase())
   );
   
-  const handleDriverClick = (driverSerial: string) => {
-    onDriverSelect(driverSerial);
+  const handleDriverClick = (driverName: string) => {
+    onDriverSelect(driverName);
   };
   
   const handleBatchGenerate = () => {
@@ -52,10 +51,10 @@ export const MRDriverList = ({
       onDriverSelect('');
     } else {
       // Select all drivers
-      const allDriverSerials = routes.map(route => route.driverSerial);
-      allDriverSerials.forEach(serial => {
-        if (!selectedDrivers.includes(serial)) {
-          onDriverSelect(serial);
+      const allDriverNames = routes.map(route => route.driverName);
+      allDriverNames.forEach(name => {
+        if (!selectedDrivers.includes(name)) {
+          onDriverSelect(name);
         }
       });
     }
@@ -123,13 +122,13 @@ export const MRDriverList = ({
             <div className="space-y-2">
               {filteredDrivers.map((route) => (
                 <div
-                  key={route.driverSerial}
+                  key={route.driverSerial || route.driverName}
                   className={`flex items-center justify-between rounded-md border p-3 cursor-pointer transition-colors ${
-                    selectedDrivers.includes(route.driverSerial)
+                    selectedDrivers.includes(route.driverName)
                       ? 'border-primary bg-primary/5'
                       : 'border-border hover:border-primary/50 hover:bg-accent'
                   }`}
-                  onClick={() => handleDriverClick(route.driverSerial)}
+                  onClick={() => handleDriverClick(route.driverName)}
                 >
                   <div className="flex items-center space-x-3">
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
@@ -144,7 +143,7 @@ export const MRDriverList = ({
                   </div>
                   
                   <div className="flex items-center">
-                    {selectedDrivers.includes(route.driverSerial) && (
+                    {selectedDrivers.includes(route.driverName) && (
                       <CheckSquare className="h-5 w-5 text-primary" />
                     )}
                   </div>

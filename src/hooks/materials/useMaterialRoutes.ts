@@ -11,16 +11,18 @@ export interface RouteMaterialsResponse {
   isLoading: boolean;
   routes: DriverRoute[];
   orderDetails: OrderDetail[];
-  rawRoutesResponse: any; // Added to store raw API response
-  rawOrderDetailsResponse: any; // Added to store raw API response
+  rawRoutesResponse: any;
+  rawOrderDetailsResponse: any;
   batchStats: BatchProcessingStats | null;
   fetchRouteMaterials: (params: GetRoutesParams) => Promise<void>;
   reset: () => void;
 }
 
 // Parse material requirements from order notes
-const parseMaterialsFromNotes = (notes: string, orderNo: string, driverSerial?: string): MaterialItem[] => {
+const parseMaterialsFromNotes = (notes: string, orderNo: string, driverName?: string): MaterialItem[] => {
   if (!notes) return [];
+  
+  console.log(`[DEBUG] Parsing notes for order ${orderNo}, driver ${driverName || 'unknown'}:`, notes);
   
   // Parse format like "(0) COOLER, (15) FREEZER, (2) G2063B, (2) G2563B"
   const materialsPattern = /\((\d+)\)\s*([^,(]+)(?:,|$)/g;
@@ -31,19 +33,22 @@ const parseMaterialsFromNotes = (notes: string, orderNo: string, driverSerial?: 
     const quantity = parseInt(match[1], 10);
     const type = match[2].trim();
     
+    console.log(`[DEBUG] Found material: ${quantity} x ${type}`);
+    
     if (quantity > 0 && type) {
       materials.push({
         id: uuidv4(),
         type,
         quantity,
         workOrderId: orderNo,
-        driverSerial
+        driverName // Use driver name instead of serial
       });
     }
   }
   
+  console.log(`[DEBUG] Total materials parsed for order ${orderNo}: ${materials.length}`);
   return materials;
-};
+}
 
 export const useMaterialRoutes = (): RouteMaterialsResponse => {
   const [isLoading, setIsLoading] = useState(false);
@@ -60,6 +65,7 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
     
     try {
       // Step 1: Get routes for the selected date
+      console.log(`[DEBUG] Fetching routes for date: ${params.date}`);
       const routesResponse = await getRoutes(params);
       
       // Store the raw response for debugging
@@ -71,6 +77,7 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
         return;
       }
       
+      console.log(`[DEBUG] Found ${routesResponse.routes.length} routes`);
       setRoutes(routesResponse.routes);
       
       // Step 2: Collect all order numbers from the routes
@@ -85,9 +92,9 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
         return;
       }
       
-      console.log(`Collected ${orderNumbers.length} order numbers from routes`);
+      console.log(`[DEBUG] Collected ${orderNumbers.length} order numbers from routes`);
       
-      // Step 3: Get order details for all order numbers (now with parallel batch processing)
+      // Step 3: Get order details for all order numbers
       const orderDetailsResponse = await getOrderDetails(orderNumbers);
       
       // Store the raw response for debugging
@@ -101,18 +108,10 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
           successfulBatches: orderDetailsResponse.batchStats.successfulBatches,
           failedBatches: orderDetailsResponse.batchStats.failedBatches,
           totalOrdersProcessed: orderDetailsResponse.batchStats.totalOrdersProcessed || 0,
-          errors: orderDetailsResponse.batchStats.errors || []
+          errors: []
         });
         
-        // Log batch statistics if available
-        console.log(`Batch processing stats: ${orderDetailsResponse.batchStats.successfulBatches}/${orderDetailsResponse.batchStats.totalBatches} batches successful`);
-        
-        // Show toast with batch processing info
-        if (orderDetailsResponse.batchStats.failedBatches > 0) {
-          toast.warning(`Processed ${orderDetailsResponse.batchStats.successfulBatches} of ${orderDetailsResponse.batchStats.totalBatches} batches successfully (${orderDetailsResponse.batchStats.failedBatches} failed)`);
-        } else {
-          toast.success(`Processed all ${orderDetailsResponse.batchStats.totalBatches} batches successfully`);
-        }
+        console.log(`[DEBUG] Batch processing stats: ${orderDetailsResponse.batchStats.successfulBatches}/${orderDetailsResponse.batchStats.totalBatches} batches successful`);
       }
       
       if (!orderDetailsResponse.success || !orderDetailsResponse.orders?.length) {
@@ -121,37 +120,80 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
         return;
       }
       
+      console.log(`[DEBUG] Received ${orderDetailsResponse.orders.length} order details`);
       setOrderDetails(orderDetailsResponse.orders);
       
       // Step 4: Extract material requirements from order notes
       const materials: MaterialItem[] = [];
-      const notes: string[] = [];
+      const notesArray: string[] = [];
       
-      // Create a map of orderNo to driverSerial for associating materials with drivers
+      // Create a map of orderNo to driverName
       const orderToDriverMap: Record<string, string> = {};
+      
+      console.log('[DEBUG] Creating order-to-driver mapping using driver names');
+      
+      // Build order-to-driver mapping using driver names
       routesResponse.routes.forEach(route => {
+        const driverName = route.driverName;
+        
+        console.log(`[DEBUG] Processing route for driver: ${driverName}`);
+        
+        // Ensure each order is only mapped to one driver
         route.stops.forEach(stop => {
-          if (stop.orderNo !== "-") {
-            orderToDriverMap[stop.orderNo] = route.driverSerial;
+          const orderNo = stop.orderNo;
+          if (orderNo !== "-" && !orderToDriverMap[orderNo]) {
+            orderToDriverMap[orderNo] = driverName;
+            console.log(`[DEBUG] Mapped order ${orderNo} to driver ${driverName}`);
+          } else if (orderNo !== "-" && orderToDriverMap[orderNo] !== driverName) {
+            console.log(`[DEBUG] ⚠️ Order ${orderNo} already mapped to driver ${orderToDriverMap[orderNo]}, not remapping to ${driverName}`);
           }
         });
       });
       
+      console.log(`[DEBUG] Created mapping for ${Object.keys(orderToDriverMap).length} orders`);
+      
+      // Track materials per driver for debugging
+      const materialsPerDriver: Record<string, number> = {};
+      
+      // Process each order and parse its materials
       orderDetailsResponse.orders.forEach(order => {
-        if (order.data?.notes) {
-          notes.push(`${order.data.orderNo}: ${order.data.notes}`);
-          
-          // Get the driver serial for this order
-          const driverSerial = orderToDriverMap[order.data.orderNo];
-          
-          // Parse materials and associate them with the driver
-          materials.push(...parseMaterialsFromNotes(order.data.notes, order.data.orderNo, driverSerial));
+        if (!order.data?.orderNo || !order.data?.notes) {
+          console.log(`[DEBUG] Skipping order with missing data:`, order.data);
+          return;
+        }
+        
+        const orderNo = order.data.orderNo;
+        const orderNotes = order.data.notes;
+        
+        // Add to notes array
+        notesArray.push(`${orderNo}: ${orderNotes}`);
+        
+        // Get the driver name for this order
+        const driverName = orderToDriverMap[orderNo];
+        if (!driverName) {
+          console.log(`[DEBUG] ⚠️ No driver found for order ${orderNo}, skipping material parsing`);
+          return;
+        }
+        
+        // Parse materials and associate them with the driver name
+        const parsedMaterials = parseMaterialsFromNotes(orderNotes, orderNo, driverName);
+        
+        // Update materials count per driver
+        if (parsedMaterials.length > 0) {
+          materialsPerDriver[driverName] = (materialsPerDriver[driverName] || 0) + parsedMaterials.reduce((sum, item) => sum + item.quantity, 0);
+          materials.push(...parsedMaterials);
         }
       });
       
+      console.log('[DEBUG] Materials per driver after processing:');
+      Object.entries(materialsPerDriver).forEach(([driverName, count]) => {
+        console.log(`[DEBUG] - Driver ${driverName}: ${count} materials`);
+      });
+      
       // Step 5: Update the MR store with the materials data
+      console.log(`[DEBUG] Setting ${materials.length} material items in store, associated with driver names`);
       setMaterialsData(materials);
-      setRawNotes(notes);
+      setRawNotes(notesArray);
       
       // Set technician name based on driver if available
       if (routesResponse.routes.length === 1) {
@@ -163,7 +205,7 @@ export const useMaterialRoutes = (): RouteMaterialsResponse => {
       toast.success(`Found ${materials.length} material items across ${orderDetailsResponse.orders.length} orders`);
       
     } catch (error) {
-      console.error("Error in fetchRouteMaterials:", error);
+      console.error("[DEBUG] Error in fetchRouteMaterials:", error);
       toast.error("An error occurred while fetching materials");
     } finally {
       setIsLoading(false);

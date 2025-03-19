@@ -66,7 +66,8 @@ export const getOrderDetails = async (orderNumbers: string[]): Promise<OrderDeta
         console.log(`Starting batch ${actualBatchIndex + 1}/${batches.length} with ${batch.length} orders`);
         
         try {
-          const { data, error } = await supabase.functions.invoke('search-optimoroute', {
+          // Use the new mr-search-orders function instead of search-optimoroute
+          const { data, error } = await supabase.functions.invoke('mr-search-orders', {
             body: {
               orderNumbers: batch
             }

@@ -1,4 +1,3 @@
-
 /**
  * Format material type codes into human-readable strings
  */
@@ -28,7 +27,7 @@ export const formatMaterialType = (type: string): string => {
     return `Pleated: ${formatSizeCode(sizeCode)}`;
   }
   // Handle Frames
-  else if (type.startsWith('F')) {
+  else if (type.startsWith('F') && !type.includes('FREEZER') && !type.includes('FREEZECOOL') && !type.includes('COOLER')) {
     // Extract the size part (after F)
     const sizeCode = type.substring(1);
     return `Frame: ${formatSizeCode(sizeCode)}`;
@@ -62,30 +61,88 @@ export const formatSizeCode = (sizeCode: string): string => {
   return formattedSize;
 };
 
-// Define valid badge variants
-type BadgeVariant = 'success' | 'info' | 'purple' | 'warning' | 'secondary' | 'primary' | 'destructive' | 'default' | 'outline';
+// Define valid badge variants as a string union type that satisfies the UI component requirements
+export type BadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline';
 
 /**
  * Get badge variant based on material type
  */
 export const getBadgeVariant = (type: string): BadgeVariant => {
+  // Only return variants that are compatible with the Badge component
   if (type === 'CONDCOIL') {
-    return 'success';
+    return 'secondary';
   } else if (type === 'REFRIGERATOR_COILS' || type.includes('FREEZER') || type.includes('FREEZECOOL') || type.includes('COOLER')) {
-    return 'info';
+    return 'secondary';
   } else if (type.startsWith('S') && type.endsWith('MEND')) {
-    return 'purple';  // For Poly MEND filters
+    return 'default';  // For Poly MEND filters
   } else if (type.startsWith('S')) {
-    return 'warning'; // For regular Poly filters
+    return 'outline'; // For regular Poly filters
   } else if (type.startsWith('G') && type.endsWith('B')) {
     return 'secondary'; // For Fiberglass filters
   } else if (type.startsWith('P') && type.includes('INS')) {
-    return 'primary'; // For Pleated filters
+    return 'default'; // For Pleated filters
   } else if (type.startsWith('F')) {
     return 'destructive'; // For Frames
   } else if (type === 'PRODUCE') {
     return 'default'; // For Produce Coils
   } else {
     return 'outline';
+  }
+};
+
+/**
+ * Determine if a material is a filter type
+ */
+export const isFilterType = (type: string): boolean => {
+  // Only include filter types (Poly MEND, regular Polyester, Fiberglass, Pleated, and Frames)
+  return (
+    (type.startsWith('S') && type.endsWith('MEND')) || // Poly MEND
+    (type.startsWith('S') && !type.endsWith('MEND')) || // Regular Polyester
+    (type.startsWith('G') && type.endsWith('B')) || // Fiberglass
+    (type.startsWith('P') && type.includes('INS')) || // Pleated
+    (type.startsWith('F') && !type.includes('FREEZER') && !type.includes('FREEZECOOL') && !type.includes('COOLER')) // Frames only, not freezer or cooler
+  );
+};
+
+/**
+ * Get the filter category for a material type
+ */
+export const getFilterCategory = (type: string): string => {
+  if (type.startsWith('S') && type.endsWith('MEND')) {
+    return 'Polyester MEND';
+  } else if (type.startsWith('S')) {
+    return 'Polyester';
+  } else if (type.startsWith('G') && type.endsWith('B')) {
+    return 'Fiberglass';
+  } else if (type.startsWith('P') && type.includes('INS')) {
+    return 'Pleated';
+  } else if (type.startsWith('F') && !type.includes('FREEZER') && !type.includes('FREEZECOOL') && !type.includes('COOLER')) {
+    return 'Frame';
+  } else {
+    return 'Other';
+  }
+};
+
+/**
+ * Get the packaging info for a filter category
+ */
+export const getPackagingInfo = (category: string, count: number): string => {
+  switch (category) {
+    case 'Polyester MEND':
+      // Each bag has 44 filters
+      const bags = Math.ceil(count / 44);
+      return `${bags} bag${bags > 1 ? 's' : ''} (${count} filters)`;
+    case 'Fiberglass':
+      // Each box has ~46 filters (based on the image)
+      const boxes = Math.ceil(count / 46);
+      return `${boxes} box${boxes > 1 ? 'es' : ''} (${count} filters)`;
+    case 'Pleated':
+      // Each bundle has ~44 filters (based on the image)
+      const bundles = Math.ceil(count / 44);
+      return `${bundles} bundle${bundles > 1 ? 's' : ''} (${count} filters)`;
+    case 'Frame':
+      return `${count} frame${count > 1 ? 's' : ''}`;
+    default:
+      return `${count} unit${count > 1 ? 's' : ''}`;
   }
 };
