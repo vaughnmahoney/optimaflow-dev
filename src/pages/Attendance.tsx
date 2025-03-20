@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -74,15 +73,6 @@ const Attendance = () => {
               <p className="text-sm text-muted-foreground">
                 This system allows supervisors to mark technicians as <strong>Present</strong>, <strong>Absent</strong>, or <strong>Excused</strong> and saves records to an attendance history.
               </p>
-              <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-amber-800">
-                <p className="text-sm font-medium">Future Development Plans:</p>
-                <ul className="list-disc list-inside text-sm mt-1 space-y-1">
-                  <li>Redesign to match Alex's attendance sheet format</li>
-                  <li>OptimoRoute API integration for automatic attendance marking</li>
-                  <li>Technicians who submit work orders will be automatically marked as present</li>
-                  <li>Only remaining technicians will require manual review</li>
-                </ul>
-              </div>
             </div>
           </CardContent>
         </Card>
