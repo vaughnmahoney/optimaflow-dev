@@ -1,28 +1,19 @@
-
 import { useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
 
-type ProtectedRouteProps = {
-  children: React.ReactNode;
-  allowedRoles?: Array<'admin' | 'qc_reviewer' | 'billing_admin' | 'supervisor'>;
-};
-
-export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
+export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
     console.log("ProtectedRoute - session:", session, "loading:", loading);
-    
     if (!loading && !session) {
       console.log("No session, redirecting to login");
       navigate("/login", { replace: true });
     }
-  }, [session, loading, navigate]);
+  }, [session, loading]);
 
-  // Show loading indicator while checking authentication
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -34,7 +25,5 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
     );
   }
 
-  // Only render children if user is authenticated
-  // Role checking happens separately in a useEffect within each protected page
   return session ? <>{children}</> : null;
 }
