@@ -9,32 +9,20 @@ type ProtectedRouteProps = {
 };
 
 export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
-  const { session, loading, profile } = useAuth();
+  const { session, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    console.log("ProtectedRoute - session:", session, "loading:", loading, "profile:", profile);
+    console.log("ProtectedRoute - session:", session, "loading:", loading);
     
-    if (!loading) {
-      // Check if user is authenticated
-      if (!session) {
-        console.log("No session, redirecting to login");
-        navigate("/login", { replace: true });
-        return;
-      }
-      
-      // If roles are specified and profile is loaded, check if user has permission
-      if (allowedRoles && allowedRoles.length > 0 && profile) {
-        if (!allowedRoles.includes(profile.role)) {
-          console.log(`User role ${profile.role} not allowed, redirecting to dashboard`);
-          navigate("/dashboard", { replace: true });
-          return;
-        }
-      }
+    if (!loading && !session) {
+      console.log("No session, redirecting to login");
+      navigate("/login", { replace: true });
     }
-  }, [session, loading, profile, allowedRoles, navigate]);
+  }, [session, loading, navigate]);
 
+  // Show loading indicator while checking authentication
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -47,6 +35,6 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   }
 
   // Only render children if user is authenticated
-  // Important: We no longer require profile to be present
+  // Role checking happens separately in a useEffect within each protected page
   return session ? <>{children}</> : null;
 }

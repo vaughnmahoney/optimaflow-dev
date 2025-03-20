@@ -34,35 +34,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [profileLoading, setProfileLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-
-  // Function to fetch user profile
-  const fetchUserProfile = async (userId: string) => {
-    if (!userId) return null;
-    
-    setProfileLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-        
-      if (error) {
-        console.error("Error fetching user profile:", error);
-        return null;
-      }
-      
-      return data as UserProfile;
-    } catch (error) {
-      console.error("Exception fetching user profile:", error);
-      return null;
-    } finally {
-      setProfileLoading(false);
-    }
-  };
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -72,22 +45,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
-        // Handle profile fetching
+        // Clear loading state immediately once we know the session status
+        setLoading(false);
+        
+        // Attempt to fetch profile in background (but don't block UI on it)
         if (currentSession?.user) {
-          const userProfile = await fetchUserProfile(currentSession.user.id);
-          setProfile(userProfile);
+          try {
+            const { data, error } = await supabase
+              .from('user_profiles')
+              .select('*')
+              .eq('id', currentSession.user.id)
+              .single();
+              
+            if (error) {
+              console.error("Error fetching user profile:", error);
+              setProfile(null);
+            } else {
+              setProfile(data as UserProfile);
+            }
+          } catch (error) {
+            console.error("Exception fetching user profile:", error);
+            setProfile(null);
+          }
+          
+          // Only redirect if we're on the login page and have a session
+          if (location.pathname === '/login') {
+            console.log("Redirecting from auth state change");
+            navigate('/dashboard', { replace: true });
+          }
         } else {
           setProfile(null);
         }
-        
-        // Only redirect if we're on the login page and have a session
-        if (currentSession && location.pathname === '/login') {
-          console.log("Redirecting from auth state change");
-          navigate('/dashboard', { replace: true });
-        }
-        
-        // Always update loading state, even if profile fetch fails
-        setLoading(false);
       }
     );
 
@@ -97,20 +85,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       
-      // Handle profile fetching
-      if (currentSession?.user) {
-        const userProfile = await fetchUserProfile(currentSession.user.id);
-        setProfile(userProfile);
-      }
-      
-      // Only redirect if we're on the login page and have a session
-      if (currentSession && location.pathname === '/login') {
-        console.log("Redirecting from initial session check");
-        navigate('/dashboard', { replace: true });
-      }
-      
-      // Always update loading state, even if profile fetch fails
+      // Clear loading state immediately once we know the session status
       setLoading(false);
+      
+      // Attempt to fetch profile in background (but don't block UI on it)
+      if (currentSession?.user) {
+        try {
+          const { data, error } = await supabase
+            .from('user_profiles')
+            .select('*')
+            .eq('id', currentSession.user.id)
+            .single();
+            
+          if (error) {
+            console.error("Error fetching user profile:", error);
+            setProfile(null);
+          } else {
+            setProfile(data as UserProfile);
+          }
+        } catch (error) {
+          console.error("Exception fetching user profile:", error);
+          setProfile(null);
+        }
+        
+        // Only redirect if we're on the login page and have a session
+        if (location.pathname === '/login') {
+          console.log("Redirecting from initial session check");
+          navigate('/dashboard', { replace: true });
+        }
+      } else {
+        setProfile(null);
+      }
     });
 
     return () => subscription.unsubscribe();
