@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { WorkOrderFilters, SortField, SortDirection } from "@/components/workorders/types";
 
@@ -74,19 +73,26 @@ export const applyDateRangeFilter = (
   toDate: Date | null
 ) => {
   // Apply date range filter using both potential date fields
-  // and use OR conditions to match on either field
   if (fromDate) {
+    // Format date as YYYY-MM-DD for PostgreSQL comparison
     const fromDateStr = fromDate.toISOString().split('T')[0];
     
-    // Create OR condition for date filtering across both possible date fields
-    countQuery = countQuery.or(
-      `and(completion_response->orders->0->data->endTime->localTime.gte.${fromDateStr},completion_response->orders->0->data->endTime->localTime.not.is.null),` +
-      `and(completion_response->orders->0->data->endTime->localTime.is.null,search_response->data->date.gte.${fromDateStr})`
-    );
-    dataQuery = dataQuery.or(
-      `and(completion_response->orders->0->data->endTime->localTime.gte.${fromDateStr},completion_response->orders->0->data->endTime->localTime.not.is.null),` +
-      `and(completion_response->orders->0->data->endTime->localTime.is.null,search_response->data->date.gte.${fromDateStr})`
-    );
+    // PostgreSQL JSONB path operator syntax:
+    // ->'key' extracts a JSONB object
+    // ->>'key' extracts a text value
+    const fromDateFilter = `
+      (
+        search_response->'data'->>'date' >= '${fromDateStr}'
+        OR
+        completion_response->'orders'->0->'data'->'endTime'->>'localTime' >= '${fromDateStr}'
+      )
+    `;
+    
+    console.log(`[DEBUG] Applying FROM date filter: ${fromDateStr}`);
+    console.log(`[DEBUG] SQL filter: ${fromDateFilter.replace(/\s+/g, ' ').trim()}`);
+    
+    countQuery = countQuery.filter(fromDateFilter, undefined, { foreignTable: null });
+    dataQuery = dataQuery.filter(fromDateFilter, undefined, { foreignTable: null });
   }
   
   if (toDate) {
@@ -95,15 +101,22 @@ export const applyDateRangeFilter = (
     inclusiveToDate.setDate(inclusiveToDate.getDate() + 1);
     const toDateStr = inclusiveToDate.toISOString().split('T')[0];
     
-    // Create OR condition for date filtering across both possible date fields
-    countQuery = countQuery.or(
-      `and(completion_response->orders->0->data->endTime->localTime.lt.${toDateStr},completion_response->orders->0->data->endTime->localTime.not.is.null),` +
-      `and(completion_response->orders->0->data->endTime->localTime.is.null,search_response->data->date.lt.${toDateStr})`
-    );
-    dataQuery = dataQuery.or(
-      `and(completion_response->orders->0->data->endTime->localTime.lt.${toDateStr},completion_response->orders->0->data->endTime->localTime.not.is.null),` +
-      `and(completion_response->orders->0->data->endTime->localTime.is.null,search_response->data->date.lt.${toDateStr})`
-    );
+    // PostgreSQL JSONB path operator syntax:
+    // ->'key' extracts a JSONB object
+    // ->>'key' extracts a text value
+    const toDateFilter = `
+      (
+        search_response->'data'->>'date' < '${toDateStr}'
+        OR
+        completion_response->'orders'->0->'data'->'endTime'->>'localTime' < '${toDateStr}'
+      )
+    `;
+    
+    console.log(`[DEBUG] Applying TO date filter: ${toDateStr}`);
+    console.log(`[DEBUG] SQL filter: ${toDateFilter.replace(/\s+/g, ' ').trim()}`);
+    
+    countQuery = countQuery.filter(toDateFilter, undefined, { foreignTable: null });
+    dataQuery = dataQuery.filter(toDateFilter, undefined, { foreignTable: null });
   }
   
   return { countQuery, dataQuery };
@@ -127,19 +140,33 @@ export const applyTextSearchFilter = (
     const searchValue = searchText.trim().toLowerCase();
     
     if (field === 'driver') {
-      // Search in the driver name field of the nested search_response JSON
-      countQuery = countQuery.ilike('search_response->scheduleInformation->driverName', `%${searchValue}%`);
-      dataQuery = dataQuery.ilike('search_response->scheduleInformation->driverName', `%${searchValue}%`);
+      // PostgreSQL JSONB path operator syntax for driver name
+      const driverFilter = `
+        search_response->'scheduleInformation'->>'driverName' ILIKE '%${searchValue}%'
+      `;
+      
+      console.log(`[DEBUG] Applying DRIVER filter: "${searchValue}"`);
+      console.log(`[DEBUG] SQL filter: ${driverFilter.replace(/\s+/g, ' ').trim()}`);
+      
+      countQuery = countQuery.filter(driverFilter, undefined, { foreignTable: null });
+      dataQuery = dataQuery.filter(driverFilter, undefined, { foreignTable: null });
     } else if (field === 'location') {
-      // Search in the location name field of the nested search_response JSON
-      countQuery = countQuery.or(
-        `search_response->data->location->name.ilike.%${searchValue}%,` +
-        `search_response->data->location->locationName.ilike.%${searchValue}%`
-      );
-      dataQuery = dataQuery.or(
-        `search_response->data->location->name.ilike.%${searchValue}%,` +
-        `search_response->data->location->locationName.ilike.%${searchValue}%`
-      );
+      // For location, we need to check multiple possible paths in the JSONB
+      const locationFilter = `
+        (
+          search_response->'data'->'location'->>'name' ILIKE '%${searchValue}%'
+          OR
+          search_response->'data'->'location'->>'locationName' ILIKE '%${searchValue}%'
+          OR
+          search_response->'data'->'location'->>'address' ILIKE '%${searchValue}%'
+        )
+      `;
+      
+      console.log(`[DEBUG] Applying LOCATION filter: "${searchValue}"`);
+      console.log(`[DEBUG] SQL filter: ${locationFilter.replace(/\s+/g, ' ').trim()}`);
+      
+      countQuery = countQuery.filter(locationFilter, undefined, { foreignTable: null });
+      dataQuery = dataQuery.filter(locationFilter, undefined, { foreignTable: null });
     }
   }
   
@@ -183,12 +210,18 @@ export const applySorting = (
       dataQuery = dataQuery.order('timestamp', { ascending: isAscending });
     }
     else if (sortField === 'driver') {
-      // Sort by driver name
-      dataQuery = dataQuery.order('search_response->scheduleInformation->driverName', { ascending: isAscending });
+      // Sort by driver name using the correct JSONB path
+      dataQuery = dataQuery.order('search_response->scheduleInformation->driverName', { 
+        ascending: isAscending,
+        nullsFirst: !isAscending
+      });
     }
     else if (sortField === 'location') {
-      // Sort by location name
-      dataQuery = dataQuery.order('search_response->data->location->name', { ascending: isAscending });
+      // Sort by location name using the correct JSONB path
+      dataQuery = dataQuery.order('search_response->data->location->name', { 
+        ascending: isAscending,
+        nullsFirst: !isAscending
+      });
     }
     else {
       // Default fallback to timestamp sorting
@@ -199,12 +232,14 @@ export const applySorting = (
     // Apply the same multi-level sorting as above but with fixed direction
     dataQuery = dataQuery.order('completion_response->orders->0->data->endTime->localTime', { 
       ascending: false,
-      nullsFirst: false // Keep nulls last when sorting newest first
+      nullsFirst: false
     });
+    
     dataQuery = dataQuery.order('search_response->data->date', { 
       ascending: false,
       nullsFirst: false
     });
+    
     dataQuery = dataQuery.order('timestamp', { ascending: false });
   }
   
@@ -238,34 +273,34 @@ export const applyAllFilters = (
   dataQuery: any
 ) => {
   // Apply status filter
-  const statusFiltered = applyStatusFilter(countQuery, dataQuery, filters.status);
-  countQuery = statusFiltered.countQuery;
-  dataQuery = statusFiltered.dataQuery;
+  const statusResult = applyStatusFilter(countQuery, dataQuery, filters.status);
+  countQuery = statusResult.countQuery;
+  dataQuery = statusResult.dataQuery;
   
   // Apply order number filter
-  const orderNoFiltered = applyOrderNoFilter(countQuery, dataQuery, filters.orderNo);
-  countQuery = orderNoFiltered.countQuery;
-  dataQuery = orderNoFiltered.dataQuery;
+  const orderNoResult = applyOrderNoFilter(countQuery, dataQuery, filters.orderNo);
+  countQuery = orderNoResult.countQuery;
+  dataQuery = orderNoResult.dataQuery;
   
   // Apply date range filter
-  const dateRangeFiltered = applyDateRangeFilter(
+  const dateRangeResult = applyDateRangeFilter(
     countQuery, 
     dataQuery, 
-    filters.dateRange.from, 
-    filters.dateRange.to
+    filters.dateRange?.from || null, 
+    filters.dateRange?.to || null
   );
-  countQuery = dateRangeFiltered.countQuery;
-  dataQuery = dateRangeFiltered.dataQuery;
+  countQuery = dateRangeResult.countQuery;
+  dataQuery = dateRangeResult.dataQuery;
   
   // Apply driver filter
-  const driverFiltered = applyTextSearchFilter(countQuery, dataQuery, filters.driver, 'driver');
-  countQuery = driverFiltered.countQuery;
-  dataQuery = driverFiltered.dataQuery;
+  const driverResult = applyTextSearchFilter(countQuery, dataQuery, filters.driver, 'driver');
+  countQuery = driverResult.countQuery;
+  dataQuery = driverResult.dataQuery;
   
   // Apply location filter
-  const locationFiltered = applyTextSearchFilter(countQuery, dataQuery, filters.location, 'location');
-  countQuery = locationFiltered.countQuery;
-  dataQuery = locationFiltered.dataQuery;
+  const locationResult = applyTextSearchFilter(countQuery, dataQuery, filters.location, 'location');
+  countQuery = locationResult.countQuery;
+  dataQuery = locationResult.dataQuery;
   
   return { countQuery, dataQuery };
 };

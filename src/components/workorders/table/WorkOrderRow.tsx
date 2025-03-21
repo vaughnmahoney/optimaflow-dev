@@ -1,4 +1,3 @@
-
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
@@ -6,6 +5,7 @@ import { format } from "date-fns";
 import { StatusBadge } from "../StatusBadge";
 import { WorkOrder } from "../types";
 import { ActionsMenu } from "./ActionsMenu";
+import { useSortableTable } from "./useSortableTable";
 
 interface WorkOrderRowProps {
   workOrder: WorkOrder;
@@ -15,25 +15,8 @@ interface WorkOrderRowProps {
 }
 
 export const WorkOrderRow = ({ workOrder, onStatusUpdate, onImageView, onDelete }: WorkOrderRowProps) => {
-  const getLocationName = (order: WorkOrder): string => {
-    if (!order.location) return 'N/A';
-    
-    if (typeof order.location === 'object') {
-      return order.location.name || order.location.locationName || 'N/A';
-    }
-    
-    return 'N/A';
-  };
-
-  const getDriverName = (order: WorkOrder): string => {
-    if (!order.driver) return 'No Driver Assigned';
-    
-    if (typeof order.driver === 'object' && order.driver.name) {
-      return order.driver.name;
-    }
-    
-    return 'No Driver Name';
-  };
+  // Use the utility functions from useSortableTable
+  const { getLocationName, getDriverName } = useSortableTable({ workOrders: [workOrder] });
 
   // Extract the completion status from the appropriate place in the order object
   const getCompletionStatus = (order: WorkOrder): string | undefined => {
@@ -50,38 +33,37 @@ export const WorkOrderRow = ({ workOrder, onStatusUpdate, onImageView, onDelete 
     
     if (endTime) {
       try {
-        return format(new Date(endTime), "MMM d, yyyy");
+        const date = new Date(endTime);
+        if (!isNaN(date.getTime())) {
+          return format(date, 'MMM d, yyyy');
+        }
       } catch (error) {
-        // If date parsing fails, fall back to service_date
-        console.error("Error formatting end date:", error);
+        // If date parsing fails, continue to fallback
       }
     }
     
-    // Fall back to service_date if end date is not available or invalid
+    // Fall back to service_date if available
     if (order.service_date) {
       try {
-        return format(new Date(order.service_date), "MMM d, yyyy");
+        const date = new Date(order.service_date);
+        if (!isNaN(date.getTime())) {
+          return format(date, 'MMM d, yyyy');
+        }
       } catch (error) {
-        console.error("Error formatting service date:", error);
-        return "N/A";
+        // If parsing fails, return the raw string
+        return order.service_date;
       }
     }
     
-    return "N/A";
+    return 'No date';
   };
 
   return (
-    <TableRow>
-      <TableCell>{workOrder.order_no || 'N/A'}</TableCell>
-      <TableCell>
-        {getServiceDate(workOrder)}
-      </TableCell>
-      <TableCell className="max-w-xs truncate">
-        {getDriverName(workOrder)}
-      </TableCell>
-      <TableCell className="max-w-xs truncate">
-        {getLocationName(workOrder)}
-      </TableCell>
+    <TableRow className="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-150">
+      <TableCell className="font-medium text-gray-900 dark:text-gray-100">{workOrder.order_no || 'N/A'}</TableCell>
+      <TableCell className="text-gray-700 dark:text-gray-300">{getServiceDate(workOrder)}</TableCell>
+      <TableCell className="max-w-xs truncate text-gray-700 dark:text-gray-300">{getDriverName(workOrder)}</TableCell>
+      <TableCell className="max-w-xs truncate text-gray-700 dark:text-gray-300">{getLocationName(workOrder)}</TableCell>
       <TableCell>
         <StatusBadge 
           status={workOrder.status || 'pending_review'} 
@@ -89,13 +71,13 @@ export const WorkOrderRow = ({ workOrder, onStatusUpdate, onImageView, onDelete 
         />
       </TableCell>
       <TableCell>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 opacity-90 group-hover:opacity-100">
           <Button 
             variant="ghost" 
             size="icon"
             title="View Proof of Service"
             onClick={() => onImageView(workOrder.id)}
-            className="h-8 w-8"
+            className="h-8 w-8 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
           >
             <Eye className="h-4 w-4" />
           </Button>

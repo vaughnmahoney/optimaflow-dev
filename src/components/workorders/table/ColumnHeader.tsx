@@ -1,4 +1,3 @@
-
 import { TableHead } from "@/components/ui/table";
 import { SortDirection } from "../types";
 import { Popover, PopoverContent } from "@/components/ui/popover";
@@ -45,10 +44,10 @@ export const ColumnHeader = ({
       sortable={sortable}
       sortDirection={sortDirection}
       onSort={onSort}
-      className="relative"
+      className="relative font-semibold text-gray-700 dark:text-gray-300 py-3 transition-colors"
     >
       <div className="flex items-center">
-        <span>{label}</span>
+        <span className="hover:text-primary transition-colors">{label}</span>
         {/* Wrap popover in a div that stops propagation */}
         <div onClick={handleFilterInteraction} className="ml-1">
           <Popover 
@@ -59,7 +58,7 @@ export const ColumnHeader = ({
               isFiltered={isFiltered} 
             />
             <PopoverContent 
-              className="w-60 p-0" 
+              className="w-60 p-0 shadow-lg border border-gray-200 dark:border-gray-700 rounded-lg" 
               align="start"
             >
               {filterContent}

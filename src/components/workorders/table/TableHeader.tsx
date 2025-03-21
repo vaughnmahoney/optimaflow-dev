@@ -1,4 +1,3 @@
-
 import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { SortDirection, SortField } from "../types";
 import { useState } from "react";
@@ -41,8 +40,8 @@ export const WorkOrderTableHeader = ({
   };
 
   return (
-    <TableHeader>
-      <TableRow>
+    <TableHeader className="bg-gray-50 dark:bg-gray-800/50">
+      <TableRow className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">
         <ColumnHeader
           label="Order #"
           column="order_no"
@@ -148,7 +147,7 @@ export const WorkOrderTableHeader = ({
           setOpenPopover={setOpenPopover}
         />
         
-        <TableHead>Actions</TableHead>
+        <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Actions</TableHead>
       </TableRow>
     </TableHeader>
   );

@@ -1,16 +1,11 @@
-
-import {
-  Table,
-  TableBody,
-} from "@/components/ui/table";
-import { WorkOrder, SortDirection, SortField, PaginationState, WorkOrderFilters } from "../types";
+import { WorkOrder, SortDirection, SortField, PaginationState } from "../types";
 import { WorkOrderTableHeader } from "./TableHeader";
 import { WorkOrderRow } from "./WorkOrderRow";
-import { EmptyState } from "./EmptyState";
+import { Table, TableBody } from "@/components/ui/table";
 import { useSortableTable } from "./useSortableTable";
 import { Pagination } from "./Pagination";
 import { Button } from "@/components/ui/button";
-import { FilterX } from "lucide-react";
+import { X } from "lucide-react";
 
 interface WorkOrderTableProps {
   workOrders: WorkOrder[];
@@ -23,20 +18,26 @@ interface WorkOrderTableProps {
   pagination?: PaginationState;
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (pageSize: number) => void;
-  filters: WorkOrderFilters;
+  filters: {
+    status: string | null;
+    dateRange: { from: Date | null; to: Date | null };
+    driver: string | null;
+    location: string | null;
+    orderNo: string | null;
+  };
   onColumnFilterChange: (column: string, value: any) => void;
   onColumnFilterClear: (column: string) => void;
   onClearAllFilters: () => void;
 }
 
-export const WorkOrderTable = ({ 
-  workOrders: initialWorkOrders, 
+export const WorkOrderTable = ({
+  workOrders,
   onStatusUpdate,
   onImageView,
   onDelete,
-  sortField: externalSortField,
-  sortDirection: externalSortDirection,
-  onSort: externalOnSort,
+  sortField,
+  sortDirection,
+  onSort,
   pagination,
   onPageChange,
   onPageSizeChange,
@@ -45,63 +46,67 @@ export const WorkOrderTable = ({
   onColumnFilterClear,
   onClearAllFilters
 }: WorkOrderTableProps) => {
-  const { 
-    workOrders, 
-    sortField, 
-    sortDirection, 
-    handleSort 
-  } = useSortableTable(
-    initialWorkOrders, 
-    externalSortField, 
-    externalSortDirection, 
-    externalOnSort
-  );
+  // Use the updated sortable table hook - now just a pass-through for server-side sorting
+  const { sortField: localSortField, sortDirection: localSortDirection, handleSort } = useSortableTable({
+    workOrders,
+    externalSortField: sortField,
+    externalSortDirection: sortDirection,
+    onSort
+  });
 
-  // Check if any filter is active
+  // Handle sorting - this will now call the parent's onSort callback
+  const handleSortChange = (field: SortField) => {
+    handleSort(field);
+  };
+
+  // Check if any filters are active
   const hasActiveFilters = 
     filters.status !== null || 
     filters.orderNo !== null || 
     filters.driver !== null || 
     filters.location !== null || 
-    filters.dateRange.from !== null || 
-    filters.dateRange.to !== null;
+    (filters.dateRange.from !== null || filters.dateRange.to !== null);
 
   return (
-    <div className="space-y-2">
-      {/* Active filters indicator */}
+    <div className="space-y-4">
+      {/* Filter indicator and clear button */}
       {hasActiveFilters && (
-        <div className="flex items-center justify-between mb-2 px-2">
-          <div className="text-sm text-muted-foreground">
-            Active filters applied
-          </div>
+        <div className="flex items-center justify-between bg-blue-50 dark:bg-blue-900/20 p-2 rounded-md">
+          <span className="text-sm text-blue-700 dark:text-blue-300">
+            Filters applied
+          </span>
           <Button
             variant="ghost"
             size="sm"
             onClick={onClearAllFilters}
-            className="h-8 text-xs"
+            className="h-8 text-xs text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800/50"
           >
-            <FilterX className="h-3 w-3 mr-1" />
+            <X className="h-3 w-3 mr-1" />
             Clear all filters
           </Button>
         </div>
       )}
-    
-      <div className="rounded-md border">
+
+      <div className="rounded-md border border-gray-200 dark:border-gray-800 overflow-hidden">
         <Table>
-          <WorkOrderTableHeader 
-            sortField={sortField} 
-            sortDirection={sortDirection} 
-            onSort={handleSort}
+          <WorkOrderTableHeader
+            sortField={localSortField}
+            sortDirection={localSortDirection}
+            onSort={handleSortChange}
             filters={filters}
             onFilterChange={onColumnFilterChange}
             onFilterClear={onColumnFilterClear}
           />
           <TableBody>
             {workOrders.length === 0 ? (
-              <EmptyState />
+              <tr>
+                <td colSpan={6} className="h-24 text-center text-gray-500 dark:text-gray-400">
+                  No work orders found
+                </td>
+              </tr>
             ) : (
               workOrders.map((workOrder) => (
-                <WorkOrderRow 
+                <WorkOrderRow
                   key={workOrder.id}
                   workOrder={workOrder}
                   onStatusUpdate={onStatusUpdate}
@@ -112,15 +117,16 @@ export const WorkOrderTable = ({
             )}
           </TableBody>
         </Table>
-        
-        {pagination && onPageChange && onPageSizeChange && (
-          <Pagination 
-            pagination={pagination}
-            onPageChange={onPageChange}
-            onPageSizeChange={onPageSizeChange}
-          />
-        )}
       </div>
+
+      {/* Pagination controls */}
+      {pagination && onPageChange && onPageSizeChange && (
+        <Pagination
+          pagination={pagination}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
+        />
+      )}
     </div>
   );
 };
