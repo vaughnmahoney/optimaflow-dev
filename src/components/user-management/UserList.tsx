@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { 
   Table, 
@@ -23,14 +22,13 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
   DialogClose
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, Search, UserCog, UserX } from "lucide-react";
-import { useUserManagement } from "@/hooks/useUserManagement";
+import { useUserList } from "@/hooks/useUserManagement";
 import { UserPagination } from "./UserPagination";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -48,7 +46,7 @@ export const UserList = () => {
     setPageSize,
     filter,
     setFilter
-  } = useUserManagement();
+  } = useUserList();
   
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -173,7 +171,7 @@ export const UserList = () => {
                   </TableCell>
                   <TableCell>
                     <Select
-                      defaultValue={user.role}
+                      defaultValue={user.user_role}
                       onValueChange={(value) => handleRoleChange(user.id, value)}
                     >
                       <SelectTrigger className="w-[140px]">

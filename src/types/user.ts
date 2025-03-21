@@ -6,8 +6,9 @@ export interface User {
   email: string;
   full_name: string;
   user_role: UserRole;
+  role?: UserRole; // For backward compatibility
   created_at: string;
-  last_sign_in_at: string | null;
+  last_sign_in_at?: string | null;
   is_active: boolean;
 }
 

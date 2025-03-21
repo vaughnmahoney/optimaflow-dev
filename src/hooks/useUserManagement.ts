@@ -2,55 +2,49 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { User, UserRole, CreateUserData, UpdateUserRoleData, UpdateUserStatusData } from "@/types/user";
 
-// Types for user management
-type UserRole = "admin" | "qc_reviewer" | "supervisor" | "billing_admin";
-
-interface User {
-  id: string;
-  email: string;
-  full_name: string;
-  user_role: UserRole;
-  created_at: string;
-  last_sign_in_at: string | null;
-  is_active: boolean;
-}
-
-interface CreateUserData {
-  email: string;
-  password: string;
-  full_name: string;
-  user_role: UserRole;
-}
-
-interface UpdateUserRoleData {
-  id: string;
-  role: UserRole;
-}
-
-interface UpdateUserStatusData {
-  id: string;
-  is_active: boolean;
-}
-
-// Fetch users with pagination
-export const useUsers = (page = 1, pageSize = 10) => {
+// Fetch users with pagination and filtering
+export const useUsers = (page = 1, pageSize = 10, search = "", showInactive = false) => {
   return useQuery({
-    queryKey: ["users", page, pageSize],
+    queryKey: ["users", page, pageSize, search, showInactive],
     queryFn: async () => {
       const startIndex = (page - 1) * pageSize;
       
-      // Get total count
-      const { count, error: countError } = await supabase
+      // Get total count with filters
+      let countQuery = supabase
         .from("user_profiles")
         .select("*", { count: "exact", head: true });
+        
+      // Apply search filter if provided
+      if (search) {
+        countQuery = countQuery.ilike("full_name", `%${search}%`);
+      }
+      
+      // Apply active status filter
+      if (!showInactive) {
+        countQuery = countQuery.eq("is_active", true);
+      }
+      
+      const { count, error: countError } = await countQuery;
       
       if (countError) throw countError;
       
-      // Get users for current page
-      const { data, error } = await supabase
+      // Get users for current page with same filters
+      let query = supabase
         .from("user_profiles")
-        .select("id, full_name, user_role, created_at, is_active")
+        .select("id, full_name, role, created_at, is_active");
+        
+      // Apply same filters as count query
+      if (search) {
+        query = query.ilike("full_name", `%${search}%`);
+      }
+      
+      if (!showInactive) {
+        query = query.eq("is_active", true);
+      }
+      
+      const { data, error } = await query
         .range(startIndex, startIndex + pageSize - 1)
         .order("created_at", { ascending: false });
         
@@ -78,7 +72,8 @@ export const useUsers = (page = 1, pageSize = 10) => {
         // Combine data
         const usersWithEmails = data.map(user => ({
           ...user,
-          email: userMap[user.id] || "Unknown"
+          email: userMap[user.id] || "Unknown",
+          user_role: user.role // Map role to user_role for backward compatibility
         }));
         
         return {
@@ -88,7 +83,11 @@ export const useUsers = (page = 1, pageSize = 10) => {
       }
       
       return {
-        users: data as User[],
+        users: data.map(user => ({
+          ...user,
+          email: "Unknown",
+          user_role: user.role // Map role to user_role for backward compatibility
+        })) as User[],
         totalCount: count || 0
       };
     }
@@ -105,7 +104,7 @@ export const useUserCreation = () => {
         email: userData.email,
         password: userData.password,
         full_name: userData.full_name,
-        user_role: userData.user_role as "admin" | "qc_reviewer" | "supervisor" | "billing_admin"
+        role: userData.user_role
       });
       
       if (error) throw error;
@@ -129,7 +128,7 @@ export const useUserRoleUpdate = () => {
     mutationFn: async ({ id, role }: UpdateUserRoleData) => {
       const { data, error } = await supabase
         .from("user_profiles")
-        .update({ user_role: role })
+        .update({ role })
         .eq("id", id);
         
       if (error) throw error;
@@ -166,5 +165,47 @@ export const useUserStatusUpdate = () => {
   
   return {
     updateUserStatus: updateStatusMutation.mutateAsync
+  };
+};
+
+// Combined hook for UserList component
+export const useUserList = () => {
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [filter, setFilter] = useState({ search: "", showInactive: false });
+  
+  const { data, isLoading, error, refetch } = useUsers(
+    page, 
+    pageSize, 
+    filter.search, 
+    filter.showInactive
+  );
+  
+  const { updateUserRole } = useUserRoleUpdate();
+  const { updateUserStatus } = useUserStatusUpdate();
+  
+  const pagination = {
+    page,
+    pageSize,
+    pageCount: data ? Math.ceil(data.totalCount / pageSize) : 0,
+    total: data?.totalCount || 0
+  };
+  
+  return {
+    users: data?.users || [],
+    isLoading,
+    error,
+    pagination,
+    filter,
+    setFilter,
+    setPage,
+    setPageSize,
+    updateUserRole: async (userId: string, newRole: string) => {
+      return updateUserRole({ id: userId, role: newRole as UserRole });
+    },
+    updateUserStatus: async (userId: string, isActive: boolean) => {
+      return updateUserStatus({ id: userId, is_active: isActive });
+    },
+    refetch
   };
 };
