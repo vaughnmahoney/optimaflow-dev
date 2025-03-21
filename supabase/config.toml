@@ -1,5 +1,5 @@
 
-project_id = "optimaflow"
+project_id = "eijdqiyvuhregbydndnb"
 
 [api]
 enabled = true
@@ -8,19 +8,14 @@ schemas = ["public", "storage", "graphql_public"]
 
 [db]
 port = 54322
-shadow_port = 54320
-major_version = 15
 
 [studio]
-enabled = true
 port = 54323
 
 [inbucket]
-enabled = true
 port = 54324
-
-[storage]
-enabled = true
+smtp_port = 54325
+pop3_port = 54326
 
 [auth]
 enabled = true
@@ -29,5 +24,33 @@ site_url = "http://localhost:3000"
 [realtime]
 enabled = true
 
-[edge_runtime]
+[storage]
 enabled = true
+
+[[functions]]
+name = "fetch-optimoroute"
+verify_jwt = true
+
+[[functions]]
+name = "search-optimoroute"
+verify_jwt = true
+
+[[functions]]
+name = "get-optimoroute-routes"
+verify_jwt = true
+
+[[functions]]
+name = "bulk-get-orders"
+verify_jwt = true
+
+[[functions]]
+name = "get-orders-with-completion"
+verify_jwt = true
+
+[[functions]]
+name = "import-bulk-orders"
+verify_jwt = true
+
+[[functions]]
+name = "get-user-emails"
+verify_jwt = true

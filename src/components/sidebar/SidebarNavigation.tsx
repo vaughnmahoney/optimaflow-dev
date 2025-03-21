@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, AlertCircle, CreditCard, Car, 
   Package2, Clock, Users, Receipt, 
-  CalendarDays, LucideIcon, Database
+  CalendarDays, LucideIcon, Database, UserCog
 } from "lucide-react";
 import { SidebarNavItem } from "./SidebarNavItem";
 
@@ -78,6 +78,12 @@ export function SidebarNavigation({
       icon: Users, 
       label: "Employees", 
       isActive: location.pathname.startsWith("/employees") || location.pathname.startsWith("/admin") 
+    },
+    { 
+      to: "/user-management", 
+      icon: UserCog, 
+      label: "User Management", 
+      isActive: location.pathname.startsWith("/user-management") 
     },
     { 
       to: "/receipts", 
