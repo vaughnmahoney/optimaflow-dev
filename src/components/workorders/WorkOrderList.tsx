@@ -1,8 +1,9 @@
+
 import { useState } from "react";
 import { WorkOrderListProps } from "./types";
 import { StatusFilterCards } from "./filters/StatusFilterCards";
 import { DebugDataDisplay } from "./debug/DebugDataDisplay";
-import { WorkOrderGrid } from "./table/WorkOrderGrid";
+import { WorkOrderTable } from "./table/WorkOrderTable";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { ImageViewModal } from "./modal/ImageViewModal";
 
@@ -84,7 +85,7 @@ export const WorkOrderList = ({
         transformedData={transformedData}
       />
 
-      <WorkOrderGrid 
+      <WorkOrderTable 
         workOrders={workOrders}
         onStatusUpdate={onStatusUpdate}
         onImageView={handleImageView}
