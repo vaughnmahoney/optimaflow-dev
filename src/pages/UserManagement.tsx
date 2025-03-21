@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import Layout from "@/components/Layout";
+import { Layout } from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserList } from "@/components/user-management/UserList";
 import { CreateUserForm } from "@/components/user-management/CreateUserForm";

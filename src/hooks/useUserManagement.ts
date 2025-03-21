@@ -1,170 +1,170 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-interface UserFilter {
-  search: string;
-  showInactive: boolean;
+// Types for user management
+type UserRole = "admin" | "qc_reviewer" | "supervisor" | "billing_admin";
+
+interface User {
+  id: string;
+  email: string;
+  full_name: string;
+  user_role: UserRole;
+  created_at: string;
+  last_sign_in_at: string | null;
+  is_active: boolean;
 }
 
-interface UserPagination {
-  page: number;
-  pageSize: number;
-  pageCount: number;
-  total: number;
+interface CreateUserData {
+  email: string;
+  password: string;
+  full_name: string;
+  user_role: UserRole;
 }
 
-export const useUserManagement = () => {
+interface UpdateUserRoleData {
+  id: string;
+  role: UserRole;
+}
+
+interface UpdateUserStatusData {
+  id: string;
+  is_active: boolean;
+}
+
+// Fetch users with pagination
+export const useUsers = (page = 1, pageSize = 10) => {
+  return useQuery({
+    queryKey: ["users", page, pageSize],
+    queryFn: async () => {
+      const startIndex = (page - 1) * pageSize;
+      
+      // Get total count
+      const { count, error: countError } = await supabase
+        .from("user_profiles")
+        .select("*", { count: "exact", head: true });
+      
+      if (countError) throw countError;
+      
+      // Get users for current page
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .select("id, full_name, user_role, created_at, is_active")
+        .range(startIndex, startIndex + pageSize - 1)
+        .order("created_at", { ascending: false });
+        
+      if (error) throw error;
+      
+      // Get user emails from auth function
+      const userIds = data.map(user => user.id);
+      
+      if (userIds.length > 0) {
+        const { data: emailData, error: emailError } = await supabase.functions.invoke(
+          "get-user-emails",
+          {
+            body: { user_ids: userIds }
+          }
+        );
+        
+        if (emailError) throw emailError;
+        
+        // Map emails to users
+        const userMap = (emailData as any[]).reduce((acc, item) => {
+          acc[item.id] = item.email;
+          return acc;
+        }, {} as Record<string, string>);
+        
+        // Combine data
+        const usersWithEmails = data.map(user => ({
+          ...user,
+          email: userMap[user.id] || "Unknown"
+        }));
+        
+        return {
+          users: usersWithEmails as User[],
+          totalCount: count || 0
+        };
+      }
+      
+      return {
+        users: data as User[],
+        totalCount: count || 0
+      };
+    }
+  });
+};
+
+// Create user
+export const useUserCreation = () => {
   const queryClient = useQueryClient();
-  const [filter, setFilter] = useState<UserFilter>({
-    search: "",
-    showInactive: false,
+  
+  const createUserMutation = useMutation({
+    mutationFn: async (userData: CreateUserData) => {
+      const { data, error } = await supabase.rpc('create_user', {
+        email: userData.email,
+        password: userData.password,
+        full_name: userData.full_name,
+        user_role: userData.user_role as "admin" | "qc_reviewer" | "supervisor" | "billing_admin"
+      });
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    }
   });
   
-  const [pagination, setPagination] = useState<UserPagination>({
-    page: 1,
-    pageSize: 10,
-    pageCount: 0,
-    total: 0,
-  });
-
-  const fetchUsers = async () => {
-    const { from, to } = getPaginationRange();
-    
-    let query = supabase
-      .from("user_profiles")
-      .select("id, full_name, email, role, is_active, created_at", { count: "exact" });
-
-    // Apply search filter if present
-    if (filter.search) {
-      query = query.or(`full_name.ilike.%${filter.search}%,email.ilike.%${filter.search}%`);
-    }
-
-    // Apply active/inactive filter
-    if (!filter.showInactive) {
-      query = query.eq("is_active", true);
-    }
-
-    // Apply pagination
-    query = query.range(from, to).order("created_at", { ascending: false });
-
-    const { data, error, count } = await query;
-
-    if (error) {
-      throw error;
-    }
-
-    // Get user emails from auth schema
-    const userIds = data.map(user => user.id);
-    let userEmails: Record<string, string> = {};
-    
-    if (userIds.length > 0) {
-      try {
-        // This is a simplified approach - in a real app you might need to use a function
-        // that has the proper permissions to access auth.users
-        const { data: authUsers } = await supabase
-          .rpc('get_user_emails', { user_ids: userIds });
-        
-        if (authUsers) {
-          userEmails = authUsers.reduce((acc: Record<string, string>, user: any) => {
-            acc[user.id] = user.email;
-            return acc;
-          }, {});
-        }
-      } catch (error) {
-        console.error("Error fetching user emails:", error);
-      }
-    }
-
-    // Merge profile data with emails
-    const usersWithEmail = data.map(user => ({
-      ...user,
-      email: userEmails[user.id] || 'No email available',
-    }));
-
-    // Update pagination data
-    if (count !== null) {
-      setPagination(prev => ({
-        ...prev,
-        total: count,
-        pageCount: Math.ceil(count / pagination.pageSize),
-      }));
-    }
-
-    return usersWithEmail;
-  };
-
-  const getPaginationRange = () => {
-    const from = (pagination.page - 1) * pagination.pageSize;
-    const to = from + pagination.pageSize - 1;
-    return { from, to };
-  };
-
-  const { data = [], isLoading, error, refetch } = useQuery({
-    queryKey: ['users', filter, pagination.page, pagination.pageSize],
-    queryFn: fetchUsers,
-  });
-
-  const updateUserRoleMutation = useMutation({
-    mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
-      const { data, error } = await supabase
-        .from("user_profiles")
-        .update({ role })
-        .eq("id", userId);
-      
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-    },
-  });
-
-  const updateUserStatusMutation = useMutation({
-    mutationFn: async ({ userId, isActive }: { userId: string; isActive: boolean }) => {
-      const { data, error } = await supabase
-        .from("user_profiles")
-        .update({ is_active: isActive })
-        .eq("id", userId);
-      
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-    },
-  });
-
-  // Set current page
-  const setPage = (page: number) => {
-    setPagination(prev => ({ ...prev, page }));
-  };
-
-  // Set page size
-  const setPageSize = (pageSize: number) => {
-    setPagination(prev => ({ ...prev, pageSize, page: 1 }));
-  };
-
-  const updateUserRole = (userId: string, role: string) => {
-    return updateUserRoleMutation.mutateAsync({ userId, role });
-  };
-
-  const updateUserStatus = (userId: string, isActive: boolean) => {
-    return updateUserStatusMutation.mutateAsync({ userId, isActive });
-  };
-
   return {
-    users: data,
-    isLoading,
-    error,
-    updateUserRole,
-    updateUserStatus,
-    refetch,
-    pagination,
-    setPage,
-    setPageSize,
-    filter,
-    setFilter,
+    createUser: createUserMutation.mutateAsync
+  };
+};
+
+// Update user role
+export const useUserRoleUpdate = () => {
+  const queryClient = useQueryClient();
+  
+  const updateRoleMutation = useMutation({
+    mutationFn: async ({ id, role }: UpdateUserRoleData) => {
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .update({ user_role: role })
+        .eq("id", id);
+        
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    }
+  });
+  
+  return {
+    updateUserRole: updateRoleMutation.mutateAsync
+  };
+};
+
+// Update user active status
+export const useUserStatusUpdate = () => {
+  const queryClient = useQueryClient();
+  
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, is_active }: UpdateUserStatusData) => {
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .update({ is_active })
+        .eq("id", id);
+        
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    }
+  });
+  
+  return {
+    updateUserStatus: updateStatusMutation.mutateAsync
   };
 };
