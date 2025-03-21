@@ -16,14 +16,25 @@ const UserManagement = () => {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const checkAdminStatus = async () => {
       try {
         setIsLoading(true);
+        setError(null);
+        
+        if (!session) {
+          console.log("No session found, redirecting to login");
+          navigate("/login");
+          return;
+        }
+        
         const { data, error } = await supabase.rpc('is_admin');
         
         if (error) {
+          console.error("Error checking admin status:", error);
+          setError(error.message);
           throw error;
         }
         
@@ -33,8 +44,9 @@ const UserManagement = () => {
           toast.error("Access denied. Admin privileges required.");
           navigate("/dashboard");
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error checking admin status:", error);
+        setError(error?.message || "Failed to verify admin privileges");
         toast.error("Failed to verify admin privileges");
         navigate("/dashboard");
       } finally {
@@ -42,9 +54,7 @@ const UserManagement = () => {
       }
     };
 
-    if (session) {
-      checkAdminStatus();
-    }
+    checkAdminStatus();
   }, [session, navigate]);
 
   if (isLoading) {
@@ -52,6 +62,22 @@ const UserManagement = () => {
       <Layout>
         <div className="flex items-center justify-center h-full">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout>
+        <div className="container mx-auto p-4">
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>
+              {error}
+            </AlertDescription>
+          </Alert>
         </div>
       </Layout>
     );
