@@ -3,7 +3,6 @@ import { useState, useEffect, useRef, KeyboardEvent } from "react";
 import { useLocation } from "react-router-dom";
 import { X, Search } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
-import { SidebarProfile } from "@/components/sidebar/SidebarProfile";
 import { SidebarLogout } from "@/components/sidebar/SidebarLogout";
 import { SidebarToggleButton } from "@/components/sidebar/SidebarToggleButton";
 import { SidebarNavigation } from "@/components/sidebar/SidebarNavigation";
@@ -96,11 +95,6 @@ export function AppSidebar() {
         aria-label="Main navigation"
         role="navigation"
       >
-        {/* Profile Section - Moved to top of sidebar */}
-        <div className="px-3 py-4 border-b border-sidebar-border">
-          <SidebarProfile isCollapsed={isCollapsed} />
-        </div>
-        
         {/* Navigation Items - Scrollable Area */}
         <div className="overflow-y-auto flex-1 py-3 px-2">
           <SidebarNavigation 
