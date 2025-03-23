@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
+import { AlertCircle } from "lucide-react";
 
 interface CreateUserDialogProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ export function CreateUserDialog({ isOpen, onClose, onUserCreated }: CreateUserD
   const [role, setRole] = useState<"admin" | "lead">("lead");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
   
   const { createUser } = useUserManagement();
   const { toast } = useToast();
@@ -56,6 +58,7 @@ export function CreateUserDialog({ isOpen, onClose, onUserCreated }: CreateUserD
     }
     
     setIsSubmitting(true);
+    setServerError(null);
     
     try {
       await createUser({
@@ -68,7 +71,8 @@ export function CreateUserDialog({ isOpen, onClose, onUserCreated }: CreateUserD
       onUserCreated();
       resetForm();
     } catch (error) {
-      // Error is already handled in the hook with toast
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      setServerError(errorMessage);
       console.error("Failed to create user:", error);
     } finally {
       setIsSubmitting(false);
@@ -81,6 +85,7 @@ export function CreateUserDialog({ isOpen, onClose, onUserCreated }: CreateUserD
     setFullName("");
     setRole("lead");
     setErrors({});
+    setServerError(null);
   };
 
   const handleClose = () => {
@@ -94,6 +99,16 @@ export function CreateUserDialog({ isOpen, onClose, onUserCreated }: CreateUserD
         <DialogHeader>
           <DialogTitle>Add New User</DialogTitle>
         </DialogHeader>
+        
+        {serverError && (
+          <div className="bg-destructive/10 text-destructive rounded-md p-3 flex items-start space-x-2">
+            <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+            <div className="text-sm">
+              <p className="font-medium">Error creating user</p>
+              <p>{serverError}</p>
+            </div>
+          </div>
+        )}
         
         <form onSubmit={handleSubmit} className="space-y-4 py-2">
           <div className="space-y-2">

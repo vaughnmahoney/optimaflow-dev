@@ -1,17 +1,26 @@
 
-import { useState } from "react";
-import { 
-  Table, TableBody, TableCaption, TableCell, 
-  TableHead, TableHeader, TableRow 
+import { useEffect, useState } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { EditUserDialog } from "@/components/users/EditUserDialog";
-import { DeactivateUserDialog } from "@/components/users/DeactivateUserDialog";
-import { useUserManagement } from "@/hooks/useUserManagement";
-import { Check, Edit, Trash2 } from "lucide-react";
-import { format } from "date-fns";
-import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { MoreHorizontal, RefreshCw } from "lucide-react";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
+import { formatDistanceToNow } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
+import { DeactivateUserDialog } from "./DeactivateUserDialog";
+import { EditUserDialog } from "./EditUserDialog";
 
 interface User {
   id: string;
@@ -41,60 +50,106 @@ export function UserListTable({
   pageSize,
   totalCount,
   onPageChange,
-  onRefresh
+  onRefresh,
 }: UserListTableProps) {
-  const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [deactivatingUser, setDeactivatingUser] = useState<User | null>(null);
-  const { toast } = useToast();
-  
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeactivateDialogOpen, setIsDeactivateDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
   const totalPages = Math.ceil(totalCount / pageSize);
-  
-  const handleUserUpdated = () => {
-    setEditingUser(null);
-    onRefresh();
-    toast({
-      title: "User updated successfully",
-      description: "The user information has been updated",
-    });
-  };
-  
-  const handleUserDeactivated = () => {
-    setDeactivatingUser(null);
-    onRefresh();
-    toast({
-      title: "User deactivated successfully",
-      description: "The user has been deactivated from the system",
-    });
+
+  const handleEditUser = (user: User) => {
+    setSelectedUser(user);
+    setIsEditDialogOpen(true);
   };
 
-  if (isLoading && users.length === 0) {
+  const handleDeactivateUser = (user: User) => {
+    setSelectedUser(user);
+    setIsDeactivateDialogOpen(true);
+  };
+
+  if (error) {
     return (
-      <div className="flex justify-center items-center py-8">
-        <div className="flex flex-col items-center gap-2">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          <p className="text-sm text-muted-foreground">Loading users...</p>
+      <div className="flex flex-col items-center justify-center py-12 text-center">
+        <div className="mb-4 text-destructive">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
         </div>
-      </div>
-    );
-  }
-
-  if (error && users.length === 0) {
-    return (
-      <div className="rounded-md bg-destructive/10 p-6 text-center">
-        <p className="text-destructive font-medium">Error loading users</p>
-        <p className="text-sm text-muted-foreground mt-1">{error}</p>
-        <Button variant="outline" size="sm" className="mt-4" onClick={onRefresh}>
+        <h3 className="text-lg font-medium text-destructive">Error loading users</h3>
+        <p className="mt-1 text-sm text-muted-foreground">{error}</p>
+        <Button 
+          variant="outline" 
+          className="mt-4"
+          onClick={onRefresh}
+        >
+          <RefreshCw className="mr-2 h-4 w-4" />
           Try Again
         </Button>
       </div>
     );
   }
 
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-8 w-24" />
+        </div>
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead><Skeleton className="h-4 w-full" /></TableHead>
+                <TableHead><Skeleton className="h-4 w-full" /></TableHead>
+                <TableHead><Skeleton className="h-4 w-full" /></TableHead>
+                <TableHead><Skeleton className="h-4 w-full" /></TableHead>
+                <TableHead><Skeleton className="h-4 w-full" /></TableHead>
+                <TableHead></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {Array(5).fill(0).map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell><Skeleton className="h-4 w-full" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-full" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-full" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-full" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-full" /></TableCell>
+                  <TableCell><Skeleton className="h-8 w-8 rounded-full" /></TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+    );
+  }
+
   if (users.length === 0) {
     return (
-      <div className="text-center py-8 border rounded-md">
-        <p className="text-muted-foreground">No users found matching the current filters</p>
-        <Button variant="outline" size="sm" className="mt-4" onClick={onRefresh}>
+      <div className="flex flex-col items-center justify-center py-12 text-center">
+        <div className="mb-4 text-muted-foreground">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+            <line x1="9" y1="9" x2="9.01" y2="9" />
+            <line x1="15" y1="9" x2="15.01" y2="9" />
+          </svg>
+        </div>
+        <h3 className="text-lg font-medium">No users found</h3>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Try changing your filters or search criteria
+        </p>
+        <Button
+          variant="outline"
+          className="mt-4"
+          onClick={onRefresh}
+        >
+          <RefreshCw className="mr-2 h-4 w-4" />
           Refresh
         </Button>
       </div>
@@ -102,17 +157,17 @@ export function UserListTable({
   }
 
   return (
-    <div>
+    <>
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Username</TableHead>
+              <TableHead>User</TableHead>
               <TableHead>Full Name</TableHead>
               <TableHead>Role</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Created On</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>Created</TableHead>
+              <TableHead className="w-10"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -121,46 +176,38 @@ export function UserListTable({
                 <TableCell className="font-medium">{user.username}</TableCell>
                 <TableCell>{user.full_name}</TableCell>
                 <TableCell>
-                  <Badge variant={user.role === "admin" ? "default" : "secondary"}>
+                  <Badge variant={user.role === "admin" ? "default" : "outline"}>
                     {user.role === "admin" ? "Admin" : "Lead"}
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  {user.is_active ? (
-                    <Badge variant="success" className="bg-green-100 text-green-800">
-                      <Check className="mr-1 h-3 w-3" /> Active
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="text-muted-foreground">
-                      Inactive
-                    </Badge>
-                  )}
+                  <Badge variant={user.is_active ? "success" : "destructive"}>
+                    {user.is_active ? "Active" : "Inactive"}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  {formatDistanceToNow(new Date(user.created_at), { addSuffix: true })}
                 </TableCell>
                 <TableCell>
-                  {format(new Date(user.created_at), "MMM d, yyyy")}
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      onClick={() => setEditingUser(user)}
-                    >
-                      <Edit className="h-4 w-4" />
-                      <span className="sr-only">Edit</span>
-                    </Button>
-                    {user.is_active && (
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="text-destructive hover:text-destructive"
-                        onClick={() => setDeactivatingUser(user)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">Delete</span>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
                       </Button>
-                    )}
-                  </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleEditUser(user)}>
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => handleDeactivateUser(user)}
+                        className={user.is_active ? "text-destructive" : "text-primary"}
+                      >
+                        {user.is_active ? "Deactivate" : "Activate"}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}
@@ -169,49 +216,52 @@ export function UserListTable({
       </div>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between mt-4">
-          <p className="text-sm text-muted-foreground">
-            Showing {(page - 1) * pageSize + 1}-
-            {Math.min(page * pageSize, totalCount)} of {totalCount} users
-          </p>
-          <div className="flex gap-1">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page === 1 || isLoading}
-              onClick={() => onPageChange(page - 1)}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page === totalPages || isLoading}
-              onClick={() => onPageChange(page + 1)}
-            >
-              Next
-            </Button>
+        <div className="flex items-center justify-end space-x-2 py-4">
+          <div className="text-sm text-muted-foreground">
+            Page {page} of {totalPages}
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onPageChange(page - 1)}
+            disabled={page <= 1}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onPageChange(page + 1)}
+            disabled={page >= totalPages}
+          >
+            Next
+          </Button>
         </div>
       )}
 
-      {editingUser && (
-        <EditUserDialog
-          user={editingUser}
-          isOpen={!!editingUser}
-          onClose={() => setEditingUser(null)}
-          onUserUpdated={handleUserUpdated}
-        />
+      {selectedUser && (
+        <>
+          <EditUserDialog
+            user={selectedUser}
+            isOpen={isEditDialogOpen}
+            onClose={() => {
+              setIsEditDialogOpen(false);
+              setSelectedUser(null);
+              onRefresh();
+            }}
+          />
+          
+          <DeactivateUserDialog
+            user={selectedUser}
+            isOpen={isDeactivateDialogOpen}
+            onClose={() => {
+              setIsDeactivateDialogOpen(false);
+              setSelectedUser(null);
+              onRefresh();
+            }}
+          />
+        </>
       )}
-
-      {deactivatingUser && (
-        <DeactivateUserDialog
-          user={deactivatingUser}
-          isOpen={!!deactivatingUser}
-          onClose={() => setDeactivatingUser(null)}
-          onUserDeactivated={handleUserDeactivated}
-        />
-      )}
-    </div>
+    </>
   );
 }
