@@ -486,13 +486,27 @@ export type Database = {
       }
       work_orders: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
+          approved_user: string | null
           completion_response: Json | null
           created_at: string | null
+          flagged_at: string | null
+          flagged_by: string | null
+          flagged_user: string | null
           id: string
+          last_action_at: string | null
+          last_action_by: string | null
+          last_action_user: string | null
           order_no: string | null
           qc_notes: string | null
+          rejected_at: string | null
+          rejected_by: string | null
+          rejected_user: string | null
           resolution_notes: string | null
           resolved_at: string | null
+          resolved_by: string | null
+          resolved_user: string | null
           resolver_id: string | null
           search_response: Json | null
           status: string | null
@@ -500,13 +514,27 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          approved_user?: string | null
           completion_response?: Json | null
           created_at?: string | null
+          flagged_at?: string | null
+          flagged_by?: string | null
+          flagged_user?: string | null
           id?: string
+          last_action_at?: string | null
+          last_action_by?: string | null
+          last_action_user?: string | null
           order_no?: string | null
           qc_notes?: string | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejected_user?: string | null
           resolution_notes?: string | null
           resolved_at?: string | null
+          resolved_by?: string | null
+          resolved_user?: string | null
           resolver_id?: string | null
           search_response?: Json | null
           status?: string | null
@@ -514,13 +542,27 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          approved_user?: string | null
           completion_response?: Json | null
           created_at?: string | null
+          flagged_at?: string | null
+          flagged_by?: string | null
+          flagged_user?: string | null
           id?: string
+          last_action_at?: string | null
+          last_action_by?: string | null
+          last_action_user?: string | null
           order_no?: string | null
           qc_notes?: string | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejected_user?: string | null
           resolution_notes?: string | null
           resolved_at?: string | null
+          resolved_by?: string | null
+          resolved_user?: string | null
           resolver_id?: string | null
           search_response?: Json | null
           status?: string | null
