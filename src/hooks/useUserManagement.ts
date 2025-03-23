@@ -48,11 +48,16 @@ export function useUserManagement() {
         },
       });
 
+      // Check if response or response.data is null or undefined
+      if (!response || !response.data) {
+        throw new Error("Invalid response from server");
+      }
+
       if (!response.data.success) {
         throw new Error(response.data.error || "Failed to fetch users");
       }
 
-      setUsers(response.data.data);
+      setUsers(response.data.data || []);
       setTotalCount(response.data.totalCount || 0);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
@@ -83,6 +88,11 @@ export function useUserManagement() {
           userData,
         },
       });
+
+      // Check if response or response.data is null or undefined
+      if (!response || !response.data) {
+        throw new Error("Invalid response from server");
+      }
 
       if (!response.data.success) {
         throw new Error(response.data.error || "Failed to create user");
@@ -123,6 +133,11 @@ export function useUserManagement() {
         },
       });
 
+      // Check if response or response.data is null or undefined
+      if (!response || !response.data) {
+        throw new Error("Invalid response from server");
+      }
+
       if (!response.data.success) {
         throw new Error(response.data.error || "Failed to update user");
       }
@@ -153,6 +168,11 @@ export function useUserManagement() {
           userId,
         },
       });
+
+      // Check if response or response.data is null or undefined
+      if (!response || !response.data) {
+        throw new Error("Invalid response from server");
+      }
 
       if (!response.data.success) {
         throw new Error(response.data.error || "Failed to deactivate user");

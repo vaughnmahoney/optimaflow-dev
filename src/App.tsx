@@ -1,44 +1,34 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import React from "react";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./components/AuthProvider";
+import { Toaster } from "@/components/ui/toaster";
+import { Login } from "./pages/Login";
+import { Dashboard } from "./pages/Dashboard";
+import { WorkOrders } from "./pages/WorkOrders";
+import { Groups } from "./pages/Groups";
+import { Supervisor } from "./pages/Supervisor";
+import { Admin } from "./pages/Admin";
+import { AttendanceHistory } from "./pages/AttendanceHistory";
+import { Users } from "./pages/Users";
+import { MaterialRequirements } from "./pages/MaterialRequirements";
+import { BulkOrdersTest } from "./pages/BulkOrdersTest";
+import { Attendance } from "./pages/Attendance";
+import { NotFound } from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import Login from "./pages/Login";
-import Employees from "./pages/Employees";
-import Attendance from "./pages/Attendance";
-import AttendanceHistory from "./pages/AttendanceHistory";
-import WorkOrders from "./pages/WorkOrders";
-import Dashboard from "./pages/Dashboard";
-import Payroll from "./pages/Payroll";
-import VehicleMaintenance from "./pages/VehicleMaintenance";
-import Storage from "./pages/Storage";
-import Expenses from "./pages/Receipts";
-import Calendar from "./pages/Calendar";
-import NotFound from "./pages/NotFound";
-import Index from "./pages/Index";
-import BulkOrdersTest from "./pages/BulkOrdersTest";
-import MaterialRequirements from "./pages/MaterialRequirements";
-import Users from "./pages/Users";
+import { AuthProvider } from "./components/AuthProvider";
+import "./App.css";
 
+// Create a client
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Navigate to="/login" replace />} />
-            <Route path="/landing" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/bulk-orders-test" element={<BulkOrdersTest />} />
-            
-            {/* Main application routes */}
+            <Route path="/" element={<Login />} />
             <Route
               path="/dashboard"
               element={
@@ -48,7 +38,7 @@ const App = () => (
               }
             />
             <Route
-              path="/work-orders"
+              path="/quality-control/review"
               element={
                 <ProtectedRoute>
                   <WorkOrders />
@@ -56,59 +46,26 @@ const App = () => (
               }
             />
             <Route
-              path="/material-requirements"
+              path="/groups"
               element={
                 <ProtectedRoute>
-                  <MaterialRequirements />
+                  <Groups />
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/payroll"
-              element={
-                <ProtectedRoute>
-                  <Payroll />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/vehicle-maintenance"
-              element={
-                <ProtectedRoute>
-                  <VehicleMaintenance />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/storage"
-              element={
-                <ProtectedRoute>
-                  <Storage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/attendance"
-              element={
-                <ProtectedRoute>
-                  <Attendance />
-                </ProtectedRoute>
-              }
-            />
-            {/* Legacy routes redirected to new paths */}
             <Route
               path="/supervisor"
-              element={<Navigate to="/attendance" replace />}
+              element={
+                <ProtectedRoute>
+                  <Supervisor />
+                </ProtectedRoute>
+              }
             />
             <Route
               path="/admin"
-              element={<Navigate to="/employees" replace />}
-            />
-            <Route
-              path="/employees"
               element={
                 <ProtectedRoute>
-                  <Employees />
+                  <Admin />
                 </ProtectedRoute>
               }
             />
@@ -121,22 +78,6 @@ const App = () => (
               }
             />
             <Route
-              path="/receipts"
-              element={
-                <ProtectedRoute>
-                  <Expenses />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/calendar"
-              element={
-                <ProtectedRoute>
-                  <Calendar />
-                </ProtectedRoute>
-              }
-            />
-            <Route
               path="/users"
               element={
                 <ProtectedRoute>
@@ -144,12 +85,37 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/material-requirements"
+              element={
+                <ProtectedRoute>
+                  <MaterialRequirements />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/bulk-orders-test"
+              element={
+                <ProtectedRoute>
+                  <BulkOrdersTest />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/attendance"
+              element={
+                <ProtectedRoute>
+                  <Attendance />
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+        </BrowserRouter>
+        <Toaster />
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;
