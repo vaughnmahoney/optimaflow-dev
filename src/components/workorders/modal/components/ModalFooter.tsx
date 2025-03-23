@@ -1,6 +1,12 @@
 
 import { Button } from "@/components/ui/button";
-import { Check, Download, Flag, ThumbsDown, CheckCheck, Clock } from "lucide-react";
+import { Check, Download, Flag, ThumbsDown, CheckCheck, Clock, Info } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ModalFooterProps {
   workOrderId: string;
@@ -9,6 +15,7 @@ interface ModalFooterProps {
   hasImages: boolean;
   status?: string;
   onResolveFlag?: (workOrderId: string, resolution: string) => void;
+  workOrder: any; // Need to pass the full work order for user footprint
 }
 
 export const ModalFooter = ({
@@ -17,7 +24,8 @@ export const ModalFooter = ({
   onDownloadAll,
   hasImages,
   status,
-  onResolveFlag
+  onResolveFlag,
+  workOrder
 }: ModalFooterProps) => {
   // Determine if this order is in a specific state
   const isFlagged = status === "flagged" || status === "flagged_followup";
@@ -34,9 +42,28 @@ export const ModalFooter = ({
     if (isRejected) return "bg-orange-50 text-orange-700 border-orange-200";
     return "bg-gray-100 text-gray-500";
   };
+
+  // Get user action information
+  const getUserActionInfo = () => {
+    if (isApproved && workOrder.approved_user) {
+      return `Approved by ${workOrder.approved_user}`;
+    }
+    if (isFlagged && workOrder.flagged_user) {
+      return `Flagged by ${workOrder.flagged_user}`;
+    }
+    if (isResolved && workOrder.resolved_user) {
+      return `Resolved by ${workOrder.resolved_user}`;
+    }
+    if (isRejected && workOrder.rejected_user) {
+      return `Rejected by ${workOrder.rejected_user}`;
+    }
+    return null;
+  };
+  
+  const userActionInfo = getUserActionInfo();
   
   return (
-    <div className="p-3 bg-white dark:bg-gray-950 border-t flex justify-between items-center">
+    <div className="p-3 bg-white dark:bg-gray-950 border-t flex flex-wrap justify-between items-center gap-2">
       <div className="flex gap-2 flex-wrap">
         {/* Current Status Button - always show and disabled, clicking returns to pending */}
         {onStatusUpdate && !isPending && (
@@ -110,7 +137,37 @@ export const ModalFooter = ({
           </Button>
         )}
       </div>
-      <div>
+
+      <div className="flex gap-2 items-center">
+        {/* User footprint information with tooltip */}
+        {userActionInfo && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="text-sm text-gray-500 flex items-center gap-1">
+                  <Info className="h-4 w-4" />
+                  <span className="hidden sm:inline">{userActionInfo}</span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{userActionInfo}</p>
+                {workOrder.approved_at && isApproved && 
+                  <p className="text-xs">on {new Date(workOrder.approved_at).toLocaleString()}</p>
+                }
+                {workOrder.flagged_at && isFlagged && 
+                  <p className="text-xs">on {new Date(workOrder.flagged_at).toLocaleString()}</p>
+                }
+                {workOrder.resolved_at && isResolved && 
+                  <p className="text-xs">on {new Date(workOrder.resolved_at).toLocaleString()}</p>
+                }
+                {workOrder.rejected_at && isRejected && 
+                  <p className="text-xs">on {new Date(workOrder.rejected_at).toLocaleString()}</p>
+                }
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+        
         {onDownloadAll && hasImages && (
           <Button 
             variant="outline"
