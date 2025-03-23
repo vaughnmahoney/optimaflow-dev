@@ -89,6 +89,7 @@ export const ImageViewModal = ({
           hasImages={images.length > 0}
           status={currentWorkOrder.status}
           onResolveFlag={onResolveFlag}
+          workOrder={currentWorkOrder} // Make sure to pass the workOrder prop here
         />
         
         <NavigationControls 

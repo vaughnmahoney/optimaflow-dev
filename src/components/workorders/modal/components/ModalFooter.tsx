@@ -15,7 +15,7 @@ interface ModalFooterProps {
   hasImages: boolean;
   status?: string;
   onResolveFlag?: (workOrderId: string, resolution: string) => void;
-  workOrder: any; // Need to pass the full work order for user footprint
+  workOrder?: any; // Make workOrder optional
 }
 
 export const ModalFooter = ({
@@ -25,7 +25,7 @@ export const ModalFooter = ({
   hasImages,
   status,
   onResolveFlag,
-  workOrder
+  workOrder = {} // Provide default empty object
 }: ModalFooterProps) => {
   // Determine if this order is in a specific state
   const isFlagged = status === "flagged" || status === "flagged_followup";
@@ -43,18 +43,18 @@ export const ModalFooter = ({
     return "bg-gray-100 text-gray-500";
   };
 
-  // Get user action information
+  // Get user action information with null checks
   const getUserActionInfo = () => {
-    if (isApproved && workOrder.approved_user) {
+    if (isApproved && workOrder?.approved_user) {
       return `Approved by ${workOrder.approved_user}`;
     }
-    if (isFlagged && workOrder.flagged_user) {
+    if (isFlagged && workOrder?.flagged_user) {
       return `Flagged by ${workOrder.flagged_user}`;
     }
-    if (isResolved && workOrder.resolved_user) {
+    if (isResolved && workOrder?.resolved_user) {
       return `Resolved by ${workOrder.resolved_user}`;
     }
-    if (isRejected && workOrder.rejected_user) {
+    if (isRejected && workOrder?.rejected_user) {
       return `Rejected by ${workOrder.rejected_user}`;
     }
     return null;
@@ -151,16 +151,16 @@ export const ModalFooter = ({
               </TooltipTrigger>
               <TooltipContent>
                 <p>{userActionInfo}</p>
-                {workOrder.approved_at && isApproved && 
+                {workOrder?.approved_at && isApproved && 
                   <p className="text-xs">on {new Date(workOrder.approved_at).toLocaleString()}</p>
                 }
-                {workOrder.flagged_at && isFlagged && 
+                {workOrder?.flagged_at && isFlagged && 
                   <p className="text-xs">on {new Date(workOrder.flagged_at).toLocaleString()}</p>
                 }
-                {workOrder.resolved_at && isResolved && 
+                {workOrder?.resolved_at && isResolved && 
                   <p className="text-xs">on {new Date(workOrder.resolved_at).toLocaleString()}</p>
                 }
-                {workOrder.rejected_at && isRejected && 
+                {workOrder?.rejected_at && isRejected && 
                   <p className="text-xs">on {new Date(workOrder.rejected_at).toLocaleString()}</p>
                 }
               </TooltipContent>
