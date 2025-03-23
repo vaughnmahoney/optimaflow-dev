@@ -20,45 +20,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const location = useLocation();
 
   useEffect(() => {
-    try {
-      // Get initial session
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        console.log("Initial session check:", session);
-        setSession(session);
-        setLoading(false);
-        
-        // Handle navigation based on auth state
-        if (!session && location.pathname !== '/' && location.pathname !== '/login') {
-          console.log("No session, redirecting to login");
-          navigate('/login', { replace: true });
-        }
-      }).catch(error => {
-        console.error("Error getting session:", error);
-        setLoading(false);
-      });
-
-      // Listen for auth changes
-      const {
-        data: { subscription },
-      } = supabase.auth.onAuthStateChange((_event, session) => {
-        console.log("Auth state changed:", _event, session);
-        setSession(session);
-        setLoading(false);
-
-        // Handle navigation based on auth state
-        if (!session && location.pathname !== '/' && location.pathname !== '/login') {
-          console.log("Auth state change: No session, redirecting to login");
-          navigate('/login', { replace: true });
-        }
-      });
-
-      return () => {
-        subscription.unsubscribe();
-      };
-    } catch (error) {
-      console.error("Error in auth provider:", error);
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Initial session check:", session);
+      setSession(session);
       setLoading(false);
-    }
+      
+      // Redirect based on session state
+      if (session) {
+        // If user is on login and has a session, redirect to dashboard
+        if (location.pathname === '/login' || location.pathname === '/') {
+          console.log("Redirecting to /dashboard from initial session check");
+          navigate('/dashboard', { replace: true });
+        }
+      } else if (location.pathname !== '/login') {
+        // If no session and not on login page, redirect to login
+        console.log("No session, redirecting to login");
+        navigate('/login', { replace: true });
+      }
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("Auth state changed:", _event, session);
+      setSession(session);
+      setLoading(false);
+
+      // Redirect based on session state
+      if (session) {
+        // If user is on login and has a session, redirect to dashboard
+        if (location.pathname === '/login' || location.pathname === '/') {
+          console.log("Redirecting to /dashboard from auth state change");
+          navigate('/dashboard', { replace: true });
+        }
+      } else if (location.pathname !== '/login') {
+        // If no session and not on login page, redirect to login
+        console.log("No session, redirecting to login");
+        navigate('/login', { replace: true });
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [navigate, location.pathname]);
 
   return (
