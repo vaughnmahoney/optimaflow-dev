@@ -21,6 +21,7 @@ import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
 import BulkOrdersTest from "./pages/BulkOrdersTest";
 import MaterialRequirements from "./pages/MaterialRequirements";
+import Users from "./pages/Users";
 
 const queryClient = new QueryClient();
 
@@ -132,6 +133,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Calendar />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/users"
+              element={
+                <ProtectedRoute>
+                  <Users />
                 </ProtectedRoute>
               }
             />
