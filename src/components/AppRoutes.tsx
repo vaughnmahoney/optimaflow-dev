@@ -3,7 +3,6 @@ import React from "react";
 import { Route, Routes } from "react-router-dom";
 import { ProtectedRoute } from "./ProtectedRoute";
 import Login from "@/pages/Login";
-import Dashboard from "@/pages/Dashboard";
 import WorkOrders from "@/pages/WorkOrders";
 import Groups from "@/pages/Groups";
 import Supervisor from "@/pages/Supervisor";
@@ -13,6 +12,7 @@ import Users from "@/pages/Users";
 import MaterialRequirements from "@/pages/MaterialRequirements";
 import BulkOrdersTest from "@/pages/BulkOrdersTest";
 import Attendance from "@/pages/Attendance";
+import Employees from "@/pages/Employees";
 import NotFound from "@/pages/NotFound";
 
 export function AppRoutes() {
@@ -20,14 +20,6 @@ export function AppRoutes() {
     <Routes>
       <Route path="/" element={<Login />} />
       <Route path="/login" element={<Login />} />
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
       <Route
         path="/quality-control/review"
         element={
@@ -105,6 +97,14 @@ export function AppRoutes() {
         element={
           <ProtectedRoute>
             <Attendance />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/employees"
+        element={
+          <ProtectedRoute>
+            <Employees />
           </ProtectedRoute>
         }
       />

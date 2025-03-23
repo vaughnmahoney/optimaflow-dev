@@ -28,7 +28,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(false);
         
         // Handle navigation based on auth state
-        if (!session && location.pathname !== '/' && location.pathname !== '/login') {
+        if (session && (location.pathname === '/' || location.pathname === '/login')) {
+          console.log("Has session, redirecting to work orders");
+          navigate('/work-orders', { replace: true });
+        } else if (!session && location.pathname !== '/' && location.pathname !== '/login') {
           console.log("No session, redirecting to login");
           navigate('/login', { replace: true });
         }
@@ -46,7 +49,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(false);
 
         // Handle navigation based on auth state
-        if (!session && location.pathname !== '/' && location.pathname !== '/login') {
+        if (session && (location.pathname === '/' || location.pathname === '/login')) {
+          console.log("Auth state change: Has session, redirecting to work orders");
+          navigate('/work-orders', { replace: true });
+        } else if (!session && location.pathname !== '/' && location.pathname !== '/login') {
           console.log("Auth state change: No session, redirecting to login");
           navigate('/login', { replace: true });
         }
