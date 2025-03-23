@@ -29,6 +29,7 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Login />} />
+            <Route path="/login" element={<Login />} />
             <Route
               path="/dashboard"
               element={
@@ -39,6 +40,14 @@ function App() {
             />
             <Route
               path="/quality-control/review"
+              element={
+                <ProtectedRoute>
+                  <WorkOrders />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/work-orders"
               element={
                 <ProtectedRoute>
                   <WorkOrders />
