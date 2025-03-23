@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import {
   Table,
@@ -249,6 +248,7 @@ export function UserListTable({
               setSelectedUser(null);
               onRefresh();
             }}
+            onUserUpdated={onRefresh}
           />
           
           <DeactivateUserDialog
@@ -259,6 +259,7 @@ export function UserListTable({
               setSelectedUser(null);
               onRefresh();
             }}
+            onUserDeactivated={onRefresh}
           />
         </>
       )}
