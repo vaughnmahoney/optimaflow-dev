@@ -91,6 +91,7 @@ export const navigationConfig: NavigationItem[] = [
     icon: Users,
     items: [
       { title: "Add Employee", url: "/admin", icon: UserPlus },
+      { title: "User Management", url: "/users", icon: Users },
       { title: "Device List", url: "/employees/devices", icon: Smartphone },
       { title: "Tool List", url: "/employees/tools", icon: Wrench },
     ],

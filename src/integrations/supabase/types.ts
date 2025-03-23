@@ -83,44 +83,6 @@ export type Database = {
         }
         Relationships: []
       }
-      billing_history: {
-        Row: {
-          action: string
-          change_details: Json | null
-          created_at: string | null
-          details: Json | null
-          id: string
-          invoice_id: string
-          performed_by: string
-        }
-        Insert: {
-          action: string
-          change_details?: Json | null
-          created_at?: string | null
-          details?: Json | null
-          id?: string
-          invoice_id: string
-          performed_by: string
-        }
-        Update: {
-          action?: string
-          change_details?: Json | null
-          created_at?: string | null
-          details?: Json | null
-          id?: string
-          invoice_id?: string
-          performed_by?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "billing_history_invoice_id_fkey"
-            columns: ["invoice_id"]
-            isOneToOne: false
-            referencedRelation: "invoices"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       customers: {
         Row: {
           billing_address: Json | null
@@ -453,6 +415,36 @@ export type Database = {
           },
         ]
       }
+      user_profiles: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          full_name: string | null
+          id: string
+          is_active: boolean
+          role: Database["public"]["Enums"]["user_role"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          full_name?: string | null
+          id: string
+          is_active?: boolean
+          role?: Database["public"]["Enums"]["user_role"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          full_name?: string | null
+          id?: string
+          is_active?: boolean
+          role?: Database["public"]["Enums"]["user_role"] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       work_order_images: {
         Row: {
           created_at: string | null
@@ -684,6 +676,10 @@ export type Database = {
       }
     }
     Functions: {
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       submit_attendance_to_history: {
         Args: {
           submission_date: string
@@ -696,7 +692,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      user_role: "admin" | "lead"
     }
     CompositeTypes: {
       [_ in never]: never
