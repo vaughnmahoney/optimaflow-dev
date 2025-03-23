@@ -53,7 +53,8 @@ export function useUserManagement() {
         throw new Error("Invalid response from server");
       }
 
-      if (!response.data.success) {
+      // Check if success property exists before accessing it
+      if (response.data && response.data.success === false) {
         throw new Error(response.data.error || "Failed to fetch users");
       }
 
@@ -94,7 +95,8 @@ export function useUserManagement() {
         throw new Error("Invalid response from server");
       }
 
-      if (!response.data.success) {
+      // Check if success property exists before accessing it
+      if (response.data && response.data.success === false) {
         throw new Error(response.data.error || "Failed to create user");
       }
 
@@ -138,7 +140,8 @@ export function useUserManagement() {
         throw new Error("Invalid response from server");
       }
 
-      if (!response.data.success) {
+      // Check if success property exists before accessing it
+      if (response.data && response.data.success === false) {
         throw new Error(response.data.error || "Failed to update user");
       }
 
@@ -174,7 +177,8 @@ export function useUserManagement() {
         throw new Error("Invalid response from server");
       }
 
-      if (!response.data.success) {
+      // Check if success property exists before accessing it
+      if (response.data && response.data.success === false) {
         throw new Error(response.data.error || "Failed to deactivate user");
       }
 
