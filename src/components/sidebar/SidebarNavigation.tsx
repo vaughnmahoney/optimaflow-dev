@@ -80,12 +80,6 @@ export function SidebarNavigation({
       isActive: location.pathname.startsWith("/employees") || location.pathname.startsWith("/admin") 
     },
     { 
-      to: "/users", 
-      icon: Users, 
-      label: "User Management", 
-      isActive: location.pathname.startsWith("/users") 
-    },
-    { 
       to: "/receipts", 
       icon: Receipt, 
       label: "Expenses", 
