@@ -1,9 +1,8 @@
 
 import { useLocation } from "react-router-dom";
 import { 
-  LayoutDashboard, AlertCircle, CreditCard, Car, 
-  Package2, Clock, Users, Receipt, 
-  CalendarDays, LucideIcon, Database
+  LayoutDashboard, AlertCircle, Database, 
+  Clock, Users, LucideIcon
 } from "lucide-react";
 import { SidebarNavItem } from "./SidebarNavItem";
 
@@ -31,12 +30,6 @@ export function SidebarNavigation({
   // Create navigation items
   const navItems: NavItem[] = [
     { 
-      to: "/dashboard", 
-      icon: LayoutDashboard, 
-      label: "Dashboard", 
-      isActive: location.pathname === "/dashboard" || location.pathname === "/" 
-    },
-    { 
       to: "/work-orders", 
       icon: AlertCircle, 
       label: "Quality Control", 
@@ -50,53 +43,11 @@ export function SidebarNavigation({
       isActive: location.pathname.startsWith("/bulk-orders-test") 
     },
     { 
-      to: "/payroll", 
-      icon: CreditCard, 
-      label: "Payroll", 
-      isActive: location.pathname.startsWith("/payroll") 
-    },
-    { 
-      to: "/vehicle-maintenance", 
-      icon: Car, 
-      label: "Vehicle Maintenance", 
-      isActive: location.pathname.startsWith("/vehicle-maintenance") 
-    },
-    {
-      to: "/storage", 
-      icon: Package2, 
-      label: "Storage Units", 
-      isActive: location.pathname.startsWith("/storage") || location.pathname.startsWith("/inventory")
-    },
-    {
-      to: "/attendance", 
-      icon: Clock, 
-      label: "Attendance", 
-      isActive: location.pathname.startsWith("/attendance") || location.pathname.startsWith("/supervisor")
-    },
-    { 
-      to: "/employees", 
-      icon: Users, 
-      label: "Employees", 
-      isActive: location.pathname.startsWith("/employees") || location.pathname.startsWith("/admin") 
-    },
-    { 
       to: "/users", 
       icon: Users, 
       label: "User Management", 
       isActive: location.pathname.startsWith("/users") 
-    },
-    { 
-      to: "/receipts", 
-      icon: Receipt, 
-      label: "Expenses", 
-      isActive: location.pathname.startsWith("/receipts") || location.pathname.startsWith("/reports")
-    },
-    { 
-      to: "/calendar", 
-      icon: CalendarDays, 
-      label: "Calendar", 
-      isActive: location.pathname.startsWith("/calendar")
-    },
+    }
   ];
 
   // Filter navigation items based on search
