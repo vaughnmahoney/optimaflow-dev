@@ -15,7 +15,7 @@ import Dashboard from "./pages/Dashboard";
 import Payroll from "./pages/Payroll";
 import VehicleMaintenance from "./pages/VehicleMaintenance";
 import Storage from "./pages/Storage";
-import Expenses from "./pages/Receipts"; // Renamed to Expenses but keeping the file name
+import Expenses from "./pages/Receipts";
 import Calendar from "./pages/Calendar";
 import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
@@ -32,7 +32,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/landing" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/bulk-orders-test" element={<BulkOrdersTest />} />
