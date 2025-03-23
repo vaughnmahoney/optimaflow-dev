@@ -21,7 +21,6 @@ import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
 import BulkOrdersTest from "./pages/BulkOrdersTest";
 import MaterialRequirements from "./pages/MaterialRequirements";
-import UserManagement from "./pages/UserManagement";
 
 const queryClient = new QueryClient();
 
@@ -33,10 +32,9 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            {/* Public routes that don't require authentication */}
-            <Route path="/login" element={<Login />} />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/landing" element={<Index />} />
-            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/login" element={<Login />} />
             <Route path="/bulk-orders-test" element={<BulkOrdersTest />} />
             
             {/* Main application routes */}
@@ -93,15 +91,6 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Attendance />
-                </ProtectedRoute>
-              }
-            />
-            {/* Admin routes */}
-            <Route
-              path="/user-management"
-              element={
-                <ProtectedRoute>
-                  <UserManagement />
                 </ProtectedRoute>
               }
             />
