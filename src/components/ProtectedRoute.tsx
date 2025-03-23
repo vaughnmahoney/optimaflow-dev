@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
@@ -12,7 +13,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
       console.log("No session, redirecting to login");
       navigate("/login", { replace: true });
     }
-  }, [session, loading]);
+  }, [session, loading, navigate]);
 
   if (loading) {
     return (

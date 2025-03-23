@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,8 +28,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // Only redirect if we're on the login page and have a session
       if (session && location.pathname === '/login') {
-        console.log("Redirecting to /supervisor from initial session check");
-        navigate('/supervisor', { replace: true });
+        console.log("Redirecting to /dashboard from initial session check");
+        navigate('/dashboard', { replace: true });
       }
     });
 
@@ -42,8 +43,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Only redirect if we're on the login page and have a session
       if (session && location.pathname === '/login') {
-        console.log("Redirecting to /supervisor from auth state change");
-        navigate('/supervisor', { replace: true });
+        console.log("Redirecting to /dashboard from auth state change");
+        navigate('/dashboard', { replace: true });
       }
     });
 

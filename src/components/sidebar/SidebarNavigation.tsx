@@ -65,24 +65,6 @@ export function SidebarNavigation({
     });
   }, [navigationConfig, searchTerm, isAdmin]);
 
-  // Render submenu items
-  const renderItems = (items: NavigationItem[]) => {
-    return items.filter(item => {
-      if (isAdmin) return true;
-      return !item.adminOnly;
-    }).map((item) => (
-      <SidebarNavItem
-        key={item.title}
-        item={item}
-        isCollapsed={isCollapsed}
-        isActive={location.pathname === item.url}
-        flaggedCount={
-          item.url === "/quality-control/flagged" ? flaggedWorkOrdersCount : undefined
-        }
-      />
-    ));
-  };
-
   return (
     <div className="space-y-2">
       {filteredNavigation.map((item) => {
@@ -95,7 +77,20 @@ export function SidebarNavigation({
               icon={item.icon}
               isCollapsed={isCollapsed}
             >
-              {renderItems(item.items)}
+              {item.items.filter(subItem => {
+                if (isAdmin) return true;
+                return !subItem.adminOnly;
+              }).map((subItem) => (
+                <SidebarNavItem
+                  key={subItem.title}
+                  item={subItem}
+                  isCollapsed={isCollapsed}
+                  isActive={location.pathname === subItem.url}
+                  flaggedCount={
+                    subItem.url === "/quality-control/flagged" ? flaggedWorkOrdersCount : undefined
+                  }
+                />
+              ))}
             </SidebarSubmenu>
           );
         }

@@ -33,9 +33,10 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/landing" element={<Index />} />
+            {/* Public routes that don't require authentication */}
             <Route path="/login" element={<Login />} />
+            <Route path="/landing" element={<Index />} />
+            <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/bulk-orders-test" element={<BulkOrdersTest />} />
             
             {/* Main application routes */}
