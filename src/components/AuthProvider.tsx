@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,17 +25,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setLoading(false);
       
-      // Redirect based on session state
-      if (session) {
-        // If user is on login and has a session, redirect to dashboard
-        if (location.pathname === '/login' || location.pathname === '/') {
-          console.log("Redirecting to /dashboard from initial session check");
-          navigate('/dashboard', { replace: true });
-        }
-      } else if (location.pathname !== '/login') {
-        // If no session and not on login page, redirect to login
-        console.log("No session, redirecting to login");
-        navigate('/login', { replace: true });
+      // Only redirect if we're on the login page and have a session
+      if (session && location.pathname === '/login') {
+        console.log("Redirecting to /supervisor from initial session check");
+        navigate('/supervisor', { replace: true });
       }
     });
 
@@ -48,17 +40,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setLoading(false);
 
-      // Redirect based on session state
-      if (session) {
-        // If user is on login and has a session, redirect to dashboard
-        if (location.pathname === '/login' || location.pathname === '/') {
-          console.log("Redirecting to /dashboard from auth state change");
-          navigate('/dashboard', { replace: true });
-        }
-      } else if (location.pathname !== '/login') {
-        // If no session and not on login page, redirect to login
-        console.log("No session, redirecting to login");
-        navigate('/login', { replace: true });
+      // Only redirect if we're on the login page and have a session
+      if (session && location.pathname === '/login') {
+        console.log("Redirecting to /supervisor from auth state change");
+        navigate('/supervisor', { replace: true });
       }
     });
 
