@@ -30,6 +30,7 @@ export type NavigationItem = {
   url?: string;
   icon: any;
   items?: NavigationItem[];
+  adminOnly?: boolean;
 };
 
 export const navigationConfig: NavigationItem[] = [
@@ -37,6 +38,7 @@ export const navigationConfig: NavigationItem[] = [
     title: "Dashboard",
     url: "/dashboard",
     icon: LayoutDashboard,
+    adminOnly: true,
   },
   {
     title: "Quality Control",
@@ -50,6 +52,7 @@ export const navigationConfig: NavigationItem[] = [
     title: "Payroll",
     url: "/payroll",
     icon: BadgeDollarSign,
+    adminOnly: true,
   },
   {
     title: "Billing",
@@ -58,16 +61,19 @@ export const navigationConfig: NavigationItem[] = [
       { title: "Approved Orders", url: "/billing/approved", icon: Check },
       { title: "Pricing", url: "/billing/pricing", icon: DollarSign },
     ],
+    adminOnly: true,
   },
   {
     title: "Material Requirements",
     url: "/material-requirements",
     icon: Package,
+    adminOnly: true,
   },
   {
     title: "Vehicle Maintenance",
     url: "/vehicles",
     icon: Truck,
+    adminOnly: true,
   },
   {
     title: "Storage Units",
@@ -77,6 +83,7 @@ export const navigationConfig: NavigationItem[] = [
       { title: "Request Materials", url: "/storage/request", icon: Inbox },
       { title: "Location Info", url: "/storage/locations", icon: MapPin },
     ],
+    adminOnly: true,
   },
   {
     title: "Attendance",
@@ -85,6 +92,7 @@ export const navigationConfig: NavigationItem[] = [
       { title: "Track", url: "/supervisor", icon: Calendar },
       { title: "History", url: "/attendance-history", icon: List },
     ],
+    adminOnly: true,
   },
   {
     title: "Employees",
@@ -94,6 +102,7 @@ export const navigationConfig: NavigationItem[] = [
       { title: "Device List", url: "/employees/devices", icon: Smartphone },
       { title: "Tool List", url: "/employees/tools", icon: Wrench },
     ],
+    adminOnly: true,
   },
   {
     title: "Receipts",
@@ -101,6 +110,7 @@ export const navigationConfig: NavigationItem[] = [
     items: [
       { title: "Payment Tracking", url: "/receipts/tracking", icon: CreditCard },
     ],
+    adminOnly: true,
   },
   {
     title: "3rd Party Apps",
@@ -112,5 +122,6 @@ export const navigationConfig: NavigationItem[] = [
       { title: "Service Channel", url: "/apps/service-channel", icon: Link },
       { title: "Verisae", url: "/apps/verisae", icon: Link },
     ],
+    adminOnly: true,
   },
 ];

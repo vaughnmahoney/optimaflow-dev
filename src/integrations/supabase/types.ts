@@ -460,7 +460,7 @@ export type Database = {
           full_name: string | null
           id: string
           is_active: boolean
-          role: Database["public"]["Enums"]["user_role"]
+          role: Database["public"]["Enums"]["user_role"] | null
           updated_at: string | null
         }
         Insert: {
@@ -469,7 +469,7 @@ export type Database = {
           full_name?: string | null
           id: string
           is_active?: boolean
-          role?: Database["public"]["Enums"]["user_role"]
+          role?: Database["public"]["Enums"]["user_role"] | null
           updated_at?: string | null
         }
         Update: {
@@ -478,7 +478,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_active?: boolean
-          role?: Database["public"]["Enums"]["user_role"]
+          role?: Database["public"]["Enums"]["user_role"] | null
           updated_at?: string | null
         }
         Relationships: []
@@ -714,15 +714,6 @@ export type Database = {
       }
     }
     Functions: {
-      create_user: {
-        Args: {
-          email: string
-          password: string
-          full_name: string
-          role: Database["public"]["Enums"]["user_role"]
-        }
-        Returns: string
-      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -739,7 +730,7 @@ export type Database = {
       }
     }
     Enums: {
-      user_role: "admin" | "qc_reviewer" | "supervisor"
+      user_role: "admin" | "lead"
     }
     CompositeTypes: {
       [_ in never]: never

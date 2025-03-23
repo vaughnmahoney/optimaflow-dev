@@ -179,9 +179,7 @@ export const UserList = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="admin">Administrator</SelectItem>
-                        <SelectItem value="billing_admin">Billing Admin</SelectItem>
-                        <SelectItem value="qc_reviewer">QC Reviewer</SelectItem>
-                        <SelectItem value="supervisor">Supervisor</SelectItem>
+                        <SelectItem value="lead">Lead</SelectItem>
                       </SelectContent>
                     </Select>
                   </TableCell>

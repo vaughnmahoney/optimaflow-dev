@@ -20,7 +20,7 @@ const formSchema = z.object({
     .regex(/[a-z]/, { message: "Password must contain at least one lowercase letter" })
     .regex(/[0-9]/, { message: "Password must contain at least one number" }),
   full_name: z.string().min(1, { message: "Full name is required" }),
-  user_role: z.enum(["admin", "qc_reviewer", "supervisor", "billing_admin"])
+  user_role: z.enum(["admin", "lead"])
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -35,7 +35,7 @@ export const CreateUserForm = () => {
       email: "",
       password: "",
       full_name: "",
-      user_role: "qc_reviewer"
+      user_role: "lead"
     }
   });
 
@@ -129,9 +129,7 @@ export const CreateUserForm = () => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="qc_reviewer">QC Reviewer</SelectItem>
-                      <SelectItem value="supervisor">Supervisor</SelectItem>
-                      <SelectItem value="billing_admin">Billing Admin</SelectItem>
+                      <SelectItem value="lead">Lead</SelectItem>
                       <SelectItem value="admin">Admin</SelectItem>
                     </SelectContent>
                   </Select>
