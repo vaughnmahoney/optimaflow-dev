@@ -55,7 +55,7 @@ export const ImageViewModal = ({
     setIsImageExpanded(!isImageExpanded);
   };
 
-  // Get images from the work order
+  // Get images from the work order's completion_response
   const completionData = currentWorkOrder?.completion_response?.orders?.[0]?.data;
   const images = completionData?.form?.images || [];
   
