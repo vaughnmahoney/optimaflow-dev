@@ -1,14 +1,8 @@
-
 import { useState, useRef } from "react";
 import { useImageZoom } from "@/hooks/useImageZoom";
 import { ImageControls } from "./ImageControls";
 import { ImageEmptyState } from "./ImageEmptyState";
-
-interface ImageType {
-  url: string;
-  type?: string;
-  name?: string;
-}
+import { ImageType } from "../../types/image";
 
 interface ImageViewerProps {
   images: ImageType[];

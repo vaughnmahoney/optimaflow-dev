@@ -1,11 +1,6 @@
 
 import { useState } from "react";
-
-interface ImageType {
-  url: string;
-  type?: string;
-  name?: string;
-}
+import { ImageType } from "@/components/workorders/types/image";
 
 interface UseImageViewerProps {
   images: ImageType[];

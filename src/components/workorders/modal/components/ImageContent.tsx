@@ -1,16 +1,10 @@
-
 import React from "react";
 import { useImageViewer } from "@/hooks/useImageViewer";
 import { ImageControls } from "./ImageControls";
 import { ImageThumbnails } from "./ImageThumbnails";
 import { ImageEmptyState } from "./ImageEmptyState";
 import { ImageViewer } from "./ImageViewer";
-
-interface ImageType {
-  url: string;
-  type?: string;
-  name?: string;
-}
+import { ImageType } from "../../types/image";
 
 interface ImageContentProps {
   images: ImageType[];

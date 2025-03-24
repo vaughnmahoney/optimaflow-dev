@@ -3,12 +3,7 @@ import React from "react";
 import { WorkOrder } from "../../types";
 import { OrderDetails } from "./OrderDetails";
 import { ImageContent } from "./ImageContent";
-
-interface ImageType {
-  url: string;
-  type?: string;
-  name?: string;
-}
+import { ImageType } from "../../types/image";
 
 interface ModalContentProps {
   workOrder: WorkOrder;

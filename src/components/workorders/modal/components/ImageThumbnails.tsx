@@ -1,11 +1,5 @@
-
 import React, { useEffect, useRef } from "react";
-
-interface ImageType {
-  url: string;
-  type?: string;
-  name?: string;
-}
+import { ImageType } from "../../types/image";
 
 interface ImageThumbnailsProps {
   images: ImageType[];
@@ -21,18 +15,15 @@ export const ImageThumbnails = ({
   const thumbnailsContainerRef = useRef<HTMLDivElement>(null);
   const activeItemRef = useRef<HTMLDivElement>(null);
 
-  // This effect handles scrolling the active thumbnail to center position
   useEffect(() => {
     if (!thumbnailsContainerRef.current || !activeItemRef.current || images.length === 0) return;
     const container = thumbnailsContainerRef.current;
     const activeItem = activeItemRef.current;
 
-    // Calculate the position to scroll to (center the active thumbnail)
     const containerHeight = container.clientHeight;
     const thumbnailHeight = activeItem.clientHeight;
     const scrollTopTarget = activeItem.offsetTop - containerHeight / 2 + thumbnailHeight / 2;
 
-    // Scroll to the calculated position with smooth behavior
     container.scrollTo({
       top: scrollTopTarget,
       behavior: 'smooth'
@@ -43,12 +34,10 @@ export const ImageThumbnails = ({
   
   return (
     <div className="w-20 h-full border-r overflow-hidden bg-gray-50 dark:bg-gray-900/50 flex flex-col">
-      {/* Add arrows to indicate scroll direction when more thumbnails are available */}
       <div className="text-center text-gray-400 py-1 text-xs">
         {currentImageIndex > 0 && <div className="animate-bounce">↑</div>}
       </div>
       
-      {/* Thumbnails container with fixed height and scrollable - prevent horizontal scrolling */}
       <div 
         ref={thumbnailsContainerRef} 
         className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300 px-2 space-y-2" 
@@ -72,7 +61,6 @@ export const ImageThumbnails = ({
                 className="h-full w-full object-cover" 
               />
               
-              {/* Image number indicator */}
               <span className="absolute bottom-0 right-0 text-[10px] bg-black/60 text-white px-1 rounded-tl-sm">
                 {idx + 1}
               </span>
@@ -81,7 +69,6 @@ export const ImageThumbnails = ({
         ))}
       </div>
       
-      {/* Bottom arrow indicator */}
       <div className="text-center text-gray-400 py-1 text-xs">
         {currentImageIndex < images.length - 1 && <div className="animate-bounce">↓</div>}
       </div>
