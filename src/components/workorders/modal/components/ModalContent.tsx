@@ -1,59 +1,38 @@
 
 import React from "react";
-import { WorkOrder } from "@/components/workorders/types";
-import { ImageViewer } from "./ImageViewer";
-import { ImageThumbnails } from "./ImageThumbnails";
+import { WorkOrder } from "../../types";
 import { OrderDetails } from "./OrderDetails";
+import { ImageContent } from "./ImageContent";
 
 interface ModalContentProps {
   workOrder: WorkOrder;
-  images: Array<{ url: string }>;
+  images: string[];
   currentImageIndex: number;
   setCurrentImageIndex: (index: number) => void;
   isImageExpanded: boolean;
   toggleImageExpand: () => void;
 }
 
-export const ModalContent: React.FC<ModalContentProps> = ({
+export const ModalContent = ({
   workOrder,
   images,
   currentImageIndex,
   setCurrentImageIndex,
-  isImageExpanded,
-  toggleImageExpand
-}) => {
+}: ModalContentProps) => {
   return (
-    <div className="flex flex-1 overflow-hidden">
-      {/* Left side - Image viewer with vertical thumbnails */}
-      <div className={`flex flex-row ${isImageExpanded ? 'w-full' : 'w-3/5'} border-r`}>
-        {/* Vertical thumbnail strip - Only show when not expanded */}
-        {!isImageExpanded && (
-          <ImageThumbnails 
-            images={images} 
-            currentImageIndex={currentImageIndex} 
-            setCurrentImageIndex={setCurrentImageIndex} 
-          />
-        )}
-        
-        {/* Main image container */}
-        <div className="flex-1 relative flex">
-          <ImageViewer 
-            images={images}
-            currentImageIndex={currentImageIndex}
-            setCurrentImageIndex={setCurrentImageIndex}
-            isImageExpanded={isImageExpanded}
-            toggleImageExpand={toggleImageExpand}
-          />
-        </div>
+    <div className="flex flex-col md:flex-row h-full p-4 gap-4 overflow-auto">
+      {/* Left side: Image viewer */}
+      <div className="w-full md:w-2/3 flex flex-col">
+        <ImageContent 
+          images={images}
+          initialImageIndex={currentImageIndex}
+        />
       </div>
       
-      {/* Right side - Details panel */}
-      {!isImageExpanded && (
-        <div className="w-2/5 flex flex-col overflow-hidden">
-          {/* Tabs for Details, Notes, Signature - now directly after the header */}
-          <OrderDetails workOrder={workOrder} />
-        </div>
-      )}
+      {/* Right side: Order details */}
+      <div className="w-full md:w-1/3 flex flex-col">
+        <OrderDetails workOrder={workOrder} />
+      </div>
     </div>
   );
 };
