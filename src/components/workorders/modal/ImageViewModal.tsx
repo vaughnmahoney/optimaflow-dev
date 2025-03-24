@@ -51,24 +51,6 @@ export const ImageViewModal = ({
   
   if (!currentWorkOrder) return null;
 
-  // Add console log to inspect user tracking fields
-  console.log("Current work order tracking fields:", {
-    id: currentWorkOrder.id,
-    status: currentWorkOrder.status,
-    approved_by: currentWorkOrder.approved_by,
-    approved_user: currentWorkOrder.approved_user,
-    approved_at: currentWorkOrder.approved_at,
-    flagged_by: currentWorkOrder.flagged_by,
-    flagged_user: currentWorkOrder.flagged_user,
-    flagged_at: currentWorkOrder.flagged_at,
-    resolved_by: currentWorkOrder.resolved_by,
-    resolved_user: currentWorkOrder.resolved_user,
-    resolved_at: currentWorkOrder.resolved_at,
-    rejected_by: currentWorkOrder.rejected_by,
-    rejected_user: currentWorkOrder.rejected_user,
-    rejected_at: currentWorkOrder.rejected_at,
-  });
-
   const toggleImageExpand = () => {
     setIsImageExpanded(!isImageExpanded);
   };
@@ -107,7 +89,7 @@ export const ImageViewModal = ({
           hasImages={images.length > 0}
           status={currentWorkOrder.status}
           onResolveFlag={onResolveFlag}
-          workOrder={currentWorkOrder} // Make sure to pass the workOrder prop here
+          workOrder={currentWorkOrder}
         />
         
         <NavigationControls 

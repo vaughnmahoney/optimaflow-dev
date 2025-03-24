@@ -7,7 +7,7 @@ import type { Session } from "@supabase/supabase-js";
 interface AuthContextType {
   session: Session | null;
   loading: boolean;
-  userRole: string; // Add user role to the context
+  userRole: string;
 }
 
 const AuthContext = createContext<AuthContextType>({ session: null, loading: true, userRole: "" });
@@ -21,37 +21,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Determine user role based on email
+  const determineUserRole = (email: string | undefined) => {
+    if (!email) return "";
+    
+    if (email.includes("lead")) {
+      return "lead";
+    } else if (email.includes("admin")) {
+      return "admin";
+    } else {
+      return "user";
+    }
+  };
+
+  // Handle navigation based on auth state
+  const handleNavigation = (hasSession: boolean) => {
+    const isAuthRoute = location.pathname === '/' || location.pathname === '/login';
+    
+    if (hasSession && isAuthRoute) {
+      navigate('/work-orders', { replace: true });
+    } else if (!hasSession && !isAuthRoute) {
+      navigate('/login', { replace: true });
+    }
+  };
+
   useEffect(() => {
     try {
       // Get initial session
       supabase.auth.getSession().then(({ data: { session } }) => {
-        console.log("Initial session check:", session);
         setSession(session);
         
-        // Determine role based on email (for demo purposes)
         if (session?.user?.email) {
-          const email = session.user.email;
-          // In a real app, you would fetch this from a user_roles table
-          // For now, simple string matching for demo
-          if (email.includes("lead")) {
-            setUserRole("lead");
-          } else if (email.includes("admin")) {
-            setUserRole("admin");
-          } else {
-            setUserRole("user");
-          }
+          setUserRole(determineUserRole(session.user.email));
         }
         
         setLoading(false);
-        
-        // Handle navigation based on auth state
-        if (session && (location.pathname === '/' || location.pathname === '/login')) {
-          console.log("Has session, redirecting to work orders");
-          navigate('/work-orders', { replace: true });
-        } else if (!session && location.pathname !== '/' && location.pathname !== '/login') {
-          console.log("No session, redirecting to login");
-          navigate('/login', { replace: true });
-        }
+        handleNavigation(!!session);
       }).catch(error => {
         console.error("Error getting session:", error);
         setLoading(false);
@@ -61,34 +66,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const {
         data: { subscription },
       } = supabase.auth.onAuthStateChange((_event, session) => {
-        console.log("Auth state changed:", _event, session);
         setSession(session);
         
-        // Determine role based on email (for demo purposes)
         if (session?.user?.email) {
-          const email = session.user.email;
-          // In a real app, you would fetch this from a user_roles table
-          if (email.includes("lead")) {
-            setUserRole("lead");
-          } else if (email.includes("admin")) {
-            setUserRole("admin");
-          } else {
-            setUserRole("user");
-          }
+          setUserRole(determineUserRole(session.user.email));
         } else {
           setUserRole("");
         }
         
         setLoading(false);
-
-        // Handle navigation based on auth state
-        if (session && (location.pathname === '/' || location.pathname === '/login')) {
-          console.log("Auth state change: Has session, redirecting to work orders");
-          navigate('/work-orders', { replace: true });
-        } else if (!session && location.pathname !== '/' && location.pathname !== '/login') {
-          console.log("Auth state change: No session, redirecting to login");
-          navigate('/login', { replace: true });
-        }
+        handleNavigation(!!session);
       });
 
       return () => {
