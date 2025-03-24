@@ -4,9 +4,15 @@ import { WorkOrder } from "../../types";
 import { OrderDetails } from "./OrderDetails";
 import { ImageContent } from "./ImageContent";
 
+interface ImageType {
+  url: string;
+  type?: string;
+  name?: string;
+}
+
 interface ModalContentProps {
   workOrder: WorkOrder;
-  images: string[];
+  images: ImageType[];
   currentImageIndex: number;
   setCurrentImageIndex: (index: number) => void;
   isImageExpanded: boolean;
@@ -18,6 +24,8 @@ export const ModalContent = ({
   images,
   currentImageIndex,
   setCurrentImageIndex,
+  isImageExpanded,
+  toggleImageExpand,
 }: ModalContentProps) => {
   return (
     <div className="flex flex-col md:flex-row h-full p-4 gap-4 overflow-auto">
@@ -25,7 +33,10 @@ export const ModalContent = ({
       <div className="w-full md:w-2/3 flex flex-col">
         <ImageContent 
           images={images}
-          initialImageIndex={currentImageIndex}
+          currentImageIndex={currentImageIndex}
+          setCurrentImageIndex={setCurrentImageIndex}
+          isImageExpanded={isImageExpanded}
+          toggleImageExpand={toggleImageExpand}
         />
       </div>
       

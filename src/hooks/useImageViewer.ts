@@ -1,8 +1,14 @@
 
 import { useState } from "react";
 
+interface ImageType {
+  url: string;
+  type?: string;
+  name?: string;
+}
+
 interface UseImageViewerProps {
-  images: string[];
+  images: ImageType[];
   initialIndex?: number;
 }
 
