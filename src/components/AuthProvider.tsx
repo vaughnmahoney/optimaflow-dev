@@ -21,24 +21,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Fetch the user role from the database based on user ID
-  const fetchUserRole = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from("user_profiles")
-        .select("role")
-        .eq("id", userId)
-        .single();
-
-      if (error) {
-        console.error("Error fetching user role:", error);
-        return "";
-      }
-
-      return data?.role || "";
-    } catch (error) {
-      console.error("Error in fetchUserRole:", error);
-      return "";
+  // Determine user role based on email
+  const determineUserRole = (email: string | undefined) => {
+    if (!email) return "";
+    
+    if (email.includes("lead")) {
+      return "lead";
+    } else if (email.includes("admin")) {
+      return "admin";
+    } else {
+      return "user";
     }
   };
 
@@ -56,13 +48,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       // Get initial session
-      supabase.auth.getSession().then(async ({ data: { session } }) => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
         setSession(session);
         
-        if (session?.user?.id) {
-          // Fetch role from database instead of determining from email
-          const dbRole = await fetchUserRole(session.user.id);
-          setUserRole(dbRole);
+        if (session?.user?.email) {
+          setUserRole(determineUserRole(session.user.email));
         }
         
         setLoading(false);
@@ -75,13 +65,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Listen for auth changes
       const {
         data: { subscription },
-      } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      } = supabase.auth.onAuthStateChange((_event, session) => {
         setSession(session);
         
-        if (session?.user?.id) {
-          // Fetch role from database instead of determining from email
-          const dbRole = await fetchUserRole(session.user.id);
-          setUserRole(dbRole);
+        if (session?.user?.email) {
+          setUserRole(determineUserRole(session.user.email));
         } else {
           setUserRole("");
         }
