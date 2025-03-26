@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useUserManagement } from "@/hooks/useUserManagement";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -35,13 +35,23 @@ export function EditUserDialog({
   
   const { updateUser } = useUserManagement();
   const { toast } = useToast();
-
-  // Update form when user prop changes
+  const mounted = useRef(true);
+  
+  // Track component mount state
   useEffect(() => {
-    if (isOpen) {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+
+  // Reset form when user prop changes or dialog opens
+  useEffect(() => {
+    if (isOpen && mounted.current) {
       setFullName(user.full_name);
       setRole(user.role);
       setErrors({});
+      setIsSubmitting(false);
     }
   }, [user, isOpen]);
 
@@ -59,7 +69,7 @@ export function EditUserDialog({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!isOpen || !validateForm()) {
+    if (!isOpen || !validateForm() || !mounted.current) {
       return;
     }
     
@@ -71,34 +81,44 @@ export function EditUserDialog({
         role,
       });
       
-      toast({
-        title: "User updated",
-        description: `User ${user.username} has been updated successfully.`,
-      });
-      
-      // Close the dialog first
-      onClose();
-      
-      // Then notify about successful update
-      setTimeout(() => {
-        onUserUpdated();
-      }, 0);
+      if (mounted.current) {
+        toast({
+          title: "User updated",
+          description: `User ${user.username} has been updated successfully.`,
+        });
+        
+        // First close dialog to prevent state updates during unmounting
+        onClose();
+        
+        // Use setTimeout to break the current execution stack
+        // This helps avoid React state update conflicts
+        setTimeout(() => {
+          if (mounted.current) {
+            onUserUpdated();
+          }
+        }, 10);
+      }
     } catch (error) {
-      // Error is already handled in the hook with toast
       console.error("Failed to update user:", error);
-      setIsSubmitting(false); // Reset submitting state on error
+      if (mounted.current) {
+        setIsSubmitting(false);
+      }
     }
   };
 
   // Separate handler for cancel to avoid accidental submission
   const handleCancel = () => {
-    if (!isSubmitting) {
+    if (!isSubmitting && mounted.current) {
       onClose();
     }
   };
 
+  // Control dialog opening more carefully
   return (
-    <Dialog open={isOpen} onOpenChange={isSubmitting ? undefined : handleCancel}>
+    <Dialog 
+      open={isOpen} 
+      onOpenChange={isSubmitting ? undefined : handleCancel}
+    >
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Edit User: {user.username}</DialogTitle>

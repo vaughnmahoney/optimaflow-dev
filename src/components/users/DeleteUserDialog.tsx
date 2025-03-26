@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useUserManagement } from "@/hooks/useUserManagement";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -27,31 +27,45 @@ export function DeleteUserDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { deleteUser } = useUserManagement();
   const { toast } = useToast();
+  const mounted = useRef(true);
+  
+  // Track component mount state
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
   const handleDelete = async () => {
-    if (!isOpen) return; // Safeguard against calls when dialog is closed
+    if (!isOpen) return;
     setIsSubmitting(true);
     
     try {
       await deleteUser(user.id);
       
-      // Only proceed if the dialog is still open
-      toast({
-        title: "User deleted",
-        description: `User ${user.username} has been deleted successfully.`,
-      });
-      
-      // Close the dialog first
-      onClose();
-      
-      // Then notify about successful deletion after a tick
-      setTimeout(() => {
-        onUserDeleted();
-      }, 0);
+      if (mounted.current) {
+        toast({
+          title: "User deleted",
+          description: `User ${user.username} has been deleted successfully.`,
+        });
+        
+        // First close dialog to prevent state updates during unmounting
+        onClose();
+        
+        // Use setTimeout to break the current execution stack
+        // This helps avoid React state update conflicts
+        setTimeout(() => {
+          if (mounted.current) {
+            onUserDeleted();
+          }
+        }, 10);
+      }
     } catch (error) {
-      // Error is already handled in the hook with toast
       console.error("Failed to delete user:", error);
-      setIsSubmitting(false); // Reset submitting state on error
+      if (mounted.current) {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -62,8 +76,13 @@ export function DeleteUserDialog({
     }
   };
 
+  // Control dialog opening more carefully
+  // Only pass onOpenChange when dialog can be safely closed
   return (
-    <Dialog open={isOpen} onOpenChange={isSubmitting ? undefined : handleCancel}>
+    <Dialog 
+      open={isOpen} 
+      onOpenChange={isSubmitting ? undefined : handleCancel}
+    >
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="text-destructive">Delete User</DialogTitle>

@@ -11,13 +11,18 @@ export function UserManagementContent() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const { toast } = useToast();
 
+  // Handle user created event safely
   const handleUserCreated = () => {
     setIsCreateDialogOpen(false);
-    setRefreshTrigger(prev => prev + 1);
-    toast({
-      title: "User created successfully",
-      description: "The new user has been added to the system",
-    });
+    
+    // Use setTimeout to avoid potential React batching issues
+    setTimeout(() => {
+      setRefreshTrigger(prev => prev + 1);
+      toast({
+        title: "User created successfully",
+        description: "The new user has been added to the system",
+      });
+    }, 10);
   };
 
   return (
