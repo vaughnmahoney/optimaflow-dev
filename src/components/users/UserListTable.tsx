@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DeactivateUserDialog } from "./DeactivateUserDialog";
+import { DeleteUserDialog } from "./DeleteUserDialog";
 import { EditUserDialog } from "./EditUserDialog";
 
 interface User {
@@ -26,7 +26,6 @@ interface User {
   username: string;
   full_name: string;
   role: "admin" | "lead";
-  is_active: boolean;
   created_at: string;
 }
 
@@ -52,7 +51,7 @@ export function UserListTable({
   onRefresh,
 }: UserListTableProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isDeactivateDialogOpen, setIsDeactivateDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   const totalPages = Math.ceil(totalCount / pageSize);
@@ -62,9 +61,9 @@ export function UserListTable({
     setIsEditDialogOpen(true);
   };
 
-  const handleDeactivateUser = (user: User) => {
+  const handleDeleteUser = (user: User) => {
     setSelectedUser(user);
-    setIsDeactivateDialogOpen(true);
+    setIsDeleteDialogOpen(true);
   };
 
   if (error) {
@@ -164,7 +163,6 @@ export function UserListTable({
               <TableHead>User</TableHead>
               <TableHead>Full Name</TableHead>
               <TableHead>Role</TableHead>
-              <TableHead>Status</TableHead>
               <TableHead>Created</TableHead>
               <TableHead className="w-10"></TableHead>
             </TableRow>
@@ -177,11 +175,6 @@ export function UserListTable({
                 <TableCell>
                   <Badge variant={user.role === "admin" ? "default" : "outline"}>
                     {user.role === "admin" ? "Admin" : "Lead"}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge variant={user.is_active ? "success" : "destructive"}>
-                    {user.is_active ? "Active" : "Inactive"}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-muted-foreground">
@@ -200,10 +193,10 @@ export function UserListTable({
                         Edit
                       </DropdownMenuItem>
                       <DropdownMenuItem 
-                        onClick={() => handleDeactivateUser(user)}
-                        className={user.is_active ? "text-destructive" : "text-primary"}
+                        onClick={() => handleDeleteUser(user)}
+                        className="text-destructive"
                       >
-                        {user.is_active ? "Deactivate" : "Activate"}
+                        Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -251,15 +244,15 @@ export function UserListTable({
             onUserUpdated={onRefresh}
           />
           
-          <DeactivateUserDialog
+          <DeleteUserDialog
             user={selectedUser}
-            isOpen={isDeactivateDialogOpen}
+            isOpen={isDeleteDialogOpen}
             onClose={() => {
-              setIsDeactivateDialogOpen(false);
+              setIsDeleteDialogOpen(false);
               setSelectedUser(null);
               onRefresh();
             }}
-            onUserDeactivated={onRefresh}
+            onUserDeleted={onRefresh}
           />
         </>
       )}

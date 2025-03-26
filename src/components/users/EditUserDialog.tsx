@@ -1,12 +1,11 @@
 
 import { useState, useEffect } from "react";
 import { useUserManagement } from "@/hooks/useUserManagement";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 
 interface User {
@@ -14,7 +13,6 @@ interface User {
   username: string;
   full_name: string;
   role: "admin" | "lead";
-  is_active: boolean;
 }
 
 interface EditUserDialogProps {
@@ -32,7 +30,6 @@ export function EditUserDialog({
 }: EditUserDialogProps) {
   const [fullName, setFullName] = useState(user.full_name);
   const [role, setRole] = useState<"admin" | "lead">(user.role);
-  const [isActive, setIsActive] = useState(user.is_active);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -43,7 +40,6 @@ export function EditUserDialog({
   useEffect(() => {
     setFullName(user.full_name);
     setRole(user.role);
-    setIsActive(user.is_active);
   }, [user]);
 
   const validateForm = () => {
@@ -70,7 +66,6 @@ export function EditUserDialog({
       await updateUser(user.id, {
         fullName: fullName.trim(),
         role,
-        isActive,
       });
       
       onUserUpdated();
@@ -87,6 +82,9 @@ export function EditUserDialog({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Edit User: {user.username}</DialogTitle>
+          <DialogDescription>
+            Make changes to the user's profile information below.
+          </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4 py-2">
@@ -121,16 +119,6 @@ export function EditUserDialog({
                 <Label htmlFor="edit-lead" className="cursor-pointer">Lead</Label>
               </div>
             </RadioGroup>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <Label htmlFor="isActive" className="cursor-pointer">Active Status</Label>
-            <Switch
-              id="isActive"
-              checked={isActive}
-              onCheckedChange={setIsActive}
-              disabled={isSubmitting}
-            />
           </div>
           
           <DialogFooter className="pt-4">

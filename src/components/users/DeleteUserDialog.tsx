@@ -11,32 +11,32 @@ interface User {
   full_name: string;
 }
 
-interface DeactivateUserDialogProps {
+interface DeleteUserDialogProps {
   user: User;
   isOpen: boolean;
   onClose: () => void;
-  onUserDeactivated: () => void;
+  onUserDeleted: () => void;
 }
 
-export function DeactivateUserDialog({ 
+export function DeleteUserDialog({ 
   user, 
   isOpen, 
   onClose, 
-  onUserDeactivated 
-}: DeactivateUserDialogProps) {
+  onUserDeleted 
+}: DeleteUserDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { deactivateUser } = useUserManagement();
+  const { deleteUser } = useUserManagement();
   const { toast } = useToast();
 
-  const handleDeactivate = async () => {
+  const handleDelete = async () => {
     setIsSubmitting(true);
     
     try {
-      await deactivateUser(user.id);
-      onUserDeactivated();
+      await deleteUser(user.id);
+      onUserDeleted();
     } catch (error) {
       // Error is already handled in the hook with toast
-      console.error("Failed to deactivate user:", error);
+      console.error("Failed to delete user:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -46,10 +46,10 @@ export function DeactivateUserDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="text-destructive">Deactivate User</DialogTitle>
+          <DialogTitle className="text-destructive">Delete User</DialogTitle>
           <DialogDescription>
-            Are you sure you want to deactivate user <strong>{user.username}</strong> ({user.full_name})?
-            This user will no longer be able to access the system.
+            Are you sure you want to delete user <strong>{user.username}</strong> ({user.full_name})?
+            This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
         
@@ -65,10 +65,10 @@ export function DeactivateUserDialog({
           <Button 
             type="button" 
             variant="destructive" 
-            onClick={handleDeactivate}
+            onClick={handleDelete}
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Deactivating..." : "Deactivate User"}
+            {isSubmitting ? "Deleting..." : "Delete User"}
           </Button>
         </DialogFooter>
       </DialogContent>

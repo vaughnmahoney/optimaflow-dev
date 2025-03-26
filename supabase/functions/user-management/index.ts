@@ -6,7 +6,7 @@ import {
   createUser, 
   listUsers, 
   updateUser, 
-  deactivateUser,
+  deleteUser,
   UserCreateData,
   UserListFilters
 } from "./userService.ts";
@@ -53,7 +53,7 @@ serve(async (req) => {
       case "update":
         return updateUser(supabaseAdmin, requestData.userId!, requestData.updates);
       case "delete":
-        return deactivateUser(supabaseAdmin, requestData.userId!);
+        return deleteUser(supabaseAdmin, requestData.userId!);
       default:
         return createErrorResponse("Invalid action", 400);
     }

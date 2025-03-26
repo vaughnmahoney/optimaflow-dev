@@ -1,13 +1,13 @@
 
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Search } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Search, X } from "lucide-react";
 
 interface Filters {
-  role: "admin" | "lead" | undefined;
-  isActive: boolean | undefined;
+  role?: "admin" | "lead";
   search: string;
 }
 
@@ -17,90 +17,99 @@ interface UserListFiltersProps {
   isLoading: boolean;
 }
 
-export function UserListFilters({ filters, onFiltersChange, isLoading }: UserListFiltersProps) {
-  const [searchValue, setSearchValue] = useState(filters.search);
-
-  // Debounce search input
+export function UserListFilters({ 
+  filters, 
+  onFiltersChange, 
+  isLoading 
+}: UserListFiltersProps) {
+  const [search, setSearch] = useState(filters.search || "");
+  const [role, setRole] = useState<"admin" | "lead" | undefined>(filters.role);
+  
+  // Apply filters when role changes
   useEffect(() => {
-    const handler = setTimeout(() => {
-      if (searchValue !== filters.search) {
-        onFiltersChange({ ...filters, search: searchValue });
-      }
-    }, 300);
-
-    return () => clearTimeout(handler);
-  }, [searchValue]);
-
-  const handleRoleChange = (value: string) => {
     onFiltersChange({
       ...filters,
-      role: value === "all" ? undefined : (value as "admin" | "lead"),
+      role,
     });
-  };
-
-  const handleStatusChange = (value: string) => {
+  }, [role]);
+  
+  // Handle search submission
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
     onFiltersChange({
       ...filters,
-      isActive: value === "all" ? undefined : value === "active",
+      search: search.trim(),
     });
   };
-
+  
+  // Clear all filters
+  const handleClearFilters = () => {
+    setSearch("");
+    setRole(undefined);
+    
+    onFiltersChange({
+      search: "",
+      role: undefined,
+    });
+  };
+  
+  // Check if any filters are active
+  const hasActiveFilters = !!search || !!role;
+  
   return (
-    <div className="flex flex-col sm:flex-row gap-4 items-end sm:items-center">
-      <div className="w-full sm:w-auto flex-1">
-        <div className="relative">
+    <div className="space-y-4">
+      <form onSubmit={handleSearchSubmit} className="flex gap-2">
+        <div className="relative flex-1">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Search users..."
+            placeholder="Search users by name..."
             className="pl-8"
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
             disabled={isLoading}
           />
         </div>
-      </div>
-
-      <div className="w-full sm:w-[150px]">
-        <Label htmlFor="role-filter" className="sr-only">
-          Filter by role
-        </Label>
-        <Select
-          value={filters.role || "all"}
-          onValueChange={handleRoleChange}
-          disabled={isLoading}
-        >
-          <SelectTrigger id="role-filter">
-            <SelectValue placeholder="Role: All" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All roles</SelectItem>
-            <SelectItem value="admin">Admin</SelectItem>
-            <SelectItem value="lead">Lead</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="w-full sm:w-[150px]">
-        <Label htmlFor="status-filter" className="sr-only">
-          Filter by status
-        </Label>
-        <Select
-          value={filters.isActive === undefined 
-            ? "all" 
-            : filters.isActive ? "active" : "inactive"}
-          onValueChange={handleStatusChange}
-          disabled={isLoading}
-        >
-          <SelectTrigger id="status-filter">
-            <SelectValue placeholder="Status: All" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All status</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="inactive">Inactive</SelectItem>
-          </SelectContent>
-        </Select>
+        <Button type="submit" disabled={isLoading}>
+          Search
+        </Button>
+        {hasActiveFilters && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleClearFilters}
+            disabled={isLoading}
+          >
+            <X className="mr-2 h-4 w-4" />
+            Clear
+          </Button>
+        )}
+      </form>
+      
+      <div>
+        <div className="space-y-2">
+          <div className="font-medium">Role</div>
+          <RadioGroup 
+            value={role} 
+            onValueChange={(value) => setRole(value as "admin" | "lead" | undefined)}
+            className="flex gap-4"
+            disabled={isLoading}
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="admin" id="filter-admin" />
+              <Label htmlFor="filter-admin" className="cursor-pointer">Admin</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="lead" id="filter-lead" />
+              <Label htmlFor="filter-lead" className="cursor-pointer">Lead</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="" id="filter-all" />
+              <Label htmlFor="filter-all" className="cursor-pointer">All</Label>
+            </div>
+          </RadioGroup>
+        </div>
       </div>
     </div>
   );

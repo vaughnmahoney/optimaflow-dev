@@ -8,13 +8,11 @@ interface User {
   username: string;
   full_name: string;
   role: "admin" | "lead";
-  is_active: boolean;
   created_at: string;
 }
 
 interface UserFilters {
   role?: "admin" | "lead";
-  isActive?: boolean;
   search?: string;
 }
 
@@ -120,7 +118,6 @@ export function useUserManagement() {
     updates: {
       fullName?: string;
       role?: "admin" | "lead";
-      isActive?: boolean;
     }
   ) => {
     setIsLoading(true);
@@ -160,7 +157,7 @@ export function useUserManagement() {
     }
   };
 
-  const deactivateUser = async (userId: string) => {
+  const deleteUser = async (userId: string) => {
     setIsLoading(true);
     setError(null);
 
@@ -179,7 +176,7 @@ export function useUserManagement() {
 
       // Check if success property exists before accessing it
       if (response.data && response.data.success === false) {
-        throw new Error(response.data.error || "Failed to deactivate user");
+        throw new Error(response.data.error || "Failed to delete user");
       }
 
       return response.data.data;
@@ -187,7 +184,7 @@ export function useUserManagement() {
       const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
       setError(errorMessage);
       toast({
-        title: "Error deactivating user",
+        title: "Error deleting user",
         description: errorMessage,
         variant: "destructive",
       });
@@ -205,6 +202,6 @@ export function useUserManagement() {
     fetchUsers,
     createUser,
     updateUser,
-    deactivateUser,
+    deleteUser,
   };
 }

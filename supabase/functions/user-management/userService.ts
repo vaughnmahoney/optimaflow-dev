@@ -11,7 +11,6 @@ export interface UserCreateData {
 
 export interface UserListFilters {
   role?: "admin" | "lead";
-  isActive?: boolean;
   search?: string;
 }
 
@@ -19,7 +18,6 @@ export interface UserUpdateData {
   userId: string;
   fullName?: string;
   role?: "admin" | "lead";
-  isActive?: boolean;
 }
 
 // Handle user creation
@@ -62,7 +60,6 @@ export async function createUser(supabase: any, userData: UserCreateData): Promi
         id: newUser.user.id,
         full_name: fullName,
         role,
-        is_active: true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
@@ -100,15 +97,11 @@ export async function listUsers(
     // Start building the query
     let query = supabase
       .from("user_profiles")
-      .select("id, full_name, role, is_active, created_at, updated_at", { count: "exact" });
+      .select("id, full_name, role, created_at, updated_at", { count: "exact" });
 
     // Apply filters
     if (filters.role) {
       query = query.eq("role", filters.role);
-    }
-
-    if (filters.isActive !== undefined) {
-      query = query.eq("is_active", filters.isActive);
     }
 
     if (filters.search) {
@@ -171,7 +164,6 @@ export async function updateUser(supabase: any, userId: string, updates: any): P
 
   try {
     const updateData: any = {};
-    let needsAuthUpdate = false;
 
     // Prepare user_profiles update data
     if (updates.fullName !== undefined) {
@@ -180,11 +172,6 @@ export async function updateUser(supabase: any, userId: string, updates: any): P
 
     if (updates.role !== undefined) {
       updateData.role = updates.role;
-    }
-
-    if (updates.isActive !== undefined) {
-      updateData.is_active = updates.isActive;
-      needsAuthUpdate = true;
     }
 
     // Add updated_at timestamp
@@ -200,13 +187,6 @@ export async function updateUser(supabase: any, userId: string, updates: any): P
 
     if (profileError) {
       return createErrorResponse(`Error updating user profile: ${profileError.message}`);
-    }
-
-    // Update auth.users if needed (for inactive status)
-    if (needsAuthUpdate) {
-      await supabase.auth.admin.updateUserById(userId, {
-        ban_duration: updates.isActive ? "none" : "87600h", // If inactive, ban for 10 years (effectively permanent)
-      });
     }
 
     // Get username from email
@@ -225,39 +205,36 @@ export async function updateUser(supabase: any, userId: string, updates: any): P
   }
 }
 
-// Handle deactivating a user
-export async function deactivateUser(supabase: any, userId: string): Promise<Response> {
+// Handle deleting a user completely
+export async function deleteUser(supabase: any, userId: string): Promise<Response> {
   if (!userId) {
     return createErrorResponse("Missing userId");
   }
 
   try {
-    // We don't actually delete users, just deactivate them
-    const { data: updatedProfile, error: profileError } = await supabase
+    // First delete the user profile
+    const { error: profileError } = await supabase
       .from("user_profiles")
-      .update({
-        is_active: false,
-        updated_at: new Date().toISOString()
-      })
-      .eq("id", userId)
-      .select()
-      .single();
+      .delete()
+      .eq("id", userId);
 
     if (profileError) {
-      return createErrorResponse(`Error deactivating user: ${profileError.message}`);
+      return createErrorResponse(`Error deleting user profile: ${profileError.message}`);
     }
 
-    // Also ban the user in auth.users
-    await supabase.auth.admin.updateUserById(userId, {
-      ban_duration: "87600h", // Ban for 10 years (effectively permanent)
-    });
+    // Then delete the auth user
+    const { error: authError } = await supabase.auth.admin.deleteUser(userId);
+
+    if (authError) {
+      return createErrorResponse(`Error deleting auth user: ${authError.message}`);
+    }
 
     return createSuccessResponse({
-      message: "User successfully deactivated",
+      message: "User successfully deleted",
       userId
     });
   } catch (error) {
-    console.error("Error in deactivateUser:", error);
-    return createErrorResponse(`Error deactivating user: ${error.message}`);
+    console.error("Error in deleteUser:", error);
+    return createErrorResponse(`Error deleting user: ${error.message}`);
   }
 }
