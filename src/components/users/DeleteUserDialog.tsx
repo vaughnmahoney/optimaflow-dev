@@ -29,26 +29,39 @@ export function DeleteUserDialog({
   const { toast } = useToast();
 
   const handleDelete = async () => {
+    if (!isOpen) return; // Safeguard against calls when dialog is closed
     setIsSubmitting(true);
     
     try {
       await deleteUser(user.id);
+      
+      // Only proceed if we're still mounted and the dialog is still open
       toast({
         title: "User deleted",
         description: `User ${user.username} has been deleted successfully.`,
       });
+      
+      // First notify about successful deletion
       onUserDeleted();
-      onClose(); // Close the dialog after successful deletion
+      
+      // Then close the dialog
+      onClose();
     } catch (error) {
       // Error is already handled in the hook with toast
       console.error("Failed to delete user:", error);
-    } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false); // Reset submitting state on error
+    }
+  };
+
+  // Separate handler for cancel to avoid accidental submission
+  const handleCancel = () => {
+    if (!isSubmitting) {
+      onClose();
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={isSubmitting ? undefined : handleCancel}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="text-destructive">Delete User</DialogTitle>
@@ -62,7 +75,7 @@ export function DeleteUserDialog({
           <Button 
             type="button" 
             variant="outline" 
-            onClick={onClose}
+            onClick={handleCancel}
             disabled={isSubmitting}
           >
             Cancel

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -22,14 +22,42 @@ export function useUserManagement() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const isMounted = useRef(true);
+
+  // Track component mount state
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
+  // Safe state update functions that check if component is mounted
+  const safeSetUsers = (data: User[]) => {
+    if (isMounted.current) setUsers(data);
+  };
+
+  const safeSetTotalCount = (count: number) => {
+    if (isMounted.current) setTotalCount(count);
+  };
+
+  const safeSetIsLoading = (loading: boolean) => {
+    if (isMounted.current) setIsLoading(loading);
+  };
+
+  const safeSetError = (err: string | null) => {
+    if (isMounted.current) setError(err);
+  };
 
   const fetchUsers = async (
     page = 1,
     pageSize = 10,
     filters: UserFilters = {}
   ) => {
-    setIsLoading(true);
-    setError(null);
+    if (!isMounted.current) return;
+    
+    safeSetIsLoading(true);
+    safeSetError(null);
 
     try {
       const { data: sessionData } = await supabase.auth.getSession();
@@ -46,6 +74,9 @@ export function useUserManagement() {
         },
       });
 
+      // Check if component is still mounted before processing response
+      if (!isMounted.current) return;
+
       // Check if response or response.data is null or undefined
       if (!response || !response.data) {
         throw new Error("Invalid response from server");
@@ -56,18 +87,22 @@ export function useUserManagement() {
         throw new Error(response.data.error || "Failed to fetch users");
       }
 
-      setUsers(response.data.data || []);
-      setTotalCount(response.data.totalCount || 0);
+      safeSetUsers(response.data.data || []);
+      safeSetTotalCount(response.data.totalCount || 0);
     } catch (err) {
+      if (!isMounted.current) return;
+      
       const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
-      setError(errorMessage);
+      safeSetError(errorMessage);
       toast({
         title: "Error fetching users",
         description: errorMessage,
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      if (isMounted.current) {
+        safeSetIsLoading(false);
+      }
     }
   };
 
@@ -77,8 +112,10 @@ export function useUserManagement() {
     fullName: string;
     role: "admin" | "lead";
   }) => {
-    setIsLoading(true);
-    setError(null);
+    if (!isMounted.current) return null;
+    
+    safeSetIsLoading(true);
+    safeSetError(null);
 
     try {
       const response = await supabase.functions.invoke("user-management", {
@@ -87,6 +124,8 @@ export function useUserManagement() {
           userData,
         },
       });
+
+      if (!isMounted.current) return null;
 
       // Check if response or response.data is null or undefined
       if (!response || !response.data) {
@@ -100,8 +139,10 @@ export function useUserManagement() {
 
       return response.data.data;
     } catch (err) {
+      if (!isMounted.current) return null;
+      
       const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
-      setError(errorMessage);
+      safeSetError(errorMessage);
       toast({
         title: "Error creating user",
         description: errorMessage,
@@ -109,7 +150,9 @@ export function useUserManagement() {
       });
       throw err;
     } finally {
-      setIsLoading(false);
+      if (isMounted.current) {
+        safeSetIsLoading(false);
+      }
     }
   };
 
@@ -120,8 +163,10 @@ export function useUserManagement() {
       role?: "admin" | "lead";
     }
   ) => {
-    setIsLoading(true);
-    setError(null);
+    if (!isMounted.current) return null;
+    
+    safeSetIsLoading(true);
+    safeSetError(null);
 
     try {
       const response = await supabase.functions.invoke("user-management", {
@@ -131,6 +176,8 @@ export function useUserManagement() {
           updates,
         },
       });
+
+      if (!isMounted.current) return null;
 
       // Check if response or response.data is null or undefined
       if (!response || !response.data) {
@@ -144,8 +191,10 @@ export function useUserManagement() {
 
       return response.data.data;
     } catch (err) {
+      if (!isMounted.current) return null;
+      
       const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
-      setError(errorMessage);
+      safeSetError(errorMessage);
       toast({
         title: "Error updating user",
         description: errorMessage,
@@ -153,13 +202,17 @@ export function useUserManagement() {
       });
       throw err;
     } finally {
-      setIsLoading(false);
+      if (isMounted.current) {
+        safeSetIsLoading(false);
+      }
     }
   };
 
   const deleteUser = async (userId: string) => {
-    setIsLoading(true);
-    setError(null);
+    if (!isMounted.current) return null;
+    
+    safeSetIsLoading(true);
+    safeSetError(null);
 
     try {
       const response = await supabase.functions.invoke("user-management", {
@@ -168,6 +221,8 @@ export function useUserManagement() {
           userId,
         },
       });
+
+      if (!isMounted.current) return null;
 
       // Check if response or response.data is null or undefined
       if (!response || !response.data) {
@@ -181,8 +236,10 @@ export function useUserManagement() {
 
       return response.data.data;
     } catch (err) {
+      if (!isMounted.current) return null;
+      
       const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
-      setError(errorMessage);
+      safeSetError(errorMessage);
       toast({
         title: "Error deleting user",
         description: errorMessage,
@@ -190,7 +247,9 @@ export function useUserManagement() {
       });
       throw err;
     } finally {
-      setIsLoading(false);
+      if (isMounted.current) {
+        safeSetIsLoading(false);
+      }
     }
   };
 

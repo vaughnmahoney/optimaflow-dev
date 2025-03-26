@@ -38,9 +38,12 @@ export function EditUserDialog({
 
   // Update form when user prop changes
   useEffect(() => {
-    setFullName(user.full_name);
-    setRole(user.role);
-  }, [user]);
+    if (isOpen) {
+      setFullName(user.full_name);
+      setRole(user.role);
+      setErrors({});
+    }
+  }, [user, isOpen]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -56,7 +59,7 @@ export function EditUserDialog({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) {
+    if (!isOpen || !validateForm()) {
       return;
     }
     
@@ -68,17 +71,32 @@ export function EditUserDialog({
         role,
       });
       
+      toast({
+        title: "User updated",
+        description: `User ${user.username} has been updated successfully.`,
+      });
+      
+      // First notify about successful update
       onUserUpdated();
+      
+      // Then close the dialog
+      onClose();
     } catch (error) {
       // Error is already handled in the hook with toast
       console.error("Failed to update user:", error);
-    } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false); // Reset submitting state on error
+    }
+  };
+
+  // Separate handler for cancel to avoid accidental submission
+  const handleCancel = () => {
+    if (!isSubmitting) {
+      onClose();
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={isSubmitting ? undefined : handleCancel}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Edit User: {user.username}</DialogTitle>
@@ -125,7 +143,7 @@ export function EditUserDialog({
             <Button 
               type="button" 
               variant="outline" 
-              onClick={onClose}
+              onClick={handleCancel}
               disabled={isSubmitting}
             >
               Cancel
