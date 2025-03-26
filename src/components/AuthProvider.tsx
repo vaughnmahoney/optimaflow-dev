@@ -21,8 +21,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Determine user role based on email
-  const determineUserRole = (email: string | undefined) => {
+  // Determine fallback user role based on email
+  const determineUserRoleFromEmail = (email: string | undefined) => {
     if (!email) return "";
     
     if (email.includes("lead")) {
@@ -31,6 +31,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return "admin";
     } else {
       return "user";
+    }
+  };
+
+  // Fetch user role from database
+  const fetchUserRole = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .select("role")
+        .eq("id", userId)
+        .single();
+
+      if (error) {
+        console.error("Error fetching user role:", error);
+        return null;
+      }
+
+      return data?.role || null;
+    } catch (error) {
+      console.error("Exception fetching user role:", error);
+      return null;
     }
   };
 
@@ -45,16 +66,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Update user role when session changes
+  useEffect(() => {
+    const updateUserRole = async () => {
+      if (session?.user?.id) {
+        // First try to get role from database
+        const dbRole = await fetchUserRole(session.user.id);
+        
+        if (dbRole) {
+          setUserRole(dbRole);
+        } else {
+          // Fallback to email-based role
+          setUserRole(determineUserRoleFromEmail(session.user.email));
+        }
+      } else {
+        setUserRole("");
+      }
+    };
+
+    updateUserRole();
+  }, [session]);
+
   useEffect(() => {
     try {
       // Get initial session
       supabase.auth.getSession().then(({ data: { session } }) => {
         setSession(session);
-        
-        if (session?.user?.email) {
-          setUserRole(determineUserRole(session.user.email));
-        }
-        
         setLoading(false);
         handleNavigation(!!session);
       }).catch(error => {
@@ -67,13 +104,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         data: { subscription },
       } = supabase.auth.onAuthStateChange((_event, session) => {
         setSession(session);
-        
-        if (session?.user?.email) {
-          setUserRole(determineUserRole(session.user.email));
-        } else {
-          setUserRole("");
-        }
-        
         setLoading(false);
         handleNavigation(!!session);
       });
