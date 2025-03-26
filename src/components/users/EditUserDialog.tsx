@@ -76,11 +76,13 @@ export function EditUserDialog({
         description: `User ${user.username} has been updated successfully.`,
       });
       
-      // First notify about successful update
-      onUserUpdated();
-      
-      // Then close the dialog
+      // Close the dialog first
       onClose();
+      
+      // Then notify about successful update
+      setTimeout(() => {
+        onUserUpdated();
+      }, 0);
     } catch (error) {
       // Error is already handled in the hook with toast
       console.error("Failed to update user:", error);

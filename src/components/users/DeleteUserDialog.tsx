@@ -35,17 +35,19 @@ export function DeleteUserDialog({
     try {
       await deleteUser(user.id);
       
-      // Only proceed if we're still mounted and the dialog is still open
+      // Only proceed if the dialog is still open
       toast({
         title: "User deleted",
         description: `User ${user.username} has been deleted successfully.`,
       });
       
-      // First notify about successful deletion
-      onUserDeleted();
-      
-      // Then close the dialog
+      // Close the dialog first
       onClose();
+      
+      // Then notify about successful deletion after a tick
+      setTimeout(() => {
+        onUserDeleted();
+      }, 0);
     } catch (error) {
       // Error is already handled in the hook with toast
       console.error("Failed to delete user:", error);
