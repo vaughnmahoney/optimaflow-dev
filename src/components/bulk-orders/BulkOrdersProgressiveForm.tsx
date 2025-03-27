@@ -7,9 +7,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useBulkOrdersProgressiveFetch } from "@/hooks/useBulkOrdersProgressiveFetch";
 import { WorkOrderContent } from "@/components/workorders/WorkOrderContent";
 import { Badge } from "@/components/ui/badge";
-import { Package, Upload } from "lucide-react";
+import { Package, Upload, AlertCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useBulkOrderImport } from "@/hooks/bulk-orders/useBulkOrderImport";
+import { Button } from "@/components/ui/button";
 
 export const BulkOrdersProgressiveForm = () => {
   const {
@@ -49,6 +50,7 @@ export const BulkOrdersProgressiveForm = () => {
 
   // Tracking state for auto-save
   const [hasTriggeredAutoSave, setHasTriggeredAutoSave] = useState(false);
+  const [manualSaveEnabled, setManualSaveEnabled] = useState(false);
   
   // Calculate if bulk fetch has started
   const isFetchStarted = progressState.currentPage > 0 || progressState.isComplete;
@@ -63,31 +65,45 @@ export const BulkOrdersProgressiveForm = () => {
     all: rawOrders ? rawOrders.length : 0
   };
 
+  // Handle manual import
+  const handleManualImport = async () => {
+    if (rawOrders && rawOrders.length > 0) {
+      console.log(`Manually importing ${rawOrders.length} orders to database...`);
+      await importOrders(rawOrders);
+    }
+  };
+
   // Auto-save to database when fetch is complete and orders are available
   useEffect(() => {
     const autoSaveToDatabase = async () => {
-      // Only trigger auto-save when:
-      // 1. Fetch is complete
+      // Check if auto-save should be triggered - need all these conditions:
+      // 1. Fetch is truly complete (progress state shows complete)
       // 2. We have orders to save
       // 3. Not currently importing
       // 4. No previous import attempt
       // 5. Haven't already triggered auto-save
+      // 6. Manual save mode not enabled
+
       if (
         progressState.isComplete && 
         rawOrders && 
         rawOrders.length > 0 && 
         !isImporting && 
         !importResult && 
-        !hasTriggeredAutoSave
+        !hasTriggeredAutoSave &&
+        !manualSaveEnabled
       ) {
-        console.log(`Auto-saving ${rawOrders.length} orders to database...`);
-        setHasTriggeredAutoSave(true);
-        await importOrders(rawOrders);
+        // Add a slight delay to ensure data is fully loaded
+        setTimeout(async () => {
+          console.log(`Auto-saving ${rawOrders.length} orders to database...`);
+          setHasTriggeredAutoSave(true);
+          await importOrders(rawOrders);
+        }, 1000);
       }
     };
     
     autoSaveToDatabase();
-  }, [progressState.isComplete, rawOrders, isImporting, importResult, importOrders, hasTriggeredAutoSave]);
+  }, [progressState.isComplete, rawOrders, isImporting, importResult, importOrders, hasTriggeredAutoSave, manualSaveEnabled]);
 
   // Reset auto-save trigger when starting a new fetch
   useEffect(() => {
@@ -116,6 +132,16 @@ export const BulkOrdersProgressiveForm = () => {
               />
               
               <div className="ml-auto flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setManualSaveEnabled(!manualSaveEnabled)}
+                  className={manualSaveEnabled ? "border-amber-500 text-amber-700" : ""}
+                >
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  {manualSaveEnabled ? "Auto-save disabled" : "Auto-save enabled"}
+                </Button>
+                
                 <FetchButton 
                   isLoading={isLoading} 
                   onFetch={handleFetchOrders}
@@ -169,6 +195,19 @@ export const BulkOrdersProgressiveForm = () => {
                   <span>Duplicates: {importResult.duplicates}</span>
                   {importResult.errors > 0 && <span>Errors: {importResult.errors}</span>}
                 </div>
+              </div>
+            )}
+            
+            {/* Manual Import Button - show when fetch is complete and manual save mode is enabled */}
+            {progressState.isComplete && manualSaveEnabled && rawOrders && rawOrders.length > 0 && !isImporting && (
+              <div className="mt-4 flex justify-end">
+                <Button 
+                  onClick={handleManualImport} 
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Import {rawOrders.length} Orders to Database
+                </Button>
               </div>
             )}
           </div>

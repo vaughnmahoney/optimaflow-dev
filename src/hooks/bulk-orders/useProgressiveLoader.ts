@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -58,6 +57,9 @@ export const useProgressiveLoader = (options: ProgressiveLoaderOptions = {}) => 
     endDate: string;
     validStatuses: string[];
   } | null>(null);
+  
+  // Track whether all pages have been processed
+  const [hasMorePages, setHasMorePages] = useState<boolean>(true);
 
   const reset = () => {
     setProgressState({
@@ -75,6 +77,7 @@ export const useProgressiveLoader = (options: ProgressiveLoaderOptions = {}) => 
     setAllData([]);
     setRetryCount(0);
     setLastRequest(null);
+    setHasMorePages(true);
   };
 
   // Function to pause loading
@@ -183,6 +186,21 @@ export const useProgressiveLoader = (options: ProgressiveLoaderOptions = {}) => 
       filteringMetadata 
     } = data;
 
+    console.log("Batch response metadata:", {
+      ordersInBatch: orders.length,
+      continuationToken: continuationToken ? "Present" : "None",
+      isComplete,
+      currentPage,
+      totalPages
+    });
+
+    // Determine if there are more pages to fetch
+    // Only mark as no more pages if we have an explicit indication (no token AND isComplete flag)
+    if (!continuationToken && isComplete) {
+      setHasMorePages(false);
+      console.log("No more pages to fetch - confirmed by API");
+    }
+
     // Add new orders to our collection
     setAllData(prev => {
       const combined = [...prev, ...orders];
@@ -209,7 +227,8 @@ export const useProgressiveLoader = (options: ProgressiveLoaderOptions = {}) => 
       totalOrders: newTotalOrders,
       progress: newProgress,
       continuationToken,
-      isComplete,
+      // Only mark as complete if we've confirmed there are no more pages
+      isComplete: !hasMorePages,
       error: null
     }));
 
@@ -223,12 +242,12 @@ export const useProgressiveLoader = (options: ProgressiveLoaderOptions = {}) => 
         totalOrders: newTotalOrders,
         progress: newProgress,
         continuationToken,
-        isComplete
+        isComplete: !hasMorePages
       });
     }
 
     // If complete, call onComplete callback
-    if (isComplete) {
+    if (!hasMorePages) {
       setProgressState(prev => ({ 
         ...prev, 
         isLoading: false, 
@@ -236,11 +255,18 @@ export const useProgressiveLoader = (options: ProgressiveLoaderOptions = {}) => 
         progress: 100 // Ensure we show 100% when complete
       }));
       
-      if (onComplete) onComplete([...allData, ...orders]);
-      toast.success(`Completed loading ${newProcessedOrders} orders`);
+      // Wait for all data to be merged before calling onComplete
+      setTimeout(() => {
+        if (onComplete) {
+          const finalData = [...allData, ...orders];
+          console.log(`Calling onComplete with ${finalData.length} total orders`);
+          onComplete(finalData);
+        }
+        toast.success(`Completed loading ${newProcessedOrders} orders`);
+      }, 500);
     } 
     // Otherwise schedule next batch if not paused
-    else if (!progressState.isPaused) {
+    else if (!progressState.isPaused && continuationToken) {
       setTimeout(() => {
         fetchNextBatch(startDate, endDate, validStatuses, continuationToken);
       }, 300); // Small delay to prevent rate limiting
@@ -301,17 +327,18 @@ export const useProgressiveLoader = (options: ProgressiveLoaderOptions = {}) => 
     const { isLoading, isPaused, isComplete, error, continuationToken } = progressState;
     
     // If we were loading, not paused or complete, have a continuation token and no error, continue loading
-    if (!isLoading && !isPaused && !isComplete && !error && continuationToken && lastRequest) {
+    if (!isLoading && !isPaused && !isComplete && !error && continuationToken && lastRequest && hasMorePages) {
       const { startDate, endDate, validStatuses } = lastRequest;
       
       // Small delay to prevent rate limiting
       const timeoutId = setTimeout(() => {
+        console.log("Auto-continuing to next batch with token:", continuationToken ? "Present" : "None");
         fetchNextBatch(startDate, endDate, validStatuses, continuationToken);
       }, 300);
       
       return () => clearTimeout(timeoutId);
     }
-  }, [progressState, lastRequest]);
+  }, [progressState, lastRequest, hasMorePages]);
 
   return {
     state: progressState,
