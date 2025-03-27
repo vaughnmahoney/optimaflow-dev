@@ -37,11 +37,14 @@ export function UserDeleteDialog({
     try {
       await deleteUser(user.id);
       
-      // First close the dialog
-      onClose();
-      
-      // Then notify parent of success (after dialog is closed)
+      // First notify parent of success
       onUserDeleted();
+      
+      // Then close the dialog with a slight delay to avoid UI glitches
+      // This prevents React state update conflicts
+      setTimeout(() => {
+        if (isOpen) onClose();
+      }, 0);
     } catch (error) {
       console.error("Failed to delete user:", error);
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
@@ -62,7 +65,9 @@ export function UserDeleteDialog({
   return (
     <Dialog 
       open={isOpen} 
-      onOpenChange={handleClose}
+      onOpenChange={(open) => {
+        if (!open && !isSubmitting) handleClose();
+      }}
     >
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>

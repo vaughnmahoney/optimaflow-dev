@@ -74,11 +74,14 @@ export function UserEditDialog({
         role,
       });
       
-      // First close the dialog
-      onClose();
-      
-      // Then notify parent about the update (after dialog is closed)
+      // First notify parent about the update
       onUserUpdated();
+      
+      // Then close the dialog with a slight delay to avoid UI glitches
+      // This prevents React state update conflicts
+      setTimeout(() => {
+        if (isOpen) onClose();
+      }, 0);
     } catch (error) {
       console.error("Failed to update user:", error);
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
@@ -98,7 +101,9 @@ export function UserEditDialog({
   return (
     <Dialog 
       open={isOpen} 
-      onOpenChange={handleClose}
+      onOpenChange={(open) => {
+        if (!open && !isSubmitting) handleClose();
+      }}
     >
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
