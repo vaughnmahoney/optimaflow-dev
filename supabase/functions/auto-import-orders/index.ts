@@ -92,10 +92,80 @@ async function logExecution(result: any): Promise<void> {
   }
 }
 
+// Get the latest execution log
+async function getLatestExecutionLog(): Promise<any> {
+  try {
+    const { data, error } = await adminClient
+      .from('auto_import_logs')
+      .select('*')
+      .order('execution_time', { ascending: false })
+      .limit(1);
+      
+    if (error) {
+      throw error;
+    }
+    
+    return { success: true, data: data?.[0] || null };
+  } catch (error) {
+    console.error('Error fetching latest execution log:', error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : String(error) 
+    };
+  }
+}
+
+// Calculate next scheduled run time
+function getNextScheduledRunTime(): string {
+  const now = new Date();
+  // Set the hour to the next hour and minutes/seconds to 0
+  const nextHour = new Date(now);
+  nextHour.setHours(now.getHours() + 1, 0, 0, 0);
+  
+  return nextHour.toISOString();
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+  
+  // Check if this is a status request
+  const url = new URL(req.url);
+  if (url.pathname.endsWith('/status')) {
+    try {
+      // Get the latest execution log
+      const latestLog = await getLatestExecutionLog();
+      
+      // Calculate next scheduled run
+      const nextRun = getNextScheduledRunTime();
+      
+      // Prepare the status response
+      const statusResponse = {
+        success: true,
+        lastRun: latestLog.success ? latestLog.data : null,
+        nextScheduledRun: nextRun,
+        scheduledInterval: 'Hourly',
+      };
+      
+      return new Response(
+        JSON.stringify(statusResponse),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    } catch (error) {
+      console.error('Error in status endpoint:', error);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: error instanceof Error ? error.message : String(error) 
+        }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
   }
   
   try {

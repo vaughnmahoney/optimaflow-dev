@@ -9,6 +9,7 @@ import { WorkOrderInfoCard } from "@/components/workorders/InfoCard";
 import { BulkOrdersInfoCard } from "@/components/bulk-orders/BulkOrdersInfoCard";
 import { BulkOrdersProgressiveForm } from "@/components/bulk-orders/BulkOrdersProgressiveForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AutoImportStatus } from "@/components/bulk-orders/AutoImportStatus";
 
 const BulkOrdersTest = () => {
   // Use the adapter to get access to raw data for the raw view tab
@@ -22,6 +23,9 @@ const BulkOrdersTest = () => {
       <div className="space-y-6">
         {/* Work Order Info Card */}
         <WorkOrderInfoCard />
+        
+        {/* Auto Import Status Card */}
+        <AutoImportStatus className="bg-white" />
         
         {/* Bulk Orders Specific Instructions */}
         <BulkOrdersInfoCard />
