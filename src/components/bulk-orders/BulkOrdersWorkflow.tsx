@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useBulkOrdersAdapter } from "@/hooks/useBulkOrdersAdapter";
 import { WorkOrderContent } from "@/components/workorders/WorkOrderContent";
@@ -86,7 +87,9 @@ export const BulkOrdersWorkflow = () => {
                   processedOrders: dataFlowLogging.statusFilteredOrders || 0,
                   totalOrders: dataFlowLogging.totalOrdersFromAPI || 0,
                   isComplete: false,
-                  error: null
+                  error: null,
+                  continuationToken: null, // Add the missing property
+                  isPaused: false // Add the missing property
                 }}
                 onPause={() => {}}
                 onResume={() => {}}
