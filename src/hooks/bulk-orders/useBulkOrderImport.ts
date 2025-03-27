@@ -135,7 +135,6 @@ export const useBulkOrderImport = () => {
       return null;
     } finally {
       setIsImporting(false);
-      setImportProgress({ current: 0, total: 0, percentage: 0 });
     }
   };
 
