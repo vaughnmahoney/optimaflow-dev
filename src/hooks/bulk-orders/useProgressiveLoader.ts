@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -60,6 +61,9 @@ export const useProgressiveLoader = (options: ProgressiveLoaderOptions = {}) => 
   
   // Track whether all pages have been processed
   const [hasMorePages, setHasMorePages] = useState<boolean>(true);
+  
+  // Add a flag to track when we're processing the final batch
+  const [processingFinalBatch, setProcessingFinalBatch] = useState(false);
 
   const reset = () => {
     setProgressState({
@@ -78,6 +82,7 @@ export const useProgressiveLoader = (options: ProgressiveLoaderOptions = {}) => 
     setRetryCount(0);
     setLastRequest(null);
     setHasMorePages(true);
+    setProcessingFinalBatch(false);
   };
 
   // Function to pause loading
@@ -199,6 +204,9 @@ export const useProgressiveLoader = (options: ProgressiveLoaderOptions = {}) => 
     if (!continuationToken && isComplete) {
       setHasMorePages(false);
       console.log("No more pages to fetch - confirmed by API");
+      
+      // Mark that we're processing the final batch
+      setProcessingFinalBatch(true);
     }
 
     // Add new orders to our collection
@@ -228,8 +236,7 @@ export const useProgressiveLoader = (options: ProgressiveLoaderOptions = {}) => 
       progress: newProgress,
       continuationToken,
       // Only mark as complete if we've confirmed there are no more pages
-      isComplete: !hasMorePages,
-      error: null
+      isComplete: !hasMorePages && processingFinalBatch
     }));
 
     // Call progress callback if provided
@@ -242,26 +249,30 @@ export const useProgressiveLoader = (options: ProgressiveLoaderOptions = {}) => 
         totalOrders: newTotalOrders,
         progress: newProgress,
         continuationToken,
-        isComplete: !hasMorePages
+        isComplete: !hasMorePages && processingFinalBatch
       });
     }
 
-    // If complete, call onComplete callback
-    if (!hasMorePages) {
-      setProgressState(prev => ({ 
-        ...prev, 
-        isLoading: false, 
-        isComplete: true,
-        progress: 100 // Ensure we show 100% when complete
-      }));
-      
-      // Wait for all data to be merged before calling onComplete
+    // If no more pages and this is the final batch, we need to mark complete
+    // and call onComplete with a slight delay to ensure all data is processed
+    if (!hasMorePages && processingFinalBatch) {
+      // Use setTimeout to ensure state updates have propagated
       setTimeout(() => {
+        // Mark as complete and stop loading
+        setProgressState(prev => ({ 
+          ...prev, 
+          isLoading: false, 
+          isComplete: true,
+          progress: 100 // Ensure we show 100% when complete
+        }));
+        
+        // Call onComplete with all collected data
         if (onComplete) {
           const finalData = [...allData, ...orders];
           console.log(`Calling onComplete with ${finalData.length} total orders`);
           onComplete(finalData);
         }
+        
         toast.success(`Completed loading ${newProcessedOrders} orders`);
       }, 500);
     } 
@@ -339,6 +350,29 @@ export const useProgressiveLoader = (options: ProgressiveLoaderOptions = {}) => 
       return () => clearTimeout(timeoutId);
     }
   }, [progressState, lastRequest, hasMorePages]);
+
+  // Fix for getting stuck on last batch - ensure we properly complete if we have no more pages
+  useEffect(() => {
+    if (!hasMorePages && processingFinalBatch && progressState.isLoading) {
+      // If we're processing the final batch and the loader is still running,
+      // ensure we properly finish the loading process
+      setTimeout(() => {
+        console.log("Finalizing last batch processing...");
+        setProgressState(prev => ({
+          ...prev,
+          isLoading: false,
+          isComplete: true,
+          progress: 100
+        }));
+        
+        // Notify that loading is complete
+        if (onComplete) {
+          console.log(`Finalizing with ${allData.length} total orders`);
+          onComplete(allData);
+        }
+      }, 1000);
+    }
+  }, [hasMorePages, processingFinalBatch, progressState.isLoading, allData, onComplete]);
 
   return {
     state: progressState,

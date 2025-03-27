@@ -34,7 +34,8 @@ export const useBulkOrdersProgressiveFetch = () => {
     currentBatch: 0,
     totalBatches: 0,
     successfulBatches: 0,
-    failedBatches: 0
+    failedBatches: 0,
+    totalOrdersProcessed: 0
   });
 
   // Setup the progressive loader
@@ -55,15 +56,18 @@ export const useBulkOrdersProgressiveFetch = () => {
         batchStats: {
           totalBatches: state.totalPages || 0,
           completedBatches: state.currentPage,
-          failedBatches: state.error ? 1 : 0
+          failedBatches: state.error ? 1 : 0,
+          successfulBatches: state.error ? state.currentPage - 1 : state.currentPage,
+          totalOrdersProcessed: state.processedOrders
         }
       });
 
       setProgressStats({
         currentBatch: state.currentPage,
         totalBatches: state.totalPages || 0,
-        successfulBatches: state.currentPage,
-        failedBatches: state.error ? 1 : 0
+        successfulBatches: state.error ? state.currentPage - 1 : state.currentPage,
+        failedBatches: state.error ? 1 : 0,
+        totalOrdersProcessed: state.processedOrders
       });
     },
     onComplete: (allData: any[]) => {
