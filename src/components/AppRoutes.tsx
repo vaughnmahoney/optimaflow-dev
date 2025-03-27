@@ -1,6 +1,7 @@
+
 import React from "react";
 import { Routes, Route, BrowserRouter } from "react-router-dom";
-import { Home } from "@/pages/Home";
+import { Home } from "@/pages/Index";
 import { WorkOrders } from "@/pages/WorkOrders";
 import BulkOrdersTest from "@/pages/BulkOrdersTest";
 import MaterialsRequest from "@/pages/MaterialsRequest";
