@@ -145,7 +145,7 @@ export const BulkOrdersProgressiveForm = () => {
       )}
       
       {/* Display a message when no orders have been fetched */}
-      {!isLoading && rawOrders && rawOrders.length === 0 && !progressState.isComplete && (
+      {!isLoading && (!rawOrders || rawOrders.length === 0) && !progressState.isComplete && (
         <div className="bg-slate-50 border rounded-md p-8 text-center">
           <h3 className="text-lg font-medium text-slate-800 mb-2">No orders loaded</h3>
           <p className="text-slate-600 mb-4">Select a date range and click "Fetch Orders" to retrieve work orders.</p>

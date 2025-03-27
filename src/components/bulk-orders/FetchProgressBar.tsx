@@ -60,6 +60,9 @@ export const FetchProgressBar = ({
     return "text-gray-700 bg-gray-50";
   };
 
+  // Ensure progress is capped at 100%
+  const safeProgress = Math.min(progress, 100);
+
   return (
     <Card className="bg-white border">
       <CardContent className="pt-6">
@@ -82,13 +85,13 @@ export const FetchProgressBar = ({
             </div>
             <div>
               <div className="text-gray-500 mb-1">Progress</div>
-              <div className="font-medium">{Math.round(progress)}%</div>
+              <div className="font-medium">{Math.round(safeProgress)}%</div>
             </div>
           </div>
 
           {/* Progress bar */}
           <div>
-            <Progress value={progress} className="h-2" />
+            <Progress value={safeProgress} className="h-2" />
           </div>
 
           {/* Action buttons */}

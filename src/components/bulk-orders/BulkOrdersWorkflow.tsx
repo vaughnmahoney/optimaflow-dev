@@ -88,8 +88,8 @@ export const BulkOrdersWorkflow = () => {
                   totalOrders: dataFlowLogging.totalOrdersFromAPI || 0,
                   isComplete: false,
                   error: null,
-                  continuationToken: null, // Add the missing property
-                  isPaused: false // Add the missing property
+                  continuationToken: null,
+                  isPaused: false
                 }}
                 onPause={() => {}}
                 onResume={() => {}}

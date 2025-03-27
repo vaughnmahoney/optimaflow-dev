@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -172,19 +173,41 @@ export const useProgressiveLoader = (options: ProgressiveLoaderOptions = {}) => 
     endDate: string,
     validStatuses: string[]
   ) => {
-    const { orders = [], totalOrders, currentPage, totalPages, continuationToken, isComplete = false } = data;
+    const { 
+      orders = [], 
+      totalOrders, 
+      currentPage, 
+      totalPages, 
+      continuationToken, 
+      isComplete = false,
+      filteringMetadata 
+    } = data;
 
     // Add new orders to our collection
-    setAllData(prev => [...prev, ...orders]);
+    setAllData(prev => {
+      const combined = [...prev, ...orders];
+      console.log(`Combined ${prev.length} existing orders with ${orders.length} new orders = ${combined.length} total`);
+      return combined;
+    });
+
+    // Update total orders count if provided
+    const estimatedTotalOrders = totalOrders || 
+      (filteringMetadata?.unfilteredOrderCount ? filteringMetadata.unfilteredOrderCount : null);
+
+    // Calculate progress - ensure we don't exceed 100%
+    const newProcessedOrders = allData.length + orders.length;
+    const newTotalOrders = estimatedTotalOrders || newProcessedOrders;
+    const newProgress = newTotalOrders > 0 ? 
+      Math.min((newProcessedOrders / newTotalOrders) * 100, 100) : 0;
 
     // Update progress state
     setProgressState(prev => ({
       ...prev,
       currentPage: currentPage || prev.currentPage + 1,
       totalPages: totalPages || prev.totalPages,
-      processedOrders: prev.processedOrders + orders.length,
-      totalOrders: totalOrders || prev.totalOrders,
-      progress: totalOrders ? ((prev.processedOrders + orders.length) / totalOrders) * 100 : prev.progress,
+      processedOrders: newProcessedOrders,
+      totalOrders: newTotalOrders,
+      progress: newProgress,
       continuationToken,
       isComplete,
       error: null
@@ -196,11 +219,9 @@ export const useProgressiveLoader = (options: ProgressiveLoaderOptions = {}) => 
         ...progressState,
         currentPage: currentPage || progressState.currentPage + 1,
         totalPages: totalPages || progressState.totalPages,
-        processedOrders: progressState.processedOrders + orders.length,
-        totalOrders: totalOrders || progressState.totalOrders,
-        progress: totalOrders 
-          ? ((progressState.processedOrders + orders.length) / totalOrders) * 100 
-          : progressState.progress,
+        processedOrders: newProcessedOrders,
+        totalOrders: newTotalOrders,
+        progress: newProgress,
         continuationToken,
         isComplete
       });
@@ -208,9 +229,15 @@ export const useProgressiveLoader = (options: ProgressiveLoaderOptions = {}) => 
 
     // If complete, call onComplete callback
     if (isComplete) {
-      setProgressState(prev => ({ ...prev, isLoading: false, isComplete: true }));
+      setProgressState(prev => ({ 
+        ...prev, 
+        isLoading: false, 
+        isComplete: true,
+        progress: 100 // Ensure we show 100% when complete
+      }));
+      
       if (onComplete) onComplete([...allData, ...orders]);
-      toast.success(`Completed loading ${progressState.processedOrders + orders.length} orders`);
+      toast.success(`Completed loading ${newProcessedOrders} orders`);
     } 
     // Otherwise schedule next batch if not paused
     else if (!progressState.isPaused) {
