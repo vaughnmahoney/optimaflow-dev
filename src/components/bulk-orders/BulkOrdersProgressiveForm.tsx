@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useBulkOrdersProgressiveFetch } from "@/hooks/useBulkOrdersProgressiveFetch";
 import { WorkOrderContent } from "@/components/workorders/WorkOrderContent";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, Clock, Info, Package } from "lucide-react";
+import { Package } from "lucide-react";
 
 export const BulkOrdersProgressiveForm = () => {
   const {
@@ -29,9 +29,6 @@ export const BulkOrdersProgressiveForm = () => {
     
     // Response data
     rawOrders,
-    
-    // Stats and diagnostics
-    dataFlowLogging,
     
     // Actions
     handleFetchOrders,
@@ -93,52 +90,18 @@ export const BulkOrdersProgressiveForm = () => {
         </CardContent>
       </Card>
       
-      {/* Processing stats section (only show when data is loading/loaded) */}
-      {isFetchStarted && (
+      {/* Simplified stats section - only show when fetching is complete */}
+      {progressState.isComplete && rawOrders && rawOrders.length > 0 && (
         <Card className="bg-slate-50">
           <CardContent className="py-4">
-            <div className="flex flex-wrap gap-4 items-center">
-              <div className="flex items-center gap-2">
-                <Package className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">
-                  <span className="font-medium">Total Orders: </span>
-                  <Badge variant="outline" className="bg-white ml-1">
-                    {progressState.totalOrders || 'Loading...'}
-                  </Badge>
-                </span>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">
-                  <span className="font-medium">Processed: </span>
-                  <Badge variant="outline" className="bg-white ml-1">
-                    {progressState.processedOrders}
-                  </Badge>
-                </span>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">
-                  <span className="font-medium">Current Batch: </span>
-                  <Badge variant="outline" className="bg-white ml-1">
-                    {progressState.currentPage}/{progressState.totalPages || '?'}
-                  </Badge>
-                </span>
-              </div>
-              
-              {rawOrders && rawOrders.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <Info className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">
-                    <span className="font-medium">Ready for Review: </span>
-                    <Badge variant="outline" className="bg-green-50 text-green-700 ml-1">
-                      {rawOrders.length}
-                    </Badge>
-                  </span>
-                </div>
-              )}
+            <div className="flex items-center gap-2">
+              <Package className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm">
+                <span className="font-medium">Filtered Orders: </span>
+                <Badge variant="outline" className="bg-green-50 text-green-700 ml-1">
+                  {rawOrders.length}
+                </Badge>
+              </span>
             </div>
           </CardContent>
         </Card>
