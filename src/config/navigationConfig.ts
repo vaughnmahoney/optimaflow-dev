@@ -1,3 +1,4 @@
+
 import {
   LayoutDashboard,
   CheckCircle,
@@ -115,8 +116,8 @@ export const NavigationConfig = [
   },
   {
     title: "Bulk Orders (Progressive)",
-    href: "/bulk-orders-progressive",
-    icon: "Package",
+    url: "/bulk-orders-progressive",
+    icon: Package,
     items: [],
   },
 ];
