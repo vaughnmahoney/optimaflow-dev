@@ -6,9 +6,15 @@ import { UserListFilters } from "@/components/users/UserListFilters";
 
 interface UserListProps {
   refreshTrigger?: number;
+  onUserUpdated?: () => void;
+  onUserDeleted?: () => void;
 }
 
-export function UserList({ refreshTrigger = 0 }: UserListProps) {
+export function UserList({ 
+  refreshTrigger = 0, 
+  onUserUpdated = () => {}, 
+  onUserDeleted = () => {} 
+}: UserListProps) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [filters, setFilters] = useState({
@@ -49,6 +55,8 @@ export function UserList({ refreshTrigger = 0 }: UserListProps) {
         totalCount={totalCount}
         onPageChange={handlePageChange}
         onRefresh={() => fetchUsers(page, pageSize, filters)}
+        onUserUpdated={onUserUpdated}
+        onUserDeleted={onUserDeleted}
       />
     </div>
   );

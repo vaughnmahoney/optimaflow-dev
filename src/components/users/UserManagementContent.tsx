@@ -11,18 +11,37 @@ export function UserManagementContent() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const { toast } = useToast();
 
-  // Handle user created event safely
+  // Handle user created event
   const handleUserCreated = () => {
-    setIsCreateDialogOpen(false);
-    
-    // Use setTimeout to avoid potential React batching issues
-    setTimeout(() => {
-      setRefreshTrigger(prev => prev + 1);
-      toast({
-        title: "User created successfully",
-        description: "The new user has been added to the system",
-      });
-    }, 10);
+    // Refresh the user list
+    setRefreshTrigger(prev => prev + 1);
+    // Show success toast
+    toast({
+      title: "User created successfully",
+      description: "The new user has been added to the system",
+    });
+  };
+
+  // Handle user updated event
+  const handleUserUpdated = () => {
+    // Refresh the user list
+    setRefreshTrigger(prev => prev + 1);
+    // Show success toast
+    toast({
+      title: "User updated successfully",
+      description: "The user information has been updated",
+    });
+  };
+
+  // Handle user deleted event
+  const handleUserDeleted = () => {
+    // Refresh the user list
+    setRefreshTrigger(prev => prev + 1);
+    // Show success toast
+    toast({
+      title: "User deleted successfully",
+      description: "The user has been removed from the system",
+    });
   };
 
   return (
@@ -46,7 +65,11 @@ export function UserManagementContent() {
         onUserCreated={handleUserCreated}
       />
 
-      <UserList refreshTrigger={refreshTrigger} />
+      <UserList 
+        refreshTrigger={refreshTrigger} 
+        onUserUpdated={handleUserUpdated}
+        onUserDeleted={handleUserDeleted}
+      />
     </div>
   );
 }

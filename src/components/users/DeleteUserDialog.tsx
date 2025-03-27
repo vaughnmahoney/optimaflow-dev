@@ -1,9 +1,9 @@
 
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { useUserManagement } from "@/hooks/useUserManagement";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { AlertCircle } from "lucide-react";
 
 interface User {
   id: string;
@@ -25,63 +25,40 @@ export function DeleteUserDialog({
   onUserDeleted 
 }: DeleteUserDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
   const { deleteUser } = useUserManagement();
-  const { toast } = useToast();
-  const mounted = useRef(true);
-  
-  // Track component mount state
-  useEffect(() => {
-    mounted.current = true;
-    return () => {
-      mounted.current = false;
-    };
-  }, []);
 
   const handleDelete = async () => {
-    if (!isOpen) return;
     setIsSubmitting(true);
+    setServerError(null);
     
     try {
       await deleteUser(user.id);
       
-      if (mounted.current) {
-        toast({
-          title: "User deleted",
-          description: `User ${user.username} has been deleted successfully.`,
-        });
-        
-        // First close dialog to prevent state updates during unmounting
-        onClose();
-        
-        // Use setTimeout to break the current execution stack
-        // This helps avoid React state update conflicts
-        setTimeout(() => {
-          if (mounted.current) {
-            onUserDeleted();
-          }
-        }, 10);
-      }
+      // Close first
+      onClose();
+      
+      // Then notify parent of success (similar to CreateUserDialog pattern)
+      onUserDeleted();
     } catch (error) {
       console.error("Failed to delete user:", error);
-      if (mounted.current) {
-        setIsSubmitting(false);
-      }
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      setServerError(errorMessage);
+      setIsSubmitting(false);
     }
   };
 
-  // Separate handler for cancel to avoid accidental submission
-  const handleCancel = () => {
+  const handleClose = () => {
     if (!isSubmitting) {
+      setServerError(null);
       onClose();
     }
   };
 
-  // Control dialog opening more carefully
-  // Only pass onOpenChange when dialog can be safely closed
   return (
     <Dialog 
       open={isOpen} 
-      onOpenChange={isSubmitting ? undefined : handleCancel}
+      onOpenChange={handleClose}
     >
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
@@ -92,11 +69,21 @@ export function DeleteUserDialog({
           </DialogDescription>
         </DialogHeader>
         
+        {serverError && (
+          <div className="bg-destructive/10 text-destructive rounded-md p-3 flex items-start space-x-2">
+            <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+            <div className="text-sm">
+              <p className="font-medium">Error deleting user</p>
+              <p>{serverError}</p>
+            </div>
+          </div>
+        )}
+        
         <DialogFooter className="pt-4">
           <Button 
             type="button" 
             variant="outline" 
-            onClick={handleCancel}
+            onClick={handleClose}
             disabled={isSubmitting}
           >
             Cancel
