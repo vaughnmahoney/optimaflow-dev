@@ -30,6 +30,7 @@ export const useBulkOrderImport = () => {
       return null;
     }
 
+    console.log(`Starting import of ${orders.length} orders to database...`);
     setIsImporting(true);
     setImportResult(null);
     
@@ -70,6 +71,8 @@ export const useBulkOrderImport = () => {
           if (error) {
             throw new Error(`Error calling import function (batch ${i + 1}): ${error.message}`);
           }
+
+          console.log(`Batch ${i + 1} response:`, data);
 
           // Accumulate results from this batch
           combinedResult.imported += data.imported;
