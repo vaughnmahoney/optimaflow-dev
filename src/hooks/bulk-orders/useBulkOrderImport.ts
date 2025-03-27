@@ -22,7 +22,7 @@ export const useBulkOrderImport = () => {
   });
 
   // Size of each batch to send to the edge function
-  const BATCH_SIZE = 25;
+  const BATCH_SIZE = 100;
 
   const importOrders = async (orders: any[]) => {
     if (!orders || orders.length === 0) {
@@ -33,7 +33,7 @@ export const useBulkOrderImport = () => {
     setIsImporting(true);
     setImportResult(null);
     
-    // Initialize progress tracking
+    // Initialize progress tracking with the total number of orders
     const totalOrders = orders.length;
     setImportProgress({ current: 0, total: totalOrders, percentage: 0 });
     
@@ -43,7 +43,7 @@ export const useBulkOrderImport = () => {
       batches.push(orders.slice(i, i + BATCH_SIZE));
     }
     
-    toast.info(`Importing ${orders.length} orders in ${batches.length} batches...`);
+    console.log(`Importing ${orders.length} orders in ${batches.length} batches (batch size: ${BATCH_SIZE})...`);
     
     // Track results across all batches
     const combinedResult: ImportResult = {
@@ -71,7 +71,7 @@ export const useBulkOrderImport = () => {
             throw new Error(`Error calling import function (batch ${i + 1}): ${error.message}`);
           }
 
-          // Accumulate results
+          // Accumulate results from this batch
           combinedResult.imported += data.imported;
           combinedResult.duplicates += data.duplicates;
           combinedResult.errors += data.errors;
@@ -83,7 +83,7 @@ export const useBulkOrderImport = () => {
             ];
           }
           
-          // Update progress
+          // Update progress based on all orders processed so far across all batches
           const processedSoFar = Math.min((i + 1) * BATCH_SIZE, totalOrders);
           const percentage = Math.round((processedSoFar / totalOrders) * 100);
           setImportProgress({ 
@@ -91,6 +91,8 @@ export const useBulkOrderImport = () => {
             total: totalOrders, 
             percentage 
           });
+          
+          console.log(`Batch ${i + 1} complete. Cumulative results: imported=${combinedResult.imported}, duplicates=${combinedResult.duplicates}, errors=${combinedResult.errors}`);
           
         } catch (batchError) {
           console.error(`Error in batch ${i + 1}:`, batchError);

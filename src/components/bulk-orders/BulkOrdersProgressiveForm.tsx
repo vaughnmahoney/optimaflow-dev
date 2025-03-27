@@ -8,7 +8,7 @@ import { useBulkOrdersProgressiveFetch } from "@/hooks/useBulkOrdersProgressiveF
 import { WorkOrderContent } from "@/components/workorders/WorkOrderContent";
 import { Badge } from "@/components/ui/badge";
 import { Package, Upload } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useBulkOrderImport } from "@/hooks/bulk-orders/useBulkOrderImport";
 
 export const BulkOrdersProgressiveForm = () => {
@@ -47,6 +47,9 @@ export const BulkOrdersProgressiveForm = () => {
     importProgress 
   } = useBulkOrderImport();
 
+  // Tracking state for auto-save
+  const [hasTriggeredAutoSave, setHasTriggeredAutoSave] = useState(false);
+  
   // Calculate if bulk fetch has started
   const isFetchStarted = progressState.currentPage > 0 || progressState.isComplete;
   
@@ -63,14 +66,35 @@ export const BulkOrdersProgressiveForm = () => {
   // Auto-save to database when fetch is complete and orders are available
   useEffect(() => {
     const autoSaveToDatabase = async () => {
-      if (progressState.isComplete && rawOrders && rawOrders.length > 0 && !isImporting && !importResult) {
-        // Auto-save orders to database
+      // Only trigger auto-save when:
+      // 1. Fetch is complete
+      // 2. We have orders to save
+      // 3. Not currently importing
+      // 4. No previous import attempt
+      // 5. Haven't already triggered auto-save
+      if (
+        progressState.isComplete && 
+        rawOrders && 
+        rawOrders.length > 0 && 
+        !isImporting && 
+        !importResult && 
+        !hasTriggeredAutoSave
+      ) {
+        console.log(`Auto-saving ${rawOrders.length} orders to database...`);
+        setHasTriggeredAutoSave(true);
         await importOrders(rawOrders);
       }
     };
     
     autoSaveToDatabase();
-  }, [progressState.isComplete, rawOrders, isImporting, importResult, importOrders]);
+  }, [progressState.isComplete, rawOrders, isImporting, importResult, importOrders, hasTriggeredAutoSave]);
+
+  // Reset auto-save trigger when starting a new fetch
+  useEffect(() => {
+    if (isLoading && progressState.currentPage === 1) {
+      setHasTriggeredAutoSave(false);
+    }
+  }, [isLoading, progressState.currentPage]);
 
   return (
     <div className="space-y-6">
@@ -95,7 +119,7 @@ export const BulkOrdersProgressiveForm = () => {
                 <FetchButton 
                   isLoading={isLoading} 
                   onFetch={handleFetchOrders}
-                  isDisabled={!startDate || !endDate || progressState.isLoading}
+                  isDisabled={!startDate || !endDate || progressState.isLoading || isImporting}
                   activeTab={activeTab}
                 />
               </div>
