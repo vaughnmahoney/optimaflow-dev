@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -18,8 +19,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DeleteUserDialog } from "./DeleteUserDialog";
-import { EditUserDialog } from "./EditUserDialog";
+import { UserEditDialog } from "./UserEditDialog";
+import { UserDeleteDialog } from "./UserDeleteDialog";
 
 interface User {
   id: string;
@@ -38,6 +39,8 @@ interface UserListTableProps {
   totalCount: number;
   onPageChange: (page: number) => void;
   onRefresh: () => void;
+  onUserUpdated: () => void;
+  onUserDeleted: () => void;
 }
 
 export function UserListTable({
@@ -49,6 +52,8 @@ export function UserListTable({
   totalCount,
   onPageChange,
   onRefresh,
+  onUserUpdated,
+  onUserDeleted
 }: UserListTableProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -64,6 +69,26 @@ export function UserListTable({
   const handleDeleteUser = (user: User) => {
     setSelectedUser(user);
     setIsDeleteDialogOpen(true);
+  };
+
+  const handleCloseEditDialog = () => {
+    setIsEditDialogOpen(false);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setIsDeleteDialogOpen(false);
+  };
+
+  // Handle the edit completion from child component
+  const handleUserEdited = () => {
+    setSelectedUser(null);
+    onUserUpdated();
+  };
+
+  // Handle the delete completion from child component
+  const handleUserDeleted = () => {
+    setSelectedUser(null);
+    onUserDeleted();
   };
 
   if (error) {
@@ -231,31 +256,21 @@ export function UserListTable({
         </div>
       )}
 
-      {selectedUser && (
-        <>
-          <EditUserDialog
-            user={selectedUser}
-            isOpen={isEditDialogOpen}
-            onClose={() => {
-              setIsEditDialogOpen(false);
-              setSelectedUser(null);
-              onRefresh();
-            }}
-            onUserUpdated={onRefresh}
-          />
-          
-          <DeleteUserDialog
-            user={selectedUser}
-            isOpen={isDeleteDialogOpen}
-            onClose={() => {
-              setIsDeleteDialogOpen(false);
-              setSelectedUser(null);
-              onRefresh();
-            }}
-            onUserDeleted={onRefresh}
-          />
-        </>
-      )}
+      {/* User Edit Dialog */}
+      <UserEditDialog
+        user={selectedUser}
+        isOpen={isEditDialogOpen}
+        onClose={handleCloseEditDialog}
+        onUserUpdated={handleUserEdited}
+      />
+      
+      {/* User Delete Dialog */}
+      <UserDeleteDialog
+        user={selectedUser}
+        isOpen={isDeleteDialogOpen}
+        onClose={handleCloseDeleteDialog}
+        onUserDeleted={handleUserDeleted}
+      />
     </>
   );
 }
