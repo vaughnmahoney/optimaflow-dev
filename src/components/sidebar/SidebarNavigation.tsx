@@ -1,53 +1,93 @@
-import React from 'react';
-import { cn } from '@/lib/utils';
-import { SidebarNavItem } from './SidebarNavItem';
-import { SidebarSubmenu } from './SidebarSubmenu';
-import { NavigationItem, NavigationConfig } from '@/config/navigationConfig';
-import { LucideIcon } from 'lucide-react';
+
+import { useLocation } from "react-router-dom";
+import { 
+  LayoutDashboard, AlertCircle, Clock, Users, Database
+} from "lucide-react";
+import { SidebarNavItem } from "./SidebarNavItem";
+import { useAuth } from "@/components/AuthProvider";
 
 interface SidebarNavigationProps {
-  items: NavigationConfig;
-  isExpanded: boolean;
-  activePath: string;
-  onToggleExpand: () => void;
+  isCollapsed: boolean;
+  searchTerm: string;
+  flaggedWorkOrdersCount?: number;
 }
 
-export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
-  items,
-  isExpanded,
-  activePath,
-  onToggleExpand,
-}) => {
+interface NavItem {
+  to: string;
+  icon: LucideIcon;
+  label: string;
+  isActive: boolean;
+  badge?: number;
+  roles?: string[]; // Add roles to control visibility
+}
+
+export function SidebarNavigation({ 
+  isCollapsed, 
+  searchTerm,
+  flaggedWorkOrdersCount = 0
+}: SidebarNavigationProps) {
+  const location = useLocation();
+  const { userRole } = useAuth();
+  
+  // Create navigation items with role-based visibility
+  const navItems: NavItem[] = [
+    { 
+      to: "/work-orders", 
+      icon: AlertCircle, 
+      label: "Quality Control", 
+      isActive: location.pathname.startsWith("/work-orders"),
+      badge: flaggedWorkOrdersCount > 0 ? flaggedWorkOrdersCount : undefined,
+      roles: ["admin", "lead", "user"] // Everyone can see this
+    },
+    { 
+      to: "/bulk-orders-test", 
+      icon: Database, 
+      label: "Bulk Import Test", 
+      isActive: location.pathname.startsWith("/bulk-orders-test"),
+      roles: ["admin"] // Only admins
+    },
+    {
+      to: "/attendance", 
+      icon: Clock, 
+      label: "Attendance", 
+      isActive: location.pathname.startsWith("/attendance") || location.pathname.startsWith("/supervisor"),
+      roles: ["admin"] // Only admins
+    },
+    { 
+      to: "/employees", 
+      icon: Users, 
+      label: "Employees", 
+      isActive: location.pathname.startsWith("/employees") || location.pathname.startsWith("/admin"),
+      roles: ["admin"] // Only admins
+    },
+    { 
+      to: "/users", 
+      icon: Users, 
+      label: "User Management", 
+      isActive: location.pathname.startsWith("/users"),
+      roles: ["admin"] // Only admins
+    }
+  ];
+
+  // Filter items by role and search term
+  const filteredNavItems = navItems.filter(item => 
+    item.label.toLowerCase().includes(searchTerm.toLowerCase()) && 
+    (!item.roles || item.roles.includes(userRole))
+  );
+
   return (
-    <nav className="flex flex-col space-y-1">
-      {items.map((item) => {
-        if (item.type === 'item') {
-          return (
-            <SidebarNavItem
-              key={item.label}
-              href={item.href}
-              label={item.label}
-              icon={item.icon}
-              active={activePath === item.href}
-              isExpanded={isExpanded}
-              onToggleExpand={onToggleExpand}
-            />
-          );
-        } else if (item.type === 'submenu') {
-          return (
-            <SidebarSubmenu
-              key={item.label}
-              label={item.label}
-              icon={item.icon}
-              items={item.items}
-              activePath={activePath}
-              isExpanded={isExpanded}
-              onToggleExpand={onToggleExpand}
-            />
-          );
-        }
-        return null;
-      })}
+    <nav className="flex flex-col gap-1">
+      {filteredNavItems.map((item) => (
+        <SidebarNavItem
+          key={item.to}
+          to={item.to}
+          icon={item.icon}
+          label={item.label}
+          isActive={item.isActive}
+          isCollapsed={isCollapsed}
+          badge={item.badge}
+        />
+      ))}
     </nav>
   );
-};
+}
