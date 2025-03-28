@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useImageViewer } from "@/hooks/useImageViewer";
 import { ImageControls } from "./ImageControls";
@@ -34,7 +35,15 @@ export function ImageContent({
   }
 
   return (
-    <div className="flex flex-col flex-1 overflow-hidden">
+    <div className="flex h-full overflow-hidden">
+      {/* Thumbnails on the left */}
+      <ImageThumbnails
+        images={images}
+        currentImageIndex={currentImageIndex}
+        setCurrentImageIndex={setCurrentImageIndex}
+      />
+      
+      {/* Main image viewer area */}
       <div className={`relative flex-1 ${isImageExpanded ? 'max-h-full' : 'max-h-[60vh]'}`}>
         <ImageViewer 
           images={images}
@@ -56,12 +65,6 @@ export function ImageContent({
           zoomLevel={1}
         />
       </div>
-      
-      <ImageThumbnails
-        images={images}
-        currentImageIndex={currentImageIndex}
-        setCurrentImageIndex={setCurrentImageIndex}
-      />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Maximize2, Minimize2, ZoomIn, Move } from "lucide-react";
+import { ChevronLeft, ChevronRight, Maximize2, Minimize2, ZoomIn } from "lucide-react";
 
 interface ImageControlsProps {
   imagesCount: number;
@@ -57,7 +57,7 @@ export const ImageControls = ({
       
       {/* Control buttons */}
       <div className="absolute top-4 left-4 flex gap-2">
-        {/* Expand/Collapse button - removed aria-label tooltip */}
+        {/* Expand/Collapse button */}
         <Button
           variant="outline"
           size="icon"
@@ -71,7 +71,7 @@ export const ImageControls = ({
           )}
         </Button>
         
-        {/* Zoom toggle button - only show when expanded - removed aria-label tooltip */}
+        {/* Zoom toggle button - only show when expanded */}
         {isImageExpanded && (
           <Button
             variant="outline"
@@ -90,10 +90,6 @@ export const ImageControls = ({
           {Math.round(zoomLevel * 100)}%
         </div>
       )}
-      
-      {/* Zoom mode instruction - removed as requested */}
-      
-      {/* Drag instruction when zoomed in - removed as requested */}
     </>
   );
 };

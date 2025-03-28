@@ -1,3 +1,4 @@
+
 import { useState, useRef } from "react";
 import { useImageZoom } from "@/hooks/useImageZoom";
 import { ImageControls } from "./ImageControls";
@@ -66,6 +67,27 @@ export const ImageViewer = ({
     setIsLoading(false);
   };
 
+  // Add keyboard navigation for images
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only process if not in an input field
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+      
+      if (e.key === 'ArrowLeft' && !e.altKey) {
+        handlePrevious();
+        e.preventDefault();
+      } else if (e.key === 'ArrowRight' && !e.altKey) {
+        handleNext();
+        e.preventDefault();
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentImageIndex, images.length]);
+
   return (
     <div 
       ref={containerRef}
@@ -113,18 +135,6 @@ export const ImageViewer = ({
               draggable="false"
             />
           </div>
-          
-          <ImageControls 
-            imagesCount={images.length}
-            currentImageIndex={currentImageIndex}
-            handlePrevious={handlePrevious}
-            handleNext={handleNext}
-            isImageExpanded={isImageExpanded}
-            toggleImageExpand={toggleImageExpand}
-            zoomModeEnabled={zoomModeEnabled}
-            toggleZoomMode={toggleZoomMode}
-            zoomLevel={zoomLevel}
-          />
         </>
       ) : (
         <ImageEmptyState />

@@ -1,5 +1,7 @@
+
 import React, { useEffect, useRef } from "react";
 import { ImageType } from "../../types/image";
+import { ChevronUp, ChevronDown } from "lucide-react";
 
 interface ImageThumbnailsProps {
   images: ImageType[];
@@ -35,7 +37,11 @@ export const ImageThumbnails = ({
   return (
     <div className="w-20 h-full border-r overflow-hidden bg-gray-50 dark:bg-gray-900/50 flex flex-col">
       <div className="text-center text-gray-400 py-1 text-xs">
-        {currentImageIndex > 0 && <div className="animate-bounce">↑</div>}
+        {currentImageIndex > 0 && (
+          <div className="animate-bounce cursor-pointer" onClick={() => setCurrentImageIndex(currentImageIndex - 1)}>
+            <ChevronUp size={16} />
+          </div>
+        )}
       </div>
       
       <div 
@@ -70,7 +76,11 @@ export const ImageThumbnails = ({
       </div>
       
       <div className="text-center text-gray-400 py-1 text-xs">
-        {currentImageIndex < images.length - 1 && <div className="animate-bounce">↓</div>}
+        {currentImageIndex < images.length - 1 && (
+          <div className="animate-bounce cursor-pointer" onClick={() => setCurrentImageIndex(currentImageIndex + 1)}>
+            <ChevronDown size={16} />
+          </div>
+        )}
       </div>
     </div>
   );
