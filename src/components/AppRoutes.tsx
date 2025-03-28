@@ -12,6 +12,7 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="work-orders" element={<WorkOrders />} />
+      {/* Simplified to only use progressive loading */}
       <Route path="bulk-orders" element={<BulkOrdersTest />} />
       <Route path="material-requirements" element={<MaterialRequirements />} />
       <Route path="bulk-orders-progressive" element={<BulkOrdersProgressive />} />
