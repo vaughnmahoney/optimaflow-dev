@@ -1,6 +1,4 @@
 
-import { ImageType } from '../workorders/types/image';
-
 export interface BulkOrdersResponse {
   success?: boolean;
   error?: string;

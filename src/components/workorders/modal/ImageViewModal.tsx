@@ -55,7 +55,7 @@ export const ImageViewModal = ({
     setIsImageExpanded(!isImageExpanded);
   };
 
-  // Get images from the work order's completion_response
+  // Get images from the work order
   const completionData = currentWorkOrder?.completion_response?.orders?.[0]?.data;
   const images = completionData?.form?.images || [];
   
@@ -67,14 +67,6 @@ export const ImageViewModal = ({
     handleSetOrder(index);
     onNavigate(index);
   };
-
-  // Debug log the current work order data
-  console.log('Current work order in modal:', {
-    id: currentWorkOrder.id,
-    status: currentWorkOrder.status,
-    flagged_user: currentWorkOrder.flagged_user,
-    flagged_at: currentWorkOrder.flagged_at
-  });
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -97,7 +89,6 @@ export const ImageViewModal = ({
           hasImages={images.length > 0}
           status={currentWorkOrder.status}
           onResolveFlag={onResolveFlag}
-          workOrder={currentWorkOrder}
         />
         
         <NavigationControls 

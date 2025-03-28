@@ -32,7 +32,7 @@ export type NavigationItem = {
   items?: NavigationItem[];
 };
 
-export const NavigationConfig = [
+export const navigationConfig: NavigationItem[] = [
   {
     title: "Dashboard",
     url: "/dashboard",
@@ -91,7 +91,6 @@ export const NavigationConfig = [
     icon: Users,
     items: [
       { title: "Add Employee", url: "/admin", icon: UserPlus },
-      { title: "User Management", url: "/users", icon: Users },
       { title: "Device List", url: "/employees/devices", icon: Smartphone },
       { title: "Tool List", url: "/employees/tools", icon: Wrench },
     ],
@@ -113,11 +112,5 @@ export const NavigationConfig = [
       { title: "Service Channel", url: "/apps/service-channel", icon: Link },
       { title: "Verisae", url: "/apps/verisae", icon: Link },
     ],
-  },
-  {
-    title: "Bulk Orders (Progressive)",
-    url: "/bulk-orders-progressive",
-    icon: Package,
-    items: [],
   },
 ];
