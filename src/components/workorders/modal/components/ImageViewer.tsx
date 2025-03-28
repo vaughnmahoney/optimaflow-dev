@@ -1,5 +1,5 @@
 
-import { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useImageZoom } from "@/hooks/useImageZoom";
 import { ImageControls } from "./ImageControls";
 import { ImageEmptyState } from "./ImageEmptyState";
@@ -68,7 +68,7 @@ export const ImageViewer = ({
   };
 
   // Add keyboard navigation for images
-  React.useEffect(() => {
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Only process if not in an input field
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
