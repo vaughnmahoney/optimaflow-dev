@@ -1,52 +1,111 @@
 
-import { useState, useCallback } from "react";
-import { BulkOrdersResponse } from "@/components/bulk-orders/types";
+import { useState } from "react";
+import { useBulkOrdersFetch } from "./useBulkOrdersFetch";
+import { useOrderTransformation } from "./bulk-orders/useOrderTransformation";
+import { useAdapterStatusManager } from "./bulk-orders/useAdapterStatusManager";
+import { useAdapterFilters } from "./bulk-orders/useAdapterFilters";
+import { useAdapterSortAndPagination } from "./bulk-orders/useAdapterSortAndPagination";
 
 /**
- * Adapter hook for converting bulk orders data into a consistent format
- * for use with different components and APIs
+ * This hook adapts bulk order data to the work order component format
+ * It serves as a bridge between the bulk order API and the work order UI
  */
 export const useBulkOrdersAdapter = () => {
-  // Track original API response data
-  const [originalData, setOriginalData] = useState<{
-    response: BulkOrdersResponse | null;
-    rawOrders: any[] | null;
-  }>({
-    response: null,
-    rawOrders: null,
-  });
-
-  // Track additional processing info
-  const [isLoading, setIsLoading] = useState(false);
-  const [dataFlowLogging, setDataFlowLogging] = useState<{
-    apiRequests: number;
-    totalOrdersFromAPI: number | null;
-    originalOrderCount: number | null;
-    batchStats?: {
-      completedBatches: number;
-      totalBatches: number;
-    };
-    [key: string]: any;
-  }>({
-    apiRequests: 0,
-    totalOrdersFromAPI: null,
-    originalOrderCount: null,
-  });
-
-  // Update logging metrics
-  const updateDataFlowMetrics = useCallback((metrics: Record<string, any>) => {
-    setDataFlowLogging(prev => ({
-      ...prev,
-      ...metrics
-    }));
-  }, []);
-
-  return {
-    originalData,
-    setOriginalData,
+  // Use the existing bulk orders fetch hook
+  const {
+    startDate, 
+    setStartDate,
+    endDate, 
+    setEndDate,
     isLoading,
-    setIsLoading,
+    response,
+    rawData,
+    rawOrders,
+    activeTab,
+    setActiveTab,
     dataFlowLogging,
-    updateDataFlowMetrics
+    handleFetchOrders
+  } = useBulkOrdersFetch();
+  
+  // Transform raw orders into work order format
+  const { workOrders, setWorkOrders } = useOrderTransformation(rawOrders);
+  
+  // Status management
+  const { 
+    statusCounts, 
+    updateWorkOrderStatus,
+    deleteWorkOrder 
+  } = useAdapterStatusManager(workOrders);
+  
+  // Filter handling
+  const {
+    filters,
+    setFilters,
+    onColumnFilterChange,
+    clearColumnFilter,
+    clearAllFilters
+  } = useAdapterFilters();
+  
+  // Sort and pagination
+  const {
+    sortField,
+    sortDirection,
+    setSort,
+    pagination,
+    handlePageChange,
+    handlePageSizeChange
+  } = useAdapterSortAndPagination(workOrders.length);
+  
+  // Simple utility functions
+  const openImageViewer = (workOrderId: string) => {
+    // Implementation handled by the WorkOrderList component
+    console.log("Opening image viewer for:", workOrderId);
+  };
+  
+  // Adapter for updateWorkOrderStatus
+  const handleUpdateWorkOrderStatus = (workOrderId: string, newStatus: string) => {
+    updateWorkOrderStatus(setWorkOrders, workOrderId, newStatus);
+  };
+  
+  // Adapter for deleteWorkOrder
+  const handleDeleteWorkOrder = (workOrderId: string) => {
+    deleteWorkOrder(setWorkOrders, workOrderId);
+  };
+  
+  // Return the adapted interface for work order components
+  return {
+    // Bulk order specific properties
+    startDate,
+    setStartDate,
+    endDate,
+    setEndDate,
+    activeTab,
+    setActiveTab,
+    handleFetchOrders,
+    dataFlowLogging,
+    originalData: {
+      response,
+      rawData,
+      rawOrders
+    },
+    
+    // Work order component compatible properties
+    data: workOrders,
+    isLoading,
+    filters,
+    setFilters,
+    onColumnFilterChange,
+    clearColumnFilter,
+    clearAllFilters,
+    updateWorkOrderStatus: handleUpdateWorkOrderStatus,
+    openImageViewer,
+    deleteWorkOrder: handleDeleteWorkOrder,
+    statusCounts,
+    sortField,
+    sortDirection,
+    setSort,
+    pagination,
+    handlePageChange,
+    handlePageSizeChange
   };
 };
