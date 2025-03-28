@@ -251,9 +251,15 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
   
-  // Check if this is a status request
+  // Get the URL to determine if this is a status request
   const url = new URL(req.url);
-  if (url.pathname.endsWith('/status')) {
+  const path = url.pathname;
+  const isStatusRequest = path.endsWith('/status');
+  
+  console.log(`Request received for path: ${path}, status request: ${isStatusRequest}`);
+  
+  // Check if this is a status request
+  if (isStatusRequest) {
     try {
       // Get the latest execution log
       const latestLog = await getLatestExecutionLog();

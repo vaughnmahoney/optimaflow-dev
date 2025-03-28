@@ -17,13 +17,16 @@ interface ImportLog {
   execution_time: string;
   result: {
     success: boolean;
-    date?: string;
+    dateRange?: {
+      start: string;
+      end: string;
+    };
     fetched?: number;
     imported?: number;
     duplicates?: number;
     errors?: number;
     error?: string;
-    message?: string;
+    errorDetails?: string[];
   };
 }
 
@@ -43,10 +46,9 @@ export function AutoImportStatus({ className }: AutoImportStatusProps) {
   const fetchStatus = async () => {
     setIsLoading(true);
     try {
+      // Fix: Use the correct way to invoke an edge function with a path
       const { data, error } = await supabase.functions.invoke(
-        'auto-import-orders', {
-          url: 'auto-import-orders/status'
-        }
+        'auto-import-orders/status'
       );
 
       if (error) {
@@ -189,11 +191,11 @@ export function AutoImportStatus({ className }: AutoImportStatusProps) {
               </div>
             </div>
 
-            {lastRun.result.success && (
+            {lastRun.result.success && lastRun.result.dateRange && (
               <>
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">Date:</span>
-                  <span>{lastRun.result.date}</span>
+                  <span className="text-muted-foreground">Date Range:</span>
+                  <span>{lastRun.result.dateRange.start} to {lastRun.result.dateRange.end}</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">Results:</span>
@@ -212,9 +214,23 @@ export function AutoImportStatus({ className }: AutoImportStatusProps) {
               </>
             )}
 
-            {!lastRun.result.success && lastRun.result.message && (
+            {!lastRun.result.success && lastRun.result.error && (
               <div className="text-sm text-red-600 mt-1">
-                Error: {lastRun.result.message || lastRun.result.error || 'Unknown error'}
+                Error: {lastRun.result.error || 'Unknown error'}
+              </div>
+            )}
+            
+            {!lastRun.result.success && lastRun.result.errorDetails && lastRun.result.errorDetails.length > 0 && (
+              <div className="text-sm text-red-600 mt-1 space-y-1">
+                <div>Error Details:</div>
+                <ul className="list-disc pl-5">
+                  {lastRun.result.errorDetails.slice(0, 3).map((detail, idx) => (
+                    <li key={idx} className="text-xs">{detail}</li>
+                  ))}
+                  {lastRun.result.errorDetails.length > 3 && (
+                    <li className="text-xs italic">...and {lastRun.result.errorDetails.length - 3} more</li>
+                  )}
+                </ul>
               </div>
             )}
           </div>
