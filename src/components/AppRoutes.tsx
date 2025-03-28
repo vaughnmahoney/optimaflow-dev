@@ -4,7 +4,6 @@ import { Routes, Route, BrowserRouter } from "react-router-dom";
 import Index from "@/pages/Index";
 import WorkOrders from "@/pages/WorkOrders";
 import BulkOrdersTest from "@/pages/BulkOrdersTest";
-import BulkOrdersProgressive from "@/pages/BulkOrdersProgressive";
 import MaterialRequirements from "@/pages/MaterialRequirements";
 
 const AppRoutes = () => {
@@ -12,10 +11,10 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="work-orders" element={<WorkOrders />} />
-      {/* Simplified to only use progressive loading */}
+      {/* Using only the simplified progressive loading version */}
       <Route path="bulk-orders" element={<BulkOrdersTest />} />
       <Route path="material-requirements" element={<MaterialRequirements />} />
-      <Route path="bulk-orders-progressive" element={<BulkOrdersProgressive />} />
+      {/* Removed duplicate route for bulk-orders-progressive as it's now redundant */}
     </Routes>
   );
 };
