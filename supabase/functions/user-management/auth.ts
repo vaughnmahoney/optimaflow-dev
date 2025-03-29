@@ -1,6 +1,6 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.41.1";
-import { createErrorResponse } from "../_shared/cors.ts";
+import { corsHeaders, createErrorResponse } from "../_shared/cors.ts";
 
 // Validates the user's authorization and ensures they are an admin
 export async function validateAdminAccess(authHeader: string | null) {

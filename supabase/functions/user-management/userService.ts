@@ -1,5 +1,5 @@
 
-import { createSuccessResponse, createErrorResponse } from "../_shared/cors.ts";
+import { corsHeaders, createSuccessResponse, createErrorResponse } from "../_shared/cors.ts";
 
 // Types for our user management operations
 export interface UserCreateData {
