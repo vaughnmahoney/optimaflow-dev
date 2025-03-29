@@ -4,8 +4,6 @@ import { useImageZoom } from "@/hooks/useImageZoom";
 import { ImageType } from "../../types/image";
 import { ChevronLeft, ChevronRight, Maximize2, Minimize2, ZoomIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ImageCounter } from "./ImageCounter";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ImageViewerProps {
   images: ImageType[];
@@ -24,7 +22,6 @@ export const ImageViewer = ({
 }: ImageViewerProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const isMobile = useIsMobile();
   
   const {
     zoomLevel,
@@ -132,12 +129,9 @@ export const ImageViewer = ({
         />
       </div>
       
-      {/* Image counter - positioned differently on mobile vs desktop */}
-      <div className={`absolute ${isMobile ? 'top-2 left-1/2 transform -translate-x-1/2' : 'top-4 right-4'}`}>
-        <ImageCounter 
-          currentIndex={currentImageIndex} 
-          totalImages={images.length} 
-        />
+      {/* Image counter */}
+      <div className="absolute top-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium">
+        {currentImageIndex + 1} / {images.length}
       </div>
       
       {/* Previous/Next buttons */}
