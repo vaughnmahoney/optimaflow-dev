@@ -2,9 +2,11 @@
 import { User } from "lucide-react";
 import { useAuth } from "./AuthProvider";
 import { Avatar, AvatarFallback } from "./ui/avatar";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function UserDisplay() {
   const { session } = useAuth();
+  const isMobile = useIsMobile();
   
   // Extract username from email (removing @example.com part for usernames like "admin@example.com")
   const email = session?.user?.email || "";
@@ -20,9 +22,11 @@ export function UserDisplay() {
           {firstLetter}
         </AvatarFallback>
       </Avatar>
-      <span className="text-sm font-medium hidden sm:inline-block">
-        {username}
-      </span>
+      {!isMobile && (
+        <span className="text-sm font-medium">
+          {username}
+        </span>
+      )}
     </div>
   );
 }
