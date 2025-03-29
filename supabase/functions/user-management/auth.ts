@@ -72,36 +72,46 @@ export async function validateAdminAccess(authHeader: string | null) {
     };
   }
 
-  // Check if user is an admin
-  const { data: userProfile, error: profileError } = await supabase
-    .from("user_profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
+  try {
+    // Check if user is an admin
+    const { data: userProfile, error: profileError } = await supabase
+      .from("user_profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
 
-  if (profileError || !userProfile) {
-    console.error("Error fetching user profile:", profileError);
+    if (profileError || !userProfile) {
+      console.error("Error fetching user profile:", profileError);
+      return {
+        error: createErrorResponse("User profile not found", 404),
+        supabase: null,
+        user: null,
+        supabaseAdmin: null
+      };
+    }
+
+    if (userProfile.role !== "admin") {
+      return {
+        error: createErrorResponse("Admin access required", 403),
+        supabase: null,
+        user: null,
+        supabaseAdmin: null
+      };
+    }
+
     return {
-      error: createErrorResponse("User profile not found", 404),
+      error: null,
+      supabase,
+      user,
+      supabaseAdmin
+    };
+  } catch (err) {
+    console.error("Error in validateAdminAccess:", err);
+    return {
+      error: createErrorResponse(`Server error during authentication: ${err.message}`, 500),
       supabase: null,
       user: null,
       supabaseAdmin: null
     };
   }
-
-  if (userProfile.role !== "admin") {
-    return {
-      error: createErrorResponse("Admin access required", 403),
-      supabase: null,
-      user: null,
-      supabaseAdmin: null
-    };
-  }
-
-  return {
-    error: null,
-    supabase,
-    user,
-    supabaseAdmin
-  };
 }

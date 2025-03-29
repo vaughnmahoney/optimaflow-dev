@@ -7,6 +7,7 @@ const corsHeaders = {
 
 // Create a standard error response with CORS headers
 const createErrorResponse = (message: string, status: number = 400) => {
+  console.error(`Error in userService: ${message}`);
   return new Response(
     JSON.stringify({
       success: false,
@@ -78,6 +79,8 @@ export async function createUser(supabase: any, userData: UserCreateData): Promi
   }
 
   try {
+    console.log(`Creating user: ${username}, role: ${role}`);
+    
     // Format username to email
     const email = `${username}@example.com`;
 
@@ -89,8 +92,16 @@ export async function createUser(supabase: any, userData: UserCreateData): Promi
     });
 
     if (createError) {
+      console.error("Error creating user in auth:", createError);
       return createErrorResponse(`Error creating user: ${createError.message}`);
     }
+
+    if (!newUser || !newUser.user) {
+      console.error("User creation did not return valid user data");
+      return createErrorResponse("Failed to create user: No user data returned");
+    }
+
+    console.log(`Auth user created with ID: ${newUser.user.id}`);
 
     // Create user profile
     const { data: profile, error: profileError } = await supabase
@@ -112,6 +123,8 @@ export async function createUser(supabase: any, userData: UserCreateData): Promi
       return createErrorResponse(`Error creating user profile: ${profileError.message}`);
     }
 
+    console.log("User profile created successfully");
+
     // Extract username from email
     const responseData = {
       ...profile,
@@ -120,7 +133,7 @@ export async function createUser(supabase: any, userData: UserCreateData): Promi
 
     return createSuccessResponse(responseData);
   } catch (error) {
-    console.error("Error in createUser:", error);
+    console.error("Unhandled error in createUser:", error);
     return createErrorResponse(`Error creating user: ${error.message}`);
   }
 }

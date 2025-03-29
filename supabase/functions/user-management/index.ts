@@ -13,12 +13,13 @@ import {
 // CORS headers to allow cross-origin requests
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
 // Create a standard error response with CORS headers
 const createErrorResponse = (message: string, status: number = 400) => {
+  console.error(`Error response: ${message} (${status})`);
   return new Response(
     JSON.stringify({
       success: false,
@@ -87,20 +88,37 @@ serve(async (req) => {
     const { supabaseAdmin } = authResult;
 
     // Parse request body
-    const requestData: RequestData = await req.json();
+    let requestData: RequestData;
+    try {
+      requestData = await req.json();
+      console.log("Request data:", JSON.stringify(requestData));
+    } catch (error) {
+      console.error("Error parsing request body:", error);
+      return createErrorResponse("Invalid JSON in request body", 400);
+    }
+
     const { action } = requestData;
     console.log("Processing action:", action);
 
     // Process based on action type
     switch (action) {
       case "create":
-        return createUser(supabaseAdmin, requestData.userData!);
+        if (!requestData.userData) {
+          return createErrorResponse("Missing userData for create action", 400);
+        }
+        return await createUser(supabaseAdmin, requestData.userData);
       case "list":
-        return listUsers(supabaseAdmin, requestData.page, requestData.pageSize, requestData.filters);
+        return await listUsers(supabaseAdmin, requestData.page, requestData.pageSize, requestData.filters);
       case "update":
-        return updateUser(supabaseAdmin, requestData.userId!, requestData.updates);
+        if (!requestData.userId) {
+          return createErrorResponse("Missing userId for update action", 400);
+        }
+        return await updateUser(supabaseAdmin, requestData.userId, requestData.updates);
       case "delete":
-        return deleteUser(supabaseAdmin, requestData.userId!);
+        if (!requestData.userId) {
+          return createErrorResponse("Missing userId for delete action", 400);
+        }
+        return await deleteUser(supabaseAdmin, requestData.userId);
       default:
         return createErrorResponse("Invalid action", 400);
     }
