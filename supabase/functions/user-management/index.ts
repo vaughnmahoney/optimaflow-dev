@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, createErrorResponse } from "../_shared/cors.ts";
 import { validateAdminAccess } from "./auth.ts";
@@ -26,6 +25,7 @@ serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, {
+      status: 204, // No content for OPTIONS request
       headers: corsHeaders,
     });
   }
@@ -35,7 +35,16 @@ serve(async (req) => {
     const authResult = await validateAdminAccess(req.headers.get("Authorization"));
     
     if (authResult.error) {
-      return authResult.error;
+      return new Response(
+        JSON.stringify({ success: false, error: authResult.error.statusText }),
+        { 
+          status: authResult.error.status, 
+          headers: { 
+            "Content-Type": "application/json",
+            ...corsHeaders 
+          }
+        }
+      );
     }
     
     const { supabaseAdmin } = authResult;
@@ -44,19 +53,34 @@ serve(async (req) => {
     const requestData: RequestData = await req.json();
     const { action } = requestData;
 
+    let response;
     // Process based on action type
     switch (action) {
       case "create":
-        return createUser(supabaseAdmin, requestData.userData!);
+        response = await createUser(supabaseAdmin, requestData.userData!);
+        break;
       case "list":
-        return listUsers(supabaseAdmin, requestData.page, requestData.pageSize, requestData.filters);
+        response = await listUsers(supabaseAdmin, requestData.page, requestData.pageSize, requestData.filters);
+        break;
       case "update":
-        return updateUser(supabaseAdmin, requestData.userId!, requestData.updates);
+        response = await updateUser(supabaseAdmin, requestData.userId!, requestData.updates);
+        break;
       case "delete":
-        return deleteUser(supabaseAdmin, requestData.userId!);
+        response = await deleteUser(supabaseAdmin, requestData.userId!);
+        break;
       default:
-        return createErrorResponse("Invalid action", 400);
+        response = createErrorResponse("Invalid action", 400);
+        break;
     }
+
+    // Ensure CORS headers are applied to every response
+    if (response.headers) {
+      Object.entries(corsHeaders).forEach(([key, value]) => {
+        response.headers.set(key, value);
+      });
+    }
+    
+    return response;
   } catch (error) {
     console.error("Error in user-management function:", error);
     return createErrorResponse(`Internal server error: ${error.message}`, 500);

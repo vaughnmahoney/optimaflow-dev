@@ -1,9 +1,26 @@
-
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.41.1";
-import { createErrorResponse } from "../_shared/cors.ts";
+import { corsHeaders } from "../_shared/cors.ts";
+
+// Define the error response function locally instead of importing it
+const createErrorResponse = (message: string, status = 400) => {
+  return new Response(
+    JSON.stringify({
+      success: false,
+      error: message,
+    }),
+    {
+      status,
+      headers: {
+        "Content-Type": "application/json",
+        ...corsHeaders,
+      },
+    }
+  );
+};
 
 // Validates the user's authorization and ensures they are an admin
 export async function validateAdminAccess(authHeader: string | null) {
+  // The rest of the function remains unchanged
   if (!authHeader) {
     return { 
       error: createErrorResponse("Missing authorization header", 401),
@@ -13,17 +30,6 @@ export async function validateAdminAccess(authHeader: string | null) {
     };
   }
 
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  
-  if (!supabaseUrl || !supabaseServiceKey) {
-    return {
-      error: createErrorResponse("Missing Supabase environment variables", 500),
-      supabase: null,
-      user: null,
-      supabaseAdmin: null
-    };
-  }
 
   // Create admin client for operations that require elevated privileges
   const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
