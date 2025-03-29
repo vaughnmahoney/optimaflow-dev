@@ -1,3 +1,4 @@
+
 import { WorkOrder } from "@/components/workorders/types";
 
 /**
@@ -129,36 +130,10 @@ export const transformWorkOrderData = (order: any): WorkOrder => {
     qc_notes: order.qc_notes || '',
     // Include resolution notes from database or empty string
     resolution_notes: order.resolution_notes || '',
-    
-    // User attribution fields mapping - add all these fields from database
-    // Approved details
-    approved_by: order.approved_by || null,
-    approved_user: order.approved_user || null,
-    approved_at: order.approved_at || null,
-    
-    // Flagged details
-    flagged_by: order.flagged_by || null,
-    flagged_user: order.flagged_user || null,
-    flagged_at: order.flagged_at || null,
-    
-    // Resolved details
-    resolved_by: order.resolved_by || null,
-    resolved_user: order.resolved_user || null,
+    // Include resolution timestamp
     resolved_at: order.resolved_at || null,
-    
-    // Rejected details
-    rejected_by: order.rejected_by || null,
-    rejected_user: order.rejected_user || null,
-    rejected_at: order.rejected_at || null,
-    
-    // Last action details
-    last_action_by: order.last_action_by || null,
-    last_action_user: order.last_action_user || null,
-    last_action_at: order.last_action_at || null,
-    
-    // Legacy field
+    // Include resolver ID (would be a user ID in a real app with auth)
     resolver_id: order.resolver_id || null,
-    
     location: location,
     driver: driver,
     // If duration exists in database use it, otherwise set to empty string

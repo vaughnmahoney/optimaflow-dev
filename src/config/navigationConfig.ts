@@ -1,3 +1,4 @@
+
 import {
   LayoutDashboard,
   CheckCircle,
@@ -31,7 +32,7 @@ export type NavigationItem = {
   items?: NavigationItem[];
 };
 
-export const NavigationConfig = [
+export const navigationConfig: NavigationItem[] = [
   {
     title: "Dashboard",
     url: "/dashboard",
@@ -112,11 +113,5 @@ export const NavigationConfig = [
       { title: "Service Channel", url: "/apps/service-channel", icon: Link },
       { title: "Verisae", url: "/apps/verisae", icon: Link },
     ],
-  },
-  {
-    title: "Bulk Orders (Progressive)",
-    href: "/bulk-orders-progressive",
-    icon: "Package",
-    items: [],
   },
 ];
