@@ -27,7 +27,8 @@ export const WorkOrderList = ({
   onColumnFilterChange,
   clearColumnFilter,
   clearAllFilters,
-  onResolveFlag
+  onResolveFlag,
+  refetch
 }: WorkOrderListProps) => {
   const [searchResponse, setSearchResponse] = useState<any>(null);
   const [transformedData, setTransformedData] = useState<any>(null);
@@ -100,6 +101,8 @@ export const WorkOrderList = ({
         onColumnFilterChange={onColumnFilterChange}
         onColumnFilterClear={clearColumnFilter}
         onClearAllFilters={clearAllFilters}
+        onOptimoRouteSearch={onOptimoRouteSearch}
+        onRefresh={refetch}
       />
 
       {currentWorkOrder && (
@@ -120,4 +123,4 @@ export const WorkOrderList = ({
       )}
     </div>
   );
-};
+}

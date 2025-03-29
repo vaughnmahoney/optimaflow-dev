@@ -1,13 +1,6 @@
 
-import { ReactNode } from "react";
-import { WorkOrder } from './workOrder';
-import { WorkOrderFilters } from './filtering';
-import { SortField, SortDirection } from './sorting';
-import { PaginationState } from './pagination';
+import { WorkOrder, SortDirection, SortField, PaginationState, WorkOrderFilters } from './index';
 
-/**
- * Component prop types
- */
 export interface WorkOrderListProps {
   workOrders: WorkOrder[];
   isLoading: boolean;
@@ -18,7 +11,7 @@ export interface WorkOrderListProps {
   onDelete: (workOrderId: string) => void;
   onSearchChange?: (value: string) => void;
   onOptimoRouteSearch: (value: string) => void;
-  statusCounts?: {
+  statusCounts: {
     approved: number;
     pending_review: number;
     flagged: number;
@@ -36,15 +29,5 @@ export interface WorkOrderListProps {
   clearColumnFilter: (column: string) => void;
   clearAllFilters: () => void;
   onResolveFlag?: (workOrderId: string, resolution: string) => void;
-}
-
-export interface StatusFilterProps {
-  statusFilter: string | null;
-  onStatusFilterChange: (status: string | null) => void;
-}
-
-// Required to be exported but the data is handled within the debug component
-export interface DebugDisplayProps {
-  searchResponse?: any;
-  transformedData?: any;
+  refetch?: () => void;
 }

@@ -17,7 +17,7 @@ const WorkOrders = () => {
   const { resolveWorkOrderFlag } = useWorkOrderMutations();
   
   const {
-    data: workOrders,
+    workOrders,
     isLoading, 
     filters,
     setFilters,
@@ -57,11 +57,7 @@ const WorkOrders = () => {
   return (
     <Layout
       title="Work Orders"
-      header={
-        <WorkOrderHeader 
-          onOptimoRouteSearch={searchOptimoRoute}
-        />
-      }
+      header={<WorkOrderHeader title="Work Orders" />}
     >
       <div className="space-y-6">
         {/* Add the new info card */}
@@ -87,6 +83,7 @@ const WorkOrders = () => {
           clearColumnFilter={clearColumnFilter}
           clearAllFilters={clearAllFilters}
           onResolveFlag={resolveWorkOrderFlag}
+          refetch={refetch}
         />
       </div>
     </Layout>
