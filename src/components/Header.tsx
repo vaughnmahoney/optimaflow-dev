@@ -1,7 +1,7 @@
 
 import { useNavigate } from "react-router-dom";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { AlignJustify } from "lucide-react";
+import { Menu } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { UserDisplay } from "./UserDisplay";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -26,24 +26,17 @@ export function Header({ title, children }: HeaderProps) {
             className="p-1 mr-2"
             aria-label="Open menu"
           >
-            <AlignJustify className="h-5 w-5" />
+            <Menu className="h-5 w-5" />
           </button>
         ) : (
-          <div className="flex items-center">
-            <SidebarTrigger>
-              <AlignJustify className="h-5 w-5 mr-2" />
-            </SidebarTrigger>
-            <span className="text-lg font-semibold hidden sm:inline-block">
-              OptimaFlow
-            </span>
-          </div>
+          <SidebarTrigger className="mr-1" />
         )}
       </div>
       
       {/* Center section with title or app name */}
-      <div className={`absolute left-1/2 transform -translate-x-1/2 text-center ${!isMobile ? 'hidden sm:hidden' : ''}`}>
+      <div className="absolute left-1/2 transform -translate-x-1/2 text-center">
         <h1 className="text-lg font-semibold">
-          OptimaFlow
+          {isMobile ? "OptimaFlow" : (title || "")}
         </h1>
       </div>
       
