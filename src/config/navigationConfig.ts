@@ -32,7 +32,7 @@ export type NavigationItem = {
   items?: NavigationItem[];
 };
 
-export const navigationConfig: NavigationItem[] = [
+export const NavigationConfig = [
   {
     title: "Dashboard",
     url: "/dashboard",
@@ -113,5 +113,11 @@ export const navigationConfig: NavigationItem[] = [
       { title: "Service Channel", url: "/apps/service-channel", icon: Link },
       { title: "Verisae", url: "/apps/verisae", icon: Link },
     ],
+  },
+  {
+    title: "Bulk Orders (Progressive)",
+    url: "/bulk-orders-progressive",
+    icon: Package,
+    items: [],
   },
 ];
