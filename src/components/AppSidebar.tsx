@@ -6,7 +6,6 @@ import { useSidebar } from "@/components/ui/sidebar";
 import { SidebarLogout } from "@/components/sidebar/SidebarLogout";
 import { SidebarToggleButton } from "@/components/sidebar/SidebarToggleButton";
 import { SidebarNavigation } from "@/components/sidebar/SidebarNavigation";
-import { MobileSidebarToggle } from "@/components/sidebar/MobileSidebarToggle";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,12 +13,11 @@ import { supabase } from "@/integrations/supabase/client";
 export function AppSidebar() {
   const location = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Get sidebar state from context
-  const { state, toggleSidebar } = useSidebar();
+  const { state, toggleSidebar, openMobile, setOpenMobile } = useSidebar();
   const isCollapsed = state === "collapsed";
 
   // Read and set sidebar state from localStorage
@@ -41,7 +39,7 @@ export function AppSidebar() {
 
   // Close mobile sidebar when route changes
   useEffect(() => {
-    setIsMobileOpen(false);
+    setOpenMobile(false);
   }, [location]);
 
   // Fetch flagged work orders count for badge
@@ -73,12 +71,6 @@ export function AppSidebar() {
 
   return (
     <>
-      {/* Mobile Toggle Button */}
-      <MobileSidebarToggle 
-        isMobileOpen={isMobileOpen} 
-        setIsMobileOpen={setIsMobileOpen} 
-      />
-
       {/* Main Sidebar */}
       <div
         ref={sidebarRef}
@@ -87,7 +79,7 @@ export function AppSidebar() {
           "flex flex-col bg-sidebar border-r border-sidebar-border shadow-sm",
           "transition-all duration-300 ease-in-out",
           "md:translate-x-0", // Always visible on desktop
-          isMobileOpen ? "translate-x-0" : "-translate-x-full" // Toggle on mobile
+          openMobile ? "translate-x-0" : "-translate-x-full" // Toggle on mobile
         )}
         style={{
           width: isCollapsed ? 'var(--sidebar-width-collapsed)' : 'var(--sidebar-width)',
@@ -95,6 +87,17 @@ export function AppSidebar() {
         aria-label="Main navigation"
         role="navigation"
       >
+        {/* Mobile close button */}
+        {openMobile && (
+          <button
+            className="absolute right-2 top-2 p-1 rounded-full bg-sidebar-accent md:hidden"
+            onClick={() => setOpenMobile(false)}
+            aria-label="Close sidebar"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
+        
         {/* Navigation Items - Scrollable Area */}
         <div className="overflow-y-auto flex-1 py-3 px-2">
           <SidebarNavigation 
@@ -111,10 +114,10 @@ export function AppSidebar() {
       </div>
       
       {/* Backdrop overlay for mobile - closes sidebar when clicked */}
-      {isMobileOpen && (
+      {openMobile && (
         <div 
           className="fixed inset-0 bg-black/50 z-30 md:hidden animate-fade-in"
-          onClick={() => setIsMobileOpen(false)}
+          onClick={() => setOpenMobile(false)}
           aria-hidden="true"
         />
       )}

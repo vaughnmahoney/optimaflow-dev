@@ -1,9 +1,10 @@
 
 import { useNavigate } from "react-router-dom";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Zap } from "lucide-react";
+import { Menu } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { UserDisplay } from "./UserDisplay";
+import { useSidebar } from "@/components/ui/sidebar";
 
 interface HeaderProps {
   title?: string;
@@ -13,39 +14,30 @@ interface HeaderProps {
 export function Header({ title, children }: HeaderProps) {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { setOpenMobile } = useSidebar();
   
   return (
     <div className="w-full h-full flex items-center justify-between px-3 sm:px-6 py-2">
-      {/* Left section with sidebar trigger and logo */}
-      <div className="flex items-center gap-2">
-        <SidebarTrigger className="mr-1" />
-        
-        <div 
-          className="flex items-center gap-1 cursor-pointer transition-all duration-200 hover:opacity-80" 
-          onClick={() => navigate('/')}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              navigate('/');
-            }
-          }}
-          aria-label="Go to dashboard"
-        >
-          <Zap className="h-5 w-5 text-primary" />
-          {!isMobile && <span className="text-lg font-semibold">OptimaFlow</span>}
-        </div>
-        
-        {/* Title - Only visible on non-mobile screens */}
-        {title && !isMobile && (
-          <>
-            <div className="h-8 w-px bg-gray-200 mx-2 hidden sm:block"></div>
-            <h1 className="text-lg sm:text-xl font-bold hidden sm:block">
-              {title}
-            </h1>
-          </>
+      {/* Left section with sidebar trigger */}
+      <div className="flex items-center">
+        {isMobile ? (
+          <button
+            onClick={() => setOpenMobile(true)}
+            className="p-1 mr-2"
+            aria-label="Open menu"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+        ) : (
+          <SidebarTrigger className="mr-1" />
         )}
+      </div>
+      
+      {/* Center section with title or app name */}
+      <div className="absolute left-1/2 transform -translate-x-1/2 text-center">
+        <h1 className="text-lg font-semibold">
+          {isMobile ? "OptimaFlow" : (title || "")}
+        </h1>
       </div>
       
       {/* Right section with profile and actions */}
