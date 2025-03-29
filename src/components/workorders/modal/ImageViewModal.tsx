@@ -68,14 +68,6 @@ export const ImageViewModal = ({
     onNavigate(index);
   };
 
-  // Debug log the current work order data
-  console.log('Current work order in modal:', {
-    id: currentWorkOrder.id,
-    status: currentWorkOrder.status,
-    flagged_user: currentWorkOrder.flagged_user,
-    flagged_at: currentWorkOrder.flagged_at
-  });
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className={`max-w-6xl p-0 h-[90vh] flex flex-col rounded-lg overflow-hidden border-t-4 ${statusBorderColor}`}>
