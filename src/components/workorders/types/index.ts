@@ -7,13 +7,7 @@ export * from './location';
 export * from './pagination';
 export * from './props';
 export * from './sorting';
-// Export workOrder types, but avoid duplicate WorkOrder export
-export type { 
-  WorkOrderDriver,
-  WorkOrderLocation,
-  WorkOrderImageInfo
-} from './workOrder';
-// Export the main WorkOrder type to avoid ambiguity
+// Export the main WorkOrder type directly
 export { type WorkOrder } from './workOrder';
 
 // Keep compatibility with existing sidebar types
