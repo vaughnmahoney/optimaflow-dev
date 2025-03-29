@@ -1,7 +1,7 @@
 
 import { useNavigate } from "react-router-dom";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Menu } from "lucide-react";
+import { Menu, Zap } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { UserDisplay } from "./UserDisplay";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -18,7 +18,7 @@ export function Header({ title, children }: HeaderProps) {
   
   return (
     <div className="w-full h-full flex items-center justify-between px-3 sm:px-6 py-2">
-      {/* Left section with sidebar trigger */}
+      {/* Left section with sidebar trigger and logo */}
       <div className="flex items-center">
         {isMobile ? (
           <button
@@ -29,8 +29,14 @@ export function Header({ title, children }: HeaderProps) {
             <Menu className="h-5 w-5" />
           </button>
         ) : (
-          <SidebarTrigger className="mr-1" />
+          <SidebarTrigger className="mr-3" />
         )}
+        
+        {/* Add the OptimaFlow logo and text */}
+        <div className="flex items-center">
+          <Zap className="h-5 w-5 text-primary mr-2" />
+          <span className="font-semibold text-lg">OptimaFlow</span>
+        </div>
       </div>
       
       {/* Center section with title or app name */}
