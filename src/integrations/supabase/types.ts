@@ -83,6 +83,27 @@ export type Database = {
         }
         Relationships: []
       }
+      auto_import_logs: {
+        Row: {
+          created_at: string | null
+          execution_time: string
+          id: string
+          result: Json
+        }
+        Insert: {
+          created_at?: string | null
+          execution_time?: string
+          id?: string
+          result: Json
+        }
+        Update: {
+          created_at?: string | null
+          execution_time?: string
+          id?: string
+          result?: Json
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           billing_address: Json | null

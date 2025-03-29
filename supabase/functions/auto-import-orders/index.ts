@@ -1,4 +1,3 @@
-
 import { corsHeaders } from '../_shared/cors.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.33.1';
 import { format, getDay, startOfWeek, isAfter } from 'https://esm.sh/date-fns@2.30.0';
