@@ -1,7 +1,7 @@
-
 import { useLocation } from "react-router-dom";
 import { 
-  LayoutDashboard, AlertCircle, Clock, Users, Database
+  LayoutDashboard, AlertCircle, Clock, Users, Database,
+  LucideIcon  // Add explicit import for LucideIcon type
 } from "lucide-react";
 import { SidebarNavItem } from "./SidebarNavItem";
 import { useAuth } from "@/components/AuthProvider";
@@ -14,7 +14,7 @@ interface SidebarNavigationProps {
 
 interface NavItem {
   to: string;
-  icon: LucideIcon;
+  icon: LucideIcon;  // Now properly typed
   label: string;
   isActive: boolean;
   badge?: number;
