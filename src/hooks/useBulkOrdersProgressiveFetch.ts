@@ -34,8 +34,7 @@ export const useBulkOrdersProgressiveFetch = () => {
     currentBatch: 0,
     totalBatches: 0,
     successfulBatches: 0,
-    failedBatches: 0,
-    totalOrdersProcessed: 0
+    failedBatches: 0
   });
 
   // Setup the progressive loader
@@ -52,22 +51,14 @@ export const useBulkOrdersProgressiveFetch = () => {
         apiRequests: state.currentPage,
         totalOrdersFromAPI: state.totalOrders || 0,
         statusFilteredOrders: state.processedOrders,
-        originalOrderCount: state.processedOrders,
-        batchStats: {
-          totalBatches: state.totalPages || 0,
-          completedBatches: state.currentPage,
-          failedBatches: state.error ? 1 : 0,
-          successfulBatches: state.error ? state.currentPage - 1 : state.currentPage,
-          totalOrdersProcessed: state.processedOrders
-        }
+        originalOrderCount: state.processedOrders
       });
 
       setProgressStats({
         currentBatch: state.currentPage,
         totalBatches: state.totalPages || 0,
-        successfulBatches: state.error ? state.currentPage - 1 : state.currentPage,
-        failedBatches: state.error ? 1 : 0,
-        totalOrdersProcessed: state.processedOrders
+        successfulBatches: state.currentPage,
+        failedBatches: state.error ? 1 : 0
       });
     },
     onComplete: (allData: any[]) => {
@@ -93,7 +84,6 @@ export const useBulkOrdersProgressiveFetch = () => {
     onError: (error: string) => {
       console.error("Order loading error:", error);
       setOrdersLoading(false);
-      toast.error(`Error loading orders: ${error}`);
     }
   });
 

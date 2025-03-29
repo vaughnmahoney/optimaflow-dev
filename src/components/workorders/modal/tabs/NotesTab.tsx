@@ -23,7 +23,7 @@ export const NotesTab = ({
   
   // Helper function to create an empty state for notes
   const EmptyNoteState = ({ type }: { type: string }) => (
-    <div className="flex items-center justify-center p-3 bg-gray-50 rounded-md border border-gray-100">
+    <div className="flex items-center justify-center p-4 bg-gray-50 rounded-md border border-gray-100">
       <div className="text-center">
         <FileText className="h-5 w-5 text-gray-300 mx-auto mb-2" />
         <p className="text-sm text-gray-500">No {type} notes available</p>
@@ -32,12 +32,12 @@ export const NotesTab = ({
   );
 
   return (
-    <div className="space-y-4 pt-2">
+    <div className="space-y-4">
       {/* Combined Technician Notes */}
       <Card className="overflow-hidden border shadow-sm bg-white">
-        <div className="p-4 space-y-4">
+        <div className="p-5 space-y-6">
           {/* Tech Notes Section */}
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
               <MessageSquare className="h-5 w-5 text-blue-600" />
               <h3 className="font-medium text-blue-800 text-lg">Tech Notes</h3>
@@ -55,7 +55,7 @@ export const NotesTab = ({
           </div>
           
           {/* Service Notes Section */}
-          <div className="space-y-2 pt-1">
+          <div className="space-y-3 pt-2">
             <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
               <Wrench className="h-5 w-5 text-blue-600" />
               <h3 className="font-medium text-blue-800 text-lg">Service Notes</h3>
@@ -73,7 +73,7 @@ export const NotesTab = ({
           </div>
           
           {/* Additional Notes Section - Now with correct mapping */}
-          <div className="space-y-2 pt-1">
+          <div className="space-y-3 pt-2">
             <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
               <ClipboardList className="h-5 w-5 text-blue-600" />
               <h3 className="font-medium text-blue-800 text-lg">Additional Notes</h3>
@@ -94,7 +94,7 @@ export const NotesTab = ({
       
       {/* QC Notes - Updated with clean style */}
       <Card className="overflow-hidden border shadow-sm bg-white">
-        <div className="p-4 space-y-2">
+        <div className="p-5 space-y-3">
           <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
             <StickyNote className="h-5 w-5 text-red-600" />
             <h3 className="font-medium text-red-800 text-lg">QC Notes</h3>
@@ -113,8 +113,8 @@ export const NotesTab = ({
       </Card>
       
       {/* Resolution Notes - Updated with clean style */}
-      <Card className="overflow-hidden border shadow-sm bg-white mb-4">
-        <div className="p-4 space-y-2">
+      <Card className="overflow-hidden border shadow-sm bg-white">
+        <div className="p-5 space-y-3">
           <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
             <PenSquare className="h-5 w-5 text-blue-600" />
             <h3 className="font-medium text-blue-800 text-lg">Resolution Notes</h3>

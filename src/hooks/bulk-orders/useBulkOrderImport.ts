@@ -22,7 +22,7 @@ export const useBulkOrderImport = () => {
   });
 
   // Size of each batch to send to the edge function
-  const BATCH_SIZE = 100;
+  const BATCH_SIZE = 25;
 
   const importOrders = async (orders: any[]) => {
     if (!orders || orders.length === 0) {
@@ -30,11 +30,10 @@ export const useBulkOrderImport = () => {
       return null;
     }
 
-    console.log(`Starting import of ${orders.length} orders to database...`);
     setIsImporting(true);
     setImportResult(null);
     
-    // Initialize progress tracking with the total number of orders
+    // Initialize progress tracking
     const totalOrders = orders.length;
     setImportProgress({ current: 0, total: totalOrders, percentage: 0 });
     
@@ -44,7 +43,7 @@ export const useBulkOrderImport = () => {
       batches.push(orders.slice(i, i + BATCH_SIZE));
     }
     
-    console.log(`Importing ${orders.length} orders in ${batches.length} batches (batch size: ${BATCH_SIZE})...`);
+    toast.info(`Importing ${orders.length} orders in ${batches.length} batches...`);
     
     // Track results across all batches
     const combinedResult: ImportResult = {
@@ -72,9 +71,7 @@ export const useBulkOrderImport = () => {
             throw new Error(`Error calling import function (batch ${i + 1}): ${error.message}`);
           }
 
-          console.log(`Batch ${i + 1} response:`, data);
-
-          // Accumulate results from this batch
+          // Accumulate results
           combinedResult.imported += data.imported;
           combinedResult.duplicates += data.duplicates;
           combinedResult.errors += data.errors;
@@ -86,7 +83,7 @@ export const useBulkOrderImport = () => {
             ];
           }
           
-          // Update progress based on all orders processed so far across all batches
+          // Update progress
           const processedSoFar = Math.min((i + 1) * BATCH_SIZE, totalOrders);
           const percentage = Math.round((processedSoFar / totalOrders) * 100);
           setImportProgress({ 
@@ -94,8 +91,6 @@ export const useBulkOrderImport = () => {
             total: totalOrders, 
             percentage 
           });
-          
-          console.log(`Batch ${i + 1} complete. Cumulative results: imported=${combinedResult.imported}, duplicates=${combinedResult.duplicates}, errors=${combinedResult.errors}`);
           
         } catch (batchError) {
           console.error(`Error in batch ${i + 1}:`, batchError);
@@ -140,6 +135,7 @@ export const useBulkOrderImport = () => {
       return null;
     } finally {
       setIsImporting(false);
+      setImportProgress({ current: 0, total: 0, percentage: 0 });
     }
   };
 

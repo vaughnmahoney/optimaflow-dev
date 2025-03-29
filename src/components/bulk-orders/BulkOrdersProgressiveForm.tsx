@@ -7,10 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useBulkOrdersProgressiveFetch } from "@/hooks/useBulkOrdersProgressiveFetch";
 import { WorkOrderContent } from "@/components/workorders/WorkOrderContent";
 import { Badge } from "@/components/ui/badge";
-import { Package, Upload, AlertCircle } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useBulkOrderImport } from "@/hooks/bulk-orders/useBulkOrderImport";
-import { Button } from "@/components/ui/button";
+import { AlertCircle, Clock, Info, Package } from "lucide-react";
 
 export const BulkOrdersProgressiveForm = () => {
   const {
@@ -33,6 +30,9 @@ export const BulkOrdersProgressiveForm = () => {
     // Response data
     rawOrders,
     
+    // Stats and diagnostics
+    dataFlowLogging,
+    
     // Actions
     handleFetchOrders,
     pauseFetch,
@@ -40,18 +40,6 @@ export const BulkOrdersProgressiveForm = () => {
     resetFetch
   } = useBulkOrdersProgressiveFetch();
 
-  // Import hook for saving orders to database
-  const { 
-    importOrders, 
-    isImporting, 
-    importResult, 
-    importProgress 
-  } = useBulkOrderImport();
-
-  // Tracking state for auto-save
-  const [hasTriggeredAutoSave, setHasTriggeredAutoSave] = useState(false);
-  const [manualSaveEnabled, setManualSaveEnabled] = useState(false);
-  
   // Calculate if bulk fetch has started
   const isFetchStarted = progressState.currentPage > 0 || progressState.isComplete;
   
@@ -64,53 +52,6 @@ export const BulkOrdersProgressiveForm = () => {
     rejected: 0,
     all: rawOrders ? rawOrders.length : 0
   };
-
-  // Handle manual import
-  const handleManualImport = async () => {
-    if (rawOrders && rawOrders.length > 0) {
-      console.log(`Manually importing ${rawOrders.length} orders to database...`);
-      await importOrders(rawOrders);
-    }
-  };
-
-  // Auto-save to database when fetch is complete and orders are available
-  useEffect(() => {
-    const autoSaveToDatabase = async () => {
-      // Check if auto-save should be triggered - need all these conditions:
-      // 1. Fetch is truly complete (progress state shows complete)
-      // 2. We have orders to save
-      // 3. Not currently importing
-      // 4. No previous import attempt
-      // 5. Haven't already triggered auto-save
-      // 6. Manual save mode not enabled
-
-      if (
-        progressState.isComplete && 
-        rawOrders && 
-        rawOrders.length > 0 && 
-        !isImporting && 
-        !importResult && 
-        !hasTriggeredAutoSave &&
-        !manualSaveEnabled
-      ) {
-        // Add a slight delay to ensure data is fully loaded
-        setTimeout(async () => {
-          console.log(`Auto-saving ${rawOrders.length} orders to database...`);
-          setHasTriggeredAutoSave(true);
-          await importOrders(rawOrders);
-        }, 1000);
-      }
-    };
-    
-    autoSaveToDatabase();
-  }, [progressState.isComplete, rawOrders, isImporting, importResult, importOrders, hasTriggeredAutoSave, manualSaveEnabled]);
-
-  // Reset auto-save trigger when starting a new fetch
-  useEffect(() => {
-    if (isLoading && progressState.currentPage === 1) {
-      setHasTriggeredAutoSave(false);
-    }
-  }, [isLoading, progressState.currentPage]);
 
   return (
     <div className="space-y-6">
@@ -132,20 +73,10 @@ export const BulkOrdersProgressiveForm = () => {
               />
               
               <div className="ml-auto flex items-center gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setManualSaveEnabled(!manualSaveEnabled)}
-                  className={manualSaveEnabled ? "border-amber-500 text-amber-700" : ""}
-                >
-                  <AlertCircle className="h-4 w-4 mr-1" />
-                  {manualSaveEnabled ? "Auto-save disabled" : "Auto-save enabled"}
-                </Button>
-                
                 <FetchButton 
                   isLoading={isLoading} 
                   onFetch={handleFetchOrders}
-                  isDisabled={!startDate || !endDate || progressState.isLoading || isImporting}
+                  isDisabled={!startDate || !endDate || progressState.isLoading}
                   activeTab={activeTab}
                 />
               </div>
@@ -158,81 +89,63 @@ export const BulkOrdersProgressiveForm = () => {
               onResume={resumeFetch}
               onReset={resetFetch}
             />
-            
-            {/* Import Progress (only show when actively importing) */}
-            {isImporting && (
-              <div className="mt-2 bg-blue-50 border border-blue-100 rounded p-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <Upload className="h-4 w-4 text-blue-500" />
-                  <span className="text-sm font-medium text-blue-700">
-                    Saving to database: {importProgress.percentage}%
-                  </span>
-                </div>
-                <div className="w-full bg-blue-100 rounded-full h-1.5">
-                  <div 
-                    className="bg-blue-500 h-1.5 rounded-full" 
-                    style={{ width: `${importProgress.percentage}%` }}
-                  ></div>
-                </div>
-                <div className="text-xs text-blue-600 mt-1">
-                  {importProgress.current} of {importProgress.total} orders processed
-                </div>
-              </div>
-            )}
-            
-            {/* Import Results (show when import is complete) */}
-            {importResult && !isImporting && (
-              <div className={`mt-2 ${importResult.success ? 'bg-green-50 border-green-100' : 'bg-amber-50 border-amber-100'} border rounded p-3`}>
-                <div className="flex items-center gap-2">
-                  <Upload className={`h-4 w-4 ${importResult.success ? 'text-green-500' : 'text-amber-500'}`} />
-                  <span className={`text-sm font-medium ${importResult.success ? 'text-green-700' : 'text-amber-700'}`}>
-                    {importResult.success ? 'Orders saved to database' : 'Some orders failed to save'}
-                  </span>
-                </div>
-                <div className="text-xs mt-1 flex flex-wrap gap-x-4">
-                  <span>Total: {importResult.total}</span>
-                  <span>Imported: {importResult.imported}</span>
-                  <span>Duplicates: {importResult.duplicates}</span>
-                  {importResult.errors > 0 && <span>Errors: {importResult.errors}</span>}
-                </div>
-              </div>
-            )}
-            
-            {/* Manual Import Button - show when fetch is complete and manual save mode is enabled */}
-            {progressState.isComplete && manualSaveEnabled && rawOrders && rawOrders.length > 0 && !isImporting && (
-              <div className="mt-4 flex justify-end">
-                <Button 
-                  onClick={handleManualImport} 
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Import {rawOrders.length} Orders to Database
-                </Button>
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>
       
-      {/* Simplified stats section - only show when fetching is complete */}
-      {progressState.isComplete && rawOrders && rawOrders.length > 0 && (
+      {/* Processing stats section (only show when data is loading/loaded) */}
+      {isFetchStarted && (
         <Card className="bg-slate-50">
           <CardContent className="py-4">
-            <div className="flex items-center gap-2">
-              <Package className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm">
-                <span className="font-medium">Filtered Orders: </span>
-                <Badge variant="outline" className="bg-green-50 text-green-700 ml-1">
-                  {rawOrders.length}
-                </Badge>
-              </span>
+            <div className="flex flex-wrap gap-4 items-center">
+              <div className="flex items-center gap-2">
+                <Package className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">
+                  <span className="font-medium">Total Orders: </span>
+                  <Badge variant="outline" className="bg-white ml-1">
+                    {progressState.totalOrders || 'Loading...'}
+                  </Badge>
+                </span>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">
+                  <span className="font-medium">Processed: </span>
+                  <Badge variant="outline" className="bg-white ml-1">
+                    {progressState.processedOrders}
+                  </Badge>
+                </span>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">
+                  <span className="font-medium">Current Batch: </span>
+                  <Badge variant="outline" className="bg-white ml-1">
+                    {progressState.currentPage}/{progressState.totalPages || '?'}
+                  </Badge>
+                </span>
+              </div>
+              
+              {rawOrders && rawOrders.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <Info className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">
+                    <span className="font-medium">Ready for Review: </span>
+                    <Badge variant="outline" className="bg-green-50 text-green-700 ml-1">
+                      {rawOrders.length}
+                    </Badge>
+                  </span>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
       )}
       
       {/* Display a message when no orders have been fetched */}
-      {!isLoading && (!rawOrders || rawOrders.length === 0) && !progressState.isComplete && (
+      {!isLoading && rawOrders && rawOrders.length === 0 && !progressState.isComplete && (
         <div className="bg-slate-50 border rounded-md p-8 text-center">
           <h3 className="text-lg font-medium text-slate-800 mb-2">No orders loaded</h3>
           <p className="text-slate-600 mb-4">Select a date range and click "Fetch Orders" to retrieve work orders.</p>

@@ -24,6 +24,8 @@ export const FetchProgressBar = ({
     isComplete, 
     currentPage, 
     totalPages, 
+    processedOrders,
+    totalOrders,
     progress,
     error
   } = state;
@@ -58,9 +60,6 @@ export const FetchProgressBar = ({
     return "text-gray-700 bg-gray-50";
   };
 
-  // Ensure progress is capped at 100%
-  const safeProgress = Math.min(progress, 100);
-
   return (
     <Card className="bg-white border">
       <CardContent className="pt-6">
@@ -71,15 +70,25 @@ export const FetchProgressBar = ({
             <span className="ml-2 font-medium">{getStatusText()}</span>
           </div>
 
-          {/* Progress info - simplified to just show batch progress */}
-          <div className="text-sm">
-            <div className="text-gray-500 mb-1">Progress</div>
-            <div className="font-medium">Batch {currentPage} {totalPages ? `of ${totalPages}` : ''}</div>
+          {/* Progress details */}
+          <div className="grid grid-cols-3 gap-4 text-sm">
+            <div>
+              <div className="text-gray-500 mb-1">Orders</div>
+              <div className="font-medium">{processedOrders} {totalOrders ? `/ ${totalOrders}` : ''}</div>
+            </div>
+            <div>
+              <div className="text-gray-500 mb-1">Batches</div>
+              <div className="font-medium">{currentPage} {totalPages ? `/ ${totalPages}` : ''}</div>
+            </div>
+            <div>
+              <div className="text-gray-500 mb-1">Progress</div>
+              <div className="font-medium">{Math.round(progress)}%</div>
+            </div>
           </div>
 
           {/* Progress bar */}
           <div>
-            <Progress value={safeProgress} className="h-2" />
+            <Progress value={progress} className="h-2" />
           </div>
 
           {/* Action buttons */}
