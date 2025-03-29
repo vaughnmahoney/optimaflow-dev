@@ -3,6 +3,7 @@ import { User, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "../../StatusBadge";
 import { WorkOrder } from "../../types";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ModalHeaderProps {
   workOrder: WorkOrder;
@@ -14,6 +15,7 @@ export const ModalHeader = ({
   onClose 
 }: ModalHeaderProps) => {
   const driverName = workOrder.search_response?.scheduleInformation?.driverName || 'No Driver Assigned';
+  const isMobile = useIsMobile();
   
   // Extract the completion status from the appropriate place in the order object
   const getCompletionStatus = (order: WorkOrder): string | undefined => {
@@ -30,14 +32,16 @@ export const ModalHeader = ({
           <User className="h-5 w-5 text-gray-600 dark:text-gray-300" />
         </div>
         <div className="text-left">
-          <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold">Order #{workOrder.order_no}</h2>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h2 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold`}>
+              Order #{workOrder.order_no}
+            </h2>
             <StatusBadge 
               status={workOrder.status || "pending_review"} 
               completionStatus={getCompletionStatus(workOrder)}
             />
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground truncate max-w-[200px] md:max-w-full`}>
             Driver: {driverName}
           </p>
         </div>
