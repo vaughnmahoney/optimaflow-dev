@@ -91,53 +91,51 @@ export const OrderDetails = ({
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       <div className="bg-gray-100 sticky top-0 z-10">
-        <div className="w-full bg-gray-100 flex items-center justify-center">
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="w-full h-12 bg-gray-100 grid grid-cols-3 rounded-none">
-              <TabsTrigger value="details" className="rounded-none data-[state=active]:bg-white">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  <span className="hidden sm:inline">Order Details</span>
-                </div>
-              </TabsTrigger>
-              <TabsTrigger value="notes" className="rounded-none data-[state=active]:bg-white">
-                <div className="flex items-center gap-2">
-                  <MessageSquare className="h-4 w-4" />
-                  <span className="hidden sm:inline">Notes</span>
-                </div>
-              </TabsTrigger>
-              <TabsTrigger value="signature" className="rounded-none data-[state=active]:bg-white">
-                <div className="flex items-center gap-2">
-                  <FileSignature className="h-4 w-4" />
-                  <span className="hidden sm:inline">Signature</span>
-                </div>
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+          <TabsList className="w-full h-12 bg-gray-100 grid grid-cols-3 rounded-none">
+            <TabsTrigger value="details" className="rounded-none data-[state=active]:bg-white">
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                <span className="hidden sm:inline">Order Details</span>
+              </div>
+            </TabsTrigger>
+            <TabsTrigger value="notes" className="rounded-none data-[state=active]:bg-white">
+              <div className="flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" />
+                <span className="hidden sm:inline">Notes</span>
+              </div>
+            </TabsTrigger>
+            <TabsTrigger value="signature" className="rounded-none data-[state=active]:bg-white">
+              <div className="flex items-center gap-2">
+                <FileSignature className="h-4 w-4" />
+                <span className="hidden sm:inline">Signature</span>
+              </div>
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
 
       <ScrollArea className="flex-1 overflow-auto">
-        <div className="space-y-4 pt-4">
+        <div className="space-y-0">
           {/* Order Details Section */}
-          <div id="details-section" ref={detailsSectionRef} className="px-4 pb-6 scroll-m-12">
+          <div id="details-section" ref={detailsSectionRef} className="px-4 pt-4 scroll-m-12">
             <OrderDetailsTab workOrder={workOrder} />
           </div>
           
           {/* Notes Section */}
-          <div id="notes-section" ref={notesSectionRef} className="px-4 pb-6 scroll-m-12">
+          <div id="notes-section" ref={notesSectionRef} className="px-4 pb-0 scroll-m-12">
             <NotesTab workOrder={workOrder} />
           </div>
           
           {/* Signature Section */}
-          <div id="signature-section" ref={signatureSectionRef} className="px-4 pb-6 scroll-m-12">
+          <div id="signature-section" ref={signatureSectionRef} className="px-4 pb-0 scroll-m-12">
             <SignatureTab workOrder={workOrder} />
           </div>
         </div>
       </ScrollArea>
       
       {/* Footer with notes buttons */}
-      <div className="p-4 border-t flex items-center justify-between bg-gray-50">
+      <div className="p-3 border-t flex items-center justify-between bg-gray-50">
         <div className="flex items-center gap-2">
           <QcNotesSheet workOrder={workOrder} />
           <ResolutionNotesSheet workOrder={workOrder} />
