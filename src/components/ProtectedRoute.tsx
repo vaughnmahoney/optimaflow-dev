@@ -1,18 +1,30 @@
+
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
 
-export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { session, loading } = useAuth();
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+  requiredRole?: string;
+}
+
+export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
+  const { session, loading, userRole } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log("ProtectedRoute - session:", session, "loading:", loading);
-    if (!loading && !session) {
-      console.log("No session, redirecting to login");
-      navigate("/login", { replace: true });
+    console.log("ProtectedRoute - session:", session, "loading:", loading, "userRole:", userRole);
+    
+    if (!loading) {
+      if (!session) {
+        console.log("No session, redirecting to login");
+        navigate("/login", { replace: true });
+      } else if (requiredRole && userRole !== requiredRole) {
+        console.log(`Role ${requiredRole} required, user has ${userRole}, redirecting to work orders`);
+        navigate("/work-orders", { replace: true });
+      }
     }
-  }, [session, loading]);
+  }, [session, loading, userRole, requiredRole]);
 
   if (loading) {
     return (
@@ -23,6 +35,11 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
         </div>
       </div>
     );
+  }
+
+  // If we need a specific role and the user doesn't have it, render nothing
+  if (requiredRole && userRole !== requiredRole) {
+    return null;
   }
 
   return session ? <>{children}</> : null;

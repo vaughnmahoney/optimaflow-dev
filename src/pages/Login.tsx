@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -6,9 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-const SUPERVISOR_PASSWORD = "demo123"; // This should be moved to an environment variable
-
 const Login = () => {
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -19,32 +19,27 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      if (password === SUPERVISOR_PASSWORD) {
-        // Use a shared supervisor account for authentication
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: "supervisor@example.com",
-          password: SUPERVISOR_PASSWORD,
-        });
+      // Use the username as the email for authentication
+      // This is a common pattern when you want to use usernames but Supabase uses email
+      const email = `${username}@example.com`;
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
 
-        if (error) throw error;
+      if (error) throw error;
 
-        toast({
-          title: "Welcome back!",
-          description: "Successfully logged in.",
-        });
+      toast({
+        title: "Welcome back!",
+        description: "Successfully logged in.",
+      });
 
-        navigate("/supervisor");
-      } else {
-        toast({
-          title: "Invalid password",
-          description: "Please check your password and try again.",
-          variant: "destructive",
-        });
-      }
+      navigate("/work-orders");
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.message || "An error occurred during login.",
+        title: "Login failed",
+        description: error.message || "Please check your username and password.",
         variant: "destructive",
       });
     } finally {
@@ -57,18 +52,29 @@ const Login = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
-            Supervisor Login
+            OptimaFlow Login
           </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Input
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Input
                 type="password"
-                placeholder="Enter supervisor password"
+                placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full"
+                required
               />
             </div>
             <Button
@@ -78,6 +84,12 @@ const Login = () => {
             >
               {isLoading ? "Logging in..." : "Login"}
             </Button>
+            
+            <div className="mt-4 p-3 bg-blue-50 rounded-md border border-blue-200">
+              <p className="text-sm text-blue-800 font-medium">Default Admin Login:</p>
+              <p className="text-sm text-blue-700">Username: <span className="font-mono">admin</span></p>
+              <p className="text-sm text-blue-700">Password: <span className="font-mono">demo</span></p>
+            </div>
           </form>
         </CardContent>
       </Card>

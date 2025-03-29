@@ -1,11 +1,11 @@
-
 import { useState, useRef } from "react";
 import { useImageZoom } from "@/hooks/useImageZoom";
 import { ImageControls } from "./ImageControls";
 import { ImageEmptyState } from "./ImageEmptyState";
+import { ImageType } from "../../types/image";
 
 interface ImageViewerProps {
-  images: Array<{ url: string }>;
+  images: ImageType[];
   currentImageIndex: number;
   setCurrentImageIndex: (index: number) => void;
   isImageExpanded: boolean;

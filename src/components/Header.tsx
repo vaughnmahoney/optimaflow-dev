@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Zap } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { UserDisplay } from "./UserDisplay";
 
 interface HeaderProps {
   title?: string;
@@ -49,8 +50,9 @@ export function Header({ title, children }: HeaderProps) {
         )}
       </div>
       
-      {/* Right section: Contains search, import, etc. */}
-      <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto sm:ml-auto">
+      {/* Right section: Contains user display, search, import, etc. */}
+      <div className="flex items-center gap-4 flex-shrink-0 w-full sm:w-auto sm:ml-auto">
+        <UserDisplay />
         {children}
       </div>
     </div>

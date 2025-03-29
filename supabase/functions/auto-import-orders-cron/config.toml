@@ -1,0 +1,4 @@
+
+project_id = "eijdqiyvuhregbydndnb"
+name = "auto-import-orders-cron"
+scheduled_cron = "0 * * * *" # Run every hour

@@ -1,11 +1,10 @@
 
 import { useLocation } from "react-router-dom";
 import { 
-  LayoutDashboard, AlertCircle, CreditCard, Car, 
-  Package2, Clock, Users, Receipt, 
-  CalendarDays, LucideIcon, Database
+  LayoutDashboard, AlertCircle, Clock, Users, Database
 } from "lucide-react";
 import { SidebarNavItem } from "./SidebarNavItem";
+import { useAuth } from "@/components/AuthProvider";
 
 interface SidebarNavigationProps {
   isCollapsed: boolean;
@@ -19,6 +18,7 @@ interface NavItem {
   label: string;
   isActive: boolean;
   badge?: number;
+  roles?: string[]; // Add roles to control visibility
 }
 
 export function SidebarNavigation({ 
@@ -27,75 +27,52 @@ export function SidebarNavigation({
   flaggedWorkOrdersCount = 0
 }: SidebarNavigationProps) {
   const location = useLocation();
+  const { userRole } = useAuth();
   
-  // Create navigation items
+  // Create navigation items with role-based visibility
   const navItems: NavItem[] = [
-    { 
-      to: "/dashboard", 
-      icon: LayoutDashboard, 
-      label: "Dashboard", 
-      isActive: location.pathname === "/dashboard" || location.pathname === "/" 
-    },
     { 
       to: "/work-orders", 
       icon: AlertCircle, 
       label: "Quality Control", 
       isActive: location.pathname.startsWith("/work-orders"),
-      badge: flaggedWorkOrdersCount > 0 ? flaggedWorkOrdersCount : undefined
+      badge: flaggedWorkOrdersCount > 0 ? flaggedWorkOrdersCount : undefined,
+      roles: ["admin", "lead", "user"] // Everyone can see this
     },
     { 
       to: "/bulk-orders-test", 
       icon: Database, 
       label: "Bulk Import Test", 
-      isActive: location.pathname.startsWith("/bulk-orders-test") 
-    },
-    { 
-      to: "/payroll", 
-      icon: CreditCard, 
-      label: "Payroll", 
-      isActive: location.pathname.startsWith("/payroll") 
-    },
-    { 
-      to: "/vehicle-maintenance", 
-      icon: Car, 
-      label: "Vehicle Maintenance", 
-      isActive: location.pathname.startsWith("/vehicle-maintenance") 
-    },
-    {
-      to: "/storage", 
-      icon: Package2, 
-      label: "Storage Units", 
-      isActive: location.pathname.startsWith("/storage") || location.pathname.startsWith("/inventory")
+      isActive: location.pathname.startsWith("/bulk-orders-test"),
+      roles: ["admin"] // Only admins
     },
     {
       to: "/attendance", 
       icon: Clock, 
       label: "Attendance", 
-      isActive: location.pathname.startsWith("/attendance") || location.pathname.startsWith("/supervisor")
+      isActive: location.pathname.startsWith("/attendance") || location.pathname.startsWith("/supervisor"),
+      roles: ["admin"] // Only admins
     },
     { 
       to: "/employees", 
       icon: Users, 
       label: "Employees", 
-      isActive: location.pathname.startsWith("/employees") || location.pathname.startsWith("/admin") 
+      isActive: location.pathname.startsWith("/employees") || location.pathname.startsWith("/admin"),
+      roles: ["admin"] // Only admins
     },
     { 
-      to: "/receipts", 
-      icon: Receipt, 
-      label: "Expenses", 
-      isActive: location.pathname.startsWith("/receipts") || location.pathname.startsWith("/reports")
-    },
-    { 
-      to: "/calendar", 
-      icon: CalendarDays, 
-      label: "Calendar", 
-      isActive: location.pathname.startsWith("/calendar")
-    },
+      to: "/users", 
+      icon: Users, 
+      label: "User Management", 
+      isActive: location.pathname.startsWith("/users"),
+      roles: ["admin"] // Only admins
+    }
   ];
 
-  // Filter navigation items based on search
+  // Filter items by role and search term
   const filteredNavItems = navItems.filter(item => 
-    item.label.toLowerCase().includes(searchTerm.toLowerCase())
+    item.label.toLowerCase().includes(searchTerm.toLowerCase()) && 
+    (!item.roles || item.roles.includes(userRole))
   );
 
   return (
