@@ -6,16 +6,19 @@ import WorkOrders from "@/pages/WorkOrders";
 import BulkOrdersTest from "@/pages/BulkOrdersTest";
 import BulkOrdersProgressive from "@/pages/BulkOrdersProgressive";
 import MaterialRequirements from "@/pages/MaterialRequirements";
+import Login from "@/pages/Login";
+import Users from "@/pages/Users";
 
 const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<Index />} />
+      <Route path="login" element={<Login />} />
       <Route path="work-orders" element={<WorkOrders />} />
-      {/* Simplified to only use progressive loading */}
       <Route path="bulk-orders" element={<BulkOrdersTest />} />
       <Route path="material-requirements" element={<MaterialRequirements />} />
       <Route path="bulk-orders-progressive" element={<BulkOrdersProgressive />} />
+      <Route path="users" element={<Users />} />
     </Routes>
   );
 };
