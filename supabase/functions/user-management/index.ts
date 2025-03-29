@@ -1,6 +1,5 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders, createErrorResponse } from "../_shared/cors.ts";
 import { validateAdminAccess } from "./auth.ts";
 import { 
   createUser, 
@@ -10,6 +9,48 @@ import {
   UserCreateData,
   UserListFilters
 } from "./userService.ts";
+
+// CORS headers to allow cross-origin requests
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+// Create a standard error response with CORS headers
+const createErrorResponse = (message: string, status: number = 400) => {
+  return new Response(
+    JSON.stringify({
+      success: false,
+      error: message
+    }),
+    {
+      status,
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders
+      }
+    }
+  );
+};
+
+// Create a standard success response with CORS headers
+const createSuccessResponse = (data: any, meta: any = null) => {
+  return new Response(
+    JSON.stringify({
+      success: true,
+      data,
+      ...meta && { meta }
+    }),
+    {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders
+      }
+    }
+  );
+};
 
 // Types for our request data
 type RequestData = {
@@ -23,9 +64,13 @@ type RequestData = {
 };
 
 serve(async (req) => {
+  console.log("Request received:", req.method, req.url);
+  
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
+    console.log("Handling OPTIONS request for CORS preflight");
     return new Response(null, {
+      status: 204,
       headers: corsHeaders,
     });
   }
@@ -35,6 +80,7 @@ serve(async (req) => {
     const authResult = await validateAdminAccess(req.headers.get("Authorization"));
     
     if (authResult.error) {
+      console.error("Authorization error:", authResult.error);
       return authResult.error;
     }
     
@@ -43,6 +89,7 @@ serve(async (req) => {
     // Parse request body
     const requestData: RequestData = await req.json();
     const { action } = requestData;
+    console.log("Processing action:", action);
 
     // Process based on action type
     switch (action) {

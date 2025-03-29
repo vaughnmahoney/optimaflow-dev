@@ -1,6 +1,28 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.41.1";
-import { createErrorResponse } from "../_shared/cors.ts";
+
+// CORS headers for responses
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+// Create a standard error response with CORS headers
+const createErrorResponse = (message: string, status: number = 400) => {
+  return new Response(
+    JSON.stringify({
+      success: false,
+      error: message
+    }),
+    {
+      status,
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders
+      }
+    }
+  );
+};
 
 // Validates the user's authorization and ensures they are an admin
 export async function validateAdminAccess(authHeader: string | null) {
