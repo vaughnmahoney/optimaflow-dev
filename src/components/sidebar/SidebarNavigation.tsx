@@ -1,3 +1,4 @@
+
 import { useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, AlertCircle, Clock, Users, Database,
@@ -40,10 +41,10 @@ export function SidebarNavigation({
       roles: ["admin", "lead", "user"] // Everyone can see this
     },
     { 
-      to: "/bulk-orders-test", 
+      to: "/bulk-orders", 
       icon: Database, 
       label: "Bulk Import Test", 
-      isActive: location.pathname.startsWith("/bulk-orders-test"),
+      isActive: location.pathname.startsWith("/bulk-orders"),
       roles: ["admin"] // Only admins
     },
     {
