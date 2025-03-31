@@ -3,7 +3,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { WorkOrder } from "../../../types";
 import { ImageType } from "../../../types/image";
-import { MobileStatusButtons } from "./MobileStatusButtons";
 import { MobileOrderDetails } from "./MobileOrderDetails";
 import { Image, Download } from "lucide-react";
 import { QcNotesSheet } from "../QcNotesSheet";
@@ -30,14 +29,6 @@ export const MobileModalContent = ({
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      {/* Status update buttons at the top */}
-      <MobileStatusButtons 
-        workOrderId={workOrder.id}
-        currentStatus={workOrder.status}
-        onStatusUpdate={onStatusUpdate}
-        onResolveFlag={onResolveFlag}
-      />
-      
       {/* Scrollable main content */}
       <ScrollArea className="flex-1 overflow-auto">
         <div className="p-4">
