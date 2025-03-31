@@ -1,7 +1,7 @@
 
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { StatusBadge } from "../../../StatusBadge";
+import { StatusBadgeDropdown } from "../../../StatusBadgeDropdown";
 import { WorkOrder } from "../../../types";
 
 interface MobileModalHeaderProps {
@@ -27,8 +27,9 @@ export const MobileModalHeader = ({
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-base font-semibold">Order #{workOrder.order_no}</h2>
-            <StatusBadge 
-              status={workOrder.status || "pending_review"} 
+            <StatusBadgeDropdown 
+              workOrderId={workOrder.id}
+              currentStatus={workOrder.status || "pending_review"} 
               completionStatus={getCompletionStatus(workOrder)}
             />
           </div>
