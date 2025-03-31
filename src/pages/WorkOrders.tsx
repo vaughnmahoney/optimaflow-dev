@@ -3,6 +3,7 @@ import { Layout } from "@/components/Layout";
 import { WorkOrderContent } from "@/components/workorders/WorkOrderContent";
 import { WorkOrderHeader } from "@/components/workorders/WorkOrderHeader";
 import { WorkOrderInfoCard } from "@/components/workorders/InfoCard";
+import { ImportControls } from "@/components/workorders/ImportControls";
 import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useWorkOrderData } from "@/hooks/useWorkOrderData";
@@ -58,14 +59,15 @@ const WorkOrders = () => {
     <Layout
       title="Work Orders"
       header={
-        <WorkOrderHeader 
-          onOptimoRouteSearch={searchOptimoRoute}
-        />
+        <WorkOrderHeader />
       }
     >
       <div className="space-y-6">
         {/* Add the new info card */}
         <WorkOrderInfoCard />
+        
+        {/* Add the new import controls */}
+        <ImportControls onOptimoRouteSearch={searchOptimoRoute} />
         
         <WorkOrderContent 
           workOrders={workOrders}
