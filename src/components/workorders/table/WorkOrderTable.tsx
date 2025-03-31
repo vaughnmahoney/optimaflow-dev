@@ -6,11 +6,13 @@ import {
 import { WorkOrder, SortDirection, SortField, PaginationState, WorkOrderFilters } from "../types";
 import { WorkOrderTableHeader } from "./TableHeader";
 import { WorkOrderRow } from "./WorkOrderRow";
+import { WorkOrderCard } from "./WorkOrderCard";
 import { EmptyState } from "./EmptyState";
 import { useSortableTable } from "./useSortableTable";
 import { Pagination } from "./Pagination";
 import { Button } from "@/components/ui/button";
 import { FilterX } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface WorkOrderTableProps {
   workOrders: WorkOrder[];
@@ -45,6 +47,8 @@ export const WorkOrderTable = ({
   onColumnFilterClear,
   onClearAllFilters
 }: WorkOrderTableProps) => {
+  const isMobile = useIsMobile();
+  
   const { 
     workOrders, 
     sortField, 
@@ -85,42 +89,71 @@ export const WorkOrderTable = ({
           </Button>
         </div>
       )}
-    
-      <div className="rounded-md border">
-        <Table>
-          <WorkOrderTableHeader 
-            sortField={sortField} 
-            sortDirection={sortDirection} 
-            onSort={handleSort}
-            filters={filters}
-            onFilterChange={onColumnFilterChange}
-            onFilterClear={onColumnFilterClear}
-          />
-          <TableBody>
-            {workOrders.length === 0 ? (
-              <EmptyState />
-            ) : (
-              workOrders.map((workOrder) => (
-                <WorkOrderRow 
+      
+      {isMobile ? (
+        /* Mobile Card Layout */
+        <div className="space-y-2">
+          {workOrders.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <div>
+              {workOrders.map((workOrder) => (
+                <WorkOrderCard
                   key={workOrder.id}
                   workOrder={workOrder}
                   onStatusUpdate={onStatusUpdate}
                   onImageView={onImageView}
                   onDelete={onDelete}
                 />
-              ))
-            )}
-          </TableBody>
-        </Table>
-        
-        {pagination && onPageChange && onPageSizeChange && (
-          <Pagination 
-            pagination={pagination}
-            onPageChange={onPageChange}
-            onPageSizeChange={onPageSizeChange}
-          />
-        )}
-      </div>
+              ))}
+            </div>
+          )}
+          {pagination && onPageChange && onPageSizeChange && (
+            <Pagination 
+              pagination={pagination}
+              onPageChange={onPageChange}
+              onPageSizeChange={onPageSizeChange}
+            />
+          )}
+        </div>
+      ) : (
+        /* Desktop Table Layout */
+        <div className="rounded-md border">
+          <Table>
+            <WorkOrderTableHeader 
+              sortField={sortField} 
+              sortDirection={sortDirection} 
+              onSort={handleSort}
+              filters={filters}
+              onFilterChange={onColumnFilterChange}
+              onFilterClear={onColumnFilterClear}
+            />
+            <TableBody>
+              {workOrders.length === 0 ? (
+                <EmptyState />
+              ) : (
+                workOrders.map((workOrder) => (
+                  <WorkOrderRow 
+                    key={workOrder.id}
+                    workOrder={workOrder}
+                    onStatusUpdate={onStatusUpdate}
+                    onImageView={onImageView}
+                    onDelete={onDelete}
+                  />
+                ))
+              )}
+            </TableBody>
+          </Table>
+          
+          {pagination && onPageChange && onPageSizeChange && (
+            <Pagination 
+              pagination={pagination}
+              onPageChange={onPageChange}
+              onPageSizeChange={onPageSizeChange}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 };
