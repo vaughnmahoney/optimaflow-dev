@@ -12,7 +12,7 @@ import Users from "@/pages/Users";
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<Index />} />
+      <Route path="/" element={<Login />} />
       <Route path="login" element={<Login />} />
       <Route path="work-orders" element={<WorkOrders />} />
       <Route path="bulk-orders" element={<BulkOrdersTest />} />
