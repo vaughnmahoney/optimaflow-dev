@@ -2,11 +2,10 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Import, RefreshCw, FileUp } from "lucide-react";
+import { Import, RefreshCw } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Link } from "react-router-dom";
 import {
   Sheet,
   SheetContent,
@@ -127,16 +126,6 @@ export const ImportControls = ({
           <RefreshCw className="h-4 w-4" />
           <span className="sr-only">Refresh</span>
         </Button>
-        
-        <Link to="/bulk-orders">
-          <Button 
-            variant="outline" 
-            size="sm"
-          >
-            <FileUp className="h-4 w-4" />
-            <span className="sr-only">Bulk Import</span>
-          </Button>
-        </Link>
       </div>
     );
   }
@@ -170,13 +159,6 @@ export const ImportControls = ({
           <RefreshCw className="h-4 w-4 mr-2" />
           Refresh
         </Button>
-        
-        <Link to="/bulk-orders">
-          <Button variant="outline">
-            <FileUp className="h-4 w-4 mr-2" />
-            Bulk Import
-          </Button>
-        </Link>
       </div>
     </div>
   );
