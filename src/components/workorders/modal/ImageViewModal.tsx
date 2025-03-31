@@ -86,17 +86,22 @@ export const ImageViewModal = ({
             isImageExpanded={isImageExpanded}
             toggleImageExpand={toggleImageExpand}
             openMobileImageViewer={() => setIsMobileImageViewerOpen(true)}
+            onStatusUpdate={onStatusUpdate}
+            onDownloadAll={onDownloadAll}
+            onResolveFlag={onResolveFlag}
           />
           
-          <ModalFooter 
-            workOrderId={currentWorkOrder.id} 
-            onStatusUpdate={onStatusUpdate} 
-            onDownloadAll={onDownloadAll}
-            hasImages={images.length > 0}
-            status={currentWorkOrder.status}
-            onResolveFlag={onResolveFlag}
-            workOrder={currentWorkOrder}
-          />
+          {!isMobile && (
+            <ModalFooter 
+              workOrderId={currentWorkOrder.id} 
+              onStatusUpdate={onStatusUpdate} 
+              onDownloadAll={onDownloadAll}
+              hasImages={images.length > 0}
+              status={currentWorkOrder.status}
+              onResolveFlag={onResolveFlag}
+              workOrder={currentWorkOrder}
+            />
+          )}
           
           <NavigationControls 
             currentIndex={navIndex}
