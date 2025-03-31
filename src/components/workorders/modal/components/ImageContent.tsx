@@ -4,6 +4,7 @@ import { ImageType } from "../../types/image";
 import { ImageViewer } from "./ImageViewer";
 import { ImageThumbnails } from "./ImageThumbnails";
 import { ImageEmptyState } from "./ImageEmptyState";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ImageContentProps {
   images: ImageType[];
@@ -20,17 +21,22 @@ export function ImageContent({
   isImageExpanded,
   toggleImageExpand 
 }: ImageContentProps) {
+  const isMobile = useIsMobile();
+  
   if (images.length === 0) {
     return <ImageEmptyState />;
   }
 
   return (
     <div className="flex flex-1 h-full overflow-hidden">
-      <ImageThumbnails
-        images={images}
-        currentImageIndex={currentImageIndex}
-        setCurrentImageIndex={setCurrentImageIndex}
-      />
+      {/* Hide thumbnails on mobile */}
+      {!isMobile && (
+        <ImageThumbnails
+          images={images}
+          currentImageIndex={currentImageIndex}
+          setCurrentImageIndex={setCurrentImageIndex}
+        />
+      )}
       
       <div className={`relative flex-1 ${isImageExpanded ? 'max-h-full' : 'max-h-[60vh]'}`}>
         <ImageViewer 
