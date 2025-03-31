@@ -32,6 +32,13 @@ export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenu
     return "text-gray-500 hover:bg-gray-100";
   };
 
+  // Handler to prevent event propagation and perform action
+  const handleAction = (e: React.MouseEvent, action: () => void) => {
+    e.preventDefault();
+    e.stopPropagation();
+    action();
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -39,15 +46,16 @@ export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenu
           variant="ghost" 
           size="icon"
           className="h-8 w-8 hover:bg-slate-100"
+          onClick={(e) => e.stopPropagation()}
         >
           <MoreVertical className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
+      <DropdownMenuContent align="end" className="w-48" onClick={(e) => e.stopPropagation()}>
         {/* Current status - clicking returns to pending */}
         {!isPending && (
           <DropdownMenuItem 
-            onClick={() => onStatusUpdate(workOrder.id, "pending_review")}
+            onClick={(e) => handleAction(e, () => onStatusUpdate(workOrder.id, "pending_review"))}
             className={getStatusItemStyle()}
           >
             <Clock className="h-4 w-4 mr-2" />
@@ -58,7 +66,7 @@ export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenu
         {/* Show approve option if not already approved and not rejected */}
         {!isApproved && !isRejected && (
           <DropdownMenuItem 
-            onClick={() => onStatusUpdate(workOrder.id, "approved")}
+            onClick={(e) => handleAction(e, () => onStatusUpdate(workOrder.id, "approved"))}
           >
             <CheckCircle className="h-4 w-4 mr-2" />
             Approve
@@ -68,7 +76,7 @@ export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenu
         {/* Show flag option if not already flagged and not rejected */}
         {!isFlagged && !isRejected && (
           <DropdownMenuItem 
-            onClick={() => onStatusUpdate(workOrder.id, "flagged")}
+            onClick={(e) => handleAction(e, () => onStatusUpdate(workOrder.id, "flagged"))}
           >
             <Flag className="h-4 w-4 mr-2" />
             Flag
@@ -78,7 +86,7 @@ export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenu
         {/* Show resolve option for flagged states */}
         {isFlagged && (
           <DropdownMenuItem 
-            onClick={() => onStatusUpdate(workOrder.id, "resolved")}
+            onClick={(e) => handleAction(e, () => onStatusUpdate(workOrder.id, "resolved"))}
             className="text-blue-600"
           >
             <CheckCheck className="h-4 w-4 mr-2" />
@@ -89,7 +97,7 @@ export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenu
         {/* If rejected, show option to reopen */}
         {isRejected && (
           <DropdownMenuItem 
-            onClick={() => onStatusUpdate(workOrder.id, "pending_review")}
+            onClick={(e) => handleAction(e, () => onStatusUpdate(workOrder.id, "pending_review"))}
             className="text-yellow-600"
           >
             <Clock className="h-4 w-4 mr-2" />
@@ -100,7 +108,7 @@ export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenu
         <DropdownMenuSeparator />
         
         <DropdownMenuItem 
-          onClick={() => onDelete(workOrder.id)}
+          onClick={(e) => handleAction(e, () => onDelete(workOrder.id))}
           className="text-destructive"
         >
           <Trash2 className="h-4 w-4 mr-2" />
