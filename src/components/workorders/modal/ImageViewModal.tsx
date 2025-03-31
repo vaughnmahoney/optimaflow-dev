@@ -37,24 +37,6 @@ export const ImageViewModal = ({
   const isMobile = useMobile();
   const [isImageExpanded, setIsImageExpanded] = useState(false);
   
-  // Render the mobile version when on small screens
-  if (isMobile) {
-    return (
-      <MobileImageViewModal 
-        workOrder={workOrder}
-        workOrders={workOrders}
-        currentIndex={currentIndex}
-        isOpen={isOpen}
-        onClose={onClose}
-        onStatusUpdate={onStatusUpdate}
-        onNavigate={onNavigate}
-        onDownloadAll={onDownloadAll}
-        onResolveFlag={onResolveFlag}
-      />
-    );
-  }
-  
-  // Desktop version starts here
   const {
     currentWorkOrder,
     currentIndex: navIndex,
@@ -70,6 +52,24 @@ export const ImageViewModal = ({
     onClose
   });
   
+  // Early return with mobile version, but AFTER all hooks have been called
+  if (isMobile && currentWorkOrder) {
+    return (
+      <MobileImageViewModal 
+        workOrder={currentWorkOrder}
+        workOrders={workOrders}
+        currentIndex={navIndex}
+        isOpen={isOpen}
+        onClose={onClose}
+        onStatusUpdate={onStatusUpdate}
+        onNavigate={onNavigate}
+        onDownloadAll={onDownloadAll}
+        onResolveFlag={onResolveFlag}
+      />
+    );
+  }
+  
+  // Return null if no work order, but AFTER all hooks have been called
   if (!currentWorkOrder) return null;
 
   const toggleImageExpand = () => {
