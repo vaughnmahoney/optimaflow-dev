@@ -1,4 +1,3 @@
-
 import { Layout } from "@/components/Layout";
 import { WorkOrderContent } from "@/components/workorders/WorkOrderContent";
 import { WorkOrderHeader } from "@/components/workorders/WorkOrderHeader";
@@ -64,15 +63,13 @@ const WorkOrders = () => {
       }
     >
       <div className="space-y-6 overflow-x-hidden">
-        {/* Page title - only shown on mobile */}
-        {isMobile && (
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Work Orders</h1>
-            <ImportControls onOptimoRouteSearch={searchOptimoRoute} onRefresh={refetch} />
-          </div>
-        )}
+        {/* Page title - shown on all devices now */}
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Work Orders</h1>
+          {isMobile && <ImportControls onOptimoRouteSearch={searchOptimoRoute} onRefresh={refetch} />}
+        </div>
         
-        {/* Add the import controls - only shown on desktop */}
+        {/* Import controls - only shown on desktop */}
         {!isMobile && (
           <ImportControls onOptimoRouteSearch={searchOptimoRoute} onRefresh={refetch} />
         )}
