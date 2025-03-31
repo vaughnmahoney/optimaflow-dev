@@ -5,8 +5,6 @@ import { NotesTab } from "../tabs/NotesTab";
 import { SignatureTab } from "../tabs/SignatureTab";
 import { WorkOrder } from "../../types";
 import { FileText, MessageSquare, FileSignature } from "lucide-react";
-import { QcNotesSheet } from "./QcNotesSheet";
-import { ResolutionNotesSheet } from "./ResolutionNotesSheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -134,17 +132,6 @@ export const OrderDetails = ({
           </div>
         </div>
       </ScrollArea>
-      
-      {/* Notes buttons - only show in desktop view or if explicitly needed on mobile */}
-      {!isMobile && (
-        <div className="p-3 border-t flex items-center justify-between bg-gray-50">
-          <div className="flex items-center gap-2">
-            <QcNotesSheet workOrder={workOrder} />
-            <ResolutionNotesSheet workOrder={workOrder} />
-          </div>
-          <div></div> {/* Empty div for spacing */}
-        </div>
-      )}
     </div>
   );
 };

@@ -7,6 +7,7 @@ import { ImageType } from "../../types/image";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { ImageIcon, Clock, Check, Flag, CheckCheck, ThumbsDown, Download } from "lucide-react";
+import { MobileNoteButtons } from "./MobileNoteButtons";
 
 interface ModalContentProps {
   workOrder: WorkOrder;
@@ -80,27 +81,8 @@ export const ModalContent = ({
   if (isMobile) {
     return (
       <div className="flex flex-col h-full overflow-hidden">
-        {/* Mobile layout with integrated actions */}
         <div className="w-full flex-1 flex flex-col overflow-auto">
-          {/* Notes buttons */}
-          <div className="px-4 py-3 flex gap-2 border-b">
-            {/* QC Notes and Resolution Notes buttons will be rendered by OrderDetails */}
-          </div>
-          
-          {/* Image viewer button */}
-          {images.length > 0 && (
-            <div className="px-4 py-3 border-b">
-              <Button 
-                onClick={openMobileImageViewer}
-                className="w-full flex items-center justify-center gap-2 bg-gray-900 hover:bg-black text-white"
-              >
-                <ImageIcon className="h-4 w-4" />
-                View {images.length} {images.length === 1 ? 'Image' : 'Images'}
-              </Button>
-            </div>
-          )}
-          
-          {/* Status buttons */}
+          {/* Status buttons at the top */}
           <div className="px-4 py-3 flex flex-wrap gap-2 border-b">
             {/* Current Status Button */}
             {onStatusUpdate && !isPending && (
@@ -177,18 +159,6 @@ export const ModalContent = ({
                 </Button>
               )}
             </div>
-            
-            {/* Download button */}
-            {onDownloadAll && images.length > 0 && (
-              <Button 
-                variant="outline"
-                className="flex-grow"
-                onClick={onDownloadAll}
-              >
-                <Download className="mr-1 h-4 w-4" />
-                Download All
-              </Button>
-            )}
           </div>
           
           {/* User action info */}
@@ -201,8 +171,41 @@ export const ModalContent = ({
             </div>
           )}
           
-          {/* Main content: Order details */}
-          <OrderDetails workOrder={workOrder} />
+          {/* Main content: Order details with buttons at the bottom */}
+          <div className="flex-1 flex flex-col">
+            <OrderDetails workOrder={workOrder} />
+            
+            {/* Action buttons at the bottom inside order details */}
+            <div className="p-4 border-t bg-gray-50">
+              {/* Mobile note buttons */}
+              <div className="mb-4 flex gap-2">
+                <MobileNoteButtons workOrder={workOrder} />
+              </div>
+              
+              {/* Image viewer button */}
+              {images.length > 0 && (
+                <Button 
+                  onClick={openMobileImageViewer}
+                  className="w-full flex items-center justify-center gap-2 bg-gray-900 hover:bg-black text-white mb-3"
+                >
+                  <ImageIcon className="h-4 w-4" />
+                  View {images.length} {images.length === 1 ? 'Image' : 'Images'}
+                </Button>
+              )}
+              
+              {/* Download button */}
+              {onDownloadAll && images.length > 0 && (
+                <Button 
+                  variant="outline"
+                  className="w-full"
+                  onClick={onDownloadAll}
+                >
+                  <Download className="mr-1 h-4 w-4" />
+                  Download All
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     );
