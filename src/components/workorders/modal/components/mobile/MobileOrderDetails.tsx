@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { WorkOrder } from "../../../types";
 import { MapPin, Clock, Package, User, FileSignature } from "lucide-react";
 import { format } from "date-fns";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface MobileOrderDetailsProps {
   workOrder: WorkOrder;
@@ -62,94 +63,179 @@ export const MobileOrderDetails = ({
 
   return (
     <div className="space-y-3">
-      {/* Main Card with all order details */}
-      <Card className="shadow-sm border-gray-200">
-        <div className="p-3 space-y-3">
-          {/* Driver Section */}
-          <div className="space-y-1">
-            <div className="flex items-center gap-1.5 text-blue-700 mb-1">
-              <User className="h-4 w-4" />
-              <h3 className="text-sm font-medium">Driver</h3>
-            </div>
-            <p className="text-sm pl-5.5">{driverName}</p>
-          </div>
-          
-          {/* Location Section */}
-          <div className="space-y-1">
-            <div className="flex items-center gap-1.5 text-blue-700 mb-1">
-              <MapPin className="h-4 w-4" />
-              <h3 className="text-sm font-medium">Location</h3>
-            </div>
-            <div className="pl-5.5 space-y-1">
-              <p className="text-sm font-medium">{locationName}</p>
-              <p className="text-xs text-gray-600">{fullAddress}</p>
-            </div>
-          </div>
-          
-          {/* Time Details Section */}
-          <div className="space-y-1">
-            <div className="flex items-center gap-1.5 text-blue-700 mb-1">
-              <Clock className="h-4 w-4" />
-              <h3 className="text-sm font-medium">Time Details</h3>
-            </div>
-            <div className="pl-5.5 space-y-0.5">
-              <div className="grid grid-cols-[80px_1fr]">
-                <span className="text-xs text-gray-500">Start Time:</span>
-                <span className="text-xs">{startTime}</span>
+      <Tabs defaultValue="details" className="w-full">
+        <TabsList className="grid grid-cols-3 mb-2 w-full">
+          <TabsTrigger value="details">Details</TabsTrigger>
+          <TabsTrigger value="notes">Notes</TabsTrigger>
+          <TabsTrigger value="signature">Signature</TabsTrigger>
+        </TabsList>
+        
+        {/* Details Tab */}
+        <TabsContent value="details" className="mt-0">
+          <Card className="shadow-sm border-gray-200">
+            <div className="p-3 space-y-3">
+              {/* Driver Section */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5 text-blue-700 mb-1">
+                  <User className="h-4 w-4" />
+                  <h3 className="text-sm font-medium">Driver</h3>
+                </div>
+                <p className="text-sm pl-5.5">{driverName}</p>
               </div>
-              <div className="grid grid-cols-[80px_1fr]">
-                <span className="text-xs text-gray-500">End Time:</span>
-                <span className="text-xs">{endTime}</span>
+              
+              {/* Location Section */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5 text-blue-700 mb-1">
+                  <MapPin className="h-4 w-4" />
+                  <h3 className="text-sm font-medium">Location</h3>
+                </div>
+                <div className="pl-5.5 space-y-1">
+                  <p className="text-sm font-medium">{locationName}</p>
+                  <p className="text-xs text-gray-600">{fullAddress}</p>
+                </div>
               </div>
-              <div className="grid grid-cols-[80px_1fr]">
-                <span className="text-xs text-gray-500">LDS:</span>
-                <span className="text-xs">{ldsInfo}</span>
-              </div>
-            </div>
-          </div>
-          
-          {/* Materials Section */}
-          <div className="space-y-1">
-            <div className="flex items-center gap-1.5 text-blue-700 mb-1">
-              <Package className="h-4 w-4" />
-              <h3 className="text-sm font-medium">Materials</h3>
-            </div>
-            <div className="pl-5.5 space-y-0.5">
-              <div className="grid grid-cols-[80px_1fr]">
-                <span className="text-xs text-gray-500">Quantity:</span>
-                <span className="text-xs">{materialQuantity}</span>
+              
+              {/* Time Details Section */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5 text-blue-700 mb-1">
+                  <Clock className="h-4 w-4" />
+                  <h3 className="text-sm font-medium">Time Details</h3>
+                </div>
+                <div className="pl-5.5 space-y-0.5">
+                  <div className="grid grid-cols-[80px_1fr]">
+                    <span className="text-xs text-gray-500">Start Time:</span>
+                    <span className="text-xs">{startTime}</span>
+                  </div>
+                  <div className="grid grid-cols-[80px_1fr]">
+                    <span className="text-xs text-gray-500">End Time:</span>
+                    <span className="text-xs">{endTime}</span>
+                  </div>
+                  <div className="grid grid-cols-[80px_1fr]">
+                    <span className="text-xs text-gray-500">LDS:</span>
+                    <span className="text-xs">{ldsInfo}</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      </Card>
-      
-      {/* Signature Card */}
-      {signatureUrl && (
-        <Card className="shadow-sm border-gray-200">
-          <div className="p-3 space-y-2">
-            <div className="flex items-center gap-1.5 text-blue-700">
-              <FileSignature className="h-4 w-4" />
-              <h3 className="text-sm font-medium">Customer Signature</h3>
-            </div>
-            
-            <div className="flex justify-center">
-              <div className="border border-gray-100 rounded-md bg-gray-50 p-2 w-full flex justify-center">
-                <img 
-                  src={signatureUrl} 
-                  alt="Signature" 
-                  className="max-w-full max-h-[120px] object-contain"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.onerror = null;
-                    target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNjY2NjY2MiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMTQgM3Y0YTEgMSAwIDAgMCAxIDFoNCI+PC9wYXRoPjxwYXRoIGQ9Ik0xNyAyMWgtMTBhMiAyIDAgMCAxLTItMnYtMTRhMiAyIDAgMCAxIDItMmg3bDUgNXYxMWEyIDIgMCAwIDEtMiAyeiI+PC9wYXRoPjxwYXRoIGQ9Ik05IDlsNiA2Ij48L3BhdGg+PHBhdGggZD0iTTE1IDlsLTYgNiI+PC9wYXRoPjwvc3ZnPg==';
-                  }}
-                />
+          </Card>
+        </TabsContent>
+        
+        {/* Notes Tab */}
+        <TabsContent value="notes" className="mt-0">
+          <Card className="shadow-sm border-gray-200">
+            <div className="p-3 space-y-3">
+              {/* Materials Section */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5 text-blue-700 mb-1">
+                  <Package className="h-4 w-4" />
+                  <h3 className="text-sm font-medium">Materials</h3>
+                </div>
+                <div className="pl-5.5 space-y-0.5">
+                  <div className="grid grid-cols-[80px_1fr]">
+                    <span className="text-xs text-gray-500">Quantity:</span>
+                    <span className="text-xs">{materialQuantity}</span>
+                  </div>
+                </div>
               </div>
+              
+              {/* Render different note types */}
+              {renderNotesSection(workOrder, completionData, searchData)}
             </div>
-          </div>
-        </Card>
-      )}
+          </Card>
+        </TabsContent>
+        
+        {/* Signature Tab */}
+        <TabsContent value="signature" className="mt-0">
+          {signatureUrl ? (
+            <Card className="shadow-sm border-gray-200">
+              <div className="p-3 space-y-2">
+                <div className="flex items-center gap-1.5 text-blue-700">
+                  <FileSignature className="h-4 w-4" />
+                  <h3 className="text-sm font-medium">Customer Signature</h3>
+                </div>
+                
+                <div className="flex justify-center">
+                  <div className="border border-gray-100 rounded-md bg-gray-50 p-2 w-full flex justify-center">
+                    <img 
+                      src={signatureUrl} 
+                      alt="Signature" 
+                      className="max-w-full max-h-[180px] object-contain"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.onerror = null;
+                        target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNjY2NjY2MiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMTQgM3Y0YTEgMSAwIDAgMCAxIDFoNCI+PC9wYXRoPjxwYXRoIGQ9Ik0xNyAyMWgtMTBhMiAyIDAgMCAxLTItMnYtMTRhMiAyIDAgMCAxIDItMmg3bDUgNXYxMWEyIDIgMCAwIDEtMiAyeiI+PC9wYXRoPjxwYXRoIGQ9Ik05IDlsNiA2Ij48L3BhdGg+PHBhdGggZD0iTTE1IDlsLTYgNiI+PC9wYXRoPjwvc3ZnPg==';
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </Card>
+          ) : (
+            <Card className="shadow-sm border-gray-200">
+              <div className="p-3">
+                <div className="text-center py-10">
+                  <FileSignature className="h-10 w-10 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500 font-medium">No signature available</p>
+                  <p className="text-xs text-gray-400 mt-1">This work order doesn't have a signature attached</p>
+                </div>
+              </div>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
+
+// Helper function to render notes sections
+function renderNotesSection(workOrder: WorkOrder, completionData: any, searchData: any) {
+  const techNotes = completionData?.form?.note;
+  const serviceNotes = workOrder.service_notes;
+  const additionalNotes = searchData?.customField1;
+  
+  return (
+    <>
+      {/* Tech Notes */}
+      <div className="space-y-1 border-t pt-2 first:border-t-0 first:pt-0">
+        <div className="flex items-center gap-1.5 text-blue-700 mb-1">
+          <h3 className="text-sm font-medium">Tech Notes</h3>
+        </div>
+        <div>
+          {techNotes ? (
+            <p className="text-xs whitespace-pre-wrap text-gray-700">{techNotes}</p>
+          ) : (
+            <p className="text-xs text-gray-500 italic">No tech notes available</p>
+          )}
+        </div>
+      </div>
+      
+      {/* Service Notes */}
+      <div className="space-y-1 border-t pt-2">
+        <div className="flex items-center gap-1.5 text-blue-700 mb-1">
+          <h3 className="text-sm font-medium">Service Notes</h3>
+        </div>
+        <div>
+          {serviceNotes ? (
+            <p className="text-xs whitespace-pre-wrap text-gray-700">{serviceNotes}</p>
+          ) : (
+            <p className="text-xs text-gray-500 italic">No service notes available</p>
+          )}
+        </div>
+      </div>
+      
+      {/* Additional Notes */}
+      <div className="space-y-1 border-t pt-2">
+        <div className="flex items-center gap-1.5 text-blue-700 mb-1">
+          <h3 className="text-sm font-medium">Additional Notes</h3>
+        </div>
+        <div>
+          {additionalNotes ? (
+            <p className="text-xs whitespace-pre-wrap text-gray-700">{additionalNotes}</p>
+          ) : (
+            <p className="text-xs text-gray-500 italic">No additional notes available</p>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
