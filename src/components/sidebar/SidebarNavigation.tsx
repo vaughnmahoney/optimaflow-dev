@@ -1,7 +1,7 @@
 
 import { useLocation } from "react-router-dom";
 import { 
-  LayoutDashboard, AlertCircle, Clock, Users, Database,
+  AlertCircle, Database, Users,
   LucideIcon  // Add explicit import for LucideIcon type
 } from "lucide-react";
 import { SidebarNavItem } from "./SidebarNavItem";
@@ -45,20 +45,6 @@ export function SidebarNavigation({
       icon: Database, 
       label: "Bulk Import Test", 
       isActive: location.pathname.startsWith("/bulk-orders"),
-      roles: ["admin"] // Only admins
-    },
-    {
-      to: "/attendance", 
-      icon: Clock, 
-      label: "Attendance", 
-      isActive: location.pathname.startsWith("/attendance") || location.pathname.startsWith("/supervisor"),
-      roles: ["admin"] // Only admins
-    },
-    { 
-      to: "/employees", 
-      icon: Users, 
-      label: "Employees", 
-      isActive: location.pathname.startsWith("/employees") || location.pathname.startsWith("/admin"),
       roles: ["admin"] // Only admins
     },
     { 
