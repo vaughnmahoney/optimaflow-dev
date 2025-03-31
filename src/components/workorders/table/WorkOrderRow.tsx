@@ -2,7 +2,7 @@
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { StatusBadge } from "../StatusBadge";
 import { WorkOrder } from "../types";
 import { ActionsMenu } from "./ActionsMenu";
@@ -43,14 +43,17 @@ export const WorkOrderRow = ({ workOrder, onStatusUpdate, onImageView, onDelete 
            (order.search_response?.scheduleInformation?.status);
   };
 
-  // Get end date from completion data, or fall back to service_date
-  const getServiceDate = (order: WorkOrder): string => {
+  // Get end date and time from completion data, or fall back to service_date
+  const getServiceDateTime = (order: WorkOrder): string => {
     // Try to get the end date from completion data first
     const endTime = order.completion_response?.orders?.[0]?.data?.endTime?.localTime;
     
     if (endTime) {
       try {
-        return format(new Date(endTime), "MMM d, yyyy");
+        const date = new Date(endTime);
+        if (!isNaN(date.getTime())) {
+          return format(date, "MMM d, yyyy h:mmaaa");
+        }
       } catch (error) {
         // If date parsing fails, fall back to service_date
         console.error("Error formatting end date:", error);
@@ -77,7 +80,7 @@ export const WorkOrderRow = ({ workOrder, onStatusUpdate, onImageView, onDelete 
     >
       <TableCell>{workOrder.order_no || 'N/A'}</TableCell>
       <TableCell>
-        {getServiceDate(workOrder)}
+        {getServiceDateTime(workOrder)}
       </TableCell>
       <TableCell className="max-w-xs truncate">
         {getDriverName(workOrder)}
