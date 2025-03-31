@@ -1,5 +1,4 @@
 
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -118,6 +117,16 @@
   border-radius: 20px;
 }
 
+/* Hide scrollbars but keep functionality */
+.scrollbar-none {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
 /* Animations and transitions */
 @keyframes fade-in {
   from { opacity: 0; }
@@ -141,4 +150,3 @@
     min-width: 44px;
   }
 }
-

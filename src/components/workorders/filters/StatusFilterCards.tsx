@@ -1,7 +1,9 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Check, Flag, Clock, CheckCheck, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface StatusFilterCardsProps {
   statusFilter: string | null;
@@ -78,8 +80,8 @@ export const StatusFilterCards = ({
 
   if (isMobile) {
     return (
-      <div className="mb-4 overflow-x-auto pb-2">
-        <div className="flex space-x-2 min-w-max">
+      <div className="mb-4 overflow-hidden">
+        <div className="flex space-x-2 overflow-x-auto scrollbar-none pb-2">
           {statuses.map((status) => {
             const isActive = statusFilter === status.value;
             const count = statusCounts[status.value] || 0;
@@ -91,7 +93,7 @@ export const StatusFilterCards = ({
                   statusFilter === status.value ? null : status.value
                 )}
                 className={cn(
-                  "flex items-center space-x-2 py-1.5 px-3 rounded-full transition-all",
+                  "flex items-center space-x-2 py-1.5 px-3 rounded-full transition-all shrink-0",
                   isActive 
                     ? `${status.color} text-white shadow-md`
                     : `bg-white border border-gray-200 hover:border-gray-300 shadow-sm`
