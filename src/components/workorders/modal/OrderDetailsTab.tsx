@@ -2,7 +2,7 @@
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { WorkOrder } from "../../types";
+import { WorkOrder } from "@/components/workorders/types";
 import { MapPin, Clock, Package, ClipboardCheck, ExternalLink, User } from "lucide-react";
 import { format } from "date-fns";
 
