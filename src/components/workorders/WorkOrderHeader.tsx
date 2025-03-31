@@ -11,7 +11,8 @@ export const WorkOrderHeader = ({
 }: WorkOrderHeaderProps) => {
   const isMobile = useIsMobile();
 
+  // Use a simpler header for all screen sizes
   return (
-    <Header title="Work Orders" />
+    <Header />
   );
 };

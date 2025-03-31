@@ -30,7 +30,7 @@ const LayoutContent = ({ children, header, title }: LayoutProps) => {
         
         {/* Main content area - will shift based on sidebar state */}
         <main 
-          className="flex-1 transition-all duration-300 ease-in-out"
+          className="flex-1 transition-all duration-300 ease-in-out overflow-x-hidden"
           style={{
             marginLeft: isMobile ? 0 : (
               isCollapsed 
@@ -39,7 +39,7 @@ const LayoutContent = ({ children, header, title }: LayoutProps) => {
             )
           }}
         >
-          <div className="container mx-auto p-2 sm:p-4 md:p-6">
+          <div className="container mx-auto p-2 sm:p-4 md:p-6 overflow-x-hidden">
             {children}
           </div>
         </main>

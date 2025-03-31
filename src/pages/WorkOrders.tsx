@@ -9,12 +9,14 @@ import { useWorkOrderData } from "@/hooks/useWorkOrderData";
 import { useQueryClient } from "@tanstack/react-query";
 import { SortDirection, SortField } from "@/components/workorders/types";
 import { useWorkOrderMutations } from "@/hooks/useWorkOrderMutations";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const WorkOrders = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
   const { resolveWorkOrderFlag } = useWorkOrderMutations();
+  const isMobile = useIsMobile();
   
   const {
     data: workOrders,
@@ -61,11 +63,19 @@ const WorkOrders = () => {
         <WorkOrderHeader />
       }
     >
-      <div className="space-y-6">
-        {/* Remove the WorkOrderInfoCard component */}
+      <div className="space-y-6 overflow-x-hidden">
+        {/* Page title - only shown on mobile */}
+        {isMobile && (
+          <div className="flex justify-between items-center">
+            <h1 className="text-2xl font-bold">Work Orders</h1>
+            <ImportControls onOptimoRouteSearch={searchOptimoRoute} onRefresh={refetch} />
+          </div>
+        )}
         
-        {/* Add the import controls */}
-        <ImportControls onOptimoRouteSearch={searchOptimoRoute} onRefresh={refetch} />
+        {/* Add the import controls - only shown on desktop */}
+        {!isMobile && (
+          <ImportControls onOptimoRouteSearch={searchOptimoRoute} onRefresh={refetch} />
+        )}
         
         <WorkOrderContent 
           workOrders={workOrders}

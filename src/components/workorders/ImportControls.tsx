@@ -2,10 +2,11 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Import, RefreshCw } from "lucide-react";
+import { Import, RefreshCw, FileUp } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
 import {
   Sheet,
   SheetContent,
@@ -75,15 +76,15 @@ export const ImportControls = ({
   // Mobile UI
   if (isMobile) {
     return (
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex justify-end gap-2 mb-4">
         <Sheet open={isSearchOpen} onOpenChange={setIsSearchOpen}>
           <SheetTrigger asChild>
             <Button
-              className="flex-grow"
               variant="outline"
+              size="sm"
             >
-              <Import className="h-4 w-4 mr-2" />
-              Import Order
+              <Import className="h-4 w-4" />
+              <span className="sr-only">Import Order</span>
             </Button>
           </SheetTrigger>
           <SheetContent side="bottom" className="pt-10">
@@ -120,11 +121,22 @@ export const ImportControls = ({
 
         <Button 
           variant="outline" 
+          size="sm"
           onClick={handleRefresh}
         >
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Refresh
+          <RefreshCw className="h-4 w-4" />
+          <span className="sr-only">Refresh</span>
         </Button>
+        
+        <Link to="/bulk-orders">
+          <Button 
+            variant="outline" 
+            size="sm"
+          >
+            <FileUp className="h-4 w-4" />
+            <span className="sr-only">Bulk Import</span>
+          </Button>
+        </Link>
       </div>
     );
   }
@@ -150,13 +162,22 @@ export const ImportControls = ({
         </Button>
       </div>
 
-      <Button 
-        variant="outline" 
-        onClick={handleRefresh}
-      >
-        <RefreshCw className="h-4 w-4 mr-2" />
-        Refresh
-      </Button>
+      <div className="flex items-center gap-2">
+        <Button 
+          variant="outline" 
+          onClick={handleRefresh}
+        >
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Refresh
+        </Button>
+        
+        <Link to="/bulk-orders">
+          <Button variant="outline">
+            <FileUp className="h-4 w-4 mr-2" />
+            Bulk Import
+          </Button>
+        </Link>
+      </div>
     </div>
   );
 };
