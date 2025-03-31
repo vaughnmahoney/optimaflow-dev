@@ -9,6 +9,7 @@ interface MobileStatusButtonsProps {
   currentStatus?: string;
   onStatusUpdate?: (workOrderId: string, status: string) => void;
   onResolveFlag?: (workOrderId: string, resolution: string) => void;
+  showButtons?: boolean;
 }
 
 export const MobileStatusButtons = ({
@@ -16,7 +17,11 @@ export const MobileStatusButtons = ({
   currentStatus,
   onStatusUpdate,
   onResolveFlag,
+  showButtons = false, // Hide buttons by default since we have dropdown now
 }: MobileStatusButtonsProps) => {
+  // If buttons are hidden, don't render anything
+  if (!showButtons) return null;
+  
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
   
   // Determine if this order is in a specific state

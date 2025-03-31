@@ -87,6 +87,8 @@ export const MobileImageViewModal = ({
             <MobileModalHeader 
               workOrder={currentWorkOrder} 
               onClose={onClose} 
+              onStatusUpdate={onStatusUpdate}
+              onResolveFlag={onResolveFlag}
             />
             
             <MobileModalContent

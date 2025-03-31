@@ -1,17 +1,21 @@
 
 import { User, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { StatusBadge } from "../../StatusBadge";
+import { StatusBadgeDropdown } from "../../StatusBadgeDropdown";
 import { WorkOrder } from "../../types";
 
 interface ModalHeaderProps {
   workOrder: WorkOrder;
   onClose: () => void;
+  onStatusUpdate?: (workOrderId: string, status: string) => void;
+  onResolveFlag?: (workOrderId: string, resolution: string) => void;
 }
 
 export const ModalHeader = ({ 
   workOrder, 
-  onClose 
+  onClose,
+  onStatusUpdate,
+  onResolveFlag
 }: ModalHeaderProps) => {
   const driverName = workOrder.search_response?.scheduleInformation?.driverName || 'No Driver Assigned';
   
@@ -32,9 +36,12 @@ export const ModalHeader = ({
         <div className="text-left">
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-semibold">Order #{workOrder.order_no}</h2>
-            <StatusBadge 
+            <StatusBadgeDropdown 
               status={workOrder.status || "pending_review"} 
               completionStatus={getCompletionStatus(workOrder)}
+              workOrderId={workOrder.id}
+              onStatusUpdate={onStatusUpdate}
+              onResolveFlag={onResolveFlag}
             />
           </div>
           <p className="text-sm text-muted-foreground">

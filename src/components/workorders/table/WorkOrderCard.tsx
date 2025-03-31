@@ -1,6 +1,6 @@
 
 import { WorkOrder } from "../types";
-import { StatusBadge } from "../StatusBadge";
+import { StatusBadgeDropdown } from "../StatusBadgeDropdown";
 import { Button } from "@/components/ui/button";
 import { Eye, MoreVertical } from "lucide-react";
 import { format } from "date-fns";
@@ -13,9 +13,16 @@ interface WorkOrderCardProps {
   onStatusUpdate: (workOrderId: string, newStatus: string) => void;
   onImageView: (workOrderId: string) => void;
   onDelete: (workOrderId: string) => void;
+  onResolveFlag?: (workOrderId: string, resolution: string) => void;
 }
 
-export const WorkOrderCard = ({ workOrder, onStatusUpdate, onImageView, onDelete }: WorkOrderCardProps) => {
+export const WorkOrderCard = ({ 
+  workOrder, 
+  onStatusUpdate, 
+  onImageView, 
+  onDelete,
+  onResolveFlag 
+}: WorkOrderCardProps) => {
   const getLocationName = (order: WorkOrder): string => {
     if (!order.location) return 'N/A';
     
@@ -94,10 +101,15 @@ export const WorkOrderCard = ({ workOrder, onStatusUpdate, onImageView, onDelete
       {/* Card header with order number and status */}
       <div className="p-3 border-b flex justify-between items-center bg-gray-50">
         <div className="font-medium">{workOrder.order_no || 'N/A'}</div>
-        <StatusBadge 
-          status={workOrder.status || 'pending_review'} 
-          completionStatus={getCompletionStatus(workOrder)}
-        />
+        <div onClick={(e) => e.stopPropagation()}>
+          <StatusBadgeDropdown 
+            status={workOrder.status || 'pending_review'} 
+            completionStatus={getCompletionStatus(workOrder)}
+            workOrderId={workOrder.id}
+            onStatusUpdate={onStatusUpdate}
+            onResolveFlag={onResolveFlag}
+          />
+        </div>
       </div>
 
       {/* Card body with order details */}

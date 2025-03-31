@@ -92,7 +92,12 @@ export const ImageViewModal = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <div className={`max-w-6xl p-0 h-[90vh] flex flex-col rounded-lg overflow-hidden border-t-4 ${statusBorderColor} bg-white shadow-xl fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[95%] z-50`}>
-        <ModalHeader workOrder={currentWorkOrder} onClose={onClose} />
+        <ModalHeader 
+          workOrder={currentWorkOrder} 
+          onClose={onClose} 
+          onStatusUpdate={onStatusUpdate}
+          onResolveFlag={onResolveFlag}
+        />
         
         <ModalContent
           workOrder={currentWorkOrder}

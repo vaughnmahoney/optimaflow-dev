@@ -3,7 +3,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
 import { format, parseISO } from "date-fns";
-import { StatusBadge } from "../StatusBadge";
+import { StatusBadgeDropdown } from "../StatusBadgeDropdown";
 import { WorkOrder } from "../types";
 import { ActionsMenu } from "./ActionsMenu";
 
@@ -12,9 +12,16 @@ interface WorkOrderRowProps {
   onStatusUpdate: (workOrderId: string, newStatus: string) => void;
   onImageView: (workOrderId: string) => void;
   onDelete: (workOrderId: string) => void;
+  onResolveFlag?: (workOrderId: string, resolution: string) => void;
 }
 
-export const WorkOrderRow = ({ workOrder, onStatusUpdate, onImageView, onDelete }: WorkOrderRowProps) => {
+export const WorkOrderRow = ({ 
+  workOrder, 
+  onStatusUpdate, 
+  onImageView, 
+  onDelete,
+  onResolveFlag 
+}: WorkOrderRowProps) => {
   const getLocationName = (order: WorkOrder): string => {
     if (!order.location) return 'N/A';
     
@@ -88,10 +95,13 @@ export const WorkOrderRow = ({ workOrder, onStatusUpdate, onImageView, onDelete 
       <TableCell className="max-w-xs truncate">
         {getLocationName(workOrder)}
       </TableCell>
-      <TableCell>
-        <StatusBadge 
+      <TableCell onClick={(e) => e.stopPropagation()}>
+        <StatusBadgeDropdown 
           status={workOrder.status || 'pending_review'} 
           completionStatus={getCompletionStatus(workOrder)}
+          workOrderId={workOrder.id}
+          onStatusUpdate={onStatusUpdate}
+          onResolveFlag={onResolveFlag}
         />
       </TableCell>
       <TableCell onClick={(e) => e.stopPropagation()}>
