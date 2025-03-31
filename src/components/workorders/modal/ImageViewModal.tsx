@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog } from "@/components/ui/dialog";
 import { WorkOrder } from "../types";
 import { ModalHeader } from "./components/ModalHeader";
 import { ModalContent } from "./components/ModalContent";
@@ -8,6 +8,8 @@ import { ModalFooter } from "./components/ModalFooter";
 import { NavigationControls } from "./components/NavigationControls";
 import { getStatusBorderColor } from "./utils/modalUtils";
 import { useWorkOrderNavigation } from "@/hooks/useWorkOrderNavigation";
+import { MobileImageViewModal } from "./MobileImageViewModal";
+import { useMobile } from "@/hooks/use-mobile";
 
 interface ImageViewModalProps {
   workOrder: WorkOrder | null;
@@ -32,8 +34,27 @@ export const ImageViewModal = ({
   onDownloadAll,
   onResolveFlag,
 }: ImageViewModalProps) => {
+  const isMobile = useMobile();
   const [isImageExpanded, setIsImageExpanded] = useState(false);
   
+  // Render the mobile version when on small screens
+  if (isMobile) {
+    return (
+      <MobileImageViewModal 
+        workOrder={workOrder}
+        workOrders={workOrders}
+        currentIndex={currentIndex}
+        isOpen={isOpen}
+        onClose={onClose}
+        onStatusUpdate={onStatusUpdate}
+        onNavigate={onNavigate}
+        onDownloadAll={onDownloadAll}
+        onResolveFlag={onResolveFlag}
+      />
+    );
+  }
+  
+  // Desktop version starts here
   const {
     currentWorkOrder,
     currentIndex: navIndex,
@@ -70,7 +91,7 @@ export const ImageViewModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`max-w-6xl p-0 h-[90vh] flex flex-col rounded-lg overflow-hidden border-t-4 ${statusBorderColor}`}>
+      <div className={`max-w-6xl p-0 h-[90vh] flex flex-col rounded-lg overflow-hidden border-t-4 ${statusBorderColor} bg-white shadow-xl fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[95%] z-50`}>
         <ModalHeader workOrder={currentWorkOrder} onClose={onClose} />
         
         <ModalContent
@@ -98,7 +119,7 @@ export const ImageViewModal = ({
           onPreviousOrder={handlePreviousOrder}
           onNextOrder={handleNextOrder}
         />
-      </DialogContent>
+      </div>
     </Dialog>
   );
 };
