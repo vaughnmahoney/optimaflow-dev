@@ -8,7 +8,6 @@ import { ModalFooter } from "./components/ModalFooter";
 import { NavigationControls } from "./components/NavigationControls";
 import { getStatusBorderColor } from "./utils/modalUtils";
 import { useWorkOrderNavigation } from "@/hooks/useWorkOrderNavigation";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ImageViewModalProps {
   workOrder: WorkOrder | null;
@@ -34,7 +33,6 @@ export const ImageViewModal = ({
   onResolveFlag,
 }: ImageViewModalProps) => {
   const [isImageExpanded, setIsImageExpanded] = useState(false);
-  const isMobile = useIsMobile();
   
   const {
     currentWorkOrder,
@@ -75,33 +73,31 @@ export const ImageViewModal = ({
       <DialogContent className={`max-w-6xl p-0 h-[90vh] flex flex-col rounded-lg overflow-hidden border-t-4 ${statusBorderColor}`}>
         <ModalHeader workOrder={currentWorkOrder} onClose={onClose} />
         
-        <div className={`flex flex-col ${isMobile ? 'overflow-auto' : ''} flex-grow`}>
-          <ModalContent
-            workOrder={currentWorkOrder}
-            images={images}
-            currentImageIndex={currentImageIndex}
-            setCurrentImageIndex={setCurrentImageIndex}
-            isImageExpanded={isImageExpanded}
-            toggleImageExpand={toggleImageExpand}
-          />
-          
-          <ModalFooter 
-            workOrderId={currentWorkOrder.id} 
-            onStatusUpdate={onStatusUpdate} 
-            onDownloadAll={onDownloadAll}
-            hasImages={images.length > 0}
-            status={currentWorkOrder.status}
-            onResolveFlag={onResolveFlag}
-            workOrder={currentWorkOrder}
-          />
-          
-          <NavigationControls 
-            currentIndex={navIndex}
-            totalOrders={workOrders.length}
-            onPreviousOrder={handlePreviousOrder}
-            onNextOrder={handleNextOrder}
-          />
-        </div>
+        <ModalContent
+          workOrder={currentWorkOrder}
+          images={images}
+          currentImageIndex={currentImageIndex}
+          setCurrentImageIndex={setCurrentImageIndex}
+          isImageExpanded={isImageExpanded}
+          toggleImageExpand={toggleImageExpand}
+        />
+        
+        <ModalFooter 
+          workOrderId={currentWorkOrder.id} 
+          onStatusUpdate={onStatusUpdate} 
+          onDownloadAll={onDownloadAll}
+          hasImages={images.length > 0}
+          status={currentWorkOrder.status}
+          onResolveFlag={onResolveFlag}
+          workOrder={currentWorkOrder}
+        />
+        
+        <NavigationControls 
+          currentIndex={navIndex}
+          totalOrders={workOrders.length}
+          onPreviousOrder={handlePreviousOrder}
+          onNextOrder={handleNextOrder}
+        />
       </DialogContent>
     </Dialog>
   );

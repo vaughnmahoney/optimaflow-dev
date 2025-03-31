@@ -28,7 +28,7 @@ export function ImageContent({
   }
 
   return (
-    <div className={`flex flex-1 ${isMobile ? 'h-full' : 'h-full overflow-hidden'}`}>
+    <div className="flex flex-1 h-full overflow-hidden">
       {/* Hide thumbnails on mobile */}
       {!isMobile && (
         <ImageThumbnails
@@ -38,7 +38,7 @@ export function ImageContent({
         />
       )}
       
-      <div className={`relative flex-1 ${isMobile ? 'h-full' : isImageExpanded ? 'max-h-full' : 'max-h-[60vh]'}`}>
+      <div className={`relative flex-1 ${isImageExpanded ? 'max-h-full' : 'max-h-[60vh]'}`}>
         <ImageViewer 
           images={images}
           currentImageIndex={currentImageIndex}

@@ -136,7 +136,7 @@ export const ImageViewer = ({
         {currentImageIndex + 1} / {images.length}
       </div>
       
-      {/* Previous/Next buttons - always visible */}
+      {/* Previous/Next buttons */}
       <div className="absolute inset-y-0 left-0 flex items-center">
         <Button 
           variant="outline" 
