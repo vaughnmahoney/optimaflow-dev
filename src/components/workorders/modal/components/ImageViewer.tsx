@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useImageZoom } from "@/hooks/useImageZoom";
 import { ImageType } from "../../types/image";
-import { ChevronLeft, ChevronRight, Maximize2, Minimize2, ZoomIn } from "lucide-react";
+import { ChevronLeft, ChevronRight, Maximize2, Minimize2, ZoomIn, Grid2X2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ImageViewerProps {
@@ -11,6 +11,9 @@ interface ImageViewerProps {
   setCurrentImageIndex: (index: number) => void;
   isImageExpanded: boolean;
   toggleImageExpand: () => void;
+  isMobile?: boolean;
+  toggleImagesGrid?: () => void;
+  totalImages: number;
 }
 
 export const ImageViewer = ({
@@ -19,6 +22,9 @@ export const ImageViewer = ({
   setCurrentImageIndex,
   isImageExpanded,
   toggleImageExpand,
+  isMobile = false,
+  toggleImagesGrid = () => {},
+  totalImages
 }: ImageViewerProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -131,7 +137,7 @@ export const ImageViewer = ({
       
       {/* Image counter */}
       <div className="absolute top-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium">
-        {currentImageIndex + 1} / {images.length}
+        {currentImageIndex + 1} / {totalImages}
       </div>
       
       {/* Previous/Next buttons */}
@@ -159,6 +165,18 @@ export const ImageViewer = ({
       
       {/* Control buttons */}
       <div className="absolute top-4 left-4 flex gap-2">
+        {/* Grid view button (mobile only) */}
+        {isMobile && (
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={toggleImagesGrid}
+            className="h-10 w-10 rounded-full bg-white/90 hover:bg-white border-gray-200 text-gray-700 shadow-md"
+          >
+            <Grid2X2 className="h-4 w-4" />
+          </Button>
+        )}
+
         <Button
           variant="outline"
           size="icon"
