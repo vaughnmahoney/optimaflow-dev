@@ -27,6 +27,11 @@ export const ModalHeader = ({
            (order.search_response?.scheduleInformation?.status);
   };
 
+  // Stop event propagation to prevent closing modal when clicking dropdown
+  const handleStatusClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
   return (
     <div className="flex justify-between items-center px-4 py-3 bg-white dark:bg-gray-950 border-b">
       <div className="flex items-center space-x-4">
@@ -36,13 +41,15 @@ export const ModalHeader = ({
         <div className="text-left">
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-semibold">Order #{workOrder.order_no}</h2>
-            <StatusBadgeDropdown 
-              status={workOrder.status || "pending_review"} 
-              completionStatus={getCompletionStatus(workOrder)}
-              workOrderId={workOrder.id}
-              onStatusUpdate={onStatusUpdate}
-              onResolveFlag={onResolveFlag}
-            />
+            <div onClick={handleStatusClick}>
+              <StatusBadgeDropdown 
+                status={workOrder.status || "pending_review"} 
+                completionStatus={getCompletionStatus(workOrder)}
+                workOrderId={workOrder.id}
+                onStatusUpdate={onStatusUpdate}
+                onResolveFlag={onResolveFlag}
+              />
+            </div>
           </div>
           <p className="text-sm text-muted-foreground">
             Driver: {driverName}

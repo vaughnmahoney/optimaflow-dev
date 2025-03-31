@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { WorkOrder } from "../types";
 import { useWorkOrderNavigation } from "@/hooks/useWorkOrderNavigation";
 import { getStatusBorderColor } from "./utils/modalUtils";
@@ -70,6 +70,7 @@ export const MobileImageViewModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogTitle className="sr-only">Work Order Details</DialogTitle>
       <DialogContent className={`max-w-full p-0 h-[90vh] w-[95vw] flex flex-col rounded-lg overflow-hidden border-t-4 ${statusBorderColor}`}>
         {isImageViewerOpen ? (
           // Show image viewer when in image mode

@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Dialog } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { WorkOrder } from "../types";
 import { ModalHeader } from "./components/ModalHeader";
 import { ModalContent } from "./components/ModalContent";
@@ -91,40 +91,43 @@ export const ImageViewModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <div className={`max-w-6xl p-0 h-[90vh] flex flex-col rounded-lg overflow-hidden border-t-4 ${statusBorderColor} bg-white shadow-xl fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[95%] z-50`}>
-        <ModalHeader 
-          workOrder={currentWorkOrder} 
-          onClose={onClose} 
-          onStatusUpdate={onStatusUpdate}
-          onResolveFlag={onResolveFlag}
-        />
-        
-        <ModalContent
-          workOrder={currentWorkOrder}
-          images={images}
-          currentImageIndex={currentImageIndex}
-          setCurrentImageIndex={setCurrentImageIndex}
-          isImageExpanded={isImageExpanded}
-          toggleImageExpand={toggleImageExpand}
-        />
-        
-        <ModalFooter 
-          workOrderId={currentWorkOrder.id} 
-          onStatusUpdate={onStatusUpdate} 
-          onDownloadAll={onDownloadAll}
-          hasImages={images.length > 0}
-          status={currentWorkOrder.status}
-          onResolveFlag={onResolveFlag}
-          workOrder={currentWorkOrder}
-        />
-        
-        <NavigationControls 
-          currentIndex={navIndex}
-          totalOrders={workOrders.length}
-          onPreviousOrder={handlePreviousOrder}
-          onNextOrder={handleNextOrder}
-        />
-      </div>
+      <DialogTitle className="sr-only">Work Order Details</DialogTitle>
+      <DialogContent className="p-0 h-[90vh] max-w-6xl w-[95vw]">
+        <div className={`h-full flex flex-col rounded-lg overflow-hidden border-t-4 ${statusBorderColor} bg-white shadow-xl`}>
+          <ModalHeader 
+            workOrder={currentWorkOrder} 
+            onClose={onClose} 
+            onStatusUpdate={onStatusUpdate}
+            onResolveFlag={onResolveFlag}
+          />
+          
+          <ModalContent
+            workOrder={currentWorkOrder}
+            images={images}
+            currentImageIndex={currentImageIndex}
+            setCurrentImageIndex={setCurrentImageIndex}
+            isImageExpanded={isImageExpanded}
+            toggleImageExpand={toggleImageExpand}
+          />
+          
+          <ModalFooter 
+            workOrderId={currentWorkOrder.id} 
+            onStatusUpdate={onStatusUpdate} 
+            onDownloadAll={onDownloadAll}
+            hasImages={images.length > 0}
+            status={currentWorkOrder.status}
+            onResolveFlag={onResolveFlag}
+            workOrder={currentWorkOrder}
+          />
+          
+          <NavigationControls 
+            currentIndex={navIndex}
+            totalOrders={workOrders.length}
+            onPreviousOrder={handlePreviousOrder}
+            onNextOrder={handleNextOrder}
+          />
+        </div>
+      </DialogContent>
     </Dialog>
   );
 };
