@@ -1,5 +1,5 @@
 
-import { Clock, MapPin } from "lucide-react";
+import { User, MapPin, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { WorkOrder } from "../../types";
 
@@ -11,6 +11,7 @@ export const QuickInfo = ({
   workOrder 
 }: QuickInfoProps) => {
   const completionData = workOrder.completion_response?.orders[0]?.data;
+  const driverName = workOrder.driver?.name || 'No Driver Assigned';
   const locationName = workOrder.location?.name || workOrder.location?.locationName || 'Unknown Location';
   const address = workOrder.location?.address || 'No Address Available';
   const startDate = completionData?.startTime?.localTime;
@@ -35,35 +36,35 @@ export const QuickInfo = ({
   };
 
   return (
-    <div className="p-4 space-y-4 bg-white dark:bg-gray-950">
+    <div className="p-3 bg-white dark:bg-gray-950 space-y-3">
+      {/* Driver info */}
       <div className="flex items-center space-x-2">
-        <MapPin className="h-4 w-4 text-gray-500" />
-        <div className="flex-1">
-          <h3 className="font-medium">{locationName}</h3>
-          <p className="text-sm text-muted-foreground">{address}</p>
+        <User className="h-4 w-4 text-blue-600 flex-shrink-0" />
+        <div>
+          <p className="text-sm font-medium">{driverName}</p>
         </div>
       </div>
       
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center text-sm text-muted-foreground">
-            <Clock className="h-3.5 w-3.5 mr-1" />
-            <span>Start Time</span>
-          </div>
-          <div>
-            <p className="font-medium">{formatDisplayTime(startDate)}</p>
-            <p className="text-xs text-muted-foreground">{formatDisplayDate(startDate)}</p>
-          </div>
+      {/* Location info */}
+      <div className="flex items-center space-x-2">
+        <MapPin className="h-4 w-4 text-blue-600 flex-shrink-0" />
+        <div>
+          <p className="text-sm font-medium">{locationName}</p>
+          <p className="text-xs text-gray-500">{address}</p>
         </div>
-        
-        <div className="space-y-1">
-          <div className="flex items-center text-sm text-muted-foreground">
-            <Clock className="h-3.5 w-3.5 mr-1" />
-            <span>End Time</span>
+      </div>
+      
+      {/* Time info */}
+      <div className="flex items-center space-x-2">
+        <Clock className="h-4 w-4 text-blue-600 flex-shrink-0" />
+        <div className="grid grid-cols-2 gap-2 text-sm w-full">
+          <div>
+            <p className="text-xs text-gray-500">Start:</p>
+            <p className="text-xs font-medium">{formatDisplayTime(startDate)}</p>
           </div>
           <div>
-            <p className="font-medium">{formatDisplayTime(endDate)}</p>
-            <p className="text-xs text-muted-foreground">{formatDisplayDate(endDate)}</p>
+            <p className="text-xs text-gray-500">End:</p>
+            <p className="text-xs font-medium">{formatDisplayTime(endDate)}</p>
           </div>
         </div>
       </div>

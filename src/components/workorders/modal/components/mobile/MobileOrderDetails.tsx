@@ -1,8 +1,7 @@
 
 import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { WorkOrder } from "../../../types";
-import { MapPin, Clock, Package, ClipboardCheck, FileSignature, User } from "lucide-react";
+import { MapPin, Clock, Package, User, FileSignature } from "lucide-react";
 import { format } from "date-fns";
 
 interface MobileOrderDetailsProps {
@@ -17,7 +16,7 @@ export const MobileOrderDetails = ({
   const signatureUrl = completionData?.form?.signature?.url;
   
   // Driver info
-  const driverName = workOrder.search_response?.scheduleInformation?.driverName || 'No Driver Assigned';
+  const driverName = workOrder.search_response?.scheduleInformation?.driverName || workOrder.driver?.name || 'No Driver Assigned';
   
   // Format date function
   const formatDate = (dateString: string | undefined) => {
@@ -62,84 +61,84 @@ export const MobileOrderDetails = ({
     : ldsRaw;
 
   return (
-    <div className="space-y-4">
-      {/* Main Order Details Card */}
-      <Card className="overflow-hidden border shadow-sm bg-white">
-        <div className="p-4 space-y-4">
+    <div className="space-y-3">
+      {/* Main Card with all order details */}
+      <Card className="shadow-sm border-gray-200">
+        <div className="p-3 space-y-3">
           {/* Driver Section */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 pb-1 border-b border-gray-100">
-              <User className="h-4 w-4 text-blue-600" />
-              <span className="text-sm font-medium text-blue-700">Driver</span>
+          <div className="space-y-1">
+            <div className="flex items-center gap-1.5 text-blue-700 mb-1">
+              <User className="h-4 w-4" />
+              <h3 className="text-sm font-medium">Driver</h3>
             </div>
-            <p className="text-sm text-gray-700 pl-6">{driverName}</p>
+            <p className="text-sm pl-5.5">{driverName}</p>
           </div>
-          
-          <Separator className="bg-gray-100" />
           
           {/* Location Section */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 pb-1 border-b border-gray-100">
-              <MapPin className="h-4 w-4 text-blue-600" />
-              <span className="text-sm font-medium text-blue-700">Location</span>
+          <div className="space-y-1">
+            <div className="flex items-center gap-1.5 text-blue-700 mb-1">
+              <MapPin className="h-4 w-4" />
+              <h3 className="text-sm font-medium">Location</h3>
             </div>
-            <div className="pl-6 space-y-1">
-              <p className="text-sm font-medium text-gray-700">{locationName}</p>
-              <p className="text-sm text-gray-600">{fullAddress}</p>
-            </div>
-          </div>
-          
-          <Separator className="bg-gray-100" />
-          
-          {/* Time Information */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 pb-1 border-b border-gray-100">
-              <Clock className="h-4 w-4 text-blue-600" />
-              <span className="text-sm font-medium text-blue-700">Time Details</span>
-            </div>
-            <div className="pl-6 grid grid-cols-2 gap-2">
-              <p className="text-sm text-gray-600">Start Time:</p>
-              <p className="text-sm text-gray-700">{startTime}</p>
-              
-              <p className="text-sm text-gray-600">End Time:</p>
-              <p className="text-sm text-gray-700">{endTime}</p>
-              
-              <p className="text-sm text-gray-600">LDS:</p>
-              <p className="text-sm text-gray-700">{ldsInfo}</p>
+            <div className="pl-5.5 space-y-1">
+              <p className="text-sm font-medium">{locationName}</p>
+              <p className="text-xs text-gray-600">{fullAddress}</p>
             </div>
           </div>
           
-          <Separator className="bg-gray-100" />
+          {/* Time Details Section */}
+          <div className="space-y-1">
+            <div className="flex items-center gap-1.5 text-blue-700 mb-1">
+              <Clock className="h-4 w-4" />
+              <h3 className="text-sm font-medium">Time Details</h3>
+            </div>
+            <div className="pl-5.5 space-y-0.5">
+              <div className="grid grid-cols-[80px_1fr]">
+                <span className="text-xs text-gray-500">Start Time:</span>
+                <span className="text-xs">{startTime}</span>
+              </div>
+              <div className="grid grid-cols-[80px_1fr]">
+                <span className="text-xs text-gray-500">End Time:</span>
+                <span className="text-xs">{endTime}</span>
+              </div>
+              <div className="grid grid-cols-[80px_1fr]">
+                <span className="text-xs text-gray-500">LDS:</span>
+                <span className="text-xs">{ldsInfo}</span>
+              </div>
+            </div>
+          </div>
           
           {/* Materials Section */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 pb-1 border-b border-gray-100">
-              <Package className="h-4 w-4 text-blue-600" />
-              <span className="text-sm font-medium text-blue-700">Materials</span>
+          <div className="space-y-1">
+            <div className="flex items-center gap-1.5 text-blue-700 mb-1">
+              <Package className="h-4 w-4" />
+              <h3 className="text-sm font-medium">Materials</h3>
             </div>
-            <div className="pl-6 grid grid-cols-2 gap-2">
-              <p className="text-sm text-gray-600">Quantity:</p>
-              <p className="text-sm text-gray-700">{materialQuantity}</p>
+            <div className="pl-5.5 space-y-0.5">
+              <div className="grid grid-cols-[80px_1fr]">
+                <span className="text-xs text-gray-500">Quantity:</span>
+                <span className="text-xs">{materialQuantity}</span>
+              </div>
             </div>
           </div>
         </div>
       </Card>
       
       {/* Signature Card */}
-      <Card className="overflow-hidden border shadow-sm bg-white">
-        <div className="p-4 space-y-3">
-          <div className="flex items-center gap-2 pb-1 border-b border-gray-100">
-            <FileSignature className="h-4 w-4 text-blue-600" />
-            <span className="text-sm font-medium text-blue-700">Customer Signature</span>
-          </div>
-          
-          <div className="flex justify-center">
-            {signatureUrl ? (
-              <div className="p-3 border border-gray-100 rounded-md bg-gray-50 w-full flex justify-center">
+      {signatureUrl && (
+        <Card className="shadow-sm border-gray-200">
+          <div className="p-3 space-y-2">
+            <div className="flex items-center gap-1.5 text-blue-700">
+              <FileSignature className="h-4 w-4" />
+              <h3 className="text-sm font-medium">Customer Signature</h3>
+            </div>
+            
+            <div className="flex justify-center">
+              <div className="border border-gray-100 rounded-md bg-gray-50 p-2 w-full flex justify-center">
                 <img 
                   src={signatureUrl} 
                   alt="Signature" 
-                  className="max-w-full max-h-[150px] object-contain"
+                  className="max-w-full max-h-[120px] object-contain"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.onerror = null;
@@ -147,15 +146,10 @@ export const MobileOrderDetails = ({
                   }}
                 />
               </div>
-            ) : (
-              <div className="text-center py-6 px-4 bg-gray-50 border border-gray-100 rounded-md w-full">
-                <FileSignature className="h-8 w-8 text-blue-200 mx-auto mb-2" />
-                <p className="text-sm text-gray-500">No signature available</p>
-              </div>
-            )}
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      )}
     </div>
   );
 };
