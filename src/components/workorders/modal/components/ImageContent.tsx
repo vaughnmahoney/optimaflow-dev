@@ -38,12 +38,12 @@ export function ImageContent({
         />
       )}
       
-      <div className={`relative flex-1 ${isMobile ? 'max-h-full h-full' : isImageExpanded ? 'max-h-full' : 'max-h-[60vh]'}`}>
+      <div className={`relative flex-1 ${isImageExpanded ? 'max-h-full' : 'max-h-[60vh]'}`}>
         <ImageViewer 
           images={images}
           currentImageIndex={currentImageIndex}
           setCurrentImageIndex={setCurrentImageIndex}
-          isImageExpanded={isImageExpanded || isMobile}
+          isImageExpanded={isImageExpanded}
           toggleImageExpand={toggleImageExpand}
         />
       </div>
