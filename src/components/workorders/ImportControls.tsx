@@ -15,10 +15,12 @@ import {
 
 interface ImportControlsProps {
   onOptimoRouteSearch: (value: string) => void;
+  onRefresh?: () => void;
 }
 
 export const ImportControls = ({ 
-  onOptimoRouteSearch 
+  onOptimoRouteSearch,
+  onRefresh 
 }: ImportControlsProps) => {
   const [importValue, setImportValue] = useState("");
   const [isImporting, setIsImporting] = useState(false);
@@ -61,7 +63,12 @@ export const ImportControls = ({
   };
 
   const handleRefresh = () => {
-    queryClient.invalidateQueries({ queryKey: ["workOrders"] });
+    // Use the onRefresh prop if provided, otherwise fall back to invalidating the query
+    if (onRefresh) {
+      onRefresh();
+    } else {
+      queryClient.invalidateQueries({ queryKey: ["workOrders"] });
+    }
     toast.success("Work orders refreshed");
   };
 
