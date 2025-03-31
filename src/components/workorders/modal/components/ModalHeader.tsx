@@ -1,21 +1,17 @@
 
 import { User, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { StatusBadgeDropdown } from "../../StatusBadgeDropdown";
+import { StatusBadge } from "../../StatusBadge";
 import { WorkOrder } from "../../types";
 
 interface ModalHeaderProps {
   workOrder: WorkOrder;
   onClose: () => void;
-  onStatusUpdate?: (workOrderId: string, status: string) => void;
-  onResolveFlag?: (workOrderId: string, resolution: string) => void;
 }
 
 export const ModalHeader = ({ 
   workOrder, 
-  onClose,
-  onStatusUpdate,
-  onResolveFlag
+  onClose 
 }: ModalHeaderProps) => {
   const driverName = workOrder.search_response?.scheduleInformation?.driverName || 'No Driver Assigned';
   
@@ -27,11 +23,6 @@ export const ModalHeader = ({
            (order.search_response?.scheduleInformation?.status);
   };
 
-  // Stop event propagation to prevent closing modal when clicking dropdown
-  const handleStatusClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-  };
-
   return (
     <div className="flex justify-between items-center px-4 py-3 bg-white dark:bg-gray-950 border-b">
       <div className="flex items-center space-x-4">
@@ -41,15 +32,10 @@ export const ModalHeader = ({
         <div className="text-left">
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-semibold">Order #{workOrder.order_no}</h2>
-            <div onClick={handleStatusClick}>
-              <StatusBadgeDropdown 
-                status={workOrder.status || "pending_review"} 
-                completionStatus={getCompletionStatus(workOrder)}
-                workOrderId={workOrder.id}
-                onStatusUpdate={onStatusUpdate}
-                onResolveFlag={onResolveFlag}
-              />
-            </div>
+            <StatusBadge 
+              status={workOrder.status || "pending_review"} 
+              completionStatus={getCompletionStatus(workOrder)}
+            />
           </div>
           <p className="text-sm text-muted-foreground">
             Driver: {driverName}
