@@ -6,6 +6,7 @@ import { Import, RefreshCw } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useAutoImport } from "@/hooks/useAutoImport";
 import {
   Sheet,
   SheetContent,
@@ -27,6 +28,7 @@ export const ImportControls = ({
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const queryClient = useQueryClient();
   const isMobile = useIsMobile();
+  const { isImporting: isAutoImporting, runAutoImport } = useAutoImport();
 
   const handleImport = async () => {
     if (!importValue.trim()) return;
@@ -62,14 +64,15 @@ export const ImportControls = ({
     }
   };
 
-  const handleRefresh = () => {
-    // Use the onRefresh prop if provided, otherwise fall back to invalidating the query
-    if (onRefresh) {
+  const handleRefresh = async () => {
+    // First run the auto import
+    const importSuccess = await runAutoImport();
+    
+    // If auto-import didn't run or if the onRefresh prop is provided, call it as a fallback
+    if (!importSuccess && onRefresh) {
       onRefresh();
-    } else {
-      queryClient.invalidateQueries({ queryKey: ["workOrders"] });
+      toast.success("Work orders refreshed");
     }
-    toast.success("Work orders refreshed");
   };
 
   // Mobile UI
@@ -122,8 +125,9 @@ export const ImportControls = ({
           variant="outline" 
           size="sm"
           onClick={handleRefresh}
+          disabled={isAutoImporting}
         >
-          <RefreshCw className="h-4 w-4" />
+          <RefreshCw className={`h-4 w-4 ${isAutoImporting ? 'animate-spin' : ''}`} />
           <span className="sr-only">Refresh</span>
         </Button>
       </div>
@@ -155,8 +159,9 @@ export const ImportControls = ({
         <Button 
           variant="outline" 
           onClick={handleRefresh}
+          disabled={isAutoImporting}
         >
-          <RefreshCw className="h-4 w-4 mr-2" />
+          <RefreshCw className={`h-4 w-4 mr-2 ${isAutoImporting ? 'animate-spin' : ''}`} />
           Refresh
         </Button>
       </div>
