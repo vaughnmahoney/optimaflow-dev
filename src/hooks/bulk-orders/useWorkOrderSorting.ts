@@ -1,5 +1,44 @@
 
 import { WorkOrder, SortDirection, SortField } from "@/components/workorders/types";
+import { parseISO, isValid } from "date-fns";
+
+/**
+ * Get the best available date value from a work order for sorting
+ */
+const getBestDateValue = (order: WorkOrder): Date | null => {
+  // Try service_date first (most reliable)
+  if (order.service_date) {
+    try {
+      const date = parseISO(order.service_date);
+      if (isValid(date)) return date;
+    } catch (e) {
+      // Fall through to next option
+    }
+  }
+  
+  // Try end_time from completion response if available
+  try {
+    const endTimeLocal = order.completion_response?.orders?.[0]?.data?.endTime?.localTime;
+    if (endTimeLocal) {
+      const date = parseISO(endTimeLocal);
+      if (isValid(date)) return date;
+    }
+  } catch (e) {
+    // Fall through to next option
+  }
+  
+  // Fallback to timestamp
+  if (order.timestamp) {
+    try {
+      const date = parseISO(order.timestamp);
+      if (isValid(date)) return date;
+    } catch (e) {
+      // No more fallbacks
+    }
+  }
+  
+  return null;
+};
 
 /**
  * Sorts work orders based on the provided sort field and direction
@@ -12,15 +51,12 @@ export const sortWorkOrders = (
   // Default sort - if no sort specified, sort by service_date descending (newest first)
   if (!sortField || !sortDirection) {
     return [...orders].sort((a, b) => {
-      const dateA = a.service_date ? new Date(a.service_date) : null;
-      const dateB = b.service_date ? new Date(b.service_date) : null;
+      const dateA = getBestDateValue(a);
+      const dateB = getBestDateValue(b);
       
-      const validA = dateA && !isNaN(dateA.getTime());
-      const validB = dateB && !isNaN(dateB.getTime());
-      
-      if (validA && !validB) return -1; // Valid dates come first
-      if (!validA && validB) return 1;
-      if (!validA && !validB) return 0;
+      if (dateA && !dateB) return -1; // Valid dates come first
+      if (!dateA && dateB) return 1;
+      if (!dateA && !dateB) return 0;
       
       // Sort descending by default (newest first)
       return dateB!.getTime() - dateA!.getTime();
@@ -37,15 +73,12 @@ export const sortWorkOrders = (
         valueB = b.order_no || '';
         break;
       case 'service_date':
-        const dateA = a.service_date ? new Date(a.service_date) : null;
-        const dateB = b.service_date ? new Date(b.service_date) : null;
+        const dateA = getBestDateValue(a);
+        const dateB = getBestDateValue(b);
         
-        const validA = dateA && !isNaN(dateA.getTime());
-        const validB = dateB && !isNaN(dateB.getTime());
-        
-        if (validA && !validB) return sortDirection === 'asc' ? -1 : 1;
-        if (!validA && validB) return sortDirection === 'asc' ? 1 : -1;
-        if (!validA && !validB) return 0;
+        if (dateA && !dateB) return sortDirection === 'asc' ? -1 : 1;
+        if (!dateA && dateB) return sortDirection === 'asc' ? 1 : -1;
+        if (!dateA && !dateB) return 0;
         
         return sortDirection === 'asc' 
           ? dateA!.getTime() - dateB!.getTime()

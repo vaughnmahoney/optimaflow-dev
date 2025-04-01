@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { WorkOrder, SortDirection, SortField } from '../types';
+import { parseISO, isValid } from 'date-fns';
 
 export const useSortableTable = (
   initialWorkOrders: WorkOrder[], 
@@ -27,8 +28,8 @@ export const useSortableTable = (
     // First try to use service_date if available
     if (order.service_date) {
       try {
-        const date = new Date(order.service_date);
-        if (!isNaN(date.getTime())) {
+        const date = parseISO(order.service_date);
+        if (isValid(date)) {
           return date;
         }
       } catch (error) {
@@ -40,8 +41,8 @@ export const useSortableTable = (
     const endTime = order.completion_response?.orders?.[0]?.data?.endTime?.localTime;
     if (endTime) {
       try {
-        const date = new Date(endTime);
-        if (!isNaN(date.getTime())) {
+        const date = parseISO(endTime);
+        if (isValid(date)) {
           return date;
         }
       } catch (error) {
@@ -52,8 +53,8 @@ export const useSortableTable = (
     // Finally, fall back to timestamp if available
     if (order.timestamp) {
       try {
-        const date = new Date(order.timestamp);
-        if (!isNaN(date.getTime())) {
+        const date = parseISO(order.timestamp);
+        if (isValid(date)) {
           return date;
         }
       } catch (error) {
