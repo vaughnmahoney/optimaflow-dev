@@ -327,6 +327,7 @@ export type Database = {
           approved_user: string | null
           completion_response: Json | null
           created_at: string | null
+          driver_name: string | null
           flagged_at: string | null
           flagged_by: string | null
           flagged_user: string | null
@@ -334,6 +335,7 @@ export type Database = {
           last_action_at: string | null
           last_action_by: string | null
           last_action_user: string | null
+          location_name: string | null
           order_no: string | null
           qc_notes: string | null
           rejected_at: string | null
@@ -345,6 +347,7 @@ export type Database = {
           resolved_user: string | null
           resolver_id: string | null
           search_response: Json | null
+          service_date: string | null
           status: string | null
           timestamp: string | null
           updated_at: string | null
@@ -355,6 +358,7 @@ export type Database = {
           approved_user?: string | null
           completion_response?: Json | null
           created_at?: string | null
+          driver_name?: string | null
           flagged_at?: string | null
           flagged_by?: string | null
           flagged_user?: string | null
@@ -362,6 +366,7 @@ export type Database = {
           last_action_at?: string | null
           last_action_by?: string | null
           last_action_user?: string | null
+          location_name?: string | null
           order_no?: string | null
           qc_notes?: string | null
           rejected_at?: string | null
@@ -373,6 +378,7 @@ export type Database = {
           resolved_user?: string | null
           resolver_id?: string | null
           search_response?: Json | null
+          service_date?: string | null
           status?: string | null
           timestamp?: string | null
           updated_at?: string | null
@@ -383,6 +389,7 @@ export type Database = {
           approved_user?: string | null
           completion_response?: Json | null
           created_at?: string | null
+          driver_name?: string | null
           flagged_at?: string | null
           flagged_by?: string | null
           flagged_user?: string | null
@@ -390,6 +397,7 @@ export type Database = {
           last_action_at?: string | null
           last_action_by?: string | null
           last_action_user?: string | null
+          location_name?: string | null
           order_no?: string | null
           qc_notes?: string | null
           rejected_at?: string | null
@@ -401,6 +409,7 @@ export type Database = {
           resolved_user?: string | null
           resolver_id?: string | null
           search_response?: Json | null
+          service_date?: string | null
           status?: string | null
           timestamp?: string | null
           updated_at?: string | null

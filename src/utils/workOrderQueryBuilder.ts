@@ -59,7 +59,7 @@ export const applyOrderNoFilter = (countQuery: any, dataQuery: any, orderNo: str
 };
 
 /**
- * Applies date range filters to both count and data queries - FIXED
+ * Applies date range filters to both count and data queries using the new service_date column
  * @param countQuery The count query to modify
  * @param dataQuery The data query to modify
  * @param fromDate The start date filter
@@ -73,19 +73,11 @@ export const applyDateRangeFilter = (
   toDate: Date | null
 ) => {
   try {
-    // Apply date range filter properly by converting JSONB to text first
+    // Apply date range filter using the new service_date column
     if (fromDate) {
       const fromDateStr = fromDate.toISOString().split('T')[0];
-      
-      // Use contains operator for JSONB objects instead
-      countQuery = countQuery.or(
-        `completion_response->orders->0->data->endTime->localTime.gte.${fromDateStr},` +
-        `search_response->data->date.gte.${fromDateStr}`
-      );
-      dataQuery = dataQuery.or(
-        `completion_response->orders->0->data->endTime->localTime.gte.${fromDateStr},` +
-        `search_response->data->date.gte.${fromDateStr}`
-      );
+      countQuery = countQuery.gte('service_date', fromDateStr);
+      dataQuery = dataQuery.gte('service_date', fromDateStr);
     }
     
     if (toDate) {
@@ -94,15 +86,8 @@ export const applyDateRangeFilter = (
       inclusiveToDate.setDate(inclusiveToDate.getDate() + 1);
       const toDateStr = inclusiveToDate.toISOString().split('T')[0];
       
-      // Use contains operator for JSONB objects instead
-      countQuery = countQuery.or(
-        `completion_response->orders->0->data->endTime->localTime.lt.${toDateStr},` +
-        `search_response->data->date.lt.${toDateStr}`
-      );
-      dataQuery = dataQuery.or(
-        `completion_response->orders->0->data->endTime->localTime.lt.${toDateStr},` +
-        `search_response->data->date.lt.${toDateStr}`
-      );
+      countQuery = countQuery.lt('service_date', toDateStr);
+      dataQuery = dataQuery.lt('service_date', toDateStr);
     }
   } catch (error) {
     console.error("Error applying date filter:", error);
@@ -112,7 +97,7 @@ export const applyDateRangeFilter = (
 };
 
 /**
- * Applies text search filters for driver and location - FIXED
+ * Applies text search filters for driver and location using the new dedicated columns
  * @param countQuery The count query to modify
  * @param dataQuery The data query to modify
  * @param searchText The search text
@@ -130,19 +115,13 @@ export const applyTextSearchFilter = (
     
     try {
       if (field === 'driver') {
-        // Fixed: Use contains filter instead of text extraction
-        countQuery = countQuery.filter('search_response->scheduleInformation->driverName', 'ilike', `%${searchValue}%`);
-        dataQuery = dataQuery.filter('search_response->scheduleInformation->driverName', 'ilike', `%${searchValue}%`);
+        // Use the new driver_name column
+        countQuery = countQuery.ilike('driver_name', `%${searchValue}%`);
+        dataQuery = dataQuery.ilike('driver_name', `%${searchValue}%`);
       } else if (field === 'location') {
-        // Fixed: Use contains filter for location names
-        countQuery = countQuery.or(
-          `search_response->data->location->name.ilike.%${searchValue}%,` +
-          `search_response->data->location->locationName.ilike.%${searchValue}%`
-        );
-        dataQuery = dataQuery.or(
-          `search_response->data->location->name.ilike.%${searchValue}%,` +
-          `search_response->data->location->locationName.ilike.%${searchValue}%`
-        );
+        // Use the new location_name column
+        countQuery = countQuery.ilike('location_name', `%${searchValue}%`);
+        dataQuery = dataQuery.ilike('location_name', `%${searchValue}%`);
       }
     } catch (error) {
       console.error(`Error applying ${field} filter:`, error);
@@ -172,29 +151,19 @@ export const applySorting = (
       dataQuery = dataQuery.order(sortField, { ascending: isAscending });
     } 
     else if (sortField === 'service_date') {
-      // For service_date, apply a multi-level sorting approach using the actual paths in the database
-      // First try to sort by completion time if available
-      dataQuery = dataQuery.order('completion_response->orders->0->data->endTime->localTime', { 
-        ascending: isAscending,
-        nullsFirst: !isAscending // Put nulls last when sorting desc (newest first)
-      });
+      // Use the new service_date column for sorting
+      dataQuery = dataQuery.order('service_date', { ascending: isAscending });
       
-      // Then try the search_response date as backup
-      dataQuery = dataQuery.order('search_response->data->date', { 
-        ascending: isAscending,
-        nullsFirst: !isAscending
-      });
-      
-      // Add a final fallback sort using timestamp for consistent ordering
+      // Add timestamp as a secondary sort for consistent ordering
       dataQuery = dataQuery.order('timestamp', { ascending: isAscending });
     }
     else if (sortField === 'driver') {
-      // Sort by driver name
-      dataQuery = dataQuery.order('search_response->scheduleInformation->driverName', { ascending: isAscending });
+      // Use the new driver_name column for sorting
+      dataQuery = dataQuery.order('driver_name', { ascending: isAscending });
     }
     else if (sortField === 'location') {
-      // Sort by location name
-      dataQuery = dataQuery.order('search_response->data->location->name', { ascending: isAscending });
+      // Use the new location_name column for sorting
+      dataQuery = dataQuery.order('location_name', { ascending: isAscending });
     }
     else {
       // Default fallback to timestamp sorting
@@ -202,15 +171,7 @@ export const applySorting = (
     }
   } else {
     // Default sort if no criteria specified - newest first
-    // Apply the same multi-level sorting as above but with fixed direction
-    dataQuery = dataQuery.order('completion_response->orders->0->data->endTime->localTime', { 
-      ascending: false,
-      nullsFirst: false // Keep nulls last when sorting newest first
-    });
-    dataQuery = dataQuery.order('search_response->data->date', { 
-      ascending: false,
-      nullsFirst: false
-    });
+    dataQuery = dataQuery.order('service_date', { ascending: false });
     dataQuery = dataQuery.order('timestamp', { ascending: false });
   }
   

@@ -18,7 +18,7 @@ import { toast } from "sonner";
 
 /**
  * Hook to fetch work orders from Supabase with pagination and filtering
- * Implements database-level filtering for all filter types and proper server-side pagination
+ * Uses dedicated database columns for improved filtering performance
  */
 export const useWorkOrderFetch = (
   filters: WorkOrderFilters,
@@ -57,9 +57,15 @@ export const useWorkOrderFetch = (
         }
         
         // Execute the count query to get total filtered records
-        const count = await executeCountQuery(countQuery);
-        
-        console.log(`Total matching records before sorting/pagination: ${count}`);
+        let count;
+        try {
+          count = await executeCountQuery(countQuery);
+          console.log(`Total matching records before sorting/pagination: ${count}`);
+        } catch (countError) {
+          console.error("Error executing count query:", countError);
+          toast.error("Error counting results. Using estimated count instead.");
+          count = 0; // Default to 0 if count query fails
+        }
         
         // Apply sorting to data query
         dataQuery = applySorting(dataQuery, sortField, sortDirection);
@@ -68,19 +74,20 @@ export const useWorkOrderFetch = (
         dataQuery = applyPagination(dataQuery, page, pageSize);
         
         // Execute the data query
-        const data = await executeDataQuery(dataQuery);
-        
-        console.log(`Fetched ${data.length} work orders out of ${count} total matching records`);
+        let data;
+        try {
+          data = await executeDataQuery(dataQuery);
+          console.log(`Fetched ${data.length} work orders out of ${count} total matching records`);
+        } catch (dataError) {
+          console.error("Error executing data query:", dataError);
+          toast.error("Error fetching work orders. Please try again.");
+          data = []; // Default to empty array if data query fails
+        }
         
         if (data.length > 0) {
           // Log first and last dates for debugging
           try {
-            const dates = data.map(item => {
-              // Try to get the most accurate date from the response
-              const endTime = item.completion_response?.orders?.[0]?.data?.endTime?.localTime;
-              const searchDate = item.search_response?.data?.date;
-              return endTime || searchDate || item.timestamp || 'unknown date';
-            });
+            const dates = data.map(item => item.service_date || 'unknown date');
             console.log(`Date range in this page: ${dates[0]} to ${dates[dates.length - 1]}`);
           } catch (error) {
             console.error("Error logging date debug info:", error);
@@ -92,6 +99,12 @@ export const useWorkOrderFetch = (
         
         // Apply any additional client-side filtering if needed
         const filteredData = processFilteredData(transformedOrders);
+        
+        // If we got data but count failed, use data length for pagination
+        if (count === 0 && data.length > 0) {
+          count = data.length;
+          console.log(`Using data length for count: ${count}`);
+        }
         
         // Return both the data and total count for pagination
         return {
