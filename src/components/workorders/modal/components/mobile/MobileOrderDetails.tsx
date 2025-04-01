@@ -73,30 +73,13 @@ export const MobileOrderDetails = ({
       <TabsContent value="details" className="mt-0">
         <Card className="border-gray-100">
           <div className="space-y-4">
-            {/* Driver and Time Details in a two-column layout */}
-            <div className="grid grid-cols-2 gap-4 px-4 pt-4">
-              {/* Driver Section - Left Column */}
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-1.5 text-gray-700 mb-1">
-                  <User className="h-4 w-4 text-gray-400" />
-                  <h3 className="text-sm font-medium">Driver</h3>
-                </div>
-                <p className="text-sm">{driverName}</p>
+            {/* Driver Section */}
+            <div className="space-y-1.5 px-4 pt-4">
+              <div className="flex items-center gap-1.5 text-gray-700 mb-1">
+                <User className="h-4 w-4 text-gray-400" />
+                <h3 className="text-sm font-medium">Driver</h3>
               </div>
-              
-              {/* Time Details Section - Right Column */}
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-1.5 text-gray-700 mb-1">
-                  <Clock className="h-4 w-4 text-gray-400" />
-                  <h3 className="text-sm font-medium">Time Details</h3>
-                </div>
-                <div className="space-y-0.5">
-                  <div className="grid grid-cols-[45px_1fr]">
-                    <span className="text-xs text-gray-500">LDS:</span>
-                    <span className="text-xs">{ldsInfo}</span>
-                  </div>
-                </div>
-              </div>
+              <p className="text-sm pl-5.5">{driverName}</p>
             </div>
             
             {/* Location Section */}
@@ -111,8 +94,12 @@ export const MobileOrderDetails = ({
               </div>
             </div>
             
-            {/* Additional Time Details Section (Start/End Times) */}
+            {/* Time Details Section */}
             <div className="space-y-1.5 px-4 pb-4">
+              <div className="flex items-center gap-1.5 text-gray-700 mb-1">
+                <Clock className="h-4 w-4 text-gray-400" />
+                <h3 className="text-sm font-medium">Time Details</h3>
+              </div>
               <div className="pl-5.5 space-y-0.5">
                 <div className="grid grid-cols-[80px_1fr]">
                   <span className="text-xs text-gray-500">Start Time:</span>
@@ -121,6 +108,10 @@ export const MobileOrderDetails = ({
                 <div className="grid grid-cols-[80px_1fr]">
                   <span className="text-xs text-gray-500">End Time:</span>
                   <span className="text-xs">{endTime}</span>
+                </div>
+                <div className="grid grid-cols-[80px_1fr]">
+                  <span className="text-xs text-gray-500">LDS:</span>
+                  <span className="text-xs">{ldsInfo}</span>
                 </div>
               </div>
             </div>

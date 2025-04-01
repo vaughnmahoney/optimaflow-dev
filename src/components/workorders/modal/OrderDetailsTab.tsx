@@ -81,34 +81,13 @@ export const OrderDetailsTab = ({
             </div>
           )}
           
-          {/* Two-column layout for Driver and Time Details */}
-          <div className="grid grid-cols-2 gap-6">
-            {/* Driver Section - Left Column */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 mb-2">
-                <User className="h-5 w-5 text-gray-400" />
-                <h3 className="text-base font-medium text-gray-800">Driver</h3>
-              </div>
-              <p className="text-sm text-gray-700 pl-7">{driverName}</p>
+          {/* Driver Section */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 mb-2">
+              <User className="h-5 w-5 text-gray-400" />
+              <h3 className="text-base font-medium text-gray-800">Driver</h3>
             </div>
-            
-            {/* Time Details Section - Right Column */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 mb-2">
-                <Clock className="h-5 w-5 text-gray-400" />
-                <h3 className="text-base font-medium text-gray-800">Time Details</h3>
-              </div>
-              <div className="pl-7 grid grid-cols-[100px_1fr] gap-y-2">
-                <span className="text-sm text-gray-600">Start Time:</span>
-                <span className="text-sm text-gray-700">{startTime}</span>
-                
-                <span className="text-sm text-gray-600">End Time:</span>
-                <span className="text-sm text-gray-700">{endTime}</span>
-                
-                <span className="text-sm text-gray-600">LDS:</span>
-                <span className="text-sm text-gray-700">{ldsInfo}</span>
-              </div>
-            </div>
+            <p className="text-sm text-gray-700 pl-7">{driverName}</p>
           </div>
           
           <Separator className="bg-gray-100" />
@@ -122,6 +101,26 @@ export const OrderDetailsTab = ({
             <div className="pl-7 space-y-1">
               <p className="text-sm font-medium text-gray-700">{locationName}</p>
               <p className="text-sm text-gray-600">{fullAddress}</p>
+            </div>
+          </div>
+          
+          <Separator className="bg-gray-100" />
+          
+          {/* Time Details Section */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Clock className="h-5 w-5 text-gray-400" />
+              <h3 className="text-base font-medium text-gray-800">Time Details</h3>
+            </div>
+            <div className="pl-7 grid grid-cols-[100px_1fr] gap-y-2">
+              <span className="text-sm text-gray-600">Start Time:</span>
+              <span className="text-sm text-gray-700">{startTime}</span>
+              
+              <span className="text-sm text-gray-600">End Time:</span>
+              <span className="text-sm text-gray-700">{endTime}</span>
+              
+              <span className="text-sm text-gray-600">LDS:</span>
+              <span className="text-sm text-gray-700">{ldsInfo}</span>
             </div>
           </div>
         </div>
