@@ -99,65 +99,31 @@ export const WorkOrderTable = ({
         />
       )}
 
-      {/* For larger screens, show the traditional table */}
-      {!isMobile && (
-        <div className="rounded-md border overflow-hidden">
-          <Table>
-            <WorkOrderTableHeader
-              sortField={sortField}
-              sortDirection={sortDirection}
-              onSort={handleSort}
-              filters={filters}
-              onFilterChange={onColumnFilterChange}
-              onFilterClear={onColumnFilterClear}
-            />
-            <TableBody>
-              {workOrders.length === 0 ? (
-                <EmptyState colSpan={7} />
-              ) : (
-                workOrders.map((workOrder) => (
-                  <WorkOrderRow
-                    key={workOrder.id}
-                    workOrder={workOrder}
-                    onStatusUpdate={onStatusUpdate}
-                    onImageView={onImageView}
-                    onDelete={onDelete}
-                  />
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      )}
-
-      {/* Card grid layout for mobile */}
-      {isMobile && (
-        <div className="space-y-2">
-          {workOrders.length === 0 ? (
-            <EmptyState />
-          ) : (
-            <div className="grid grid-cols-1 gap-3">
-              {workOrders.map((workOrder) => (
-                <WorkOrderCard
-                  key={workOrder.id}
-                  workOrder={workOrder}
-                  onStatusUpdate={onStatusUpdate}
-                  onImageView={onImageView}
-                  onDelete={onDelete}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-      
-      {pagination && onPageChange && onPageSizeChange && (
-        <Pagination 
-          pagination={pagination}
-          onPageChange={onPageChange}
-          onPageSizeChange={onPageSizeChange}
-        />
-      )}
+      {/* Card grid layout for both mobile and desktop */}
+      <div className="space-y-2">
+        {workOrders.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <div className={`grid gap-3 ${isMobile ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"}`}>
+            {workOrders.map((workOrder) => (
+              <WorkOrderCard
+                key={workOrder.id}
+                workOrder={workOrder}
+                onStatusUpdate={onStatusUpdate}
+                onImageView={onImageView}
+                onDelete={onDelete}
+              />
+            ))}
+          </div>
+        )}
+        {pagination && onPageChange && onPageSizeChange && (
+          <Pagination 
+            pagination={pagination}
+            onPageChange={onPageChange}
+            onPageSizeChange={onPageSizeChange}
+          />
+        )}
+      </div>
     </div>
   );
 };

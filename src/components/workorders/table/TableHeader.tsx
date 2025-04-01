@@ -86,17 +86,6 @@ export const WorkOrderTableHeader = ({
         />
         
         <ColumnHeader
-          label="End Time"
-          column="end_time"
-          sortDirection={sortField === 'end_time' ? sortDirection : null}
-          onSort={() => onSort('end_time')}
-          isFiltered={false}  // No filter for end_time yet
-          filterContent={null}  // No filter UI for end_time yet
-          isPopoverOpen={false}
-          setOpenPopover={setOpenPopover}
-        />
-        
-        <ColumnHeader
           label="Driver"
           column="driver"
           sortDirection={sortField === 'driver' ? sortDirection : null}

@@ -12,7 +12,6 @@ export interface WorkOrder {
   status: string;
   timestamp: string;
   service_date?: string;
-  end_time?: string;  // Added new end_time field
   service_notes?: string;
   tech_notes?: string;
   notes?: string;
