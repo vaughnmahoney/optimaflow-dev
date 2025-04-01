@@ -128,7 +128,7 @@ export const ImportControls = ({
           disabled={isAutoImporting}
         >
           <RefreshCw className={`h-4 w-4 ${isAutoImporting ? 'animate-spin' : ''}`} />
-          <span className="sr-only">Refresh</span>
+          <span className="sr-only">{isAutoImporting ? 'Importing...' : 'Refresh'}</span>
         </Button>
       </div>
     );
@@ -162,7 +162,7 @@ export const ImportControls = ({
           disabled={isAutoImporting}
         >
           <RefreshCw className={`h-4 w-4 mr-2 ${isAutoImporting ? 'animate-spin' : ''}`} />
-          Refresh
+          {isAutoImporting ? 'Importing...' : 'Refresh'}
         </Button>
       </div>
     </div>
