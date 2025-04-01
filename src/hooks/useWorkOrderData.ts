@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { SortField, SortDirection, PaginationState, WorkOrderFilters } from "@/components/workorders/types";
 import { useWorkOrderFetch } from "./useWorkOrderFetch";
@@ -14,6 +15,7 @@ export const useWorkOrderData = () => {
     orderNo: null
   });
   
+  // Initialize with default sorting by service_date descending (newest first)
   const [sortField, setSortField] = useState<SortField>('service_date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [pagination, setPagination] = useState<PaginationState>({
