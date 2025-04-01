@@ -92,11 +92,11 @@ export const WorkOrderCard = ({ workOrder, onStatusUpdate, onImageView, onDelete
       <div className="p-3 space-y-2">
         <div className="text-sm flex justify-between items-start">
           <span className="text-muted-foreground">Driver:</span>
-          <span className="text-right font-medium max-w-[60%] truncate">{getDriverName(workOrder)}</span>
+          <span className="text-right font-medium max-w-[70%] break-words">{getDriverName(workOrder)}</span>
         </div>
         <div className="text-sm flex justify-between items-start">
           <span className="text-muted-foreground">Location:</span>
-          <span className="text-right font-medium max-w-[60%] truncate">{getLocationName(workOrder)}</span>
+          <span className="text-right font-medium max-w-[70%] break-words">{getLocationName(workOrder)}</span>
         </div>
         <div className="text-sm flex justify-between items-center">
           <span className="text-muted-foreground">Date:</span>
