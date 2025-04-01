@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { WorkOrder, SortDirection, SortField } from '../types';
 import { getBestWorkOrderDate } from '@/utils/workOrderUtils';
@@ -54,6 +53,7 @@ export const useSortableTable = (
             if (!dateA && dateB) return sortDirection === 'asc' ? 1 : -1;
             if (!dateA && !dateB) return 0;
             
+            // Use timestamp comparison (getTime) to ensure both date and time are considered
             return sortDirection === 'asc' 
               ? dateA!.getTime() - dateB!.getTime()
               : dateB!.getTime() - dateA!.getTime();
@@ -98,6 +98,7 @@ export const useSortableTable = (
         if (!validA && validB) return 1;
         if (!validA && !validB) return 0;
         
+        // Use timestamp comparison to ensure both date and time are considered
         return dateB!.getTime() - dateA!.getTime();
       });
     }

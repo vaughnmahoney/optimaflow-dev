@@ -4,6 +4,7 @@ import { getBestWorkOrderDate } from "@/utils/workOrderUtils";
 
 /**
  * Sorts work orders based on the provided sort field and direction
+ * Ensures proper date+time comparison for consistent sorting
  */
 export const sortWorkOrders = (
   orders: WorkOrder[], 
@@ -21,7 +22,8 @@ export const sortWorkOrders = (
       if (!dateA && dateB) return 1;
       if (!dateA && !dateB) return 0;
       
-      // Sort descending by default (newest first)
+      // Sort descending by default (newest first) using timestamp comparison
+      // This ensures both date and time are considered
       return dateB!.getTime() - dateA!.getTime();
     });
   }
@@ -44,6 +46,7 @@ export const sortWorkOrders = (
         if (!dateA && dateB) return sortDirection === 'asc' ? 1 : -1;
         if (!dateA && !dateB) return 0;
         
+        // Use getTime() to compare timestamps, ensuring both date and time are considered
         return sortDirection === 'asc' 
           ? dateA!.getTime() - dateB!.getTime()
           : dateB!.getTime() - dateA!.getTime();

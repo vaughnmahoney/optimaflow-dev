@@ -1,3 +1,4 @@
+
 import { WorkOrder } from "@/components/workorders/types";
 
 /**
@@ -185,7 +186,7 @@ export const transformWorkOrderData = (order: any): WorkOrder => {
  * Returns a valid Date object or null if no valid date is available
  */
 export const getBestWorkOrderDate = (order: WorkOrder): Date | null => {
-  // Try to get the end date from completion data first
+  // Try to get the end date from completion data first - this typically includes time
   if (order.completion_response?.orders?.[0]?.data?.endTime?.localTime) {
     try {
       const date = new Date(order.completion_response.orders[0].data.endTime.localTime);
