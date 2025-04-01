@@ -134,7 +134,7 @@ export const StatusFilterCards = ({
 
   return (
     <div className="mb-4 overflow-hidden">
-      <ScrollArea className="w-full" orientation="horizontal">
+      <ScrollArea className="w-full">
         <div className="flex space-x-2 pb-2">
           {renderStatusButtons()}
         </div>
