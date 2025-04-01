@@ -73,6 +73,7 @@ export const DateFilter = ({ column, value, onChange, onClear }: ColumnFilterPro
               }
             }}
             initialFocus
+            className="pointer-events-auto"
           />
         </PopoverContent>
       </Popover>

@@ -46,7 +46,7 @@ export const DateRangePicker = ({
                 {startDate ? format(startDate, "PPP") : "Select start date"}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
+            <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
               <CalendarComponent
                 mode="single"
                 selected={startDate}
@@ -72,7 +72,7 @@ export const DateRangePicker = ({
                 {endDate ? format(endDate, "PPP") : "Select end date"}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
+            <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
               <CalendarComponent
                 mode="single"
                 selected={endDate}
