@@ -17,18 +17,118 @@ export const Pagination = ({ pagination, onPageChange, onPageSizeChange }: Pagin
   const { page, pageSize, total } = pagination;
   const totalPages = Math.ceil(total / pageSize);
   
+  // Calculate which page numbers to show
+  const getPageNumbers = () => {
+    // Always show first page, last page, current page, and pages around current
+    const pageNumbers: (number | 'ellipsis')[] = [];
+    
+    if (totalPages <= 7) {
+      // If 7 or fewer pages, show all pages
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      // Always add first page
+      pageNumbers.push(1);
+      
+      // Add ellipsis if needed
+      if (page > 3) {
+        pageNumbers.push('ellipsis');
+      }
+      
+      // Add pages around current page
+      const startPage = Math.max(2, page - 1);
+      const endPage = Math.min(totalPages - 1, page + 1);
+      
+      for (let i = startPage; i <= endPage; i++) {
+        pageNumbers.push(i);
+      }
+      
+      // Add ellipsis if needed
+      if (page < totalPages - 2) {
+        pageNumbers.push('ellipsis');
+      }
+      
+      // Add last page if we have more than 1 page
+      if (totalPages > 1) {
+        pageNumbers.push(totalPages);
+      }
+    }
+    
+    return pageNumbers;
+  };
+
+  const pageNumbers = getPageNumbers();
+  
   const handlePageSizeChange = (value: string) => {
     onPageSizeChange(Number(value));
   };
 
   return (
-    <div className={`flex ${isMobile ? 'flex-col gap-2' : 'flex-row'} items-center justify-between p-2 border-t bg-muted/20`}>
+    <div className="flex flex-col gap-2 p-2 border-t bg-muted/20">
+      <div className="flex items-center justify-between">
+        <div className="text-xs text-muted-foreground">
+          {total} {total === 1 ? 'item' : 'items'}
+        </div>
+        
+        <div className="flex items-center space-x-1">
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="h-6 w-6"
+            disabled={page <= 1}
+            onClick={() => onPageChange(page - 1)}
+          >
+            <ChevronLeft className="h-3 w-3" />
+            <span className="sr-only">Previous page</span>
+          </Button>
+          
+          {!isMobile && (
+            <div className="flex items-center space-x-1">
+              {pageNumbers.map((pageNum, idx) => 
+                pageNum === 'ellipsis' ? (
+                  <span key={`ellipsis-${idx}`} className="px-2 text-xs text-muted-foreground">
+                    ...
+                  </span>
+                ) : (
+                  <Button
+                    key={`page-${pageNum}`}
+                    variant={pageNum === page ? "default" : "outline"}
+                    size="icon"
+                    className="h-6 w-6 text-xs"
+                    onClick={() => onPageChange(pageNum as number)}
+                  >
+                    {pageNum}
+                  </Button>
+                )
+              )}
+            </div>
+          )}
+          
+          {isMobile && (
+            <span className="text-xs px-1">
+              {page} / {totalPages}
+            </span>
+          )}
+          
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="h-6 w-6"
+            disabled={page >= totalPages}
+            onClick={() => onPageChange(page + 1)}
+          >
+            <ChevronRight className="h-3 w-3" />
+            <span className="sr-only">Next page</span>
+          </Button>
+        </div>
+      </div>
+
       {/* Page size selector */}
-      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-        <span className="hidden sm:inline-block">Rows per page:</span>
-        <span className="inline-block sm:hidden">Per page:</span>
+      <div className="flex items-center space-x-2 text-xs text-muted-foreground ml-auto">
+        <span>Rows per page:</span>
         <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
-          <SelectTrigger className="h-8 w-16">
+          <SelectTrigger className="h-7 w-16 text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -39,33 +139,6 @@ export const Pagination = ({ pagination, onPageChange, onPageSizeChange }: Pagin
             <SelectItem value="100">100</SelectItem>
           </SelectContent>
         </Select>
-      </div>
-      
-      {/* Page navigation */}
-      <div className="flex items-center space-x-2">
-        <div className="text-sm text-muted-foreground mr-2">
-          {`${page} of ${totalPages}`}
-        </div>
-        
-        <Button 
-          variant="outline" 
-          size="icon" 
-          onClick={() => onPageChange(page - 1)}
-          disabled={page <= 1}
-          className="h-8 w-8"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        
-        <Button 
-          variant="outline" 
-          size="icon" 
-          onClick={() => onPageChange(page + 1)}
-          disabled={page >= totalPages}
-          className="h-8 w-8"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
       </div>
     </div>
   );
