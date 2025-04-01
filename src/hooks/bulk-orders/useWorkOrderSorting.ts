@@ -2,86 +2,6 @@
 import { WorkOrder, SortDirection, SortField } from "@/components/workorders/types";
 
 /**
- * Gets the work order date for sorting purposes
- * Prioritizes end_time, then nested completion times, then service_date, then timestamp
- */
-const getWorkOrderDate = (order: WorkOrder): Date | null => {
-  // First try to use end_time (most reliable)
-  if (order.end_time) {
-    try {
-      const date = new Date(order.end_time);
-      if (!isNaN(date.getTime())) {
-        return date;
-      }
-    } catch (error) {
-      // If parsing fails, continue to fallbacks
-    }
-  }
-  
-  // Try to get time from nested completion_response (orders array format)
-  if (order.completion_response?.orders?.[0]?.data?.endTime?.localTime) {
-    try {
-      const date = new Date(order.completion_response.orders[0].data.endTime.localTime);
-      if (!isNaN(date.getTime())) {
-        return date;
-      }
-    } catch (error) {
-      // If parsing fails, continue to fallbacks
-    }
-  }
-  
-  // Try to get time from nested completion_response (direct data format)
-  if (order.completion_response?.data?.endTime?.localTime) {
-    try {
-      const date = new Date(order.completion_response.data.endTime.localTime);
-      if (!isNaN(date.getTime())) {
-        return date;
-      }
-    } catch (error) {
-      // If parsing fails, continue to fallbacks
-    }
-  }
-  
-  // Try to get time from nested completionDetails (camelCase variant)
-  if (order.completionDetails?.data?.form?.images?.[0]?.timestamp) {
-    try {
-      const date = new Date(order.completionDetails.data.form.images[0].timestamp);
-      if (!isNaN(date.getTime())) {
-        return date;
-      }
-    } catch (error) {
-      // If parsing fails, continue to fallbacks
-    }
-  }
-  
-  // Then try service_date if available
-  if (order.service_date) {
-    try {
-      const date = new Date(order.service_date);
-      if (!isNaN(date.getTime())) {
-        return date;
-      }
-    } catch (error) {
-      // If parsing fails, continue to fallback
-    }
-  }
-  
-  // Finally, fall back to timestamp if available
-  if (order.timestamp) {
-    try {
-      const date = new Date(order.timestamp);
-      if (!isNaN(date.getTime())) {
-        return date;
-      }
-    } catch (error) {
-      // If parsing fails, return null
-    }
-  }
-  
-  return null;
-};
-
-/**
  * Sorts work orders based on the provided sort field and direction
  */
 export const sortWorkOrders = (
@@ -89,25 +9,25 @@ export const sortWorkOrders = (
   sortField: SortField, 
   sortDirection: SortDirection
 ): WorkOrder[] => {
-  // Make a copy of the array to avoid mutating the original
-  const ordersCopy = [...orders];
-  
-  // Default sort - if no sort specified, sort by end_time descending (newest first)
+  // Default sort - if no sort specified, sort by service_date descending (newest first)
   if (!sortField || !sortDirection) {
-    return ordersCopy.sort((a, b) => {
-      const dateA = getWorkOrderDate(a);
-      const dateB = getWorkOrderDate(b);
+    return [...orders].sort((a, b) => {
+      const dateA = a.service_date ? new Date(a.service_date) : null;
+      const dateB = b.service_date ? new Date(b.service_date) : null;
       
-      if (dateA && !dateB) return -1; // Valid dates come first
-      if (!dateA && dateB) return 1;
-      if (!dateA && !dateB) return 0;
+      const validA = dateA && !isNaN(dateA.getTime());
+      const validB = dateB && !isNaN(dateB.getTime());
+      
+      if (validA && !validB) return -1; // Valid dates come first
+      if (!validA && validB) return 1;
+      if (!validA && !validB) return 0;
       
       // Sort descending by default (newest first)
       return dateB!.getTime() - dateA!.getTime();
     });
   }
   
-  return ordersCopy.sort((a, b) => {
+  return [...orders].sort((a, b) => {
     let valueA: any;
     let valueB: any;
     
@@ -117,16 +37,16 @@ export const sortWorkOrders = (
         valueB = b.order_no || '';
         break;
       case 'service_date':
-        // Use our enhanced date logic prioritizing all available time sources
-        const dateA = getWorkOrderDate(a);
-        const dateB = getWorkOrderDate(b);
+        const dateA = a.service_date ? new Date(a.service_date) : null;
+        const dateB = b.service_date ? new Date(b.service_date) : null;
         
-        // Handle null dates properly
-        if (dateA && !dateB) return sortDirection === 'asc' ? -1 : 1;
-        if (!dateA && dateB) return sortDirection === 'asc' ? 1 : -1;
-        if (!dateA && !dateB) return 0;
+        const validA = dateA && !isNaN(dateA.getTime());
+        const validB = dateB && !isNaN(dateB.getTime());
         
-        // If both dates are valid, compare timestamps
+        if (validA && !validB) return sortDirection === 'asc' ? -1 : 1;
+        if (!validA && validB) return sortDirection === 'asc' ? 1 : -1;
+        if (!validA && !validB) return 0;
+        
         return sortDirection === 'asc' 
           ? dateA!.getTime() - dateB!.getTime()
           : dateB!.getTime() - dateA!.getTime();

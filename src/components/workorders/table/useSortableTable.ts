@@ -22,62 +22,9 @@ export const useSortableTable = (
     }
   }, [externalSortField, externalSortDirection]);
 
-  // Always update work orders when the initial data changes
-  useEffect(() => {
-    setWorkOrders(initialWorkOrders);
-  }, [initialWorkOrders]);
-
-  // Get date value with enhanced fallback chain
+  // Get best available date from work order data
   const getServiceDateValue = (order: WorkOrder): Date | null => {
-    // First try to use end_time (most reliable)
-    if (order.end_time) {
-      try {
-        const date = new Date(order.end_time);
-        if (!isNaN(date.getTime())) {
-          return date;
-        }
-      } catch (error) {
-        // If parsing fails, continue to fallbacks
-      }
-    }
-    
-    // Try to get time from nested completion_response (orders array format)
-    if (order.completion_response?.orders?.[0]?.data?.endTime?.localTime) {
-      try {
-        const date = new Date(order.completion_response.orders[0].data.endTime.localTime);
-        if (!isNaN(date.getTime())) {
-          return date;
-        }
-      } catch (error) {
-        // If parsing fails, continue to fallbacks
-      }
-    }
-    
-    // Try to get time from nested completion_response (direct data format)
-    if (order.completion_response?.data?.endTime?.localTime) {
-      try {
-        const date = new Date(order.completion_response.data.endTime.localTime);
-        if (!isNaN(date.getTime())) {
-          return date;
-        }
-      } catch (error) {
-        // If parsing fails, continue to fallbacks
-      }
-    }
-    
-    // Try to get time from nested completionDetails (camelCase variant)
-    if (order.completionDetails?.data?.form?.images?.[0]?.timestamp) {
-      try {
-        const date = new Date(order.completionDetails.data.form.images[0].timestamp);
-        if (!isNaN(date.getTime())) {
-          return date;
-        }
-      } catch (error) {
-        // If parsing fails, continue to fallbacks
-      }
-    }
-    
-    // Then try service_date if available
+    // First try to use service_date if available
     if (order.service_date) {
       try {
         const date = new Date(order.service_date);
@@ -85,7 +32,20 @@ export const useSortableTable = (
           return date;
         }
       } catch (error) {
-        // If parsing fails, continue to fallback
+        // If parsing fails, continue to fallbacks
+      }
+    }
+    
+    // Try to get the end date from completion data as fallback
+    const endTime = order.completion_response?.orders?.[0]?.data?.endTime?.localTime;
+    if (endTime) {
+      try {
+        const date = new Date(endTime);
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
+      } catch (error) {
+        // If date parsing fails, continue to fallback
       }
     }
     
@@ -105,15 +65,14 @@ export const useSortableTable = (
   };
 
   // Only perform client-side sorting if we're NOT using external sorting
+  // This prevents double-sorting (once on server, once on client)
   useEffect(() => {
-    // Skip client-side sorting if external sort handler exists
-    // This prevents double-sorting (once on server, once on client)
-    if (externalOnSort !== undefined) {
-      // Simply use the data as provided - server will handle sorting
+    // If using external sort, don't client-side sort
+    if (externalSortField !== undefined && externalSortDirection !== undefined) {
+      setWorkOrders(initialWorkOrders);
       return;
     }
     
-    // Only proceed with client-side sorting if we have no external sort handler
     let sortedWorkOrders = [...initialWorkOrders];
     
     if (sortField && sortDirection) {
@@ -127,7 +86,7 @@ export const useSortableTable = (
             valueB = b.order_no || '';
             break;
           case 'service_date':
-            // Use enhanced date extraction logic with complete fallback chain
+            // Use our updated date extraction logic
             const dateA = getServiceDateValue(a);
             const dateB = getServiceDateValue(b);
             
@@ -180,7 +139,7 @@ export const useSortableTable = (
           : valueB - valueA;
       });
     } else {
-      // Default sort - use our enhanced date extraction (newest first)
+      // Default sort if no sort criteria provided - sort by service_date descending
       sortedWorkOrders.sort((a, b) => {
         const dateA = getServiceDateValue(a);
         const dateB = getServiceDateValue(b);
@@ -197,7 +156,7 @@ export const useSortableTable = (
     }
     
     setWorkOrders(sortedWorkOrders);
-  }, [initialWorkOrders, sortField, sortDirection, externalOnSort]);
+  }, [initialWorkOrders, sortField, sortDirection, externalSortField, externalSortDirection]);
 
   const handleSort = (field: SortField) => {
     let newDirection: SortDirection = 'asc';

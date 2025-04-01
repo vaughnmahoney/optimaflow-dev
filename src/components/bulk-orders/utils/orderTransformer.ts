@@ -60,24 +60,6 @@ export const transformOrder = (order: RawOrderData): WorkOrder => {
   // Determine completion status
   const completionStatus = completionData?.status || null;
   
-  // Extract end_time from completion data (new logic)
-  let endTime: string | undefined = undefined;
-  
-  // Try to extract end_time from various possible locations
-  if (rawCompletionDetails.orders?.[0]?.data?.endTime?.localTime) {
-    endTime = rawCompletionDetails.orders[0].data.endTime.localTime;
-  } else if (rawCompletionDetails.data?.endTime?.localTime) {
-    endTime = rawCompletionDetails.data.endTime.localTime;
-  } else if (rawCompletionDetails.orders?.[0]?.data?.endTime?.utcTime) {
-    endTime = rawCompletionDetails.orders[0].data.endTime.utcTime;
-  } else if (rawCompletionDetails.data?.endTime?.utcTime) {
-    endTime = rawCompletionDetails.data.endTime.utcTime;
-  } else if (completionForm.images?.[0]?.timestamp) {
-    endTime = completionForm.images[0].timestamp;
-  } else if (order.end_time) {
-    endTime = order.end_time;
-  }
-  
   // Generate a unique ID if one doesn't exist
   const id = order.id || `temp-${Math.random().toString(36).substring(2, 15)}`;
   
@@ -93,7 +75,6 @@ export const transformOrder = (order: RawOrderData): WorkOrder => {
     status,
     timestamp: new Date().toISOString(),
     service_date: serviceDate,
-    end_time: endTime, // Now properly setting the end_time field
     service_notes: serviceNotes,
     tech_notes: techNotes,
     notes: order.notes || '',

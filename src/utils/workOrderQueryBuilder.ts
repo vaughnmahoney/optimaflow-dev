@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { WorkOrderFilters, SortField, SortDirection } from "@/components/workorders/types";
 
@@ -152,13 +151,10 @@ export const applySorting = (
       dataQuery = dataQuery.order(sortField, { ascending: isAscending });
     } 
     else if (sortField === 'service_date') {
-      // Use end_time as the primary sort field
-      dataQuery = dataQuery.order('end_time', { ascending: isAscending, nullsLast: true });
+      // Use the new service_date column for sorting
+      dataQuery = dataQuery.order('service_date', { ascending: isAscending });
       
-      // Add service_date as a fallback if end_time is null
-      dataQuery = dataQuery.order('service_date', { ascending: isAscending, nullsLast: true });
-      
-      // Add timestamp as a final fallback
+      // Add timestamp as a secondary sort for consistent ordering
       dataQuery = dataQuery.order('timestamp', { ascending: isAscending });
     }
     else if (sortField === 'driver') {
@@ -174,9 +170,8 @@ export const applySorting = (
       dataQuery = dataQuery.order('timestamp', { ascending: isAscending });
     }
   } else {
-    // Default sort if no criteria specified - using end_time (newest first)
-    dataQuery = dataQuery.order('end_time', { ascending: false, nullsLast: true });
-    dataQuery = dataQuery.order('service_date', { ascending: false, nullsLast: true });
+    // Default sort if no criteria specified - newest first
+    dataQuery = dataQuery.order('service_date', { ascending: false });
     dataQuery = dataQuery.order('timestamp', { ascending: false });
   }
   
