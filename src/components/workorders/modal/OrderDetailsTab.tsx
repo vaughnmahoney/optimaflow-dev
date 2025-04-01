@@ -64,86 +64,63 @@ export const OrderDetailsTab = ({
 
   return (
     <div className="p-4">
-      <Card className="shadow-sm border-gray-200">
-        <div className="p-0">
-          {/* Header with tracking URL */}
+      <Card className="shadow-sm border-gray-100">
+        <div className="p-6 space-y-6">
+          {/* Top row with tracking button if available */}
           {trackingUrl && (
-            <div className="p-3 pb-2 flex justify-end">
+            <div className="flex justify-end mb-2">
               <Button 
-                variant="ghost" 
+                variant="outline" 
                 size="sm"
-                className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-1 h-auto"
+                className="text-gray-600 hover:text-gray-800 hover:bg-gray-50"
                 onClick={() => window.open(trackingUrl, '_blank')}
               >
-                <ExternalLink className="h-4 w-4 mr-1" />
+                <ExternalLink className="h-4 w-4 mr-1.5" />
                 View Tracking
               </Button>
             </div>
           )}
           
-          {/* Content grid layout for more compact display */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 p-4 pt-2">
-            {/* Driver & Location Column */}
-            <div className="space-y-4">
-              {/* Driver Section */}
-              <div className="space-y-1">
-                <div className="flex items-center gap-1.5 text-blue-700 mb-1">
-                  <User className="h-4 w-4" />
-                  <h3 className="text-sm font-medium">Driver</h3>
-                </div>
-                <p className="text-sm pl-5.5">{driverName}</p>
-              </div>
-              
-              {/* Location Section */}
-              <div className="space-y-1">
-                <div className="flex items-center gap-1.5 text-blue-700 mb-1">
-                  <MapPin className="h-4 w-4" />
-                  <h3 className="text-sm font-medium">Location</h3>
-                </div>
-                <div className="pl-5.5 space-y-1">
-                  <p className="text-sm font-medium">{locationName}</p>
-                  <p className="text-xs text-gray-600">{fullAddress}</p>
-                </div>
-              </div>
+          {/* Driver Section */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 mb-2">
+              <User className="h-5 w-5 text-gray-400" />
+              <h3 className="text-base font-medium text-gray-800">Driver</h3>
             </div>
-            
-            {/* Time & Materials Column */}
-            <div className="space-y-4 mt-4 md:mt-0">
-              {/* Time Details Section */}
-              <div className="space-y-1">
-                <div className="flex items-center gap-1.5 text-blue-700 mb-1">
-                  <Clock className="h-4 w-4" />
-                  <h3 className="text-sm font-medium">Time Details</h3>
-                </div>
-                <div className="pl-5.5 space-y-0.5">
-                  <div className="grid grid-cols-[80px_1fr]">
-                    <span className="text-xs text-gray-500">Start Time:</span>
-                    <span className="text-xs">{startTime}</span>
-                  </div>
-                  <div className="grid grid-cols-[80px_1fr]">
-                    <span className="text-xs text-gray-500">End Time:</span>
-                    <span className="text-xs">{endTime}</span>
-                  </div>
-                  <div className="grid grid-cols-[80px_1fr]">
-                    <span className="text-xs text-gray-500">LDS:</span>
-                    <span className="text-xs">{ldsInfo}</span>
-                  </div>
-                </div>
-              </div>
+            <p className="text-sm text-gray-700 pl-7">{driverName}</p>
+          </div>
+          
+          <Separator className="bg-gray-100" />
+          
+          {/* Location Section */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 mb-2">
+              <MapPin className="h-5 w-5 text-gray-400" />
+              <h3 className="text-base font-medium text-gray-800">Location</h3>
+            </div>
+            <div className="pl-7 space-y-1">
+              <p className="text-sm font-medium text-gray-700">{locationName}</p>
+              <p className="text-sm text-gray-600">{fullAddress}</p>
+            </div>
+          </div>
+          
+          <Separator className="bg-gray-100" />
+          
+          {/* Time Details Section */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Clock className="h-5 w-5 text-gray-400" />
+              <h3 className="text-base font-medium text-gray-800">Time Details</h3>
+            </div>
+            <div className="pl-7 grid grid-cols-[100px_1fr] gap-y-2">
+              <span className="text-sm text-gray-600">Start Time:</span>
+              <span className="text-sm text-gray-700">{startTime}</span>
               
-              {/* Materials Section */}
-              <div className="space-y-1">
-                <div className="flex items-center gap-1.5 text-blue-700 mb-1">
-                  <Package className="h-4 w-4" />
-                  <h3 className="text-sm font-medium">Materials</h3>
-                </div>
-                <div className="pl-5.5 space-y-0.5">
-                  <div className="grid grid-cols-[80px_1fr]">
-                    <span className="text-xs text-gray-500">Quantity:</span>
-                    <span className="text-xs">{materialQuantity}</span>
-                  </div>
-                </div>
-              </div>
+              <span className="text-sm text-gray-600">End Time:</span>
+              <span className="text-sm text-gray-700">{endTime}</span>
+              
+              <span className="text-sm text-gray-600">LDS:</span>
+              <span className="text-sm text-gray-700">{ldsInfo}</span>
             </div>
           </div>
         </div>

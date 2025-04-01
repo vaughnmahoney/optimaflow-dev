@@ -1,6 +1,5 @@
 
 import { Card } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { WorkOrder } from "../../types";
 import { 
   MessageSquare, 
@@ -8,7 +7,8 @@ import {
   ClipboardList, 
   StickyNote, 
   PenSquare, 
-  FileText 
+  FileText,
+  Package
 } from "lucide-react";
 
 interface NotesTabProps {
@@ -31,21 +31,40 @@ export const NotesTab = ({
     </div>
   );
 
+  // Extract material quantity
+  const materialQuantity = searchData?.customField3 || "N/A";
+
   return (
-    <div className="space-y-4 pt-2">
-      {/* Combined Technician Notes */}
-      <Card className="overflow-hidden border shadow-sm bg-white">
-        <div className="p-4 space-y-4">
-          {/* Tech Notes Section */}
+    <div className="space-y-5 pt-2 px-4">
+      {/* Materials Section */}
+      <Card className="overflow-hidden border border-gray-100 shadow-sm">
+        <div className="p-5">
           <div className="space-y-2">
-            <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
-              <MessageSquare className="h-5 w-5 text-blue-600" />
-              <h3 className="font-medium text-blue-800 text-lg">Tech Notes</h3>
+            <div className="flex items-center gap-2 pb-2">
+              <Package className="h-5 w-5 text-gray-400" />
+              <h3 className="font-medium text-gray-800 text-base">Materials</h3>
+            </div>
+            
+            <div className="pl-7 grid grid-cols-[100px_1fr] gap-y-2">
+              <span className="text-sm text-gray-600">Quantity:</span>
+              <span className="text-sm text-gray-700">{materialQuantity}</span>
+            </div>
+          </div>
+        </div>
+      </Card>
+      
+      {/* Tech Notes Section */}
+      <Card className="overflow-hidden border border-gray-100 shadow-sm">
+        <div className="p-5">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 pb-2">
+              <MessageSquare className="h-5 w-5 text-gray-400" />
+              <h3 className="font-medium text-gray-800 text-base">Tech Notes</h3>
             </div>
             
             <div className="pl-7">
               {completionData?.form?.note ? (
-                <p className="text-sm whitespace-pre-wrap text-gray-700">
+                <p className="text-sm text-gray-700 whitespace-pre-wrap">
                   {completionData.form.note}
                 </p>
               ) : (
@@ -53,17 +72,21 @@ export const NotesTab = ({
               )}
             </div>
           </div>
-          
-          {/* Service Notes Section */}
-          <div className="space-y-2 pt-1">
-            <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
-              <Wrench className="h-5 w-5 text-blue-600" />
-              <h3 className="font-medium text-blue-800 text-lg">Service Notes</h3>
+        </div>
+      </Card>
+      
+      {/* Service Notes Section */}
+      <Card className="overflow-hidden border border-gray-100 shadow-sm">
+        <div className="p-5">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 pb-2">
+              <Wrench className="h-5 w-5 text-gray-400" />
+              <h3 className="font-medium text-gray-800 text-base">Service Notes</h3>
             </div>
             
             <div className="pl-7">
               {workOrder.service_notes ? (
-                <p className="text-sm whitespace-pre-wrap text-gray-700">
+                <p className="text-sm text-gray-700 whitespace-pre-wrap">
                   {workOrder.service_notes}
                 </p>
               ) : (
@@ -71,17 +94,21 @@ export const NotesTab = ({
               )}
             </div>
           </div>
-          
-          {/* Additional Notes Section - Now with correct mapping */}
-          <div className="space-y-2 pt-1">
-            <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
-              <ClipboardList className="h-5 w-5 text-blue-600" />
-              <h3 className="font-medium text-blue-800 text-lg">Additional Notes</h3>
+        </div>
+      </Card>
+      
+      {/* Additional Notes Section */}
+      <Card className="overflow-hidden border border-gray-100 shadow-sm">
+        <div className="p-5">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 pb-2">
+              <ClipboardList className="h-5 w-5 text-gray-400" />
+              <h3 className="font-medium text-gray-800 text-base">Additional Notes</h3>
             </div>
             
             <div className="pl-7">
               {searchData?.customField1 ? (
-                <p className="text-sm whitespace-pre-wrap text-gray-700">
+                <p className="text-sm text-gray-700 whitespace-pre-wrap">
                   {searchData.customField1}
                 </p>
               ) : (
@@ -92,42 +119,46 @@ export const NotesTab = ({
         </div>
       </Card>
       
-      {/* QC Notes - Updated with clean style */}
-      <Card className="overflow-hidden border shadow-sm bg-white">
-        <div className="p-4 space-y-2">
-          <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
-            <StickyNote className="h-5 w-5 text-red-600" />
-            <h3 className="font-medium text-red-800 text-lg">QC Notes</h3>
-          </div>
-          
-          <div className="pl-7">
-            {workOrder.qc_notes ? (
-              <p className="text-sm whitespace-pre-wrap text-gray-700">
-                {workOrder.qc_notes}
-              </p>
-            ) : (
-              <EmptyNoteState type="QC" />
-            )}
+      {/* QC Notes Section */}
+      <Card className="overflow-hidden border border-gray-100 shadow-sm">
+        <div className="p-5">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 pb-2">
+              <StickyNote className="h-5 w-5 text-gray-400" />
+              <h3 className="font-medium text-gray-800 text-base">QC Notes</h3>
+            </div>
+            
+            <div className="pl-7">
+              {workOrder.qc_notes ? (
+                <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                  {workOrder.qc_notes}
+                </p>
+              ) : (
+                <EmptyNoteState type="QC" />
+              )}
+            </div>
           </div>
         </div>
       </Card>
       
-      {/* Resolution Notes - Updated with clean style */}
-      <Card className="overflow-hidden border shadow-sm bg-white mb-4">
-        <div className="p-4 space-y-2">
-          <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
-            <PenSquare className="h-5 w-5 text-blue-600" />
-            <h3 className="font-medium text-blue-800 text-lg">Resolution Notes</h3>
-          </div>
-          
-          <div className="pl-7">
-            {workOrder.resolution_notes ? (
-              <p className="text-sm whitespace-pre-wrap text-gray-700">
-                {workOrder.resolution_notes}
-              </p>
-            ) : (
-              <EmptyNoteState type="resolution" />
-            )}
+      {/* Resolution Notes Section */}
+      <Card className="overflow-hidden border border-gray-100 shadow-sm mb-4">
+        <div className="p-5">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 pb-2">
+              <PenSquare className="h-5 w-5 text-gray-400" />
+              <h3 className="font-medium text-gray-800 text-base">Resolution Notes</h3>
+            </div>
+            
+            <div className="pl-7">
+              {workOrder.resolution_notes ? (
+                <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                  {workOrder.resolution_notes}
+                </p>
+              ) : (
+                <EmptyNoteState type="resolution" />
+              )}
+            </div>
           </div>
         </div>
       </Card>

@@ -72,12 +72,12 @@ export const MobileOrderDetails = ({
         
         {/* Details Tab */}
         <TabsContent value="details" className="mt-0">
-          <Card className="shadow-sm border-gray-200">
-            <div className="p-3 space-y-3">
+          <Card className="shadow-sm border-gray-100">
+            <div className="p-4 space-y-4">
               {/* Driver Section */}
               <div className="space-y-1">
-                <div className="flex items-center gap-1.5 text-blue-700 mb-1">
-                  <User className="h-4 w-4" />
+                <div className="flex items-center gap-1.5 text-gray-700 mb-1">
+                  <User className="h-4 w-4 text-gray-400" />
                   <h3 className="text-sm font-medium">Driver</h3>
                 </div>
                 <p className="text-sm pl-5.5">{driverName}</p>
@@ -85,8 +85,8 @@ export const MobileOrderDetails = ({
               
               {/* Location Section */}
               <div className="space-y-1">
-                <div className="flex items-center gap-1.5 text-blue-700 mb-1">
-                  <MapPin className="h-4 w-4" />
+                <div className="flex items-center gap-1.5 text-gray-700 mb-1">
+                  <MapPin className="h-4 w-4 text-gray-400" />
                   <h3 className="text-sm font-medium">Location</h3>
                 </div>
                 <div className="pl-5.5 space-y-1">
@@ -97,8 +97,8 @@ export const MobileOrderDetails = ({
               
               {/* Time Details Section */}
               <div className="space-y-1">
-                <div className="flex items-center gap-1.5 text-blue-700 mb-1">
-                  <Clock className="h-4 w-4" />
+                <div className="flex items-center gap-1.5 text-gray-700 mb-1">
+                  <Clock className="h-4 w-4 text-gray-400" />
                   <h3 className="text-sm font-medium">Time Details</h3>
                 </div>
                 <div className="pl-5.5 space-y-0.5">
@@ -122,12 +122,12 @@ export const MobileOrderDetails = ({
         
         {/* Notes Tab */}
         <TabsContent value="notes" className="mt-0">
-          <Card className="shadow-sm border-gray-200">
-            <div className="p-3 space-y-3">
+          <Card className="shadow-sm border-gray-100">
+            <div className="p-4 space-y-4">
               {/* Materials Section */}
               <div className="space-y-1">
-                <div className="flex items-center gap-1.5 text-blue-700 mb-1">
-                  <Package className="h-4 w-4" />
+                <div className="flex items-center gap-1.5 text-gray-700 mb-1">
+                  <Package className="h-4 w-4 text-gray-400" />
                   <h3 className="text-sm font-medium">Materials</h3>
                 </div>
                 <div className="pl-5.5 space-y-0.5">
@@ -147,10 +147,10 @@ export const MobileOrderDetails = ({
         {/* Signature Tab */}
         <TabsContent value="signature" className="mt-0">
           {signatureUrl ? (
-            <Card className="shadow-sm border-gray-200">
-              <div className="p-3 space-y-2">
-                <div className="flex items-center gap-1.5 text-blue-700">
-                  <FileSignature className="h-4 w-4" />
+            <Card className="shadow-sm border-gray-100">
+              <div className="p-4 space-y-2">
+                <div className="flex items-center gap-1.5 text-gray-700">
+                  <FileSignature className="h-4 w-4 text-gray-400" />
                   <h3 className="text-sm font-medium">Customer Signature</h3>
                 </div>
                 
@@ -171,7 +171,7 @@ export const MobileOrderDetails = ({
               </div>
             </Card>
           ) : (
-            <Card className="shadow-sm border-gray-200">
+            <Card className="shadow-sm border-gray-100">
               <div className="p-3">
                 <div className="text-center py-10">
                   <FileSignature className="h-10 w-10 text-gray-300 mx-auto mb-3" />
@@ -196,8 +196,8 @@ function renderNotesSection(workOrder: WorkOrder, completionData: any, searchDat
   return (
     <>
       {/* Tech Notes */}
-      <div className="space-y-1 border-t pt-2 first:border-t-0 first:pt-0">
-        <div className="flex items-center gap-1.5 text-blue-700 mb-1">
+      <div className="space-y-1 border-t pt-3 first:border-t-0 first:pt-0">
+        <div className="flex items-center gap-1.5 text-gray-700 mb-1">
           <h3 className="text-sm font-medium">Tech Notes</h3>
         </div>
         <div>
@@ -210,8 +210,8 @@ function renderNotesSection(workOrder: WorkOrder, completionData: any, searchDat
       </div>
       
       {/* Service Notes */}
-      <div className="space-y-1 border-t pt-2">
-        <div className="flex items-center gap-1.5 text-blue-700 mb-1">
+      <div className="space-y-1 border-t pt-3">
+        <div className="flex items-center gap-1.5 text-gray-700 mb-1">
           <h3 className="text-sm font-medium">Service Notes</h3>
         </div>
         <div>
@@ -224,8 +224,8 @@ function renderNotesSection(workOrder: WorkOrder, completionData: any, searchDat
       </div>
       
       {/* Additional Notes */}
-      <div className="space-y-1 border-t pt-2">
-        <div className="flex items-center gap-1.5 text-blue-700 mb-1">
+      <div className="space-y-1 border-t pt-3">
+        <div className="flex items-center gap-1.5 text-gray-700 mb-1">
           <h3 className="text-sm font-medium">Additional Notes</h3>
         </div>
         <div>

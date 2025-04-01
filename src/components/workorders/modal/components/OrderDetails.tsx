@@ -1,11 +1,10 @@
 
 import { useRef, useState, useEffect } from "react";
-import { OrderDetailsTab } from "../tabs/OrderDetailsTab";
+import { OrderDetailsTab } from "../OrderDetailsTab";
 import { NotesTab } from "../tabs/NotesTab";
 import { SignatureTab } from "../tabs/SignatureTab";
 import { WorkOrder } from "../../types";
 import { FileText, MessageSquare, FileSignature } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { QcNotesSheet } from "./QcNotesSheet";
 import { ResolutionNotesSheet } from "./ResolutionNotesSheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -90,25 +89,25 @@ export const OrderDetails = ({
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <div className="bg-gray-100 sticky top-0 z-10">
+      <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="w-full h-12 bg-gray-100 grid grid-cols-3 rounded-none">
-            <TabsTrigger value="details" className="rounded-none data-[state=active]:bg-white">
+          <TabsList className="w-full h-12 bg-white grid grid-cols-3 rounded-none">
+            <TabsTrigger value="details" className="rounded-none data-[state=active]:bg-gray-50 data-[state=active]:border-b-2 data-[state=active]:border-gray-700">
               <div className="flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                <span className="hidden sm:inline">Order Details</span>
+                <FileText className="h-4 w-4 text-gray-600" />
+                <span className="text-sm hidden sm:inline font-medium">Order Details</span>
               </div>
             </TabsTrigger>
-            <TabsTrigger value="notes" className="rounded-none data-[state=active]:bg-white">
+            <TabsTrigger value="notes" className="rounded-none data-[state=active]:bg-gray-50 data-[state=active]:border-b-2 data-[state=active]:border-gray-700">
               <div className="flex items-center gap-2">
-                <MessageSquare className="h-4 w-4" />
-                <span className="hidden sm:inline">Notes</span>
+                <MessageSquare className="h-4 w-4 text-gray-600" />
+                <span className="text-sm hidden sm:inline font-medium">Notes</span>
               </div>
             </TabsTrigger>
-            <TabsTrigger value="signature" className="rounded-none data-[state=active]:bg-white">
+            <TabsTrigger value="signature" className="rounded-none data-[state=active]:bg-gray-50 data-[state=active]:border-b-2 data-[state=active]:border-gray-700">
               <div className="flex items-center gap-2">
-                <FileSignature className="h-4 w-4" />
-                <span className="hidden sm:inline">Signature</span>
+                <FileSignature className="h-4 w-4 text-gray-600" />
+                <span className="text-sm hidden sm:inline font-medium">Signature</span>
               </div>
             </TabsTrigger>
           </TabsList>
@@ -118,17 +117,17 @@ export const OrderDetails = ({
       <ScrollArea className="flex-1 overflow-auto">
         <div className="space-y-0">
           {/* Order Details Section */}
-          <div id="details-section" ref={detailsSectionRef} className="px-4 pt-4 scroll-m-12">
+          <div id="details-section" ref={detailsSectionRef} className="scroll-m-12">
             <OrderDetailsTab workOrder={workOrder} />
           </div>
           
           {/* Notes Section */}
-          <div id="notes-section" ref={notesSectionRef} className="px-4 pb-0 scroll-m-12">
+          <div id="notes-section" ref={notesSectionRef} className="scroll-m-12">
             <NotesTab workOrder={workOrder} />
           </div>
           
           {/* Signature Section */}
-          <div id="signature-section" ref={signatureSectionRef} className="px-4 pb-0 scroll-m-12">
+          <div id="signature-section" ref={signatureSectionRef} className="scroll-m-12">
             <SignatureTab workOrder={workOrder} />
           </div>
         </div>
