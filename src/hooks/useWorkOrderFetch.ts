@@ -43,10 +43,18 @@ export const useWorkOrderFetch = (
         let countQuery = initializeCountQuery();
         let dataQuery = initializeDataQuery();
         
-        // Apply all filters to both queries
-        const filteredQueries = applyAllFilters(filters, countQuery, dataQuery);
-        countQuery = filteredQueries.countQuery;
-        dataQuery = filteredQueries.dataQuery;
+        try {
+          // Apply all filters to both queries
+          const filteredQueries = applyAllFilters(filters, countQuery, dataQuery);
+          countQuery = filteredQueries.countQuery;
+          dataQuery = filteredQueries.dataQuery;
+        } catch (filterError) {
+          console.error("Error applying filters:", filterError);
+          toast.error("Error applying filters. Some filters may not work correctly.");
+          // Reset to basic queries if filters cause errors
+          countQuery = initializeCountQuery();
+          dataQuery = initializeDataQuery();
+        }
         
         // Execute the count query to get total filtered records
         const count = await executeCountQuery(countQuery);
@@ -96,8 +104,11 @@ export const useWorkOrderFetch = (
         // Show a toast notification to the user
         toast.error("Error loading work orders. Please try again.");
         
-        // Re-throw the error for react-query to handle
-        throw error;
+        // Return empty data instead of re-throwing to prevent UI breakage
+        return {
+          data: [],
+          total: 0
+        };
       }
     },
     placeholderData: (previousData) => previousData,

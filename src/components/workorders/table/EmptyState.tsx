@@ -1,12 +1,15 @@
 
-import { TableCell, TableRow } from "@/components/ui/table";
+import { TableCell } from "@/components/ui/table";
 
 export const EmptyState = () => {
   return (
-    <TableRow>
-      <TableCell colSpan={6} className="text-center h-24 text-gray-500">
-        No work orders found. Import orders from OptimoRoute to get started.
-      </TableCell>
-    </TableRow>
+    <div className="flex justify-center items-center p-8 text-center">
+      <div className="space-y-2">
+        <h3 className="text-lg font-medium">No work orders found</h3>
+        <p className="text-sm text-muted-foreground">
+          Try adjusting your search criteria or filters to find what you're looking for.
+        </p>
+      </div>
+    </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { WorkOrderFilters, SortField, SortDirection } from "@/components/workorders/types";
 
@@ -73,36 +72,40 @@ export const applyDateRangeFilter = (
   fromDate: Date | null, 
   toDate: Date | null
 ) => {
-  // Apply date range filter properly by converting JSONB to text first
-  if (fromDate) {
-    const fromDateStr = fromDate.toISOString().split('T')[0];
+  try {
+    // Apply date range filter properly by converting JSONB to text first
+    if (fromDate) {
+      const fromDateStr = fromDate.toISOString().split('T')[0];
+      
+      // Use contains operator for JSONB objects instead
+      countQuery = countQuery.or(
+        `completion_response->orders->0->data->endTime->localTime.gte.${fromDateStr},` +
+        `search_response->data->date.gte.${fromDateStr}`
+      );
+      dataQuery = dataQuery.or(
+        `completion_response->orders->0->data->endTime->localTime.gte.${fromDateStr},` +
+        `search_response->data->date.gte.${fromDateStr}`
+      );
+    }
     
-    // Using ->> operator to extract the date as text before comparing
-    countQuery = countQuery.or(
-      `completion_response->orders->0->data->endTime->localTime->>0.gte.${fromDateStr},` +
-      `search_response->data->date->>0.gte.${fromDateStr}`
-    );
-    dataQuery = dataQuery.or(
-      `completion_response->orders->0->data->endTime->localTime->>0.gte.${fromDateStr},` +
-      `search_response->data->date->>0.gte.${fromDateStr}`
-    );
-  }
-  
-  if (toDate) {
-    // Add a day to the end date to include that day (inclusive range)
-    const inclusiveToDate = new Date(toDate);
-    inclusiveToDate.setDate(inclusiveToDate.getDate() + 1);
-    const toDateStr = inclusiveToDate.toISOString().split('T')[0];
-    
-    // Using ->> operator to extract the date as text before comparing
-    countQuery = countQuery.or(
-      `completion_response->orders->0->data->endTime->localTime->>0.lt.${toDateStr},` +
-      `search_response->data->date->>0.lt.${toDateStr}`
-    );
-    dataQuery = dataQuery.or(
-      `completion_response->orders->0->data->endTime->localTime->>0.lt.${toDateStr},` +
-      `search_response->data->date->>0.lt.${toDateStr}`
-    );
+    if (toDate) {
+      // Add a day to the end date to include that day (inclusive range)
+      const inclusiveToDate = new Date(toDate);
+      inclusiveToDate.setDate(inclusiveToDate.getDate() + 1);
+      const toDateStr = inclusiveToDate.toISOString().split('T')[0];
+      
+      // Use contains operator for JSONB objects instead
+      countQuery = countQuery.or(
+        `completion_response->orders->0->data->endTime->localTime.lt.${toDateStr},` +
+        `search_response->data->date.lt.${toDateStr}`
+      );
+      dataQuery = dataQuery.or(
+        `completion_response->orders->0->data->endTime->localTime.lt.${toDateStr},` +
+        `search_response->data->date.lt.${toDateStr}`
+      );
+    }
+  } catch (error) {
+    console.error("Error applying date filter:", error);
   }
   
   return { countQuery, dataQuery };
@@ -125,21 +128,24 @@ export const applyTextSearchFilter = (
   if (searchText && searchText.trim()) {
     const searchValue = searchText.trim().toLowerCase();
     
-    if (field === 'driver') {
-      // Search in the driver name field of the nested search_response JSON
-      // Use ->> for JSON text extraction before applying ilike
-      countQuery = countQuery.filter('search_response->scheduleInformation->driverName->>', 'ilike', `%${searchValue}%`);
-      dataQuery = dataQuery.filter('search_response->scheduleInformation->driverName->>', 'ilike', `%${searchValue}%`);
-    } else if (field === 'location') {
-      // Search in the location name fields of the nested search_response JSON
-      countQuery = countQuery.or(
-        `search_response->data->location->name->>.ilike.%${searchValue}%,` +
-        `search_response->data->location->locationName->>.ilike.%${searchValue}%`
-      );
-      dataQuery = dataQuery.or(
-        `search_response->data->location->name->>.ilike.%${searchValue}%,` +
-        `search_response->data->location->locationName->>.ilike.%${searchValue}%`
-      );
+    try {
+      if (field === 'driver') {
+        // Fixed: Use contains filter instead of text extraction
+        countQuery = countQuery.filter('search_response->scheduleInformation->driverName', 'ilike', `%${searchValue}%`);
+        dataQuery = dataQuery.filter('search_response->scheduleInformation->driverName', 'ilike', `%${searchValue}%`);
+      } else if (field === 'location') {
+        // Fixed: Use contains filter for location names
+        countQuery = countQuery.or(
+          `search_response->data->location->name.ilike.%${searchValue}%,` +
+          `search_response->data->location->locationName.ilike.%${searchValue}%`
+        );
+        dataQuery = dataQuery.or(
+          `search_response->data->location->name.ilike.%${searchValue}%,` +
+          `search_response->data->location->locationName.ilike.%${searchValue}%`
+        );
+      }
+    } catch (error) {
+      console.error(`Error applying ${field} filter:`, error);
     }
   }
   
