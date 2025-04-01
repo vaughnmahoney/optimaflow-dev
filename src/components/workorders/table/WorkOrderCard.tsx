@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { ActionsMenu } from "./ActionsMenu";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { getBestWorkOrderDate } from "@/utils/workOrderUtils";
 
 interface WorkOrderCardProps {
   workOrder: WorkOrder;
@@ -44,29 +45,20 @@ export const WorkOrderCard = ({ workOrder, onStatusUpdate, onImageView, onDelete
            (order.search_response?.scheduleInformation?.status);
   };
 
-  // Get end date and time from completion data, or fall back to service_date
+  // Get service date and time using the shared utility function
   const getServiceDateTime = (order: WorkOrder): string => {
-    // Try to get the end date from completion data first
-    const endTime = order.completion_response?.orders?.[0]?.data?.endTime?.localTime;
+    const date = getBestWorkOrderDate(order);
     
-    if (endTime) {
+    if (date) {
       try {
-        const date = new Date(endTime);
-        if (!isNaN(date.getTime())) {
+        // Format with time if from completion data, otherwise just date
+        if (order.completion_response?.orders?.[0]?.data?.endTime?.localTime) {
           return format(date, "MMM d, yyyy h:mmaaa");
+        } else {
+          return format(date, "MMM d, yyyy");
         }
       } catch (error) {
-        // If date parsing fails, fall back to service_date
-        console.error("Error formatting end date:", error);
-      }
-    }
-    
-    // Fall back to service_date if end date is not available or invalid
-    if (order.service_date) {
-      try {
-        return format(new Date(order.service_date), "MMM d, yyyy");
-      } catch (error) {
-        console.error("Error formatting service date:", error);
+        console.error("Error formatting date:", error);
         return "N/A";
       }
     }

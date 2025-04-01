@@ -178,3 +178,49 @@ export const transformWorkOrderData = (order: any): WorkOrder => {
     completion_response: completionResponse
   };
 };
+
+/**
+ * Extracts the best available date from a work order using consistent logic
+ * First tries to use completion date, then falls back to service_date
+ * Returns a valid Date object or null if no valid date is available
+ */
+export const getBestWorkOrderDate = (order: WorkOrder): Date | null => {
+  // Try to get the end date from completion data first
+  if (order.completion_response?.orders?.[0]?.data?.endTime?.localTime) {
+    try {
+      const date = new Date(order.completion_response.orders[0].data.endTime.localTime);
+      if (!isNaN(date.getTime())) {
+        return date;
+      }
+      // If date parsing fails, continue to fallbacks
+    } catch (error) {
+      // Continue to fallbacks
+    }
+  }
+  
+  // Fall back to service_date if end date is not available or invalid
+  if (order.service_date) {
+    try {
+      const date = new Date(order.service_date);
+      if (!isNaN(date.getTime())) {
+        return date;
+      }
+    } catch (error) {
+      // Continue to fallbacks
+    }
+  }
+  
+  // Finally, fall back to timestamp if available
+  if (order.timestamp) {
+    try {
+      const date = new Date(order.timestamp);
+      if (!isNaN(date.getTime())) {
+        return date;
+      }
+    } catch (error) {
+      // If all parsing fails, return null
+    }
+  }
+  
+  return null;
+};

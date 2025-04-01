@@ -1,5 +1,6 @@
 
 import { WorkOrder, SortDirection, SortField } from "@/components/workorders/types";
+import { getBestWorkOrderDate } from "@/utils/workOrderUtils";
 
 /**
  * Sorts work orders based on the provided sort field and direction
@@ -12,15 +13,13 @@ export const sortWorkOrders = (
   // Default sort - if no sort specified, sort by service_date descending (newest first)
   if (!sortField || !sortDirection) {
     return [...orders].sort((a, b) => {
-      const dateA = a.service_date ? new Date(a.service_date) : null;
-      const dateB = b.service_date ? new Date(b.service_date) : null;
+      const dateA = getBestWorkOrderDate(a);
+      const dateB = getBestWorkOrderDate(b);
       
-      const validA = dateA && !isNaN(dateA.getTime());
-      const validB = dateB && !isNaN(dateB.getTime());
-      
-      if (validA && !validB) return -1; // Valid dates come first
-      if (!validA && validB) return 1;
-      if (!validA && !validB) return 0;
+      // Handle null dates - null dates go to the end
+      if (dateA && !dateB) return -1; // Valid dates come first
+      if (!dateA && dateB) return 1;
+      if (!dateA && !dateB) return 0;
       
       // Sort descending by default (newest first)
       return dateB!.getTime() - dateA!.getTime();
@@ -37,15 +36,13 @@ export const sortWorkOrders = (
         valueB = b.order_no || '';
         break;
       case 'service_date':
-        const dateA = a.service_date ? new Date(a.service_date) : null;
-        const dateB = b.service_date ? new Date(b.service_date) : null;
+        const dateA = getBestWorkOrderDate(a);
+        const dateB = getBestWorkOrderDate(b);
         
-        const validA = dateA && !isNaN(dateA.getTime());
-        const validB = dateB && !isNaN(dateB.getTime());
-        
-        if (validA && !validB) return sortDirection === 'asc' ? -1 : 1;
-        if (!validA && validB) return sortDirection === 'asc' ? 1 : -1;
-        if (!validA && !validB) return 0;
+        // Handle null dates - null dates go to the end
+        if (dateA && !dateB) return sortDirection === 'asc' ? -1 : 1;
+        if (!dateA && dateB) return sortDirection === 'asc' ? 1 : -1;
+        if (!dateA && !dateB) return 0;
         
         return sortDirection === 'asc' 
           ? dateA!.getTime() - dateB!.getTime()
