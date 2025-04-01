@@ -11,9 +11,12 @@ export const sortWorkOrders = (
   sortField: SortField, 
   sortDirection: SortDirection
 ): WorkOrder[] => {
+  // Create a copy of orders to avoid mutating the original
+  const ordersToSort = [...orders];
+  
   // Default sort - if no sort specified, sort by service_date descending (newest first)
   if (!sortField || !sortDirection) {
-    return [...orders].sort((a, b) => {
+    return ordersToSort.sort((a, b) => {
       const dateA = getBestWorkOrderDate(a);
       const dateB = getBestWorkOrderDate(b);
       
@@ -28,7 +31,24 @@ export const sortWorkOrders = (
     });
   }
   
-  return [...orders].sort((a, b) => {
+  return ordersToSort.sort((a, b) => {
+    // For 'service_date' field, use our special date+time extraction logic
+    if (sortField === 'service_date') {
+      const dateA = getBestWorkOrderDate(a);
+      const dateB = getBestWorkOrderDate(b);
+      
+      // Handle null dates - null dates go to the end
+      if (dateA && !dateB) return sortDirection === 'asc' ? -1 : 1;
+      if (!dateA && dateB) return sortDirection === 'asc' ? 1 : -1;
+      if (!dateA && !dateB) return 0;
+      
+      // Use getTime() to compare timestamps, ensuring both date and time are considered
+      return sortDirection === 'asc' 
+        ? dateA!.getTime() - dateB!.getTime()
+        : dateB!.getTime() - dateA!.getTime();
+    }
+    
+    // For other fields, use regular string/value comparison
     let valueA: any;
     let valueB: any;
     
@@ -37,19 +57,6 @@ export const sortWorkOrders = (
         valueA = a.order_no || '';
         valueB = b.order_no || '';
         break;
-      case 'service_date':
-        const dateA = getBestWorkOrderDate(a);
-        const dateB = getBestWorkOrderDate(b);
-        
-        // Handle null dates - null dates go to the end
-        if (dateA && !dateB) return sortDirection === 'asc' ? -1 : 1;
-        if (!dateA && dateB) return sortDirection === 'asc' ? 1 : -1;
-        if (!dateA && !dateB) return 0;
-        
-        // Use getTime() to compare timestamps, ensuring both date and time are considered
-        return sortDirection === 'asc' 
-          ? dateA!.getTime() - dateB!.getTime()
-          : dateB!.getTime() - dateA!.getTime();
       case 'driver':
         valueA = a.driver && typeof a.driver === 'object' && a.driver.name
           ? a.driver.name.toLowerCase() : '';

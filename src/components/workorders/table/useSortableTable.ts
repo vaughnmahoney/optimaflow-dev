@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { WorkOrder, SortDirection, SortField } from '../types';
 import { getBestWorkOrderDate } from '@/utils/workOrderUtils';
@@ -34,57 +35,62 @@ export const useSortableTable = (
     let sortedWorkOrders = [...initialWorkOrders];
     
     if (sortField && sortDirection) {
-      sortedWorkOrders.sort((a, b) => {
-        let valueA: any;
-        let valueB: any;
-        
-        switch (sortField) {
-          case 'order_no':
-            valueA = a.order_no || '';
-            valueB = b.order_no || '';
-            break;
-          case 'service_date':
-            // Use our shared date extraction logic
-            const dateA = getBestWorkOrderDate(a);
-            const dateB = getBestWorkOrderDate(b);
-            
-            // Handle null dates - null dates go to the end
-            if (dateA && !dateB) return sortDirection === 'asc' ? -1 : 1;
-            if (!dateA && dateB) return sortDirection === 'asc' ? 1 : -1;
-            if (!dateA && !dateB) return 0;
-            
-            // Use timestamp comparison (getTime) to ensure both date and time are considered
-            return sortDirection === 'asc' 
-              ? dateA!.getTime() - dateB!.getTime()
-              : dateB!.getTime() - dateA!.getTime();
-          case 'driver':
-            valueA = getDriverName(a).toLowerCase();
-            valueB = getDriverName(b).toLowerCase();
-            break;
-          case 'location':
-            valueA = getLocationName(a).toLowerCase();
-            valueB = getLocationName(b).toLowerCase();
-            break;
-          case 'status':
-            valueA = a.status || '';
-            valueB = b.status || '';
-            break;
-          default:
-            return 0;
-        }
-        
-        // For strings, use localeCompare for proper string comparison
-        if (typeof valueA === 'string' && typeof valueB === 'string') {
+      if (sortField === 'service_date') {
+        // Special handling for date+time sorting
+        sortedWorkOrders.sort((a, b) => {
+          const dateA = getBestWorkOrderDate(a);
+          const dateB = getBestWorkOrderDate(b);
+          
+          // Handle null dates - null dates go to the end
+          if (dateA && !dateB) return sortDirection === 'asc' ? -1 : 1;
+          if (!dateA && dateB) return sortDirection === 'asc' ? 1 : -1;
+          if (!dateA && !dateB) return 0;
+          
+          // Use timestamp comparison (getTime) to ensure both date and time are considered
           return sortDirection === 'asc' 
-            ? valueA.localeCompare(valueB)
-            : valueB.localeCompare(valueA);
-        }
-        
-        // For numbers and dates (already converted to timestamps)
-        return sortDirection === 'asc' 
-          ? valueA - valueB 
-          : valueB - valueA;
-      });
+            ? dateA!.getTime() - dateB!.getTime()
+            : dateB!.getTime() - dateA!.getTime();
+        });
+      } else {
+        // For non-date fields
+        sortedWorkOrders.sort((a, b) => {
+          let valueA: any;
+          let valueB: any;
+          
+          switch (sortField) {
+            case 'order_no':
+              valueA = a.order_no || '';
+              valueB = b.order_no || '';
+              break;
+            case 'driver':
+              valueA = getDriverName(a).toLowerCase();
+              valueB = getDriverName(b).toLowerCase();
+              break;
+            case 'location':
+              valueA = getLocationName(a).toLowerCase();
+              valueB = getLocationName(b).toLowerCase();
+              break;
+            case 'status':
+              valueA = a.status || '';
+              valueB = b.status || '';
+              break;
+            default:
+              return 0;
+          }
+          
+          // For strings, use localeCompare for proper string comparison
+          if (typeof valueA === 'string' && typeof valueB === 'string') {
+            return sortDirection === 'asc' 
+              ? valueA.localeCompare(valueB)
+              : valueB.localeCompare(valueA);
+          }
+          
+          // For other values
+          return sortDirection === 'asc' 
+            ? valueA - valueB 
+            : valueB - valueA;
+        });
+      }
     } else {
       // Default sort if no sort criteria provided - sort by service_date descending
       sortedWorkOrders.sort((a, b) => {

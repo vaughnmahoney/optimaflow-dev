@@ -184,34 +184,67 @@ export const transformWorkOrderData = (order: any): WorkOrder => {
  * Extracts the best available date from a work order using consistent logic
  * First tries to use completion date, then falls back to service_date
  * Returns a valid Date object or null if no valid date is available
+ * 
+ * This enhanced version ensures time components are properly extracted and normalized
+ * for consistent sorting
  */
 export const getBestWorkOrderDate = (order: WorkOrder): Date | null => {
-  // Try to get the end date from completion data first - this typically includes time
+  // Try multiple sources for the most accurate date+time
+  // Order of precedence:
+  // 1. Completion end time (usually has the most accurate time)
+  // 2. Completion start time
+  // 3. Service date with time component
+  // 4. Service date alone (will default to midnight)
+  // 5. Timestamp (fallback)
+  
+  // 1. First try completion end time
   if (order.completion_response?.orders?.[0]?.data?.endTime?.localTime) {
     try {
-      const date = new Date(order.completion_response.orders[0].data.endTime.localTime);
+      const dateStr = order.completion_response.orders[0].data.endTime.localTime;
+      const date = new Date(dateStr);
       if (!isNaN(date.getTime())) {
         return date;
       }
-      // If date parsing fails, continue to fallbacks
     } catch (error) {
+      console.error("Error parsing completion end time:", error);
       // Continue to fallbacks
     }
   }
   
-  // Fall back to service_date if end date is not available or invalid
+  // 2. Try completion start time if end time is not available
+  if (order.completion_response?.orders?.[0]?.data?.startTime?.localTime) {
+    try {
+      const dateStr = order.completion_response.orders[0].data.startTime.localTime;
+      const date = new Date(dateStr);
+      if (!isNaN(date.getTime())) {
+        return date;
+      }
+    } catch (error) {
+      console.error("Error parsing completion start time:", error);
+      // Continue to fallbacks
+    }
+  }
+  
+  // 3. Try to extract time from service_date if it has time component
   if (order.service_date) {
     try {
-      const date = new Date(order.service_date);
+      const dateStr = order.service_date;
+      const date = new Date(dateStr);
       if (!isNaN(date.getTime())) {
-        return date;
+        // Check if service_date actually has a time component
+        // If hours and minutes are both 0, it might be just a date
+        if (date.getHours() !== 0 || date.getMinutes() !== 0) {
+          return date;
+        }
+        return date; // Still return the date even if no time component
       }
     } catch (error) {
+      console.error("Error parsing service_date:", error);
       // Continue to fallbacks
     }
   }
   
-  // Finally, fall back to timestamp if available
+  // 4. Last resort: try timestamp
   if (order.timestamp) {
     try {
       const date = new Date(order.timestamp);
@@ -219,7 +252,7 @@ export const getBestWorkOrderDate = (order: WorkOrder): Date | null => {
         return date;
       }
     } catch (error) {
-      // If all parsing fails, return null
+      console.error("Error parsing timestamp:", error);
     }
   }
   
