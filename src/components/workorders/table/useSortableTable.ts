@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { WorkOrder, SortDirection, SortField } from '../types';
 
@@ -26,12 +27,48 @@ export const useSortableTable = (
     setWorkOrders(initialWorkOrders);
   }, [initialWorkOrders]);
 
-  // Get date value, prioritizing end_time
+  // Get date value with enhanced fallback chain
   const getServiceDateValue = (order: WorkOrder): Date | null => {
     // First try to use end_time (most reliable)
     if (order.end_time) {
       try {
         const date = new Date(order.end_time);
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
+      } catch (error) {
+        // If parsing fails, continue to fallbacks
+      }
+    }
+    
+    // Try to get time from nested completion_response (orders array format)
+    if (order.completion_response?.orders?.[0]?.data?.endTime?.localTime) {
+      try {
+        const date = new Date(order.completion_response.orders[0].data.endTime.localTime);
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
+      } catch (error) {
+        // If parsing fails, continue to fallbacks
+      }
+    }
+    
+    // Try to get time from nested completion_response (direct data format)
+    if (order.completion_response?.data?.endTime?.localTime) {
+      try {
+        const date = new Date(order.completion_response.data.endTime.localTime);
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
+      } catch (error) {
+        // If parsing fails, continue to fallbacks
+      }
+    }
+    
+    // Try to get time from nested completionDetails (camelCase variant)
+    if (order.completionDetails?.data?.form?.images?.[0]?.timestamp) {
+      try {
+        const date = new Date(order.completionDetails.data.form.images[0].timestamp);
         if (!isNaN(date.getTime())) {
           return date;
         }
@@ -90,7 +127,7 @@ export const useSortableTable = (
             valueB = b.order_no || '';
             break;
           case 'service_date':
-            // Use simplified date extraction logic prioritizing end_time
+            // Use enhanced date extraction logic with complete fallback chain
             const dateA = getServiceDateValue(a);
             const dateB = getServiceDateValue(b);
             
@@ -143,7 +180,7 @@ export const useSortableTable = (
           : valueB - valueA;
       });
     } else {
-      // Default sort - use end_time (newest first)
+      // Default sort - use our enhanced date extraction (newest first)
       sortedWorkOrders.sort((a, b) => {
         const dateA = getServiceDateValue(a);
         const dateB = getServiceDateValue(b);

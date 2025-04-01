@@ -3,13 +3,49 @@ import { WorkOrder, SortDirection, SortField } from "@/components/workorders/typ
 
 /**
  * Gets the work order date for sorting purposes
- * Prioritizes end_time, then service_date, then timestamp
+ * Prioritizes end_time, then nested completion times, then service_date, then timestamp
  */
 const getWorkOrderDate = (order: WorkOrder): Date | null => {
   // First try to use end_time (most reliable)
   if (order.end_time) {
     try {
       const date = new Date(order.end_time);
+      if (!isNaN(date.getTime())) {
+        return date;
+      }
+    } catch (error) {
+      // If parsing fails, continue to fallbacks
+    }
+  }
+  
+  // Try to get time from nested completion_response (orders array format)
+  if (order.completion_response?.orders?.[0]?.data?.endTime?.localTime) {
+    try {
+      const date = new Date(order.completion_response.orders[0].data.endTime.localTime);
+      if (!isNaN(date.getTime())) {
+        return date;
+      }
+    } catch (error) {
+      // If parsing fails, continue to fallbacks
+    }
+  }
+  
+  // Try to get time from nested completion_response (direct data format)
+  if (order.completion_response?.data?.endTime?.localTime) {
+    try {
+      const date = new Date(order.completion_response.data.endTime.localTime);
+      if (!isNaN(date.getTime())) {
+        return date;
+      }
+    } catch (error) {
+      // If parsing fails, continue to fallbacks
+    }
+  }
+  
+  // Try to get time from nested completionDetails (camelCase variant)
+  if (order.completionDetails?.data?.form?.images?.[0]?.timestamp) {
+    try {
+      const date = new Date(order.completionDetails.data.form.images[0].timestamp);
       if (!isNaN(date.getTime())) {
         return date;
       }
@@ -81,7 +117,7 @@ export const sortWorkOrders = (
         valueB = b.order_no || '';
         break;
       case 'service_date':
-        // Use our simplified date logic prioritizing end_time
+        // Use our enhanced date logic prioritizing all available time sources
         const dateA = getWorkOrderDate(a);
         const dateB = getWorkOrderDate(b);
         
