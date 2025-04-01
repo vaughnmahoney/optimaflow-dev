@@ -50,6 +50,21 @@ export const sortWorkOrders = (
         return sortDirection === 'asc' 
           ? dateA!.getTime() - dateB!.getTime()
           : dateB!.getTime() - dateA!.getTime();
+      case 'end_time':
+        // Handle end_time sorting specifically
+        const endTimeA = a.end_time ? new Date(a.end_time) : null;
+        const endTimeB = b.end_time ? new Date(b.end_time) : null;
+        
+        const validEndTimeA = endTimeA && !isNaN(endTimeA.getTime());
+        const validEndTimeB = endTimeB && !isNaN(endTimeB.getTime());
+        
+        if (validEndTimeA && !validEndTimeB) return sortDirection === 'asc' ? -1 : 1;
+        if (!validEndTimeA && validEndTimeB) return sortDirection === 'asc' ? 1 : -1;
+        if (!validEndTimeA && !validEndTimeB) return 0;
+        
+        return sortDirection === 'asc' 
+          ? endTimeA!.getTime() - endTimeB!.getTime()
+          : endTimeB!.getTime() - endTimeA!.getTime();
       case 'driver':
         valueA = a.driver && typeof a.driver === 'object' && a.driver.name
           ? a.driver.name.toLowerCase() : '';

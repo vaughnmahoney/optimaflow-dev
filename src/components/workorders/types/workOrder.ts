@@ -51,6 +51,7 @@ export interface WorkOrder {
   completion_response?: WorkOrderCompletionResponse;
   tracking_url?: string;
   completion_status?: string;
+  end_time?: string;  // Explicitly adding end_time field
   completionDetails?: {
     data?: {
       status?: string;
