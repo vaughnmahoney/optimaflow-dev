@@ -60,7 +60,7 @@ export const applyOrderNoFilter = (countQuery: any, dataQuery: any, orderNo: str
 };
 
 /**
- * Applies date range filters to both count and data queries
+ * Applies date range filters to both count and data queries - FIXED
  * @param countQuery The count query to modify
  * @param dataQuery The data query to modify
  * @param fromDate The start date filter
@@ -73,19 +73,18 @@ export const applyDateRangeFilter = (
   fromDate: Date | null, 
   toDate: Date | null
 ) => {
-  // Apply date range filter using both potential date fields
-  // and use OR conditions to match on either field
+  // Apply date range filter properly by converting JSONB to text first
   if (fromDate) {
     const fromDateStr = fromDate.toISOString().split('T')[0];
     
-    // Create OR condition for date filtering across both possible date fields
+    // Using ->> operator to extract the date as text before comparing
     countQuery = countQuery.or(
-      `and(completion_response->orders->0->data->endTime->localTime.gte.${fromDateStr},completion_response->orders->0->data->endTime->localTime.not.is.null),` +
-      `and(completion_response->orders->0->data->endTime->localTime.is.null,search_response->data->date.gte.${fromDateStr})`
+      `completion_response->orders->0->data->endTime->localTime->>0.gte.${fromDateStr},` +
+      `search_response->data->date->>0.gte.${fromDateStr}`
     );
     dataQuery = dataQuery.or(
-      `and(completion_response->orders->0->data->endTime->localTime.gte.${fromDateStr},completion_response->orders->0->data->endTime->localTime.not.is.null),` +
-      `and(completion_response->orders->0->data->endTime->localTime.is.null,search_response->data->date.gte.${fromDateStr})`
+      `completion_response->orders->0->data->endTime->localTime->>0.gte.${fromDateStr},` +
+      `search_response->data->date->>0.gte.${fromDateStr}`
     );
   }
   
@@ -95,14 +94,14 @@ export const applyDateRangeFilter = (
     inclusiveToDate.setDate(inclusiveToDate.getDate() + 1);
     const toDateStr = inclusiveToDate.toISOString().split('T')[0];
     
-    // Create OR condition for date filtering across both possible date fields
+    // Using ->> operator to extract the date as text before comparing
     countQuery = countQuery.or(
-      `and(completion_response->orders->0->data->endTime->localTime.lt.${toDateStr},completion_response->orders->0->data->endTime->localTime.not.is.null),` +
-      `and(completion_response->orders->0->data->endTime->localTime.is.null,search_response->data->date.lt.${toDateStr})`
+      `completion_response->orders->0->data->endTime->localTime->>0.lt.${toDateStr},` +
+      `search_response->data->date->>0.lt.${toDateStr}`
     );
     dataQuery = dataQuery.or(
-      `and(completion_response->orders->0->data->endTime->localTime.lt.${toDateStr},completion_response->orders->0->data->endTime->localTime.not.is.null),` +
-      `and(completion_response->orders->0->data->endTime->localTime.is.null,search_response->data->date.lt.${toDateStr})`
+      `completion_response->orders->0->data->endTime->localTime->>0.lt.${toDateStr},` +
+      `search_response->data->date->>0.lt.${toDateStr}`
     );
   }
   
@@ -110,7 +109,7 @@ export const applyDateRangeFilter = (
 };
 
 /**
- * Applies text search filters for driver and location
+ * Applies text search filters for driver and location - FIXED
  * @param countQuery The count query to modify
  * @param dataQuery The data query to modify
  * @param searchText The search text
@@ -128,17 +127,18 @@ export const applyTextSearchFilter = (
     
     if (field === 'driver') {
       // Search in the driver name field of the nested search_response JSON
-      countQuery = countQuery.ilike('search_response->scheduleInformation->driverName', `%${searchValue}%`);
-      dataQuery = dataQuery.ilike('search_response->scheduleInformation->driverName', `%${searchValue}%`);
+      // Use ->> for JSON text extraction before applying ilike
+      countQuery = countQuery.filter('search_response->scheduleInformation->driverName->>', 'ilike', `%${searchValue}%`);
+      dataQuery = dataQuery.filter('search_response->scheduleInformation->driverName->>', 'ilike', `%${searchValue}%`);
     } else if (field === 'location') {
-      // Search in the location name field of the nested search_response JSON
+      // Search in the location name fields of the nested search_response JSON
       countQuery = countQuery.or(
-        `search_response->data->location->name.ilike.%${searchValue}%,` +
-        `search_response->data->location->locationName.ilike.%${searchValue}%`
+        `search_response->data->location->name->>.ilike.%${searchValue}%,` +
+        `search_response->data->location->locationName->>.ilike.%${searchValue}%`
       );
       dataQuery = dataQuery.or(
-        `search_response->data->location->name.ilike.%${searchValue}%,` +
-        `search_response->data->location->locationName.ilike.%${searchValue}%`
+        `search_response->data->location->name->>.ilike.%${searchValue}%,` +
+        `search_response->data->location->locationName->>.ilike.%${searchValue}%`
       );
     }
   }
