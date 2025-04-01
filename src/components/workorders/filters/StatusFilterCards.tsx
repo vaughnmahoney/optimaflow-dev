@@ -78,109 +78,67 @@ export const StatusFilterCards = ({
     },
   ];
 
+  // Same button rendering function for both mobile and desktop to maintain consistency
+  const renderStatusButtons = () => {
+    return statuses.map((status) => {
+      const isActive = statusFilter === status.value;
+      const count = statusCounts[status.value] || 0;
+      
+      return (
+        <button
+          key={status.value}
+          onClick={() => onStatusFilterChange(
+            statusFilter === status.value ? null : status.value
+          )}
+          className={cn(
+            "flex items-center space-x-2 py-1.5 px-3 rounded-full transition-all shrink-0",
+            isActive 
+              ? `${status.color} text-white shadow-md`
+              : `bg-white border border-gray-200 hover:border-gray-300 shadow-sm`
+          )}
+        >
+          <div className={cn(
+            "flex items-center justify-center w-5 h-5 rounded-full",
+            isActive ? "bg-white/20" : status.color
+          )}>
+            <status.icon 
+              size={14}
+              className={isActive ? "text-white" : "text-white"} 
+            />
+          </div>
+          <span className="text-sm font-medium">{status.label}</span>
+          {count > 0 && (
+            <span className={cn(
+              "inline-flex items-center justify-center text-xs font-medium rounded-full px-1.5 py-0.5 min-w-[20px]",
+              isActive 
+                ? "bg-white/20 text-white" 
+                : "bg-gray-100 text-gray-700"
+            )}>
+              {count}
+            </span>
+          )}
+        </button>
+      );
+    });
+  };
+
   if (isMobile) {
     return (
       <div className="mb-4 overflow-hidden">
         <div className="flex space-x-2 overflow-x-auto scrollbar-none pb-2">
-          {statuses.map((status) => {
-            const isActive = statusFilter === status.value;
-            const count = statusCounts[status.value] || 0;
-            
-            return (
-              <button
-                key={status.value}
-                onClick={() => onStatusFilterChange(
-                  statusFilter === status.value ? null : status.value
-                )}
-                className={cn(
-                  "flex items-center space-x-2 py-1.5 px-3 rounded-full transition-all shrink-0",
-                  isActive 
-                    ? `${status.color} text-white shadow-md`
-                    : `bg-white border border-gray-200 hover:border-gray-300 shadow-sm`
-                )}
-              >
-                <div className={cn(
-                  "flex items-center justify-center w-5 h-5 rounded-full",
-                  isActive ? "bg-white/20" : status.color
-                )}>
-                  <status.icon 
-                    size={14}
-                    className={isActive ? "text-white" : "text-white"} 
-                  />
-                </div>
-                <span className="text-sm font-medium">{status.label}</span>
-                {count > 0 && (
-                  <span className={cn(
-                    "inline-flex items-center justify-center text-xs font-medium rounded-full px-1.5 py-0.5 min-w-[20px]",
-                    isActive 
-                      ? "bg-white/20 text-white" 
-                      : "bg-gray-100 text-gray-700"
-                  )}>
-                    {count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+          {renderStatusButtons()}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2 sm:gap-4 w-full mb-2 sm:mb-4">
-      {statuses.map((status) => {
-        const isActive = statusFilter === status.value;
-        const count = statusCounts[status.value] || 0;
-        
-        return (
-          <Card 
-            key={status.value}
-            className={cn(
-              "cursor-pointer transition-all overflow-hidden group shadow-sm hover:shadow-md",
-              isActive 
-                ? `ring-2 ring-offset-1 sm:ring-offset-2 ${status.ringColor}` 
-                : `hover:translate-y-[-2px] ${status.hoverColor}`
-            )}
-            onClick={() => onStatusFilterChange(
-              statusFilter === status.value ? null : status.value
-            )}
-          >
-            <div 
-              className={cn(
-                "h-1.5 w-full", 
-                status.color
-              )}
-              aria-hidden="true"
-            />
-            <CardContent className={cn(
-              "p-3 sm:p-4 flex items-center justify-between transition-colors",
-              isActive ? `${status.color} text-white` : cn("bg-white", status.lightBg)
-            )}>
-              <div className="flex items-center gap-2 sm:gap-3">
-                <div className={cn(
-                  "flex items-center justify-center w-7 h-7 rounded-full",
-                  isActive ? "bg-white/20" : status.color
-                )}>
-                  <status.icon 
-                    size={isMobile ? 16 : 18} 
-                    className={isActive ? "text-white" : "text-white"} 
-                  />
-                </div>
-                <h3 className={`font-medium ${isMobile ? 'text-sm' : ''}`}>{status.label}</h3>
-              </div>
-              
-              {/* Count badges */}
-              <div className={cn(
-                "w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-xs font-medium shadow-sm",
-                isActive ? "bg-white text-gray-800" : `bg-white ${status.textColor} border border-gray-100`
-              )}>
-                {count}
-              </div>
-            </CardContent>
-          </Card>
-        );
-      })}
+    <div className="mb-4 overflow-hidden">
+      <ScrollArea className="w-full" orientation="horizontal">
+        <div className="flex space-x-2 pb-2">
+          {renderStatusButtons()}
+        </div>
+      </ScrollArea>
     </div>
   );
 };
