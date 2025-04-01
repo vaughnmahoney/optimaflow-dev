@@ -74,21 +74,9 @@ export const WorkOrderCard = ({ workOrder, onStatusUpdate, onImageView, onDelete
     return "N/A";
   };
 
-  // Get status badge background color for the order card header
-  const getStatusColor = (status: string | undefined): string => {
-    switch(status) {
-      case 'approved': return 'bg-green-500';
-      case 'pending_review': return 'bg-yellow-500';
-      case 'flagged': return 'bg-red-500';
-      case 'resolved': return 'bg-blue-500';
-      case 'rejected': return 'bg-orange-500';
-      default: return 'bg-gray-500';
-    }
-  };
-
   return (
     <Card 
-      className="mb-3 overflow-hidden shadow-sm hover:shadow transition-shadow"
+      className="overflow-hidden shadow-sm hover:shadow transition-shadow cursor-pointer"
       onClick={() => onImageView(workOrder.id)}
     >
       {/* Card header with order number and status */}
@@ -101,7 +89,7 @@ export const WorkOrderCard = ({ workOrder, onStatusUpdate, onImageView, onDelete
       </div>
 
       {/* Card body with order details */}
-      <div className="p-3 space-y-1.5">
+      <div className="p-3 space-y-2">
         <div className="text-sm flex justify-between items-start">
           <span className="text-muted-foreground">Driver:</span>
           <span className="text-right font-medium max-w-[60%] truncate">{getDriverName(workOrder)}</span>
@@ -118,7 +106,7 @@ export const WorkOrderCard = ({ workOrder, onStatusUpdate, onImageView, onDelete
 
       {/* Card footer with actions */}
       <div className="px-3 py-2 border-t flex justify-end items-center bg-gray-50">
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 opacity-80 hover:opacity-100">
           <Button 
             variant="ghost" 
             size="sm"
@@ -127,6 +115,7 @@ export const WorkOrderCard = ({ workOrder, onStatusUpdate, onImageView, onDelete
               onImageView(workOrder.id);
             }}
             className="h-8 w-8"
+            title="View Proof of Service"
           >
             <Eye className="h-4 w-4" />
           </Button>

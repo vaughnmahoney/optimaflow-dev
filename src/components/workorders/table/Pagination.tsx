@@ -65,7 +65,7 @@ export const Pagination = ({ pagination, onPageChange, onPageSizeChange }: Pagin
   };
 
   return (
-    <div className="flex flex-col gap-2 p-3 border-t bg-gray-50/70">
+    <div className="flex flex-col gap-2 p-3 mt-4 border rounded-lg bg-gray-50/70">
       <div className="flex items-center justify-between">
         <div className="text-xs text-muted-foreground">
           {total} {total === 1 ? 'item' : 'items'}
