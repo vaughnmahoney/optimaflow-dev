@@ -54,14 +54,7 @@ export const ImageViewModal = ({
     initialWorkOrderId: workOrder?.id || null,
     isOpen,
     onClose,
-    onPageBoundary,
-    // This callback is triggered when a page change completes and new data is loaded
-    onPageChange: () => {
-      // Sync the navigation with the parent
-      if (currentWorkOrder) {
-        onNavigate(workOrders.findIndex(wo => wo.id === currentWorkOrder.id));
-      }
-    }
+    onPageBoundary
   });
   
   // Early return with mobile version, but AFTER all hooks have been called

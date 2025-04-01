@@ -22,12 +22,6 @@ export const NavigationControls = ({
   hasPreviousPage = false,
   hasNextPage = false
 }: NavigationControlsProps) => {
-  // Determine if the previous button should show loading state
-  const isPreviousLoading = isNavigatingPages && currentIndex === 0 && hasPreviousPage;
-  
-  // Determine if the next button should show loading state
-  const isNextLoading = isNavigatingPages && currentIndex === totalOrders - 1 && hasNextPage;
-  
   return (
     <TooltipProvider>
       <div className="p-4 border-t bg-white dark:bg-gray-950">
@@ -36,9 +30,9 @@ export const NavigationControls = ({
             variant="outline"
             className="flex items-center gap-2 px-4 py-2 text-gray-600 border-gray-200 bg-gray-50 hover:bg-gray-100 hover:text-gray-800 dark:text-gray-300 dark:hover:bg-gray-800 dark:border-gray-700"
             onClick={onPreviousOrder}
-            disabled={isPreviousLoading || (currentIndex <= 0 && !hasPreviousPage)}
+            disabled={currentIndex <= 0 && !hasPreviousPage}
           >
-            {isPreviousLoading ? (
+            {isNavigatingPages && currentIndex === 0 && hasPreviousPage ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Loading Previous
@@ -59,9 +53,9 @@ export const NavigationControls = ({
             variant="outline"
             className="flex items-center gap-2 px-4 py-2 text-gray-600 border-gray-200 bg-gray-50 hover:bg-gray-100 hover:text-gray-800 dark:text-gray-300 dark:hover:bg-gray-800 dark:border-gray-700"
             onClick={onNextOrder}
-            disabled={isNextLoading || (currentIndex >= totalOrders - 1 && !hasNextPage)}
+            disabled={currentIndex >= totalOrders - 1 && !hasNextPage}
           >
-            {isNextLoading ? (
+            {isNavigatingPages && currentIndex === totalOrders - 1 && hasNextPage ? (
               <>
                 Loading Next
                 <Loader2 className="h-4 w-4 animate-spin" />

@@ -8,7 +8,6 @@ interface UseWorkOrderNavigationProps {
   isOpen: boolean;
   onClose: () => void;
   onPageBoundary?: (direction: 'next' | 'previous') => void;
-  onPageChange?: () => void; // Add callback for when page changes
 }
 
 export const useWorkOrderNavigation = ({
@@ -16,14 +15,13 @@ export const useWorkOrderNavigation = ({
   initialWorkOrderId,
   isOpen,
   onClose,
-  onPageBoundary,
-  onPageChange
+  onPageBoundary
 }: UseWorkOrderNavigationProps) => {
   const [currentWorkOrderId, setCurrentWorkOrderId] = useState<string | null>(initialWorkOrderId);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isNavigatingPages, setIsNavigatingPages] = useState(false);
   
-  // Reset state when modal opens/closes or initial work order changes
+  // Reset state when modal opens/closes
   useEffect(() => {
     if (isOpen && initialWorkOrderId) {
       setCurrentWorkOrderId(initialWorkOrderId);
@@ -31,29 +29,6 @@ export const useWorkOrderNavigation = ({
       setIsNavigatingPages(false);
     }
   }, [isOpen, initialWorkOrderId]);
-
-  // Handle workOrders changes (which happens when page changes)
-  useEffect(() => {
-    if (isNavigatingPages && workOrders.length > 0) {
-      // If we were navigating pages and new work orders arrived
-      // Select first or last work order based on stored direction
-      const navigatingDirection = localStorage.getItem('navigatingDirection');
-      
-      if (navigatingDirection === 'next') {
-        setCurrentWorkOrderId(workOrders[0].id);
-      } else if (navigatingDirection === 'previous') {
-        setCurrentWorkOrderId(workOrders[workOrders.length - 1].id);
-      }
-      
-      setIsNavigatingPages(false);
-      localStorage.removeItem('navigatingDirection');
-      
-      // Notify parent that page has changed and new selection is made
-      if (onPageChange) {
-        onPageChange();
-      }
-    }
-  }, [workOrders, isNavigatingPages, onPageChange]);
   
   // Get the current work order and its index
   const currentWorkOrder = workOrders.find(wo => wo.id === currentWorkOrderId) || null;
@@ -63,6 +38,13 @@ export const useWorkOrderNavigation = ({
   useEffect(() => {
     setCurrentImageIndex(0);
   }, [currentWorkOrderId]);
+
+  // Reset isNavigatingPages when workOrders change (meaning new page has been loaded)
+  useEffect(() => {
+    if (isNavigatingPages) {
+      setIsNavigatingPages(false);
+    }
+  }, [workOrders]);
   
   // Add keyboard navigation
   useEffect(() => {
@@ -101,7 +83,6 @@ export const useWorkOrderNavigation = ({
     } else if (onPageBoundary && currentIndex === 0) {
       // We're at the first order of the current page
       setIsNavigatingPages(true);
-      localStorage.setItem('navigatingDirection', 'previous');
       onPageBoundary('previous');
     }
   };
@@ -113,7 +94,6 @@ export const useWorkOrderNavigation = ({
     } else if (onPageBoundary && currentIndex === workOrders.length - 1) {
       // We're at the last order of the current page
       setIsNavigatingPages(true);
-      localStorage.setItem('navigatingDirection', 'next');
       onPageBoundary('next');
     }
   };

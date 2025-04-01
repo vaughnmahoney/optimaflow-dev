@@ -1,5 +1,4 @@
-
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { WorkOrderListProps } from "./types";
 import { StatusFilterCards } from "./filters/StatusFilterCards";
 import { DebugDataDisplay } from "./debug/DebugDataDisplay";
@@ -33,34 +32,6 @@ export const WorkOrderList = ({
   const [transformedData, setTransformedData] = useState<any>(null);
   const [selectedWorkOrder, setSelectedWorkOrder] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
-  const [pageChangeInProgress, setPageChangeInProgress] = useState(false);
-  const modalStateRef = useRef({ isOpen: false, workOrderId: null as string | null });
-
-  // When workOrders change and we're in the middle of a page change,
-  // we need to update the selected work order
-  useEffect(() => {
-    // Only run this if page change is in progress
-    if (pageChangeInProgress && workOrders.length > 0) {
-      // Get the direction we were going from localStorage
-      const navigatingDirection = localStorage.getItem('navigatingDirection');
-      
-      // Pick the first or last work order based on direction
-      if (navigatingDirection === 'next' && workOrders.length > 0) {
-        setSelectedWorkOrder(workOrders[0].id);
-      } else if (navigatingDirection === 'previous' && workOrders.length > 0) {
-        setSelectedWorkOrder(workOrders[workOrders.length - 1].id);
-      }
-      
-      // Reset page change flag and clean up localStorage
-      setPageChangeInProgress(false);
-      localStorage.removeItem('navigatingDirection');
-      
-      // Ensure modal stays open with the newly selected work order
-      if (modalStateRef.current.isOpen) {
-        setIsImageModalOpen(true);
-      }
-    }
-  }, [workOrders, pageChangeInProgress]);
 
   if (isLoading) {
     return <LoadingSkeleton />;
@@ -74,23 +45,14 @@ export const WorkOrderList = ({
   const handleImageView = (workOrderId: string) => {
     setSelectedWorkOrder(workOrderId);
     setIsImageModalOpen(true);
-    modalStateRef.current = { isOpen: true, workOrderId };
-    
     // Also call the passed onImageView function if needed
     if (onImageView) onImageView(workOrderId);
-  };
-
-  // Handle closing the modal
-  const handleCloseModal = () => {
-    setIsImageModalOpen(false);
-    modalStateRef.current = { isOpen: false, workOrderId: null };
   };
 
   // Handle navigation between work orders in the modal
   const handleNavigate = (index: number) => {
     if (index >= 0 && index < workOrders.length) {
       setSelectedWorkOrder(workOrders[index].id);
-      modalStateRef.current.workOrderId = workOrders[index].id;
     }
   };
   
@@ -104,27 +66,25 @@ export const WorkOrderList = ({
     
     // Only navigate if we have more pages
     if (direction === 'next' && pagination.page < Math.ceil(pagination.total / pagination.pageSize)) {
-      // Store the direction for when the new page loads
-      localStorage.setItem('navigatingDirection', 'next');
-      setPageChangeInProgress(true);
-      
-      // Change the page
       onPageChange(newPage);
+      
+      // We use setTimeout to ensure this runs after the new data is loaded
+      setTimeout(() => {
+        if (workOrders.length > 0) {
+          // Select the first order when going to the next page
+          setSelectedWorkOrder(workOrders[0].id);
+        }
+      }, 100);
     } else if (direction === 'previous' && pagination.page > 1) {
-      // Store the direction for when the new page loads
-      localStorage.setItem('navigatingDirection', 'previous');
-      setPageChangeInProgress(true);
-      
-      // Change the page
       onPageChange(newPage);
-    }
-  };
-
-  // Callback when a page change is complete
-  const handlePageChangeComplete = () => {
-    // Make sure the modal stays open
-    if (modalStateRef.current.isOpen) {
-      setIsImageModalOpen(true);
+      
+      // We use setTimeout to ensure this runs after the new data is loaded
+      setTimeout(() => {
+        if (workOrders.length > 0) {
+          // Select the last order when going to the previous page
+          setSelectedWorkOrder(workOrders[workOrders.length - 1].id);
+        }
+      }, 100);
     }
   };
 
@@ -179,7 +139,7 @@ export const WorkOrderList = ({
           workOrders={workOrders}
           currentIndex={currentIndex}
           isOpen={isImageModalOpen}
-          onClose={handleCloseModal}
+          onClose={() => setIsImageModalOpen(false)}
           onStatusUpdate={onStatusUpdate}
           onNavigate={handleNavigate}
           onPageBoundary={handlePageBoundary}
