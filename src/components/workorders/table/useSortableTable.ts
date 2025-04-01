@@ -22,6 +22,11 @@ export const useSortableTable = (
     }
   }, [externalSortField, externalSortDirection]);
 
+  // Always update work orders when the initial data changes
+  useEffect(() => {
+    setWorkOrders(initialWorkOrders);
+  }, [initialWorkOrders]);
+
   // Get best available date from work order data
   const getServiceDateValue = (order: WorkOrder): Date | null => {
     // First try to get end date from completion data (most reliable)
@@ -78,15 +83,15 @@ export const useSortableTable = (
   };
 
   // Only perform client-side sorting if we're NOT using external sorting
-  // This prevents double-sorting (once on server, once on client)
   useEffect(() => {
-    // If using external sort handler, don't client-side sort
+    // Skip client-side sorting if external sort handler exists
+    // This prevents double-sorting (once on server, once on client)
     if (externalOnSort !== undefined) {
-      // Just use the data as-is from the server
-      setWorkOrders(initialWorkOrders);
+      // Simply use the data as provided - server will handle sorting
       return;
     }
     
+    // Only proceed with client-side sorting if we have no external sort handler
     let sortedWorkOrders = [...initialWorkOrders];
     
     if (sortField && sortDirection) {
@@ -170,7 +175,7 @@ export const useSortableTable = (
     }
     
     setWorkOrders(sortedWorkOrders);
-  }, [initialWorkOrders, sortField, sortDirection, externalSortField, externalSortDirection, externalOnSort]);
+  }, [initialWorkOrders, sortField, sortDirection, externalOnSort]);
 
   const handleSort = (field: SortField) => {
     let newDirection: SortDirection = 'asc';

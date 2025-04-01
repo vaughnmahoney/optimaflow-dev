@@ -50,6 +50,7 @@ export const WorkOrderTable = ({
 }: WorkOrderTableProps) => {
   const isMobile = useIsMobile();
   
+  // We pass the external sort functions to let the hook know if it should do client-side sorting
   const { 
     workOrders, 
     sortField, 
@@ -70,6 +71,9 @@ export const WorkOrderTable = ({
     filters.location !== null || 
     filters.dateRange.from !== null || 
     filters.dateRange.to !== null;
+
+  // Use the original initialWorkOrders directly if we have external sorting
+  const displayWorkOrders = externalOnSort ? initialWorkOrders : workOrders;
 
   return (
     <div className="space-y-2">
@@ -101,11 +105,11 @@ export const WorkOrderTable = ({
 
       {/* Card grid layout for both mobile and desktop */}
       <div className="space-y-2">
-        {workOrders.length === 0 ? (
+        {displayWorkOrders.length === 0 ? (
           <EmptyState />
         ) : (
           <div className={`grid gap-3 ${isMobile ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"}`}>
-            {workOrders.map((workOrder) => (
+            {displayWorkOrders.map((workOrder) => (
               <WorkOrderCard
                 key={workOrder.id}
                 workOrder={workOrder}

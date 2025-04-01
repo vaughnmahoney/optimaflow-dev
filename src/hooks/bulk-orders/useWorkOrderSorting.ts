@@ -67,9 +67,12 @@ export const sortWorkOrders = (
   sortField: SortField, 
   sortDirection: SortDirection
 ): WorkOrder[] => {
+  // Make a copy of the array to avoid mutating the original
+  const ordersCopy = [...orders];
+  
   // Default sort - if no sort specified, sort by service_date descending (newest first)
   if (!sortField || !sortDirection) {
-    return [...orders].sort((a, b) => {
+    return ordersCopy.sort((a, b) => {
       const dateA = getBestWorkOrderDate(a);
       const dateB = getBestWorkOrderDate(b);
       
@@ -82,7 +85,7 @@ export const sortWorkOrders = (
     });
   }
   
-  return [...orders].sort((a, b) => {
+  return ordersCopy.sort((a, b) => {
     let valueA: any;
     let valueB: any;
     
@@ -92,14 +95,16 @@ export const sortWorkOrders = (
         valueB = b.order_no || '';
         break;
       case 'service_date':
-        // Use enhanced date extraction logic
+        // Use our enhanced date extraction logic
         const dateA = getBestWorkOrderDate(a);
         const dateB = getBestWorkOrderDate(b);
         
+        // Handle null dates properly
         if (dateA && !dateB) return sortDirection === 'asc' ? -1 : 1;
         if (!dateA && dateB) return sortDirection === 'asc' ? 1 : -1;
         if (!dateA && !dateB) return 0;
         
+        // If both dates are valid, compare timestamps
         return sortDirection === 'asc' 
           ? dateA!.getTime() - dateB!.getTime()
           : dateB!.getTime() - dateA!.getTime();
