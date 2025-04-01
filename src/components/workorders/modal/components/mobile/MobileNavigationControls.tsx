@@ -43,8 +43,8 @@ export const MobileNavigationControls = ({
         )}
       </Button>
       
-      <span className="text-sm text-gray-500 font-medium">
-        {currentIndex + 1} of {totalOrders}
+      <span className="text-sm bg-gray-50 px-3 py-1 rounded-md font-medium">
+        <span className="font-bold">{currentIndex + 1}</span> of <span className="font-bold">{totalOrders}</span>
       </span>
       
       <Button

@@ -45,8 +45,8 @@ export const NavigationControls = ({
             )}
           </Button>
           
-          <span className="text-sm text-muted-foreground font-medium px-3 py-1 bg-gray-50 dark:bg-gray-800 rounded-md">
-            Order {currentIndex + 1} of {totalOrders}
+          <span className="text-sm font-medium px-4 py-1 bg-gray-50 dark:bg-gray-800 rounded-md">
+            Order <span className="font-bold">{currentIndex + 1}</span> of <span className="font-bold">{totalOrders}</span>
           </span>
           
           <Button

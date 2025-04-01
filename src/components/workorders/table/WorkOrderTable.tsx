@@ -10,6 +10,7 @@ import { WorkOrderCard } from "./WorkOrderCard";
 import { EmptyState } from "./EmptyState";
 import { useSortableTable } from "./useSortableTable";
 import { Pagination } from "./Pagination";
+import { PaginationIndicator } from "./PaginationIndicator";
 import { Button } from "@/components/ui/button";
 import { FilterX } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -88,6 +89,14 @@ export const WorkOrderTable = ({
             Clear all filters
           </Button>
         </div>
+      )}
+      
+      {/* Top pagination indicator */}
+      {pagination && onPageChange && (
+        <PaginationIndicator 
+          pagination={pagination}
+          onPageChange={onPageChange}
+        />
       )}
       
       {isMobile ? (
