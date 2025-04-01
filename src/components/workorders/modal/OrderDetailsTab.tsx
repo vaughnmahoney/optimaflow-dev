@@ -81,26 +81,27 @@ export const OrderDetailsTab = ({
             </div>
           )}
           
-          {/* Driver Section */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 mb-2">
-              <User className="h-5 w-5 text-gray-400" />
-              <h3 className="text-base font-medium text-gray-800">Driver</h3>
+          {/* Top section with Location (left) and Driver (right) */}
+          <div className="flex">
+            {/* Location Section - Left */}
+            <div className="space-y-3 flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <MapPin className="h-5 w-5 text-gray-400" />
+                <h3 className="text-base font-medium text-gray-800">Location</h3>
+              </div>
+              <div className="pl-7 space-y-1">
+                <p className="text-sm font-medium text-gray-700">{locationName}</p>
+                <p className="text-sm text-gray-600">{fullAddress}</p>
+              </div>
             </div>
-            <p className="text-sm text-gray-700 pl-7">{driverName}</p>
-          </div>
-          
-          <Separator className="bg-gray-100" />
-          
-          {/* Location Section */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 mb-2">
-              <MapPin className="h-5 w-5 text-gray-400" />
-              <h3 className="text-base font-medium text-gray-800">Location</h3>
-            </div>
-            <div className="pl-7 space-y-1">
-              <p className="text-sm font-medium text-gray-700">{locationName}</p>
-              <p className="text-sm text-gray-600">{fullAddress}</p>
+            
+            {/* Driver Section - Right */}
+            <div className="space-y-3 ml-10">
+              <div className="flex items-center gap-2 mb-2">
+                <User className="h-5 w-5 text-gray-400" />
+                <h3 className="text-base font-medium text-gray-800">Driver</h3>
+              </div>
+              <p className="text-sm text-gray-700 pl-7">{driverName}</p>
             </div>
           </div>
           
