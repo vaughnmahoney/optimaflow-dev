@@ -14,11 +14,17 @@ export const sortWorkOrders = (
   // Create a copy of orders to avoid mutating the original
   const ordersToSort = [...orders];
   
+  console.log(`Sorting ${orders.length} work orders by ${sortField} ${sortDirection}`);
+  
   // Default sort - if no sort specified, sort by service_date descending (newest first)
   if (!sortField || !sortDirection) {
+    console.log('Using default sort: service_date desc');
     return ordersToSort.sort((a, b) => {
       const dateA = getBestWorkOrderDate(a);
       const dateB = getBestWorkOrderDate(b);
+      
+      // Log the comparison values
+      console.log(`Default sort comparing: ${a.order_no} (${dateA ? dateA.toISOString() : 'null'}) vs ${b.order_no} (${dateB ? dateB.toISOString() : 'null'})`);
       
       // Handle null dates - null dates go to the end
       if (dateA && !dateB) return -1; // Valid dates come first
@@ -31,11 +37,18 @@ export const sortWorkOrders = (
     });
   }
   
-  return ordersToSort.sort((a, b) => {
+  // Order IDs for logging
+  const orderIds = ordersToSort.map(o => o.order_no).join(", ");
+  console.log(`Orders before sorting: ${orderIds}`);
+  
+  const result = ordersToSort.sort((a, b) => {
     // For 'service_date' field, use our special date+time extraction logic
     if (sortField === 'service_date') {
       const dateA = getBestWorkOrderDate(a);
       const dateB = getBestWorkOrderDate(b);
+      
+      // Log the comparison values
+      console.log(`Comparing dates: ${a.order_no} (${dateA ? dateA.toISOString() : 'null'}) vs ${b.order_no} (${dateB ? dateB.toISOString() : 'null'})`);
       
       // Handle null dates - null dates go to the end
       if (dateA && !dateB) return sortDirection === 'asc' ? -1 : 1;
@@ -43,9 +56,12 @@ export const sortWorkOrders = (
       if (!dateA && !dateB) return 0;
       
       // Use getTime() to compare timestamps, ensuring both date and time are considered
-      return sortDirection === 'asc' 
+      const comparison = sortDirection === 'asc' 
         ? dateA!.getTime() - dateB!.getTime()
         : dateB!.getTime() - dateA!.getTime();
+      
+      console.log(`  Result: ${comparison}`);
+      return comparison;
     }
     
     // For other fields, use regular string/value comparison
@@ -77,18 +93,33 @@ export const sortWorkOrders = (
         return 0;
     }
     
+    // Log the comparison values
+    console.log(`Comparing ${sortField}: ${a.order_no} (${valueA}) vs ${b.order_no} (${valueB})`);
+    
     // For strings
     if (typeof valueA === 'string' && typeof valueB === 'string') {
-      return sortDirection === 'asc' 
+      const comparison = sortDirection === 'asc' 
         ? valueA.localeCompare(valueB)
         : valueB.localeCompare(valueA);
+      
+      console.log(`  Result: ${comparison}`);
+      return comparison;
     }
     
     // For other values
-    return sortDirection === 'asc' 
+    const comparison = sortDirection === 'asc' 
       ? valueA - valueB 
       : valueB - valueA;
+    
+    console.log(`  Result: ${comparison}`);
+    return comparison;
   });
+  
+  // Log the sorted order IDs
+  const sortedOrderIds = result.map(o => o.order_no).join(", ");
+  console.log(`Orders after sorting: ${sortedOrderIds}`);
+  
+  return result;
 };
 
 /**
@@ -100,6 +131,7 @@ export const useSortHandlers = (
   setPagination: React.Dispatch<React.SetStateAction<any>>
 ) => {
   const handleSort = (field: SortField, direction: SortDirection) => {
+    console.log(`Setting sort: ${field} ${direction}`);
     setSortField(field);
     setSortDirection(direction);
     // Reset to first page when sorting changes

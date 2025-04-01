@@ -1,4 +1,3 @@
-
 import { WorkOrder } from "@/components/workorders/types";
 
 /**
@@ -189,6 +188,8 @@ export const transformWorkOrderData = (order: any): WorkOrder => {
  * for consistent sorting
  */
 export const getBestWorkOrderDate = (order: WorkOrder): Date | null => {
+  console.log(`Getting best date for order: ${order.order_no}`);
+  
   // Try multiple sources for the most accurate date+time
   // Order of precedence:
   // 1. Completion end time (usually has the most accurate time)
@@ -201,9 +202,13 @@ export const getBestWorkOrderDate = (order: WorkOrder): Date | null => {
   if (order.completion_response?.orders?.[0]?.data?.endTime?.localTime) {
     try {
       const dateStr = order.completion_response.orders[0].data.endTime.localTime;
+      console.log(`  - Found completion end time: ${dateStr}`);
       const date = new Date(dateStr);
       if (!isNaN(date.getTime())) {
+        console.log(`  - Valid completion end time: ${date.toISOString()}, time: ${date.getHours()}:${date.getMinutes()}`);
         return date;
+      } else {
+        console.log(`  - Invalid completion end time: ${dateStr}`);
       }
     } catch (error) {
       console.error("Error parsing completion end time:", error);
@@ -215,9 +220,13 @@ export const getBestWorkOrderDate = (order: WorkOrder): Date | null => {
   if (order.completion_response?.orders?.[0]?.data?.startTime?.localTime) {
     try {
       const dateStr = order.completion_response.orders[0].data.startTime.localTime;
+      console.log(`  - Found completion start time: ${dateStr}`);
       const date = new Date(dateStr);
       if (!isNaN(date.getTime())) {
+        console.log(`  - Valid completion start time: ${date.toISOString()}, time: ${date.getHours()}:${date.getMinutes()}`);
         return date;
+      } else {
+        console.log(`  - Invalid completion start time: ${dateStr}`);
       }
     } catch (error) {
       console.error("Error parsing completion start time:", error);
@@ -229,14 +238,19 @@ export const getBestWorkOrderDate = (order: WorkOrder): Date | null => {
   if (order.service_date) {
     try {
       const dateStr = order.service_date;
+      console.log(`  - Found service_date: ${dateStr}`);
       const date = new Date(dateStr);
       if (!isNaN(date.getTime())) {
         // Check if service_date actually has a time component
         // If hours and minutes are both 0, it might be just a date
         if (date.getHours() !== 0 || date.getMinutes() !== 0) {
+          console.log(`  - Valid service_date with time: ${date.toISOString()}, time: ${date.getHours()}:${date.getMinutes()}`);
           return date;
         }
+        console.log(`  - Valid service_date without time: ${date.toISOString()}`);
         return date; // Still return the date even if no time component
+      } else {
+        console.log(`  - Invalid service_date: ${dateStr}`);
       }
     } catch (error) {
       console.error("Error parsing service_date:", error);
@@ -247,14 +261,20 @@ export const getBestWorkOrderDate = (order: WorkOrder): Date | null => {
   // 4. Last resort: try timestamp
   if (order.timestamp) {
     try {
-      const date = new Date(order.timestamp);
+      const dateStr = order.timestamp;
+      console.log(`  - Found timestamp: ${dateStr}`);
+      const date = new Date(dateStr);
       if (!isNaN(date.getTime())) {
+        console.log(`  - Valid timestamp: ${date.toISOString()}, time: ${date.getHours()}:${date.getMinutes()}`);
         return date;
+      } else {
+        console.log(`  - Invalid timestamp: ${dateStr}`);
       }
     } catch (error) {
       console.error("Error parsing timestamp:", error);
     }
   }
   
+  console.log(`  - No valid date found for order: ${order.order_no}`);
   return null;
 };
