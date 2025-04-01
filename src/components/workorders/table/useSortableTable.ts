@@ -37,7 +37,7 @@ export const useSortableTable = (
     }
     
     // Try to get the end date from completion data as fallback
-    const endTime = order.completion_response?.orders?.[0]?.data?.endTime?.localTime;
+    const endTime = order.end_time || order.completion_response?.orders?.[0]?.data?.endTime?.localTime;
     if (endTime) {
       try {
         const date = new Date(endTime);
@@ -53,6 +53,36 @@ export const useSortableTable = (
     if (order.timestamp) {
       try {
         const date = new Date(order.timestamp);
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
+      } catch (error) {
+        // If parsing fails, return null
+      }
+    }
+    
+    return null;
+  };
+
+  // Get completion end time value from work order
+  const getEndTimeValue = (order: WorkOrder): Date | null => {
+    // First try to use the new end_time field
+    if (order.end_time) {
+      try {
+        const date = new Date(order.end_time);
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
+      } catch (error) {
+        // If parsing fails, continue to fallbacks
+      }
+    }
+    
+    // Fall back to extracting from completion_response if necessary
+    const endTime = order.completion_response?.orders?.[0]?.data?.endTime?.localTime;
+    if (endTime) {
+      try {
+        const date = new Date(endTime);
         if (!isNaN(date.getTime())) {
           return date;
         }
@@ -110,6 +140,39 @@ export const useSortableTable = (
             return sortDirection === 'asc' 
               ? dateA!.getTime() - dateB!.getTime()
               : dateB!.getTime() - dateA!.getTime();
+          case 'end_time':
+            // Use the end time extraction logic
+            const endTimeA = getEndTimeValue(a);
+            const endTimeB = getEndTimeValue(b);
+            
+            // Check if dates are valid
+            const validEndA = endTimeA !== null;
+            const validEndB = endTimeB !== null;
+            
+            // If one date is valid and the other isn't, the valid one comes first
+            if (validEndA && !validEndB) return sortDirection === 'asc' ? -1 : 1;
+            if (!validEndA && validEndB) return sortDirection === 'asc' ? 1 : -1;
+            // If both are invalid, fall back to service_date
+            if (!validEndA && !validEndB) {
+              const fallbackA = getServiceDateValue(a);
+              const fallbackB = getServiceDateValue(b);
+              
+              const validFallbackA = fallbackA !== null;
+              const validFallbackB = fallbackB !== null;
+              
+              if (validFallbackA && !validFallbackB) return sortDirection === 'asc' ? -1 : 1;
+              if (!validFallbackA && validFallbackB) return sortDirection === 'asc' ? 1 : -1;
+              if (!validFallbackA && !validFallbackB) return 0;
+              
+              return sortDirection === 'asc'
+                ? fallbackA!.getTime() - fallbackB!.getTime()
+                : fallbackB!.getTime() - fallbackA!.getTime();
+            }
+            
+            // If both end times are valid, compare timestamps
+            return sortDirection === 'asc' 
+              ? endTimeA!.getTime() - endTimeB!.getTime()
+              : endTimeB!.getTime() - endTimeA!.getTime();
           case 'driver':
             valueA = getDriverName(a).toLowerCase();
             valueB = getDriverName(b).toLowerCase();

@@ -50,6 +50,35 @@ export const sortWorkOrders = (
         return sortDirection === 'asc' 
           ? dateA!.getTime() - dateB!.getTime()
           : dateB!.getTime() - dateA!.getTime();
+      case 'end_time':
+        const endTimeA = a.end_time ? new Date(a.end_time) : null;
+        const endTimeB = b.end_time ? new Date(b.end_time) : null;
+        
+        const validEndA = endTimeA && !isNaN(endTimeA.getTime());
+        const validEndB = endTimeB && !isNaN(endTimeB.getTime());
+        
+        if (validEndA && !validEndB) return sortDirection === 'asc' ? -1 : 1;
+        if (!validEndA && validEndB) return sortDirection === 'asc' ? 1 : -1;
+        if (!validEndA && !validEndB) {
+          // Fall back to service_date if end_time is not available
+          const fallbackA = a.service_date ? new Date(a.service_date) : null;
+          const fallbackB = b.service_date ? new Date(b.service_date) : null;
+          
+          const validFallbackA = fallbackA && !isNaN(fallbackA.getTime());
+          const validFallbackB = fallbackB && !isNaN(fallbackB.getTime());
+          
+          if (validFallbackA && !validFallbackB) return sortDirection === 'asc' ? -1 : 1;
+          if (!validFallbackA && validFallbackB) return sortDirection === 'asc' ? 1 : -1;
+          if (!validFallbackA && !validFallbackB) return 0;
+          
+          return sortDirection === 'asc'
+            ? fallbackA!.getTime() - fallbackB!.getTime()
+            : fallbackB!.getTime() - fallbackA!.getTime();
+        }
+        
+        return sortDirection === 'asc'
+          ? endTimeA!.getTime() - endTimeB!.getTime()
+          : endTimeB!.getTime() - endTimeA!.getTime();
       case 'driver':
         valueA = a.driver && typeof a.driver === 'object' && a.driver.name
           ? a.driver.name.toLowerCase() : '';

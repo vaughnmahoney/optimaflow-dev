@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { WorkOrderFilters, SortField, SortDirection } from "@/components/workorders/types";
 
@@ -151,18 +152,25 @@ export const applySorting = (
       dataQuery = dataQuery.order(sortField, { ascending: isAscending });
     } 
     else if (sortField === 'service_date') {
-      // Use the new service_date column for sorting
+      // Use the service_date column for sorting
       dataQuery = dataQuery.order('service_date', { ascending: isAscending });
       
       // Add timestamp as a secondary sort for consistent ordering
       dataQuery = dataQuery.order('timestamp', { ascending: isAscending });
     }
+    else if (sortField === 'end_time') {
+      // Use the new end_time column for sorting
+      dataQuery = dataQuery.order('end_time', { ascending: isAscending });
+      
+      // Add service_date as a secondary sort
+      dataQuery = dataQuery.order('service_date', { ascending: isAscending });
+    }
     else if (sortField === 'driver') {
-      // Use the new driver_name column for sorting
+      // Use the driver_name column for sorting
       dataQuery = dataQuery.order('driver_name', { ascending: isAscending });
     }
     else if (sortField === 'location') {
-      // Use the new location_name column for sorting
+      // Use the location_name column for sorting
       dataQuery = dataQuery.order('location_name', { ascending: isAscending });
     }
     else {

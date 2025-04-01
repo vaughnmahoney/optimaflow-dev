@@ -43,30 +43,36 @@ export const WorkOrderRow = ({ workOrder, onStatusUpdate, onImageView, onDelete 
            (order.search_response?.scheduleInformation?.status);
   };
 
-  // Get end date and time from completion data, or fall back to service_date
-  const getServiceDateTime = (order: WorkOrder): string => {
-    // Try to get the end date from completion data first
-    const endTime = order.completion_response?.orders?.[0]?.data?.endTime?.localTime;
-    
-    if (endTime) {
-      try {
-        const date = new Date(endTime);
-        if (!isNaN(date.getTime())) {
-          return format(date, "MMM d, yyyy h:mmaaa");
-        }
-      } catch (error) {
-        // If date parsing fails, fall back to service_date
-        console.error("Error formatting end date:", error);
-      }
-    }
-    
-    // Fall back to service_date if end date is not available or invalid
+  // Format service date
+  const getServiceDate = (order: WorkOrder): string => {
     if (order.service_date) {
       try {
         return format(new Date(order.service_date), "MMM d, yyyy");
       } catch (error) {
-        console.error("Error formatting service date:", error);
         return "N/A";
+      }
+    }
+    return "N/A";
+  };
+  
+  // Format end time
+  const getEndTime = (order: WorkOrder): string => {
+    // First try to use the new end_time field
+    if (order.end_time) {
+      try {
+        return format(new Date(order.end_time), "h:mmaaa");
+      } catch (error) {
+        // If parsing fails, continue to fallbacks
+      }
+    }
+    
+    // Fall back to extracting from completion_response if necessary
+    const endTime = order.completion_response?.orders?.[0]?.data?.endTime?.localTime;
+    if (endTime) {
+      try {
+        return format(new Date(endTime), "h:mmaaa");
+      } catch (error) {
+        // If parsing fails, return N/A
       }
     }
     
@@ -80,7 +86,10 @@ export const WorkOrderRow = ({ workOrder, onStatusUpdate, onImageView, onDelete 
     >
       <TableCell className="font-medium">{workOrder.order_no || 'N/A'}</TableCell>
       <TableCell>
-        {getServiceDateTime(workOrder)}
+        {getServiceDate(workOrder)}
+      </TableCell>
+      <TableCell>
+        {getEndTime(workOrder)}
       </TableCell>
       <TableCell className="max-w-xs truncate">
         {getDriverName(workOrder)}

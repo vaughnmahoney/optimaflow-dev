@@ -1,12 +1,11 @@
 
-import { WorkOrder } from "../types";
-import { StatusBadge } from "../StatusBadge";
 import { Button } from "@/components/ui/button";
-import { Eye, MoreVertical } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { format } from "date-fns";
+import { Calendar, MapPin, User, MoreHorizontal, Clock } from "lucide-react";
+import { StatusBadge } from "../StatusBadge";
+import { WorkOrder } from "../types";
 import { ActionsMenu } from "./ActionsMenu";
-import { Card } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 
 interface WorkOrderCardProps {
   workOrder: WorkOrder;
@@ -16,117 +15,124 @@ interface WorkOrderCardProps {
 }
 
 export const WorkOrderCard = ({ workOrder, onStatusUpdate, onImageView, onDelete }: WorkOrderCardProps) => {
-  const getLocationName = (order: WorkOrder): string => {
-    if (!order.location) return 'N/A';
+  // Helper functions to extract data safely
+  const getLocationName = (): string => {
+    if (!workOrder.location) return 'N/A';
     
-    if (typeof order.location === 'object') {
-      return order.location.name || order.location.locationName || 'N/A';
+    if (typeof workOrder.location === 'object') {
+      return workOrder.location.name || workOrder.location.locationName || 'N/A';
     }
     
     return 'N/A';
   };
 
-  const getDriverName = (order: WorkOrder): string => {
-    if (!order.driver) return 'No Driver Assigned';
+  const getDriverName = (): string => {
+    if (!workOrder.driver) return 'No Driver Assigned';
     
-    if (typeof order.driver === 'object' && order.driver.name) {
-      return order.driver.name;
+    if (typeof workOrder.driver === 'object' && workOrder.driver.name) {
+      return workOrder.driver.name;
     }
     
     return 'No Driver Name';
   };
 
-  // Extract the completion status from the appropriate place in the order object
-  const getCompletionStatus = (order: WorkOrder): string | undefined => {
-    return order.completion_status || 
-           (order.completionDetails?.data?.status) ||
-           (order.completion_response?.orders?.[0]?.data?.status) ||
-           (order.search_response?.scheduleInformation?.status);
-  };
-
-  // Get end date and time from completion data, or fall back to service_date
-  const getServiceDateTime = (order: WorkOrder): string => {
-    // Try to get the end date from completion data first
-    const endTime = order.completion_response?.orders?.[0]?.data?.endTime?.localTime;
-    
-    if (endTime) {
+  // Format the service date
+  const getServiceDate = (): string => {
+    if (workOrder.service_date) {
       try {
-        const date = new Date(endTime);
-        if (!isNaN(date.getTime())) {
-          return format(date, "MMM d, yyyy h:mmaaa");
-        }
+        return format(new Date(workOrder.service_date), "MMM d, yyyy");
       } catch (error) {
-        // If date parsing fails, fall back to service_date
-        console.error("Error formatting end date:", error);
+        return "N/A";
+      }
+    }
+    return "N/A";
+  };
+  
+  // Format the end time
+  const getEndTime = (): string => {
+    // First try to use the new end_time field
+    if (workOrder.end_time) {
+      try {
+        return format(new Date(workOrder.end_time), "h:mmaaa");
+      } catch (error) {
+        // If parsing fails, continue to fallbacks
       }
     }
     
-    // Fall back to service_date if end date is not available or invalid
-    if (order.service_date) {
+    // Fall back to extracting from completion_response if necessary
+    const endTime = workOrder.completion_response?.orders?.[0]?.data?.endTime?.localTime;
+    if (endTime) {
       try {
-        return format(new Date(order.service_date), "MMM d, yyyy");
+        return format(new Date(endTime), "h:mmaaa");
       } catch (error) {
-        console.error("Error formatting service date:", error);
-        return "N/A";
+        // If parsing fails, return N/A
       }
     }
     
     return "N/A";
   };
 
+  // Extract the completion status
+  const getCompletionStatus = (): string | undefined => {
+    return workOrder.completion_status || 
+           (workOrder.completionDetails?.data?.status) ||
+           (workOrder.completion_response?.orders?.[0]?.data?.status) ||
+           (workOrder.search_response?.scheduleInformation?.status);
+  };
+
   return (
     <Card 
-      className="overflow-hidden shadow-sm hover:shadow transition-shadow cursor-pointer"
+      className="overflow-hidden"
       onClick={() => onImageView(workOrder.id)}
     >
-      {/* Card header with order number and status */}
-      <div className="p-3 border-b flex justify-between items-center bg-gray-50">
-        <div className="font-medium">{workOrder.order_no || 'N/A'}</div>
-        <StatusBadge 
-          status={workOrder.status || 'pending_review'} 
-          completionStatus={getCompletionStatus(workOrder)}
-        />
-      </div>
-
-      {/* Card body with order details */}
-      <div className="p-3 space-y-2">
-        <div className="text-sm flex justify-between items-start">
-          <span className="text-muted-foreground">Driver:</span>
-          <span className="text-right font-medium max-w-[70%] break-words">{getDriverName(workOrder)}</span>
-        </div>
-        <div className="text-sm flex justify-between items-start">
-          <span className="text-muted-foreground">Location:</span>
-          <span className="text-right font-medium max-w-[70%] break-words">{getLocationName(workOrder)}</span>
-        </div>
-        <div className="text-sm flex justify-between items-center">
-          <span className="text-muted-foreground">Date:</span>
-          <span className="text-right font-medium">{getServiceDateTime(workOrder)}</span>
-        </div>
-      </div>
-
-      {/* Card footer with actions */}
-      <div className="px-3 py-2 border-t flex justify-end items-center bg-gray-50">
-        <div className="flex items-center space-x-2 opacity-80 hover:opacity-100">
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              onImageView(workOrder.id);
-            }}
-            className="h-8 w-8"
-            title="View Proof of Service"
-          >
-            <Eye className="h-4 w-4" />
-          </Button>
-          
-          <ActionsMenu 
-            workOrder={workOrder}
-            onStatusUpdate={onStatusUpdate}
-            onDelete={onDelete}
+      <CardContent className="p-0">
+        {/* Header row with Order # and Status */}
+        <div className="flex justify-between items-center p-3 bg-muted/30 border-b">
+          <div className="font-medium">{workOrder.order_no || 'N/A'}</div>
+          <StatusBadge 
+            status={workOrder.status || 'pending_review'} 
+            completionStatus={getCompletionStatus()}
           />
         </div>
-      </div>
+        
+        {/* Content rows */}
+        <div className="p-3 space-y-2">
+          {/* Service Date */}
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm">{getServiceDate()}</span>
+          </div>
+          
+          {/* End Time */}
+          <div className="flex items-center gap-2">
+            <Clock className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm">{getEndTime()}</span>
+          </div>
+          
+          {/* Driver */}
+          <div className="flex items-center gap-2">
+            <User className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm truncate">{getDriverName()}</span>
+          </div>
+          
+          {/* Location */}
+          <div className="flex items-center gap-2">
+            <MapPin className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm truncate">{getLocationName()}</span>
+          </div>
+        </div>
+        
+        {/* Actions row */}
+        <div className="flex justify-end p-2 border-t bg-muted/20">
+          <div onClick={(e) => e.stopPropagation()}>
+            <ActionsMenu 
+              workOrder={workOrder}
+              onStatusUpdate={onStatusUpdate}
+              onDelete={onDelete}
+            />
+          </div>
+        </div>
+      </CardContent>
     </Card>
   );
 };
