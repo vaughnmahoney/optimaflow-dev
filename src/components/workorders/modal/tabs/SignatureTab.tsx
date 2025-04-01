@@ -1,15 +1,13 @@
 
 import { Card } from "@/components/ui/card";
-import { WorkOrder } from "../../types";
+import { WorkOrder } from "@/components/workorders/types";
 import { FileSignature } from "lucide-react";
 
 interface SignatureTabProps {
   workOrder: WorkOrder;
 }
 
-export const SignatureTab = ({
-  workOrder
-}: SignatureTabProps) => {
+export const SignatureTab = ({ workOrder }: SignatureTabProps) => {
   const signatureUrl = workOrder.completion_response?.orders[0]?.data?.form?.signature?.url;
 
   return (

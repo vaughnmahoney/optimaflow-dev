@@ -1,9 +1,13 @@
 
+import { WorkOrder } from "@/components/workorders/types";
+import { useState } from "react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { SignatureTab } from "./SignatureTab";
+import { NotesTab } from "./NotesTab";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { WorkOrder } from "../../types";
-import { MapPin, Clock, Package, ClipboardCheck, ExternalLink } from "lucide-react";
+import { MapPin, Clock, User, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 
 interface OrderDetailsTabProps {
@@ -13,6 +17,8 @@ interface OrderDetailsTabProps {
 export const OrderDetailsTab = ({
   workOrder
 }: OrderDetailsTabProps) => {
+  const [activeTab, setActiveTab] = useState("details");
+  
   const completionData = workOrder.completion_response?.orders[0]?.data;
   const searchData = workOrder.search_response?.data;
   const trackingUrl = completionData?.tracking_url;
@@ -23,7 +29,6 @@ export const OrderDetailsTab = ({
     try {
       return format(new Date(dateString), "MMM d, yyyy h:mm a");
     } catch (error) {
-      console.error("Date parsing error:", error);
       return "Invalid Date";
     }
   };
@@ -51,94 +56,97 @@ export const OrderDetailsTab = ({
     [city, state, zip].filter(Boolean).join(", ")
   ].filter(part => part && part !== "N/A").join(", ");
 
-  // Extract material quantity
-  const materialQuantity = searchData?.customField3 || "N/A";
-  
   // Format LDS information
   const ldsRaw = searchData?.customField5 || workOrder.lds || "N/A";
   const ldsInfo = ldsRaw !== "N/A" && ldsRaw.includes(" ") 
     ? ldsRaw.split(" ")[0] // Take only the date part from "2024-10-17 00:00"
     : ldsRaw;
+    
+  // Driver information
+  const driverName = workOrder.driver?.name || "No Driver Assigned";
 
   return (
-    <div className="space-y-4">
-      <Card className="overflow-hidden border shadow-sm bg-white">
-        <div className="p-5 space-y-4">
-          {/* Main Order Details Section */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between gap-2 border-b border-gray-100 pb-2">
-              <div className="flex items-center gap-2">
-                <ClipboardCheck className="h-5 w-5 text-blue-600" />
-                <h3 className="font-medium text-blue-800 text-lg">Order Details</h3>
-              </div>
-              
-              {/* Tracking URL button added here */}
+    <div className="p-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid grid-cols-3 mb-4 w-full">
+          <TabsTrigger value="details">Details</TabsTrigger>
+          <TabsTrigger value="notes">Notes</TabsTrigger>
+          <TabsTrigger value="signature">Signature</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="details">
+          <Card className="shadow-sm border-gray-100">
+            <div className="p-6 space-y-6">
+              {/* Top row with tracking button if available */}
               {trackingUrl && (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300"
-                  onClick={() => window.open(trackingUrl, '_blank')}
-                >
-                  <ExternalLink className="h-4 w-4 mr-1" />
-                  View Tracking URL
-                </Button>
-              )}
-            </div>
-            
-            <div className="space-y-6 pl-2">
-              {/* Location Information */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 pb-1 border-b border-gray-50">
-                  <MapPin className="h-4 w-4 text-blue-600" />
-                  <span className="text-sm font-medium text-blue-700">Location</span>
+                <div className="flex justify-end mb-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+                    onClick={() => window.open(trackingUrl, '_blank')}
+                  >
+                    <ExternalLink className="h-4 w-4 mr-1.5" />
+                    View Tracking
+                  </Button>
                 </div>
-                <div className="grid grid-cols-[100px_1fr] gap-y-2 pl-6">
-                  <span className="text-sm font-medium text-gray-600">Name:</span>
-                  <span className="text-sm text-gray-700 font-medium">{locationName}</span>
-                  
-                  <span className="text-sm font-medium text-gray-600">Address:</span>
-                  <span className="text-sm text-gray-700">{fullAddress || "N/A"}</span>
+              )}
+              
+              {/* Top section with Location (left) and Driver (right) */}
+              <div className="flex">
+                {/* Location Section - Left */}
+                <div className="space-y-3 flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <MapPin className="h-5 w-5 text-gray-400" />
+                    <h3 className="text-base font-medium text-gray-800">Location</h3>
+                  </div>
+                  <div className="pl-7 space-y-1">
+                    <p className="text-sm font-medium text-gray-700">{locationName}</p>
+                    <p className="text-sm text-gray-600">{fullAddress}</p>
+                  </div>
+                </div>
+                
+                {/* Driver Section - Right */}
+                <div className="space-y-3 ml-10">
+                  <div className="flex items-center gap-2 mb-2">
+                    <User className="h-5 w-5 text-gray-400" />
+                    <h3 className="text-base font-medium text-gray-800">Driver</h3>
+                  </div>
+                  <p className="text-sm text-gray-700 pl-7">{driverName}</p>
                 </div>
               </div>
               
               <Separator className="bg-gray-100" />
               
-              {/* Time Information */}
+              {/* Time Details Section */}
               <div className="space-y-3">
-                <div className="flex items-center gap-2 pb-1 border-b border-gray-50">
-                  <Clock className="h-4 w-4 text-blue-600" />
-                  <span className="text-sm font-medium text-blue-700">Time Details</span>
+                <div className="flex items-center gap-2 mb-2">
+                  <Clock className="h-5 w-5 text-gray-400" />
+                  <h3 className="text-base font-medium text-gray-800">Time Details</h3>
                 </div>
-                <div className="grid grid-cols-[100px_1fr] gap-y-2 pl-6">
-                  <span className="text-sm font-medium text-gray-600">Start Time:</span>
+                <div className="pl-7 grid grid-cols-[100px_1fr] gap-y-2">
+                  <span className="text-sm text-gray-600">Start Time:</span>
                   <span className="text-sm text-gray-700">{startTime}</span>
                   
-                  <span className="text-sm font-medium text-gray-600">End Time:</span>
+                  <span className="text-sm text-gray-600">End Time:</span>
                   <span className="text-sm text-gray-700">{endTime}</span>
                   
-                  <span className="text-sm font-medium text-gray-600">LDS:</span>
+                  <span className="text-sm text-gray-600">LDS:</span>
                   <span className="text-sm text-gray-700">{ldsInfo}</span>
                 </div>
               </div>
-              
-              <Separator className="bg-gray-100" />
-              
-              {/* Materials Section */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 pb-1 border-b border-gray-50">
-                  <Package className="h-4 w-4 text-blue-600" />
-                  <span className="text-sm font-medium text-blue-700">Materials</span>
-                </div>
-                <div className="grid grid-cols-[100px_1fr] gap-y-2 pl-6">
-                  <span className="text-sm font-medium text-gray-600">Quantity:</span>
-                  <span className="text-sm text-gray-700">{materialQuantity}</span>
-                </div>
-              </div>
             </div>
-          </div>
-        </div>
-      </Card>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="notes">
+          <NotesTab workOrder={workOrder} />
+        </TabsContent>
+        
+        <TabsContent value="signature">
+          <SignatureTab workOrder={workOrder} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
