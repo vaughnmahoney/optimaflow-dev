@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { WorkOrderListProps } from "./types";
 import { StatusFilterCards } from "./filters/StatusFilterCards";
@@ -69,15 +68,11 @@ export const WorkOrderList = ({
     if (direction === 'next' && pagination.page < Math.ceil(pagination.total / pagination.pageSize)) {
       onPageChange(newPage);
       
-      // When the new page loads, select the first order if going to next page
-      // or the last order if going to the previous page
-      const selectIndex = direction === 'next' ? 0 : -1;
-      
       // We use setTimeout to ensure this runs after the new data is loaded
       setTimeout(() => {
         if (workOrders.length > 0) {
-          const indexToSelect = selectIndex === -1 ? workOrders.length - 1 : 0;
-          setSelectedWorkOrder(workOrders[indexToSelect].id);
+          // Select the first order when going to the next page
+          setSelectedWorkOrder(workOrders[0].id);
         }
       }, 100);
     } else if (direction === 'previous' && pagination.page > 1) {

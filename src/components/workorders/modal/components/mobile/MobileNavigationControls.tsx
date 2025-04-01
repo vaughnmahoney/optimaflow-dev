@@ -1,5 +1,5 @@
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface MobileNavigationControlsProps {
@@ -30,8 +30,17 @@ export const MobileNavigationControls = ({
         className="flex items-center gap-1"
         disabled={currentIndex <= 0 && !hasPreviousPage}
       >
-        <ChevronLeft className="h-4 w-4" />
-        <span>{isNavigatingPages && currentIndex === 0 && hasPreviousPage ? "Loading..." : "Previous"}</span>
+        {isNavigatingPages && currentIndex === 0 && hasPreviousPage ? (
+          <>
+            <Loader2 className="h-3 w-3 animate-spin" />
+            <span>Loading</span>
+          </>
+        ) : (
+          <>
+            <ChevronLeft className="h-4 w-4" />
+            <span>Previous</span>
+          </>
+        )}
       </Button>
       
       <span className="text-sm text-gray-500 font-medium">
@@ -45,8 +54,17 @@ export const MobileNavigationControls = ({
         className="flex items-center gap-1"
         disabled={currentIndex >= totalOrders - 1 && !hasNextPage}
       >
-        <span>{isNavigatingPages && currentIndex === totalOrders - 1 && hasNextPage ? "Loading..." : "Next"}</span>
-        <ChevronRight className="h-4 w-4" />
+        {isNavigatingPages && currentIndex === totalOrders - 1 && hasNextPage ? (
+          <>
+            <span>Loading</span>
+            <Loader2 className="h-3 w-3 animate-spin" />
+          </>
+        ) : (
+          <>
+            <span>Next</span>
+            <ChevronRight className="h-4 w-4" />
+          </>
+        )}
       </Button>
     </div>
   );

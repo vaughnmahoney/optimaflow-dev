@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { WorkOrder } from "@/components/workorders/types";
 
@@ -37,6 +38,13 @@ export const useWorkOrderNavigation = ({
   useEffect(() => {
     setCurrentImageIndex(0);
   }, [currentWorkOrderId]);
+
+  // Reset isNavigatingPages when workOrders change (meaning new page has been loaded)
+  useEffect(() => {
+    if (isNavigatingPages) {
+      setIsNavigatingPages(false);
+    }
+  }, [workOrders]);
   
   // Add keyboard navigation
   useEffect(() => {

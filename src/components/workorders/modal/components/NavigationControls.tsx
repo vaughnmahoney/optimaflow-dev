@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 interface NavigationControlsProps {
@@ -32,10 +32,17 @@ export const NavigationControls = ({
             onClick={onPreviousOrder}
             disabled={currentIndex <= 0 && !hasPreviousPage}
           >
-            <ChevronLeft className="h-4 w-4" />
-            {isNavigatingPages && currentIndex === 0 && hasPreviousPage 
-              ? "Loading Previous..." 
-              : "Previous Order"}
+            {isNavigatingPages && currentIndex === 0 && hasPreviousPage ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading Previous
+              </>
+            ) : (
+              <>
+                <ChevronLeft className="h-4 w-4" />
+                Previous Order
+              </>
+            )}
           </Button>
           
           <span className="text-sm text-muted-foreground font-medium px-3 py-1 bg-gray-50 dark:bg-gray-800 rounded-md">
@@ -48,10 +55,17 @@ export const NavigationControls = ({
             onClick={onNextOrder}
             disabled={currentIndex >= totalOrders - 1 && !hasNextPage}
           >
-            {isNavigatingPages && currentIndex === totalOrders - 1 && hasNextPage 
-              ? "Loading Next..." 
-              : "Next Order"}
-            <ChevronRight className="h-4 w-4" />
+            {isNavigatingPages && currentIndex === totalOrders - 1 && hasNextPage ? (
+              <>
+                Loading Next
+                <Loader2 className="h-4 w-4 animate-spin" />
+              </>
+            ) : (
+              <>
+                Next Order
+                <ChevronRight className="h-4 w-4" />
+              </>
+            )}
           </Button>
         </div>
       </div>
