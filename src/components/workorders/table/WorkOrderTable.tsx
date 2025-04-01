@@ -127,7 +127,7 @@ export const WorkOrderTable = ({
         </div>
       ) : (
         /* Desktop Table Layout */
-        <div className="rounded-md border">
+        <div className="rounded-md border border-border/50 shadow-sm overflow-hidden bg-white">
           <Table>
             <WorkOrderTableHeader 
               sortField={sortField} 

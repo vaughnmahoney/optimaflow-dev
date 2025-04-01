@@ -2,7 +2,7 @@
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { StatusBadge } from "../StatusBadge";
 import { WorkOrder } from "../types";
 import { ActionsMenu } from "./ActionsMenu";
@@ -75,10 +75,10 @@ export const WorkOrderRow = ({ workOrder, onStatusUpdate, onImageView, onDelete 
 
   return (
     <TableRow 
-      className="cursor-pointer"
+      className="group cursor-pointer"
       onClick={() => onImageView(workOrder.id)}
     >
-      <TableCell>{workOrder.order_no || 'N/A'}</TableCell>
+      <TableCell className="font-medium">{workOrder.order_no || 'N/A'}</TableCell>
       <TableCell>
         {getServiceDateTime(workOrder)}
       </TableCell>
@@ -94,8 +94,8 @@ export const WorkOrderRow = ({ workOrder, onStatusUpdate, onImageView, onDelete 
           completionStatus={getCompletionStatus(workOrder)}
         />
       </TableCell>
-      <TableCell onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center space-x-2">
+      <TableCell onClick={(e) => e.stopPropagation()} className="transition-opacity">
+        <div className="flex items-center space-x-2 opacity-70 group-hover:opacity-100">
           <Button 
             variant="ghost" 
             size="icon"

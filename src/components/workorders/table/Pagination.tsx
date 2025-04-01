@@ -65,26 +65,26 @@ export const Pagination = ({ pagination, onPageChange, onPageSizeChange }: Pagin
   };
 
   return (
-    <div className="flex flex-col gap-2 p-2 border-t bg-muted/20">
+    <div className="flex flex-col gap-2 p-3 border-t bg-gray-50/70">
       <div className="flex items-center justify-between">
         <div className="text-xs text-muted-foreground">
           {total} {total === 1 ? 'item' : 'items'}
         </div>
         
-        <div className="flex items-center space-x-1">
+        <div className="flex items-center space-x-1.5">
           <Button 
             variant="outline" 
             size="icon" 
-            className="h-6 w-6"
+            className="h-7 w-7 shadow-sm"
             disabled={page <= 1}
             onClick={() => onPageChange(page - 1)}
           >
-            <ChevronLeft className="h-3 w-3" />
+            <ChevronLeft className="h-3.5 w-3.5" />
             <span className="sr-only">Previous page</span>
           </Button>
           
           {!isMobile && (
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-1.5">
               {pageNumbers.map((pageNum, idx) => 
                 pageNum === 'ellipsis' ? (
                   <span key={`ellipsis-${idx}`} className="px-2 text-xs text-muted-foreground">
@@ -95,7 +95,7 @@ export const Pagination = ({ pagination, onPageChange, onPageSizeChange }: Pagin
                     key={`page-${pageNum}`}
                     variant={pageNum === page ? "default" : "outline"}
                     size="icon"
-                    className="h-6 w-6 text-xs"
+                    className="h-7 w-7 text-xs shadow-sm"
                     onClick={() => onPageChange(pageNum as number)}
                   >
                     {pageNum}
@@ -106,7 +106,7 @@ export const Pagination = ({ pagination, onPageChange, onPageSizeChange }: Pagin
           )}
           
           {isMobile && (
-            <span className="text-xs px-1">
+            <span className="text-xs px-2 py-1.5 bg-gray-100 rounded-md">
               {page} / {totalPages}
             </span>
           )}
@@ -114,11 +114,11 @@ export const Pagination = ({ pagination, onPageChange, onPageSizeChange }: Pagin
           <Button 
             variant="outline" 
             size="icon" 
-            className="h-6 w-6"
+            className="h-7 w-7 shadow-sm"
             disabled={page >= totalPages}
             onClick={() => onPageChange(page + 1)}
           >
-            <ChevronRight className="h-3 w-3" />
+            <ChevronRight className="h-3.5 w-3.5" />
             <span className="sr-only">Next page</span>
           </Button>
         </div>
@@ -128,7 +128,7 @@ export const Pagination = ({ pagination, onPageChange, onPageSizeChange }: Pagin
       <div className="flex items-center space-x-2 text-xs text-muted-foreground ml-auto">
         <span>Rows per page:</span>
         <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
-          <SelectTrigger className="h-7 w-16 text-xs">
+          <SelectTrigger className="h-7 w-16 text-xs shadow-sm">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
