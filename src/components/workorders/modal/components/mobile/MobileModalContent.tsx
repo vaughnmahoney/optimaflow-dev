@@ -29,9 +29,11 @@ export const MobileModalContent = ({
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      {/* Scrollable main content with no padding wrapper */}
+      {/* Scrollable main content */}
       <ScrollArea className="flex-1 overflow-auto">
-        <MobileOrderDetails workOrder={workOrder} />
+        <div className="py-2">
+          <MobileOrderDetails workOrder={workOrder} />
+        </div>
       </ScrollArea>
       
       {/* Action buttons at the bottom */}

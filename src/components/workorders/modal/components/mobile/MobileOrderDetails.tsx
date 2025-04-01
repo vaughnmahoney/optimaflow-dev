@@ -140,8 +140,47 @@ export const MobileOrderDetails = ({
               </div>
             </div>
             
-            {/* Render different note types */}
-            {renderNotesSection(workOrder, completionData, searchData)}
+            {/* Tech Notes */}
+            <div className="space-y-1 border-t pt-3 first:border-t-0 first:pt-0">
+              <div className="flex items-center gap-1.5 text-gray-700 mb-1">
+                <h3 className="text-sm font-medium">Tech Notes</h3>
+              </div>
+              <div>
+                {completionData?.form?.note ? (
+                  <p className="text-xs whitespace-pre-wrap text-gray-700">{completionData.form.note}</p>
+                ) : (
+                  <p className="text-xs text-gray-500 italic">No tech notes available</p>
+                )}
+              </div>
+            </div>
+            
+            {/* Service Notes */}
+            <div className="space-y-1 border-t pt-3">
+              <div className="flex items-center gap-1.5 text-gray-700 mb-1">
+                <h3 className="text-sm font-medium">Service Notes</h3>
+              </div>
+              <div>
+                {workOrder.service_notes ? (
+                  <p className="text-xs whitespace-pre-wrap text-gray-700">{workOrder.service_notes}</p>
+                ) : (
+                  <p className="text-xs text-gray-500 italic">No service notes available</p>
+                )}
+              </div>
+            </div>
+            
+            {/* Additional Notes */}
+            <div className="space-y-1 border-t pt-3">
+              <div className="flex items-center gap-1.5 text-gray-700 mb-1">
+                <h3 className="text-sm font-medium">Additional Notes</h3>
+              </div>
+              <div>
+                {searchData?.customField1 ? (
+                  <p className="text-xs whitespace-pre-wrap text-gray-700">{searchData.customField1}</p>
+                ) : (
+                  <p className="text-xs text-gray-500 italic">No additional notes available</p>
+                )}
+              </div>
+            </div>
           </div>
         </Card>
       </TabsContent>
@@ -187,56 +226,3 @@ export const MobileOrderDetails = ({
     </Tabs>
   );
 };
-
-// Helper function to render notes sections
-function renderNotesSection(workOrder: WorkOrder, completionData: any, searchData: any) {
-  const techNotes = completionData?.form?.note;
-  const serviceNotes = workOrder.service_notes;
-  const additionalNotes = searchData?.customField1;
-  
-  return (
-    <>
-      {/* Tech Notes */}
-      <div className="space-y-1 border-t pt-3 first:border-t-0 first:pt-0">
-        <div className="flex items-center gap-1.5 text-gray-700 mb-1">
-          <h3 className="text-sm font-medium">Tech Notes</h3>
-        </div>
-        <div>
-          {techNotes ? (
-            <p className="text-xs whitespace-pre-wrap text-gray-700">{techNotes}</p>
-          ) : (
-            <p className="text-xs text-gray-500 italic">No tech notes available</p>
-          )}
-        </div>
-      </div>
-      
-      {/* Service Notes */}
-      <div className="space-y-1 border-t pt-3">
-        <div className="flex items-center gap-1.5 text-gray-700 mb-1">
-          <h3 className="text-sm font-medium">Service Notes</h3>
-        </div>
-        <div>
-          {serviceNotes ? (
-            <p className="text-xs whitespace-pre-wrap text-gray-700">{serviceNotes}</p>
-          ) : (
-            <p className="text-xs text-gray-500 italic">No service notes available</p>
-          )}
-        </div>
-      </div>
-      
-      {/* Additional Notes */}
-      <div className="space-y-1 border-t pt-3">
-        <div className="flex items-center gap-1.5 text-gray-700 mb-1">
-          <h3 className="text-sm font-medium">Additional Notes</h3>
-        </div>
-        <div>
-          {additionalNotes ? (
-            <p className="text-xs whitespace-pre-wrap text-gray-700">{additionalNotes}</p>
-          ) : (
-            <p className="text-xs text-gray-500 italic">No additional notes available</p>
-          )}
-        </div>
-      </div>
-    </>
-  );
-}
