@@ -21,6 +21,12 @@ export const MobileNavigationControls = ({
   hasPreviousPage = false,
   hasNextPage = false
 }: MobileNavigationControlsProps) => {
+  // Determine if the previous button should show loading state
+  const isPreviousLoading = isNavigatingPages && currentIndex === 0 && hasPreviousPage;
+  
+  // Determine if the next button should show loading state
+  const isNextLoading = isNavigatingPages && currentIndex === totalOrders - 1 && hasNextPage;
+  
   return (
     <div className="px-4 py-3 flex items-center justify-between border-t bg-white">
       <Button
@@ -28,9 +34,9 @@ export const MobileNavigationControls = ({
         size="sm"
         onClick={onPreviousOrder}
         className="flex items-center gap-1"
-        disabled={currentIndex <= 0 && !hasPreviousPage}
+        disabled={isPreviousLoading || (currentIndex <= 0 && !hasPreviousPage)}
       >
-        {isNavigatingPages && currentIndex === 0 && hasPreviousPage ? (
+        {isPreviousLoading ? (
           <>
             <Loader2 className="h-3 w-3 animate-spin" />
             <span>Loading</span>
@@ -52,9 +58,9 @@ export const MobileNavigationControls = ({
         size="sm"
         onClick={onNextOrder}
         className="flex items-center gap-1"
-        disabled={currentIndex >= totalOrders - 1 && !hasNextPage}
+        disabled={isNextLoading || (currentIndex >= totalOrders - 1 && !hasNextPage)}
       >
-        {isNavigatingPages && currentIndex === totalOrders - 1 && hasNextPage ? (
+        {isNextLoading ? (
           <>
             <span>Loading</span>
             <Loader2 className="h-3 w-3 animate-spin" />
