@@ -6,9 +6,9 @@ import { SortDirection, SortField, PaginationState } from "@/components/workorde
  * Hook to manage sorting and pagination for bulk order adapter
  */
 export const useAdapterSortAndPagination = (totalItems: number = 0) => {
-  // Set up sort state with default sorting (newest first)
-  const [sortField, setSortField] = useState<SortField>('service_date');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  // Set up sort state
+  const [sortField, setSortField] = useState<SortField>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   
   // Set up pagination state
   const [pagination, setPagination] = useState<PaginationState>({
