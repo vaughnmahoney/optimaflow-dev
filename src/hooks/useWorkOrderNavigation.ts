@@ -6,22 +6,26 @@ interface UseWorkOrderNavigationProps {
   initialWorkOrderId: string | null;
   isOpen: boolean;
   onClose: () => void;
+  onPageBoundary?: (direction: 'next' | 'previous') => void;
 }
 
 export const useWorkOrderNavigation = ({
   workOrders,
   initialWorkOrderId,
   isOpen,
-  onClose
+  onClose,
+  onPageBoundary
 }: UseWorkOrderNavigationProps) => {
   const [currentWorkOrderId, setCurrentWorkOrderId] = useState<string | null>(initialWorkOrderId);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isNavigatingPages, setIsNavigatingPages] = useState(false);
   
   // Reset state when modal opens/closes
   useEffect(() => {
     if (isOpen && initialWorkOrderId) {
       setCurrentWorkOrderId(initialWorkOrderId);
       setCurrentImageIndex(0);
+      setIsNavigatingPages(false);
     }
   }, [isOpen, initialWorkOrderId]);
   
@@ -68,6 +72,10 @@ export const useWorkOrderNavigation = ({
     if (currentIndex > 0) {
       setCurrentWorkOrderId(workOrders[currentIndex - 1].id);
       setCurrentImageIndex(0);
+    } else if (onPageBoundary && currentIndex === 0) {
+      // We're at the first order of the current page
+      setIsNavigatingPages(true);
+      onPageBoundary('previous');
     }
   };
 
@@ -75,6 +83,10 @@ export const useWorkOrderNavigation = ({
     if (currentIndex < workOrders.length - 1) {
       setCurrentWorkOrderId(workOrders[currentIndex + 1].id);
       setCurrentImageIndex(0);
+    } else if (onPageBoundary && currentIndex === workOrders.length - 1) {
+      // We're at the last order of the current page
+      setIsNavigatingPages(true);
+      onPageBoundary('next');
     }
   };
 
@@ -113,7 +125,9 @@ export const useWorkOrderNavigation = ({
     currentWorkOrder,
     currentIndex,
     currentImageIndex,
+    isNavigatingPages,
     setCurrentImageIndex,
+    setIsNavigatingPages,
     handlePreviousOrder,
     handleNextOrder,
     handleSetOrder,

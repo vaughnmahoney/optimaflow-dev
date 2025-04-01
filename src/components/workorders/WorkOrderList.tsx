@@ -56,6 +56,42 @@ export const WorkOrderList = ({
       setSelectedWorkOrder(workOrders[index].id);
     }
   };
+  
+  // Handle navigation between pages from the modal
+  const handlePageBoundary = (direction: 'next' | 'previous') => {
+    if (!pagination || !onPageChange) return;
+    
+    const newPage = direction === 'next' 
+      ? pagination.page + 1 
+      : Math.max(1, pagination.page - 1);
+    
+    // Only navigate if we have more pages
+    if (direction === 'next' && pagination.page < Math.ceil(pagination.total / pagination.pageSize)) {
+      onPageChange(newPage);
+      
+      // When the new page loads, select the first order if going to next page
+      // or the last order if going to the previous page
+      const selectIndex = direction === 'next' ? 0 : -1;
+      
+      // We use setTimeout to ensure this runs after the new data is loaded
+      setTimeout(() => {
+        if (workOrders.length > 0) {
+          const indexToSelect = selectIndex === -1 ? workOrders.length - 1 : 0;
+          setSelectedWorkOrder(workOrders[indexToSelect].id);
+        }
+      }, 100);
+    } else if (direction === 'previous' && pagination.page > 1) {
+      onPageChange(newPage);
+      
+      // We use setTimeout to ensure this runs after the new data is loaded
+      setTimeout(() => {
+        if (workOrders.length > 0) {
+          // Select the last order when going to the previous page
+          setSelectedWorkOrder(workOrders[workOrders.length - 1].id);
+        }
+      }, 100);
+    }
+  };
 
   // Handle status filter change
   const handleStatusFilterChange = (status: string | null) => {
@@ -111,6 +147,7 @@ export const WorkOrderList = ({
           onClose={() => setIsImageModalOpen(false)}
           onStatusUpdate={onStatusUpdate}
           onNavigate={handleNavigate}
+          onPageBoundary={handlePageBoundary}
           onResolveFlag={onResolveFlag}
           onDownloadAll={() => {
             // Placeholder for download all functionality

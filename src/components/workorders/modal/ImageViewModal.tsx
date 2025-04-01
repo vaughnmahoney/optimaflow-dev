@@ -19,6 +19,7 @@ interface ImageViewModalProps {
   onClose: () => void;
   onStatusUpdate?: (workOrderId: string, status: string) => void;
   onNavigate: (index: number) => void;
+  onPageBoundary?: (direction: 'next' | 'previous') => void;
   onDownloadAll?: () => void;
   onResolveFlag?: (workOrderId: string, resolution: string) => void;
 }
@@ -31,6 +32,7 @@ export const ImageViewModal = ({
   onClose,
   onStatusUpdate,
   onNavigate,
+  onPageBoundary,
   onDownloadAll,
   onResolveFlag,
 }: ImageViewModalProps) => {
@@ -41,7 +43,9 @@ export const ImageViewModal = ({
     currentWorkOrder,
     currentIndex: navIndex,
     currentImageIndex,
+    isNavigatingPages,
     setCurrentImageIndex,
+    setIsNavigatingPages,
     handlePreviousOrder,
     handleNextOrder,
     handleSetOrder
@@ -49,7 +53,8 @@ export const ImageViewModal = ({
     workOrders,
     initialWorkOrderId: workOrder?.id || null,
     isOpen,
-    onClose
+    onClose,
+    onPageBoundary
   });
   
   // Early return with mobile version, but AFTER all hooks have been called
@@ -63,6 +68,7 @@ export const ImageViewModal = ({
         onClose={onClose}
         onStatusUpdate={onStatusUpdate}
         onNavigate={onNavigate}
+        onPageBoundary={onPageBoundary}
         onDownloadAll={onDownloadAll}
         onResolveFlag={onResolveFlag}
       />
@@ -118,6 +124,9 @@ export const ImageViewModal = ({
           totalOrders={workOrders.length}
           onPreviousOrder={handlePreviousOrder}
           onNextOrder={handleNextOrder}
+          isNavigatingPages={isNavigatingPages}
+          hasPreviousPage={onPageBoundary !== undefined && navIndex === 0}
+          hasNextPage={onPageBoundary !== undefined && navIndex === workOrders.length - 1}
         />
       </div>
     </Dialog>

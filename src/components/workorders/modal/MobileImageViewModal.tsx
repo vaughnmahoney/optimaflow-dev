@@ -17,6 +17,7 @@ interface MobileImageViewModalProps {
   onClose: () => void;
   onStatusUpdate?: (workOrderId: string, status: string) => void;
   onNavigate: (index: number) => void;
+  onPageBoundary?: (direction: 'next' | 'previous') => void;
   onDownloadAll?: () => void;
   onResolveFlag?: (workOrderId: string, resolution: string) => void;
 }
@@ -29,6 +30,7 @@ export const MobileImageViewModal = ({
   onClose,
   onStatusUpdate,
   onNavigate,
+  onPageBoundary,
   onDownloadAll,
   onResolveFlag,
 }: MobileImageViewModalProps) => {
@@ -38,6 +40,7 @@ export const MobileImageViewModal = ({
     currentWorkOrder,
     currentIndex: navIndex,
     currentImageIndex,
+    isNavigatingPages,
     setCurrentImageIndex,
     handlePreviousOrder,
     handleNextOrder,
@@ -46,7 +49,8 @@ export const MobileImageViewModal = ({
     workOrders,
     initialWorkOrderId: workOrder?.id || null,
     isOpen,
-    onClose
+    onClose,
+    onPageBoundary
   });
   
   if (!currentWorkOrder) return null;
@@ -103,6 +107,9 @@ export const MobileImageViewModal = ({
               totalOrders={workOrders.length}
               onPreviousOrder={handlePreviousOrder}
               onNextOrder={handleNextOrder}
+              isNavigatingPages={isNavigatingPages}
+              hasPreviousPage={onPageBoundary !== undefined && navIndex === 0}
+              hasNextPage={onPageBoundary !== undefined && navIndex === workOrders.length - 1}
             />
           </>
         )}
