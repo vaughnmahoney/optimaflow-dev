@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { WorkOrderListProps } from "./types";
 import { StatusFilterCards } from "./filters/StatusFilterCards";
@@ -5,6 +6,8 @@ import { DebugDataDisplay } from "./debug/DebugDataDisplay";
 import { WorkOrderTable } from "./table/WorkOrderTable";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { ImageViewModal } from "./modal/ImageViewModal";
+import { FilterSortButton } from "./filters/FilterSortButton";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const WorkOrderList = ({ 
   workOrders, 
@@ -32,6 +35,7 @@ export const WorkOrderList = ({
   const [transformedData, setTransformedData] = useState<any>(null);
   const [selectedWorkOrder, setSelectedWorkOrder] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   if (isLoading) {
     return <LoadingSkeleton />;
@@ -98,18 +102,31 @@ export const WorkOrderList = ({
 
   return (
     <div className="space-y-4">
-      <StatusFilterCards 
-        statusFilter={filters.status}
-        onStatusFilterChange={handleStatusFilterChange}
-        statusCounts={{
-          approved: statusCounts.approved,
-          pending_review: statusCounts.pending_review,
-          flagged: statusCounts.flagged,
-          resolved: statusCounts.resolved,
-          rejected: statusCounts.rejected || 0,
-          all: statusCounts.all
-        }}
-      />
+      <div className={`${isMobile ? 'flex flex-col space-y-4' : 'flex justify-between items-start'}`}>
+        <div className={`${!isMobile ? 'flex-1 w-3/4' : 'w-full'}`}>
+          <StatusFilterCards 
+            statusFilter={filters.status}
+            onStatusFilterChange={handleStatusFilterChange}
+            statusCounts={{
+              approved: statusCounts.approved,
+              pending_review: statusCounts.pending_review,
+              flagged: statusCounts.flagged,
+              resolved: statusCounts.resolved,
+              rejected: statusCounts.rejected || 0,
+              all: statusCounts.all
+            }}
+          />
+        </div>
+        
+        <div className={`${!isMobile ? 'ml-4 pt-1' : ''}`}>
+          <FilterSortButton 
+            filters={filters}
+            onColumnFilterChange={onColumnFilterChange}
+            clearColumnFilter={clearColumnFilter}
+            clearAllFilters={clearAllFilters}
+          />
+        </div>
+      </div>
 
       <DebugDataDisplay 
         searchResponse={searchResponse}

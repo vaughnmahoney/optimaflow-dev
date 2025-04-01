@@ -122,18 +122,9 @@ export const StatusFilterCards = ({
     });
   };
 
-  if (isMobile) {
-    return (
-      <div className="mb-4 overflow-hidden">
-        <div className="flex space-x-2 overflow-x-auto scrollbar-none pb-2">
-          {renderStatusButtons()}
-        </div>
-      </div>
-    );
-  }
-
+  // Use the full width for status filter cards
   return (
-    <div className="mb-4 overflow-hidden">
+    <div className="mb-0 overflow-hidden w-full">
       <ScrollArea className="w-full">
         <div className="flex space-x-2 pb-2">
           {renderStatusButtons()}
