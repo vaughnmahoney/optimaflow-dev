@@ -24,19 +24,7 @@ export const useSortableTable = (
 
   // Get best available date from work order data
   const getServiceDateValue = (order: WorkOrder): Date | null => {
-    // First try to use service_date if available
-    if (order.service_date) {
-      try {
-        const date = new Date(order.service_date);
-        if (!isNaN(date.getTime())) {
-          return date;
-        }
-      } catch (error) {
-        // If parsing fails, continue to fallbacks
-      }
-    }
-    
-    // Try to get the end date from completion data as fallback
+    // First try to get end date from completion data (most reliable)
     const endTime = order.completion_response?.orders?.[0]?.data?.endTime?.localTime;
     if (endTime) {
       try {
@@ -45,7 +33,32 @@ export const useSortableTable = (
           return date;
         }
       } catch (error) {
-        // If date parsing fails, continue to fallback
+        // If parsing fails, continue to fallbacks
+      }
+    }
+    
+    // Next try to get start date from completion data
+    const startTime = order.completion_response?.orders?.[0]?.data?.startTime?.localTime;
+    if (startTime) {
+      try {
+        const date = new Date(startTime);
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
+      } catch (error) {
+        // If parsing fails, continue to fallback
+      }
+    }
+    
+    // Try service_date if available
+    if (order.service_date) {
+      try {
+        const date = new Date(order.service_date);
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
+      } catch (error) {
+        // If parsing fails, continue to fallback
       }
     }
     
@@ -67,8 +80,9 @@ export const useSortableTable = (
   // Only perform client-side sorting if we're NOT using external sorting
   // This prevents double-sorting (once on server, once on client)
   useEffect(() => {
-    // If using external sort, don't client-side sort
-    if (externalSortField !== undefined && externalSortDirection !== undefined) {
+    // If using external sort handler, don't client-side sort
+    if (externalOnSort !== undefined) {
+      // Just use the data as-is from the server
       setWorkOrders(initialWorkOrders);
       return;
     }
@@ -156,7 +170,7 @@ export const useSortableTable = (
     }
     
     setWorkOrders(sortedWorkOrders);
-  }, [initialWorkOrders, sortField, sortDirection, externalSortField, externalSortDirection]);
+  }, [initialWorkOrders, sortField, sortDirection, externalSortField, externalSortDirection, externalOnSort]);
 
   const handleSort = (field: SortField) => {
     let newDirection: SortDirection = 'asc';
