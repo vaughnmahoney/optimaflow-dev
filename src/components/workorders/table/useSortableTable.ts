@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { WorkOrder, SortDirection, SortField } from '../types';
 
@@ -27,13 +26,12 @@ export const useSortableTable = (
     setWorkOrders(initialWorkOrders);
   }, [initialWorkOrders]);
 
-  // Get best available date from work order data
+  // Get date value, prioritizing end_time
   const getServiceDateValue = (order: WorkOrder): Date | null => {
-    // First try to get end date from completion data (most reliable)
-    const endTime = order.completion_response?.orders?.[0]?.data?.endTime?.localTime;
-    if (endTime) {
+    // First try to use end_time (most reliable)
+    if (order.end_time) {
       try {
-        const date = new Date(endTime);
+        const date = new Date(order.end_time);
         if (!isNaN(date.getTime())) {
           return date;
         }
@@ -42,20 +40,7 @@ export const useSortableTable = (
       }
     }
     
-    // Next try to get start date from completion data
-    const startTime = order.completion_response?.orders?.[0]?.data?.startTime?.localTime;
-    if (startTime) {
-      try {
-        const date = new Date(startTime);
-        if (!isNaN(date.getTime())) {
-          return date;
-        }
-      } catch (error) {
-        // If parsing fails, continue to fallback
-      }
-    }
-    
-    // Try service_date if available
+    // Then try service_date if available
     if (order.service_date) {
       try {
         const date = new Date(order.service_date);
@@ -105,7 +90,7 @@ export const useSortableTable = (
             valueB = b.order_no || '';
             break;
           case 'service_date':
-            // Use our updated date extraction logic
+            // Use simplified date extraction logic prioritizing end_time
             const dateA = getServiceDateValue(a);
             const dateB = getServiceDateValue(b);
             
@@ -158,7 +143,7 @@ export const useSortableTable = (
           : valueB - valueA;
       });
     } else {
-      // Default sort if no sort criteria provided - sort by service_date descending
+      // Default sort - use end_time (newest first)
       sortedWorkOrders.sort((a, b) => {
         const dateA = getServiceDateValue(a);
         const dateB = getServiceDateValue(b);

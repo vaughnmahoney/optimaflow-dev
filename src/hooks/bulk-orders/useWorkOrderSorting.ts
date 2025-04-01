@@ -2,33 +2,19 @@
 import { WorkOrder, SortDirection, SortField } from "@/components/workorders/types";
 
 /**
- * Gets the best available date from work order data for sorting purposes
- * Prioritizes completionResponse endTime, then startTime, then service_date
+ * Gets the work order date for sorting purposes
+ * Prioritizes end_time, then service_date, then timestamp
  */
-const getBestWorkOrderDate = (order: WorkOrder): Date | null => {
-  // First try to get the end time from completion data (most reliable)
-  const endTime = order.completion_response?.orders?.[0]?.data?.endTime?.localTime;
-  if (endTime) {
+const getWorkOrderDate = (order: WorkOrder): Date | null => {
+  // First try to use end_time (most reliable)
+  if (order.end_time) {
     try {
-      const date = new Date(endTime);
+      const date = new Date(order.end_time);
       if (!isNaN(date.getTime())) {
         return date;
       }
     } catch (error) {
       // If parsing fails, continue to fallbacks
-    }
-  }
-  
-  // Next try to get the start time from completion data
-  const startTime = order.completion_response?.orders?.[0]?.data?.startTime?.localTime;
-  if (startTime) {
-    try {
-      const date = new Date(startTime);
-      if (!isNaN(date.getTime())) {
-        return date;
-      }
-    } catch (error) {
-      // If parsing fails, continue to fallback
     }
   }
   
@@ -70,11 +56,11 @@ export const sortWorkOrders = (
   // Make a copy of the array to avoid mutating the original
   const ordersCopy = [...orders];
   
-  // Default sort - if no sort specified, sort by service_date descending (newest first)
+  // Default sort - if no sort specified, sort by end_time descending (newest first)
   if (!sortField || !sortDirection) {
     return ordersCopy.sort((a, b) => {
-      const dateA = getBestWorkOrderDate(a);
-      const dateB = getBestWorkOrderDate(b);
+      const dateA = getWorkOrderDate(a);
+      const dateB = getWorkOrderDate(b);
       
       if (dateA && !dateB) return -1; // Valid dates come first
       if (!dateA && dateB) return 1;
@@ -95,9 +81,9 @@ export const sortWorkOrders = (
         valueB = b.order_no || '';
         break;
       case 'service_date':
-        // Use our enhanced date extraction logic
-        const dateA = getBestWorkOrderDate(a);
-        const dateB = getBestWorkOrderDate(b);
+        // Use our simplified date logic prioritizing end_time
+        const dateA = getWorkOrderDate(a);
+        const dateB = getWorkOrderDate(b);
         
         // Handle null dates properly
         if (dateA && !dateB) return sortDirection === 'asc' ? -1 : 1;
