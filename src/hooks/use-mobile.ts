@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 
-const MOBILE_BREAKPOINT = 640; // Matching Tailwind's sm: breakpoint
+const MOBILE_BREAKPOINT = 768; // Changed from 640px to 768px to include tablets
 
 export const useMobile = () => {
   const [isMobile, setIsMobile] = useState<boolean | undefined>(undefined);
