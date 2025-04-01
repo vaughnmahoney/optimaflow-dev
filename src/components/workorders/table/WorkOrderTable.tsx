@@ -71,22 +71,8 @@ export const WorkOrderTable = ({
     filters.dateRange.from !== null || 
     filters.dateRange.to !== null;
 
-  // Add debug information about current sorting
-  const sortingDebugInfo = {
-    field: sortField,
-    direction: sortDirection,
-    totalItems: workOrders.length
-  };
-
-  console.log("Current sorting:", sortingDebugInfo);
-
   return (
     <div className="space-y-2">
-      {/* Sorting debug information */}
-      <div className="p-2 bg-yellow-50 border border-yellow-200 rounded text-xs">
-        <strong>Debug:</strong> Sorting by {sortField} ({sortDirection}) - {workOrders.length} items
-      </div>
-      
       {/* Active filters indicator */}
       {hasActiveFilters && (
         <div className="flex items-center justify-between mb-2 px-2">
@@ -119,14 +105,13 @@ export const WorkOrderTable = ({
           <EmptyState />
         ) : (
           <div className={`grid gap-3 ${isMobile ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"}`}>
-            {workOrders.map((workOrder, index) => (
+            {workOrders.map((workOrder) => (
               <WorkOrderCard
                 key={workOrder.id}
                 workOrder={workOrder}
                 onStatusUpdate={onStatusUpdate}
                 onImageView={onImageView}
                 onDelete={onDelete}
-                index={index} // Pass the index for sorting visualization
               />
             ))}
           </div>

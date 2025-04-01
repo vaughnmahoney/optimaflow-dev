@@ -7,23 +7,15 @@ import { format } from "date-fns";
 import { ActionsMenu } from "./ActionsMenu";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { getBestWorkOrderDate } from "@/utils/workOrderUtils";
 
 interface WorkOrderCardProps {
   workOrder: WorkOrder;
   onStatusUpdate: (workOrderId: string, newStatus: string) => void;
   onImageView: (workOrderId: string) => void;
   onDelete: (workOrderId: string) => void;
-  index?: number; // New prop for displaying sorting index
 }
 
-export const WorkOrderCard = ({ 
-  workOrder, 
-  onStatusUpdate, 
-  onImageView, 
-  onDelete,
-  index
-}: WorkOrderCardProps) => {
+export const WorkOrderCard = ({ workOrder, onStatusUpdate, onImageView, onDelete }: WorkOrderCardProps) => {
   const getLocationName = (order: WorkOrder): string => {
     if (!order.location) return 'N/A';
     
@@ -52,20 +44,29 @@ export const WorkOrderCard = ({
            (order.search_response?.scheduleInformation?.status);
   };
 
-  // Get service date and time using the shared utility function
+  // Get end date and time from completion data, or fall back to service_date
   const getServiceDateTime = (order: WorkOrder): string => {
-    const date = getBestWorkOrderDate(order);
+    // Try to get the end date from completion data first
+    const endTime = order.completion_response?.orders?.[0]?.data?.endTime?.localTime;
     
-    if (date) {
+    if (endTime) {
       try {
-        // Format with time if from completion data, otherwise just date
-        if (order.completion_response?.orders?.[0]?.data?.endTime?.localTime) {
+        const date = new Date(endTime);
+        if (!isNaN(date.getTime())) {
           return format(date, "MMM d, yyyy h:mmaaa");
-        } else {
-          return format(date, "MMM d, yyyy");
         }
       } catch (error) {
-        console.error("Error formatting date:", error);
+        // If date parsing fails, fall back to service_date
+        console.error("Error formatting end date:", error);
+      }
+    }
+    
+    // Fall back to service_date if end date is not available or invalid
+    if (order.service_date) {
+      try {
+        return format(new Date(order.service_date), "MMM d, yyyy");
+      } catch (error) {
+        console.error("Error formatting service date:", error);
         return "N/A";
       }
     }
@@ -73,51 +74,11 @@ export const WorkOrderCard = ({
     return "N/A";
   };
 
-  // For debugging: Get raw date values used in sorting
-  const getRawDateDebugInfo = (order: WorkOrder): string => {
-    const date = getBestWorkOrderDate(order);
-    
-    // First, find what source was used for the date
-    let source = "unknown";
-    if (order.completion_response?.orders?.[0]?.data?.endTime?.localTime) {
-      source = "completion end time";
-    } else if (order.completion_response?.orders?.[0]?.data?.startTime?.localTime) {
-      source = "completion start time";
-    } else if (order.service_date) {
-      source = "service_date";
-    } else if (order.timestamp) {
-      source = "timestamp";
-    }
-    
-    // Get the raw value and timestamp used for sorting
-    const rawValue = order.completion_response?.orders?.[0]?.data?.endTime?.localTime || 
-                     order.completion_response?.orders?.[0]?.data?.startTime?.localTime ||
-                     order.service_date || 
-                     order.timestamp || 
-                     "none";
-                     
-    const timeValue = date ? date.getTime() : "invalid";
-    
-    return `Source: ${source}\nRaw: ${rawValue}\nTime: ${timeValue}`;
-  };
-
   return (
     <Card 
-      className="overflow-hidden shadow-sm hover:shadow transition-shadow cursor-pointer relative"
+      className="overflow-hidden shadow-sm hover:shadow transition-shadow cursor-pointer"
       onClick={() => onImageView(workOrder.id)}
     >
-      {/* Debug overlay - sorting index */}
-      {index !== undefined && (
-        <div className="absolute top-0 left-0 bg-black text-white p-1 text-xs rounded-br">
-          #{index + 1}
-        </div>
-      )}
-      
-      {/* Debug overlay - date info */}
-      <div className="absolute top-0 right-0 bg-black bg-opacity-80 text-white p-1 text-xs rounded-bl max-w-[200px] whitespace-pre-wrap text-right">
-        {getRawDateDebugInfo(workOrder)}
-      </div>
-
       {/* Card header with order number and status */}
       <div className="p-3 border-b flex justify-between items-center bg-gray-50">
         <div className="font-medium">{workOrder.order_no || 'N/A'}</div>
