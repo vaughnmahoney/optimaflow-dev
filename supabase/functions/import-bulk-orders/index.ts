@@ -1,3 +1,4 @@
+
 import { corsHeaders } from '../_shared/cors.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.33.1';
 
@@ -68,11 +69,54 @@ Deno.serve(async (req) => {
           continue;
         }
         
+        // Extract end_time from various possible locations
+        let endTime = null;
+        
+        // First check completion_response
+        if (order.completion_response && typeof order.completion_response === 'object') {
+          if (order.completion_response.orders && 
+              Array.isArray(order.completion_response.orders) && 
+              order.completion_response.orders[0]) {
+            const completionOrder = order.completion_response.orders[0];
+            // Try to get end_time from completion_response.orders[0].data.endTime
+            if (completionOrder.data && completionOrder.data.endTime) {
+              const timeData = completionOrder.data.endTime;
+              if (timeData.localTime) {
+                endTime = new Date(timeData.localTime).toISOString();
+              }
+            }
+          }
+        }
+        
+        // Next check completionDetails
+        if (!endTime && order.completionDetails && typeof order.completionDetails === 'object') {
+          // Try to get end_time from completionDetails.data.endTime
+          if (order.completionDetails.data && order.completionDetails.data.endTime) {
+            const timeData = order.completionDetails.data.endTime;
+            if (timeData.localTime) {
+              endTime = new Date(timeData.localTime).toISOString();
+            }
+          }
+        }
+        
+        // If we still don't have end_time, try to fallback on service_date
+        if (!endTime) {
+          const serviceDate = order.service_date || 
+                           (order.data && order.data.date) ||
+                           (order.searchResponse && order.searchResponse.data && order.searchResponse.data.date);
+          
+          if (serviceDate) {
+            // We don't have a time component, so use end of day for sorting purposes
+            endTime = new Date(`${serviceDate}T23:59:59Z`).toISOString();
+          }
+        }
+        
         // Transform order to match work_orders table schema
         const workOrder = {
           order_no: orderNo,
           status: 'pending_review', // Default status for imported orders
           timestamp: new Date().toISOString(),
+          end_time: endTime, // Store extracted end_time
           search_response: order.search_response || order, // Store original search data
           completion_response: order.completion_response || order.completionDetails || null // Store completion data if available
         };
