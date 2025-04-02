@@ -38,13 +38,16 @@ export const OrderDetailsTab = ({
     ? formatDate(completionData.startTime.localTime) 
     : "Not recorded";
   
-  const endTime = completionData?.endTime?.localTime 
-    ? formatDate(completionData.endTime.localTime) 
-    : "Not recorded";
+  // Try to use the end_time from the work order first, then fall back to completion data
+  const endTime = workOrder.end_time 
+    ? formatDate(workOrder.end_time)
+    : completionData?.endTime?.localTime 
+      ? formatDate(completionData.endTime.localTime) 
+      : "Not recorded";
 
   // Location information
   const location = workOrder.location || {};
-  const locationName = location.name || location.locationName || "N/A";
+  const locationName = workOrder.location_name || location.name || location.locationName || "N/A";
   const address = location.address || "N/A";
   const city = location.city || "";
   const state = location.state || "";
@@ -63,7 +66,9 @@ export const OrderDetailsTab = ({
     : ldsRaw;
     
   // Driver information
-  const driverName = workOrder.driver?.name || "No Driver Assigned";
+  const driverName = workOrder.driver_name || 
+                    (workOrder.driver?.name) || 
+                    "No Driver Assigned";
 
   return (
     <div className="p-4">

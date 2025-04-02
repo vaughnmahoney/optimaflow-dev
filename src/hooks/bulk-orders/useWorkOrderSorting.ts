@@ -50,17 +50,37 @@ export const sortWorkOrders = (
         return sortDirection === 'asc' 
           ? dateA!.getTime() - dateB!.getTime()
           : dateB!.getTime() - dateA!.getTime();
+      case 'end_time':
+        const endTimeA = a.end_time ? new Date(a.end_time) : null;
+        const endTimeB = b.end_time ? new Date(b.end_time) : null;
+        
+        const validEndTimeA = endTimeA && !isNaN(endTimeA.getTime());
+        const validEndTimeB = endTimeB && !isNaN(endTimeB.getTime());
+        
+        if (validEndTimeA && !validEndTimeB) return sortDirection === 'asc' ? -1 : 1;
+        if (!validEndTimeA && validEndTimeB) return sortDirection === 'asc' ? 1 : -1;
+        if (!validEndTimeA && !validEndTimeB) return 0;
+        
+        return sortDirection === 'asc' 
+          ? endTimeA!.getTime() - endTimeB!.getTime()
+          : endTimeB!.getTime() - endTimeA!.getTime();
       case 'driver':
-        valueA = a.driver && typeof a.driver === 'object' && a.driver.name
-          ? a.driver.name.toLowerCase() : '';
-        valueB = b.driver && typeof b.driver === 'object' && b.driver.name
-          ? b.driver.name.toLowerCase() : '';
+        // Use driver_name if available, otherwise fall back to driver object
+        valueA = (a.driver_name || 
+                 (a.driver && typeof a.driver === 'object' && a.driver.name
+                  ? a.driver.name : '')).toLowerCase();
+        valueB = (b.driver_name || 
+                 (b.driver && typeof b.driver === 'object' && b.driver.name
+                  ? b.driver.name : '')).toLowerCase();
         break;
       case 'location':
-        valueA = a.location && typeof a.location === 'object' 
-          ? (a.location.name || a.location.locationName || '').toLowerCase() : '';
-        valueB = b.location && typeof b.location === 'object'
-          ? (b.location.name || b.location.locationName || '').toLowerCase() : '';
+        // Use location_name if available, otherwise fall back to location object
+        valueA = (a.location_name || 
+                 (a.location && typeof a.location === 'object' 
+                  ? (a.location.name || a.location.locationName || '') : '')).toLowerCase();
+        valueB = (b.location_name || 
+                 (b.location && typeof b.location === 'object'
+                  ? (b.location.name || b.location.locationName || '') : '')).toLowerCase();
         break;
       case 'status':
         valueA = a.status || '';

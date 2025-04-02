@@ -1,3 +1,4 @@
+
 import { WorkOrder } from "@/components/workorders/types";
 
 /**
@@ -59,6 +60,16 @@ export const transformWorkOrderData = (order: any): WorkOrder => {
   let service_date = null;
   let service_notes = null;
   let lds = null;
+  let end_time = null;
+  
+  // Use the driver_name from the database if available
+  const driver_name = order.driver_name || null;
+  
+  // Use the location_name from the database if available  
+  const location_name = order.location_name || null;
+  
+  // Use end_time from the database if available
+  end_time = order.end_time || null;
   
   if (searchResponse && typeof searchResponse === 'object') {
     // Safely extract driver information
@@ -83,6 +94,18 @@ export const transformWorkOrderData = (order: any): WorkOrder => {
         }
       }
     }
+  }
+  
+  // Extract end time from completion response if not already set
+  if (!end_time && completionResponse && 
+      typeof completionResponse === 'object' &&
+      completionResponse.orders && 
+      Array.isArray(completionResponse.orders) &&
+      completionResponse.orders[0] && 
+      completionResponse.orders[0].data && 
+      completionResponse.orders[0].data.endTime) {
+    end_time = completionResponse.orders[0].data.endTime.utcTime || 
+               completionResponse.orders[0].data.endTime.localTime;
   }
   
   // Flag to check if the work order has images
@@ -114,7 +137,8 @@ export const transformWorkOrderData = (order: any): WorkOrder => {
     order_no: order.order_no || 'N/A',
     status: order.status || 'pending_review',
     timestamp: order.timestamp || new Date().toISOString(),
-    service_date: service_date,
+    service_date: order.service_date || service_date,
+    end_time: order.end_time || end_time,
     service_notes: service_notes,
     tech_notes: completionResponse && 
                 typeof completionResponse === 'object' && 
@@ -160,7 +184,9 @@ export const transformWorkOrderData = (order: any): WorkOrder => {
     resolver_id: order.resolver_id || null,
     
     location: location,
+    location_name: order.location_name || location_name || (location ? location.name : null),
     driver: driver,
+    driver_name: order.driver_name || driver_name || (driver ? driver.name : null),
     // If duration exists in database use it, otherwise set to empty string
     duration: order.duration || '',
     // If lds exists in database use it, otherwise extract from customField5
