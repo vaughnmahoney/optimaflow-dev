@@ -1,4 +1,3 @@
-
 import { corsHeaders } from '../_shared/cors.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.33.1';
 
@@ -69,27 +68,11 @@ Deno.serve(async (req) => {
           continue;
         }
         
-        // Extract service date
-        const serviceDate = extractServiceDate(order);
-        
-        // Extract driver name
-        const driverName = extractDriverName(order);
-        
-        // Extract location name
-        const locationName = extractLocationName(order);
-        
-        // Extract end time
-        const endTime = extractEndTime(order);
-        
         // Transform order to match work_orders table schema
         const workOrder = {
           order_no: orderNo,
           status: 'pending_review', // Default status for imported orders
           timestamp: new Date().toISOString(),
-          service_date: serviceDate,
-          driver_name: driverName,
-          location_name: locationName,
-          end_time: endTime,
           search_response: order.search_response || order, // Store original search data
           completion_response: order.completion_response || order.completionDetails || null // Store completion data if available
         };
@@ -140,101 +123,3 @@ Deno.serve(async (req) => {
     );
   }
 });
-
-// Helper function to extract service date from order data
-function extractServiceDate(order: any): string | null {
-  // Try different paths to find the service date
-  if (order.service_date) {
-    return order.service_date;
-  }
-  
-  if (order.data?.date) {
-    return order.data.date;
-  }
-  
-  if (order.searchResponse?.data?.date) {
-    return order.searchResponse.data.date;
-  }
-  
-  return null;
-}
-
-// Helper function to extract driver name from order data
-function extractDriverName(order: any): string {
-  // Try different paths to find the driver name
-  if (order.driver_name) {
-    return order.driver_name;
-  }
-  
-  if (order.driver?.name) {
-    return order.driver.name;
-  }
-  
-  if (order.scheduleInformation?.driverName) {
-    return order.scheduleInformation.driverName;
-  }
-  
-  if (order.searchResponse?.scheduleInformation?.driverName) {
-    return order.searchResponse.scheduleInformation.driverName;
-  }
-  
-  if (order.searchResponse?.data?.driver?.name) {
-    return order.searchResponse.data.driver.name;
-  }
-  
-  return "Unknown Driver";
-}
-
-// Helper function to extract location name from order data
-function extractLocationName(order: any): string {
-  // Try different paths to find the location name
-  if (order.location_name) {
-    return order.location_name;
-  }
-  
-  if (order.location?.name) {
-    return order.location.name;
-  }
-  
-  if (order.location?.locationName) {
-    return order.location.locationName;
-  }
-  
-  if (order.searchResponse?.data?.location?.name) {
-    return order.searchResponse.data.location.name;
-  }
-  
-  if (order.searchResponse?.data?.location?.locationName) {
-    return order.searchResponse.data.location.locationName;
-  }
-  
-  return "Unknown Location";
-}
-
-// Helper function to extract end time from order data
-function extractEndTime(order: any): string | null {
-  // Try different paths to find the end time
-  if (order.end_time) {
-    return order.end_time;
-  }
-  
-  // Try completion details endTime
-  if (order.completionDetails?.data?.endTime?.utcTime) {
-    return order.completionDetails.data.endTime.utcTime;
-  }
-  
-  if (order.completionDetails?.data?.endTime?.localTime) {
-    return order.completionDetails.data.endTime.localTime;
-  }
-  
-  // Try completion_response in array format
-  if (order.completion_response?.orders?.[0]?.data?.endTime?.utcTime) {
-    return order.completion_response.orders[0].data.endTime.utcTime;
-  }
-  
-  if (order.completion_response?.orders?.[0]?.data?.endTime?.localTime) {
-    return order.completion_response.orders[0].data.endTime.localTime;
-  }
-  
-  return null;
-}

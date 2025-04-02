@@ -24,35 +24,16 @@ export const useOrderTransformation = (rawOrders: any[] | null) => {
                            (order.searchResponse && order.searchResponse.data && order.searchResponse.data.date) ||
                            new Date().toISOString();
         
-        // Extract driver information and name
-        const driverName = 
-          // First try the driver_name field if exists
-          order.driver_name ||
-          // Then try the driver object
-          (order.driver?.name) || 
-          // Then try scheduleInformation
-          (order.scheduleInformation && order.scheduleInformation.driverName) ||
-          // Then look in searchResponse
-          (order.searchResponse?.scheduleInformation?.driverName) ||
-          (order.searchResponse?.data?.driver?.name) ||
-          "Unknown Driver";
+        // Extract driver information
+        const driverName = order.driver?.name || 
+                          (order.scheduleInformation && order.scheduleInformation.driverName) ||
+                          (order.searchResponse?.scheduleInformation?.driverName) ||
+                          "Unknown Driver";
         
-        // Extract location information and name
-        const locationName = 
-          // First try the location_name field if exists
-          order.location_name ||
-          // Then try location object's name
-          (order.location?.name) ||
-          (order.location?.locationName) ||
-          // Then search in search response
-          (order.searchResponse?.data?.location?.name) ||
-          (order.searchResponse?.data?.location?.locationName) ||
-          "Unknown Location";
-        
-        // Build location object
+        // Extract location information
         const location = order.location || 
                         (order.searchResponse && order.searchResponse.data && order.searchResponse.data.location) ||
-                        { name: locationName };
+                        { name: "Unknown Location" };
         
         // Determine status - default to pending_review for new imports
         const status = order.status || 
@@ -60,9 +41,6 @@ export const useOrderTransformation = (rawOrders: any[] | null) => {
                       (order.completionDetails?.data?.status) || 
                       "pending_review";
                       
-        // Extract end time
-        const endTime = extractEndTime(order);
-        
         // Get completion response data
         const completionResponse = {
           success: true,
@@ -87,13 +65,10 @@ export const useOrderTransformation = (rawOrders: any[] | null) => {
           status: status,
           timestamp: new Date().toISOString(),
           service_date: serviceDate,
-          end_time: endTime,
           service_notes: order.service_notes || "",
           notes: order.notes || "",
           location: location,
-          location_name: locationName,
           driver: { name: driverName },
-          driver_name: driverName,
           has_images: (order.completionDetails?.data?.form?.images?.length || 0) > 0,
           completion_response: completionResponse,
           search_response: order.searchResponse || null
@@ -105,39 +80,6 @@ export const useOrderTransformation = (rawOrders: any[] | null) => {
       setWorkOrders([]);
     }
   }, [rawOrders]);
-
-  // Helper function to extract end time
-  const extractEndTime = (order: any): string | null => {
-    // Try different paths to find the end time
-    if (order.end_time) {
-      return order.end_time;
-    }
-    
-    // Try completion response endTime
-    if (order.completionDetails?.data?.endTime?.utcTime) {
-      return order.completionDetails.data.endTime.utcTime;
-    }
-    
-    if (order.completionDetails?.data?.endTime?.localTime) {
-      return order.completionDetails.data.endTime.localTime;
-    }
-    
-    // Try completion_response in array format
-    if (order.completion_response?.orders?.[0]?.data?.endTime?.utcTime) {
-      return order.completion_response.orders[0].data.endTime.utcTime;
-    }
-    
-    if (order.completion_response?.orders?.[0]?.data?.endTime?.localTime) {
-      return order.completion_response.orders[0].data.endTime.localTime;
-    }
-    
-    // Fallback to service_date if available
-    if (order.service_date) {
-      return order.service_date;
-    }
-    
-    return null;
-  };
 
   return {
     workOrders,
