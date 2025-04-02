@@ -24,16 +24,50 @@ export const useOrderTransformation = (rawOrders: any[] | null) => {
                            (order.searchResponse && order.searchResponse.data && order.searchResponse.data.date) ||
                            new Date().toISOString();
         
-        // Extract driver information
-        const driverName = order.driver?.name || 
-                          (order.scheduleInformation && order.scheduleInformation.driverName) ||
-                          (order.searchResponse?.scheduleInformation?.driverName) ||
-                          "Unknown Driver";
+        // Extract driver information - directly storing driver_name for sorting/filtering
+        let driverName = '';
+        let driverObject = null;
         
-        // Extract location information
-        const location = order.location || 
-                        (order.searchResponse && order.searchResponse.data && order.searchResponse.data.location) ||
-                        { name: "Unknown Location" };
+        if (order.driver && typeof order.driver === 'object') {
+          driverObject = order.driver;
+          driverName = order.driver.name || '';
+        } else if (order.scheduleInformation && order.scheduleInformation.driverName) {
+          driverName = order.scheduleInformation.driverName;
+          driverObject = { name: driverName };
+        } else if (order.searchResponse?.scheduleInformation?.driverName) {
+          driverName = order.searchResponse.scheduleInformation.driverName;
+          driverObject = { name: driverName };
+        } else {
+          driverName = "Unknown Driver";
+          driverObject = { name: driverName };
+        }
+        
+        // Extract location information - directly storing location_name for sorting/filtering
+        let locationName = 'N/A';
+        let locationObj: any = {};
+        
+        if (order.location && typeof order.location === 'object') {
+          locationObj = order.location;
+          locationName = order.location.name || order.location.locationName || 'N/A';
+        } else if (order.searchResponse?.data?.location) {
+          const locData = order.searchResponse.data.location;
+          if (typeof locData === 'object') {
+            locationObj = locData;
+            locationName = locData.name || locData.locationName || 'N/A';
+          } else {
+            locationName = String(locData);
+          }
+        }
+        
+        // Extract end_time for completion
+        let endTime = null;
+        if (order.completionDetails?.data?.endTime?.utcTime) {
+          endTime = order.completionDetails.data.endTime.utcTime;
+        } else if (order.completion_response?.orders?.[0]?.data?.endTime?.utcTime) {
+          endTime = order.completion_response.orders[0].data.endTime.utcTime;
+        } else if (order.completion_response?.orders?.[0]?.data?.endTime) {
+          endTime = order.completion_response.orders[0].data.endTime;
+        }
         
         // Determine status - default to pending_review for new imports
         const status = order.status || 
@@ -67,8 +101,11 @@ export const useOrderTransformation = (rawOrders: any[] | null) => {
           service_date: serviceDate,
           service_notes: order.service_notes || "",
           notes: order.notes || "",
-          location: location,
-          driver: { name: driverName },
+          location: locationObj,
+          driver: driverObject,
+          driver_name: driverName,
+          location_name: locationName,
+          end_time: endTime,
           has_images: (order.completionDetails?.data?.form?.images?.length || 0) > 0,
           completion_response: completionResponse,
           search_response: order.searchResponse || null
