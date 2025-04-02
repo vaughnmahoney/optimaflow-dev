@@ -24,7 +24,7 @@ export const useWorkOrderFetch = (
   filters: WorkOrderFilters,
   page: number = 1,
   pageSize: number = 10,
-  sortField: SortField = 'service_date',
+  sortField: SortField = 'end_time', // Changed from 'service_date' to 'end_time'
   sortDirection: SortDirection = 'desc'
 ) => {
   return useQuery({

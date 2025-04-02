@@ -9,21 +9,42 @@ export const sortWorkOrders = (
   sortField: SortField, 
   sortDirection: SortDirection
 ): WorkOrder[] => {
-  // Default sort - if no sort specified, sort by service_date descending (newest first)
+  // Default sort - if no sort specified, sort by end_time descending (newest first)
   if (!sortField || !sortDirection) {
     return [...orders].sort((a, b) => {
+      // First try to sort by end_time
+      const endTimeA = a.end_time ? new Date(a.end_time) : null;
+      const endTimeB = b.end_time ? new Date(b.end_time) : null;
+      
+      const validEndTimeA = endTimeA && !isNaN(endTimeA.getTime());
+      const validEndTimeB = endTimeB && !isNaN(endTimeB.getTime());
+      
+      // If both have valid end times, compare them
+      if (validEndTimeA && validEndTimeB) {
+        return endTimeB.getTime() - endTimeA.getTime();
+      }
+      
+      // If only one has valid end time, prioritize it
+      if (validEndTimeA && !validEndTimeB) return -1;
+      if (!validEndTimeA && validEndTimeB) return 1;
+      
+      // Fall back to service_date if end_time not available
       const dateA = a.service_date ? new Date(a.service_date) : null;
       const dateB = b.service_date ? new Date(b.service_date) : null;
       
-      const validA = dateA && !isNaN(dateA.getTime());
-      const validB = dateB && !isNaN(dateB.getTime());
+      const validDateA = dateA && !isNaN(dateA.getTime());
+      const validDateB = dateB && !isNaN(dateB.getTime());
       
-      if (validA && !validB) return -1; // Valid dates come first
-      if (!validA && validB) return 1;
-      if (!validA && !validB) return 0;
+      if (validDateA && validDateB) {
+        return dateB.getTime() - dateA.getTime();
+      }
       
-      // Sort descending by default (newest first)
-      return dateB!.getTime() - dateA!.getTime();
+      // If only one has valid service_date, prioritize it
+      if (validDateA && !validDateB) return -1; 
+      if (!validDateA && validDateB) return 1;
+      
+      // Last fallback to timestamp
+      return new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime();
     });
   }
   
@@ -36,16 +57,30 @@ export const sortWorkOrders = (
         valueA = a.order_no || '';
         valueB = b.order_no || '';
         break;
+      case 'end_time':
+        const endTimeA = a.end_time ? new Date(a.end_time) : null;
+        const endTimeB = b.end_time ? new Date(b.end_time) : null;
+        
+        const validEndTimeA = endTimeA && !isNaN(endTimeA.getTime());
+        const validEndTimeB = endTimeB && !isNaN(endTimeB.getTime());
+        
+        if (validEndTimeA && !validEndTimeB) return sortDirection === 'asc' ? -1 : 1;
+        if (!validEndTimeA && validEndTimeB) return sortDirection === 'asc' ? 1 : -1;
+        if (!validEndTimeA && !validEndTimeB) return 0;
+        
+        return sortDirection === 'asc' 
+          ? endTimeA!.getTime() - endTimeB!.getTime()
+          : endTimeB!.getTime() - endTimeA!.getTime();
       case 'service_date':
         const dateA = a.service_date ? new Date(a.service_date) : null;
         const dateB = b.service_date ? new Date(b.service_date) : null;
         
-        const validA = dateA && !isNaN(dateA.getTime());
-        const validB = dateB && !isNaN(dateB.getTime());
+        const validDateA = dateA && !isNaN(dateA.getTime());
+        const validDateB = dateB && !isNaN(dateB.getTime());
         
-        if (validA && !validB) return sortDirection === 'asc' ? -1 : 1;
-        if (!validA && validB) return sortDirection === 'asc' ? 1 : -1;
-        if (!validA && !validB) return 0;
+        if (validDateA && !validDateB) return sortDirection === 'asc' ? -1 : 1;
+        if (!validDateA && validDateB) return sortDirection === 'asc' ? 1 : -1;
+        if (!validDateA && !validDateB) return 0;
         
         return sortDirection === 'asc' 
           ? dateA!.getTime() - dateB!.getTime()
