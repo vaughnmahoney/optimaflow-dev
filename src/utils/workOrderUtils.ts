@@ -1,3 +1,4 @@
+
 import { WorkOrder } from "@/components/workorders/types";
 
 /**
@@ -148,6 +149,10 @@ export const transformWorkOrderData = (order: any): WorkOrder => {
     endTime = extractEndTimeFromWorkOrder(order);
   }
   
+  // Use the database driver_name and location_name fields if available, otherwise extract them
+  const driverName = order.driver_name || (driver ? driver.name : null);
+  const locationName = order.location_name || (location ? (location.name || location.locationName) : 'N/A');
+  
   return {
     id: order.id,
     order_no: order.order_no || 'N/A',
@@ -201,6 +206,10 @@ export const transformWorkOrderData = (order: any): WorkOrder => {
     
     location: location,
     driver: driver,
+    // Use the database driver_name field or extracted value
+    driver_name: driverName,
+    // Use the database location_name field or extracted value
+    location_name: locationName,
     // If duration exists in database use it, otherwise set to empty string
     duration: order.duration || '',
     // If lds exists in database use it, otherwise extract from customField5

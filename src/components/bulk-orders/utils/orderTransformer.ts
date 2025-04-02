@@ -68,87 +68,6 @@ const extractEndTime = (order: RawOrderData, completionData: any): string | null
 };
 
 /**
- * Transform a raw API order into a consistent WorkOrder type
- * @param order Raw order data from API
- * @returns Formatted WorkOrder object
- */
-export const transformOrder = (order: RawOrderData): WorkOrder => {
-  console.log(`Transforming order: ${order.orderNo || order.order_no || order.id}`);
-  
-  // Normalize the search data
-  const searchData = order.searchResponse?.data || {};
-  
-  // Get completion details from either camelCase or snake_case fields
-  const rawCompletionDetails = order.completionDetails || order.completion_response || {};
-  
-  // Normalize the completion data structure
-  const completionForm = rawCompletionDetails.data?.form || 
-                        (rawCompletionDetails.orders && rawCompletionDetails.orders[0]?.data?.form) || 
-                        {};
-  
-  // Get normalized completion data
-  const completionData = normalizeCompletionData(rawCompletionDetails);
-  
-  // Extract basic order information
-  const orderNo = order.order_no || order.orderNo || searchData.orderNo || searchData.order_no || 'N/A';
-  const serviceDate = searchData.date || searchData.serviceDate || null;
-  const serviceNotes = searchData.notes || searchData.serviceNotes || '';
-  
-  // Extract end_time using the dedicated function
-  const endTime = extractEndTime(order, completionData);
-  
-  // Extract driver information
-  const driver = extractDriverInfo(order, searchData);
-  
-  // Extract location information
-  const location = extractLocationInfo(order, searchData);
-  
-  // Extract tech notes
-  const techNotes = completionForm.note || completionData?.note || '';
-  
-  // Process image and signature data
-  const hasImages = normalizeImageData(completionForm, completionData);
-  const signatureUrl = normalizeSignatureData(completionForm, completionData);
-  const trackingUrl = completionData?.trackingUrl || null;
-  
-  // Determine completion status
-  const completionStatus = completionData?.status || null;
-  
-  // Generate a unique ID if one doesn't exist
-  const id = order.id || `temp-${Math.random().toString(36).substring(2, 15)}`;
-  
-  // Generate a status based on completion status
-  const status = !completionStatus ? 'imported' :
-                completionStatus === 'success' ? 'completed' :
-                completionStatus === 'failed' ? 'rejected' : 'imported';
-  
-  // Create final WorkOrder object
-  const result: WorkOrder = {
-    id,
-    order_no: orderNo,
-    status,
-    timestamp: new Date().toISOString(),
-    service_date: serviceDate,
-    end_time: endTime, // Add the extracted end_time
-    service_notes: serviceNotes,
-    tech_notes: techNotes,
-    notes: order.notes || '',
-    qc_notes: order.qc_notes || '',
-    resolution_notes: order.resolution_notes || '',
-    location,
-    driver,
-    has_images: hasImages,
-    signature_url: signatureUrl,
-    tracking_url: trackingUrl,
-    completion_status: completionStatus,
-    search_response: order.searchResponse || null,
-    completion_response: rawCompletionDetails || null
-  };
-  
-  return result;
-};
-
-/**
  * Extract driver information from order data
  */
 const extractDriverInfo = (order: any, searchData: any) => {
@@ -169,6 +88,14 @@ const extractDriverInfo = (order: any, searchData: any) => {
   
   if (order.driver && typeof order.driver === 'object') {
     return order.driver;
+  }
+  
+  // Check in schedule information
+  if (order.searchResponse?.scheduleInformation?.driverName) {
+    return {
+      id: order.searchResponse.scheduleInformation.driverId || null,
+      name: order.searchResponse.scheduleInformation.driverName
+    };
   }
   
   // If no driver info found
@@ -225,4 +152,89 @@ const extractLocationInfo = (order: any, searchData: any) => {
     state: locationObj.state || searchData.state || order.state || null,
     zip: locationObj.zip || searchData.zip || order.zip || null,
   };
+};
+
+/**
+ * Transform a raw API order into a consistent WorkOrder type
+ * @param order Raw order data from API
+ * @returns Formatted WorkOrder object
+ */
+export const transformOrder = (order: RawOrderData): WorkOrder => {
+  console.log(`Transforming order: ${order.orderNo || order.order_no || order.id}`);
+  
+  // Normalize the search data
+  const searchData = order.searchResponse?.data || {};
+  
+  // Get completion details from either camelCase or snake_case fields
+  const rawCompletionDetails = order.completionDetails || order.completion_response || {};
+  
+  // Normalize the completion data structure
+  const completionForm = rawCompletionDetails.data?.form || 
+                        (rawCompletionDetails.orders && rawCompletionDetails.orders[0]?.data?.form) || 
+                        {};
+  
+  // Get normalized completion data
+  const completionData = normalizeCompletionData(rawCompletionDetails);
+  
+  // Extract basic order information
+  const orderNo = order.order_no || order.orderNo || searchData.orderNo || searchData.order_no || 'N/A';
+  const serviceDate = searchData.date || searchData.serviceDate || null;
+  const serviceNotes = searchData.notes || searchData.serviceNotes || '';
+  
+  // Extract end_time using the dedicated function
+  const endTime = extractEndTime(order, completionData);
+  
+  // Extract driver information
+  const driver = extractDriverInfo(order, searchData);
+  const driverName = driver?.name || order.driver_name || null;
+  
+  // Extract location information
+  const location = extractLocationInfo(order, searchData);
+  const locationName = location?.name || order.location_name || 'N/A';
+  
+  // Extract tech notes
+  const techNotes = completionForm.note || completionData?.note || '';
+  
+  // Process image and signature data
+  const hasImages = normalizeImageData(completionForm, completionData);
+  const signatureUrl = normalizeSignatureData(completionForm, completionData);
+  const trackingUrl = completionData?.trackingUrl || null;
+  
+  // Determine completion status
+  const completionStatus = completionData?.status || null;
+  
+  // Generate a unique ID if one doesn't exist
+  const id = order.id || `temp-${Math.random().toString(36).substring(2, 15)}`;
+  
+  // Generate a status based on completion status
+  const status = !completionStatus ? 'imported' :
+                completionStatus === 'success' ? 'completed' :
+                completionStatus === 'failed' ? 'rejected' : 'imported';
+  
+  // Create final WorkOrder object
+  const result: WorkOrder = {
+    id,
+    order_no: orderNo,
+    status,
+    timestamp: new Date().toISOString(),
+    service_date: serviceDate,
+    end_time: endTime, // Add the extracted end_time
+    service_notes: serviceNotes,
+    tech_notes: techNotes,
+    notes: order.notes || '',
+    qc_notes: order.qc_notes || '',
+    resolution_notes: order.resolution_notes || '',
+    location,
+    driver,
+    driver_name: driverName, // Add extracted driver_name
+    location_name: locationName, // Add extracted location_name
+    has_images: hasImages,
+    signature_url: signatureUrl,
+    tracking_url: trackingUrl,
+    completion_status: completionStatus,
+    search_response: order.searchResponse || null,
+    completion_response: rawCompletionDetails || null
+  };
+  
+  return result;
 };
