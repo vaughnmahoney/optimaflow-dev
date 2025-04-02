@@ -8,7 +8,7 @@ export const useSortableTable = (
   externalSortDirection?: SortDirection,
   externalOnSort?: (field: SortField, direction: SortDirection) => void
 ) => {
-  const [sortField, setSortField] = useState<SortField>(externalSortField || 'service_date');
+  const [sortField, setSortField] = useState<SortField>(externalSortField || 'end_time');
   const [sortDirection, setSortDirection] = useState<SortDirection>(externalSortDirection || 'desc');
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>(initialWorkOrders);
 
@@ -24,7 +24,19 @@ export const useSortableTable = (
 
   // Get best available date from work order data
   const getServiceDateValue = (order: WorkOrder): Date | null => {
-    // First try to use service_date if available
+    // First try to use end_time if available as it's most accurate
+    if (order.end_time) {
+      try {
+        const date = new Date(order.end_time);
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
+      } catch (error) {
+        // If parsing fails, continue to fallbacks
+      }
+    }
+    
+    // Try service_date next
     if (order.service_date) {
       try {
         const date = new Date(order.service_date);
