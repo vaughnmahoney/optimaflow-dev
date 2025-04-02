@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { WorkOrderFilters, SortField, SortDirection } from "@/components/workorders/types";
 
@@ -97,7 +98,7 @@ export const applyDateRangeFilter = (
 };
 
 /**
- * Applies text search filters for driver and location using the dedicated columns
+ * Applies text search filters for driver and location using the new dedicated columns
  * @param countQuery The count query to modify
  * @param dataQuery The data query to modify
  * @param searchText The search text
@@ -115,11 +116,11 @@ export const applyTextSearchFilter = (
     
     try {
       if (field === 'driver') {
-        // Use the driver_name column directly
+        // Use the new driver_name column
         countQuery = countQuery.ilike('driver_name', `%${searchValue}%`);
         dataQuery = dataQuery.ilike('driver_name', `%${searchValue}%`);
       } else if (field === 'location') {
-        // Use the location_name column directly
+        // Use the new location_name column
         countQuery = countQuery.ilike('location_name', `%${searchValue}%`);
         dataQuery = dataQuery.ilike('location_name', `%${searchValue}%`);
       }
@@ -140,7 +141,7 @@ export const applyTextSearchFilter = (
  */
 export const applySorting = (
   dataQuery: any, 
-  sortField: SortField = 'end_time',
+  sortField: SortField = 'end_time', // Changed default from 'service_date' to 'end_time'
   sortDirection: SortDirection = 'desc'
 ) => {
   if (sortField && sortDirection) {
@@ -161,18 +162,18 @@ export const applySorting = (
       dataQuery = dataQuery.order('timestamp', { ascending: isAscending });
     }
     else if (sortField === 'service_date') {
-      // Use the service_date column for sorting
+      // Use the new service_date column for sorting
       dataQuery = dataQuery.order('service_date', { ascending: isAscending });
       
       // Add timestamp as a secondary sort for consistent ordering
       dataQuery = dataQuery.order('timestamp', { ascending: isAscending });
     }
     else if (sortField === 'driver') {
-      // Use the driver_name column directly for sorting
+      // Use the new driver_name column for sorting
       dataQuery = dataQuery.order('driver_name', { ascending: isAscending });
     }
     else if (sortField === 'location') {
-      // Use the location_name column directly for sorting
+      // Use the new location_name column for sorting
       dataQuery = dataQuery.order('location_name', { ascending: isAscending });
     }
     else {

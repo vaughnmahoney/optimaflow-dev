@@ -12,7 +12,7 @@ export interface WorkOrder {
   status: string;
   timestamp: string;
   service_date?: string;
-  end_time?: string;  
+  end_time?: string;  // Added the end_time property
   service_notes?: string;
   tech_notes?: string;
   notes?: string;
@@ -44,8 +44,6 @@ export interface WorkOrder {
   
   location?: Location;
   driver?: Driver;
-  driver_name?: string; // Added driver_name field
-  location_name?: string; // Added location_name field
   duration?: string;
   lds?: string;
   has_images?: boolean;

@@ -111,72 +111,12 @@ Deno.serve(async (req) => {
           }
         }
         
-        // Extract driver_name from various possible locations
-        let driverName = null;
-        
-        // First check search_response for driver information
-        if (order.search_response && typeof order.search_response === 'object') {
-          const searchResponse = order.search_response;
-          
-          // Check for driver name in scheduleInformation
-          if (searchResponse.scheduleInformation && typeof searchResponse.scheduleInformation === 'object') {
-            driverName = searchResponse.scheduleInformation.driverName || null;
-          }
-          
-          // If not found, check in data.driver
-          if (!driverName && searchResponse.data && 
-              typeof searchResponse.data === 'object' && 
-              searchResponse.data.driver && 
-              typeof searchResponse.data.driver === 'object') {
-            driverName = searchResponse.data.driver.name || 
-                         searchResponse.data.driver.driverName || null;
-          }
-        }
-        
-        // Extract location_name from various possible locations
-        let locationName = null;
-        
-        // First check search_response for location information
-        if (order.search_response && typeof order.search_response === 'object') {
-          const searchResponse = order.search_response;
-          
-          // Check for location in data.location
-          if (searchResponse.data && 
-              typeof searchResponse.data === 'object' && 
-              searchResponse.data.location) {
-            
-            if (typeof searchResponse.data.location === 'object') {
-              locationName = searchResponse.data.location.name || 
-                             searchResponse.data.location.locationName || null;
-            } else if (typeof searchResponse.data.location === 'string') {
-              locationName = searchResponse.data.location;
-            }
-          }
-          
-          // If not found, check for direct locationName property
-          if (!locationName && searchResponse.data && 
-              typeof searchResponse.data === 'object') {
-            locationName = searchResponse.data.locationName || 
-                           searchResponse.data.location_name || null;
-          }
-          
-          // If still not found, check if there's a customer.name
-          if (!locationName && searchResponse.data && 
-              typeof searchResponse.data === 'object' && 
-              searchResponse.data.customer && 
-              typeof searchResponse.data.customer === 'object') {
-            locationName = searchResponse.data.customer.name || null;
-          }
-        }
-        
         // Transform order to match work_orders table schema
         const workOrder = {
           order_no: orderNo,
           status: 'pending_review', // Default status for imported orders
           timestamp: new Date().toISOString(),
           end_time: endTime, // Store extracted end_time
-          driver_name: driverName, // Store extracted driver_name
-          location_name: locationName, // Store extracted location_name
           search_response: order.search_response || order, // Store original search data
           completion_response: order.completion_response || order.completionDetails || null // Store completion data if available
         };
