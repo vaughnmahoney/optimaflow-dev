@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useBulkOrdersFetch } from "./useBulkOrdersFetch";
-import { useOrderTransformation } from "./bulk-orders/useOrderTransformation";
+import { useOrdersTransformer } from "./bulk-orders/useOrdersTransformer"; // Fixed import name
 import { useAdapterStatusManager } from "./bulk-orders/useAdapterStatusManager";
 import { useAdapterFilters } from "./bulk-orders/useAdapterFilters";
 import { useAdapterSortAndPagination } from "./bulk-orders/useAdapterSortAndPagination";
@@ -28,14 +28,20 @@ export const useBulkOrdersAdapter = () => {
   } = useBulkOrdersFetch();
   
   // Transform raw orders into work order format
-  const { workOrders, setWorkOrders } = useOrderTransformation(rawOrders);
+  const { transformedOrders: workOrders, isTransforming } = useOrdersTransformer(response, activeTab);
+  const [localWorkOrders, setWorkOrders] = useState(workOrders);
+  
+  // Update local work orders when transformed orders change
+  if (workOrders !== localWorkOrders && workOrders.length > 0) {
+    setWorkOrders(workOrders);
+  }
   
   // Status management
   const { 
     statusCounts, 
     updateWorkOrderStatus,
     deleteWorkOrder 
-  } = useAdapterStatusManager(workOrders);
+  } = useAdapterStatusManager(localWorkOrders);
   
   // Filter handling
   const {
@@ -54,7 +60,7 @@ export const useBulkOrdersAdapter = () => {
     pagination,
     handlePageChange,
     handlePageSizeChange
-  } = useAdapterSortAndPagination(workOrders.length);
+  } = useAdapterSortAndPagination(localWorkOrders.length);
   
   // Simple utility functions
   const openImageViewer = (workOrderId: string) => {
@@ -90,8 +96,8 @@ export const useBulkOrdersAdapter = () => {
     },
     
     // Work order component compatible properties
-    data: workOrders,
-    isLoading,
+    data: localWorkOrders,
+    isLoading: isLoading || isTransforming,
     filters,
     setFilters,
     onColumnFilterChange,
