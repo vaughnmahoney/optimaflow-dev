@@ -77,6 +77,20 @@ Deno.serve(async (req) => {
     const completionData = await completionResponse.json();
     console.log('Completion data:', completionData);
 
+    // Extract driver name from the search response
+    let driverName = null;
+    if (order.scheduleInformation && order.scheduleInformation.driverName) {
+      driverName = order.scheduleInformation.driverName;
+    } else if (order.extracted && order.extracted.driverName) {
+      driverName = order.extracted.driverName;
+    }
+
+    // Extract location name from the search response
+    let locationName = null;
+    if (order.data && order.data.location && order.data.location.locationName) {
+      locationName = order.data.location.locationName;
+    }
+
     // 3. Store the data in Supabase
     const { data: workOrder, error: upsertError } = await supabase
       .from('work_orders')
@@ -85,7 +99,9 @@ Deno.serve(async (req) => {
         search_response: order,
         completion_response: completionData,
         status: 'pending_review',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        driver_name: driverName, // Store extracted driver name
+        location_name: locationName // Store extracted location name
       })
       .select()
       .single();

@@ -69,6 +69,28 @@ Deno.serve(async (req) => {
           continue;
         }
         
+        // Extract driver_name from search_response
+        let driverName = null;
+        if (order.searchResponse && order.searchResponse.extracted && order.searchResponse.extracted.driverName) {
+          driverName = order.searchResponse.extracted.driverName;
+        } else if (order.search_response && order.search_response.extracted && order.search_response.extracted.driverName) {
+          driverName = order.search_response.extracted.driverName;
+        } else if (order.searchResponse && order.searchResponse.scheduleInformation && order.searchResponse.scheduleInformation.driverName) {
+          driverName = order.searchResponse.scheduleInformation.driverName;
+        } else if (order.search_response && order.search_response.scheduleInformation && order.search_response.scheduleInformation.driverName) {
+          driverName = order.search_response.scheduleInformation.driverName;
+        }
+        
+        // Extract location_name from search_response
+        let locationName = null;
+        if (order.searchResponse && order.searchResponse.data && 
+            order.searchResponse.data.location && order.searchResponse.data.location.locationName) {
+          locationName = order.searchResponse.data.location.locationName;
+        } else if (order.search_response && order.search_response.data && 
+                order.search_response.data.location && order.search_response.data.location.locationName) {
+          locationName = order.search_response.data.location.locationName;
+        }
+        
         // Extract end_time from various possible locations
         let endTime = null;
         
@@ -117,6 +139,8 @@ Deno.serve(async (req) => {
           status: 'pending_review', // Default status for imported orders
           timestamp: new Date().toISOString(),
           end_time: endTime, // Store extracted end_time
+          driver_name: driverName, // Add the extracted driver name
+          location_name: locationName, // Add the extracted location name
           search_response: order.search_response || order, // Store original search data
           completion_response: order.completion_response || order.completionDetails || null // Store completion data if available
         };
