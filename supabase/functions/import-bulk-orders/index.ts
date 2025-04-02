@@ -68,9 +68,9 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // Extract driver_name using the structure from the provided examples
+        // Extract driver_name from scheduleInformation (following the JSON path)
         let driverName = null;
-        // Check in scheduleInformation (most reliable based on the examples)
+        // Check in scheduleInformation (direct)
         if (order.scheduleInformation && typeof order.scheduleInformation === 'object') {
           driverName = order.scheduleInformation.driverName;
           console.log(`Found driver name in direct scheduleInformation: ${driverName}`);
@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
           console.log(`Found driver name in search_response.scheduleInformation: ${driverName}`);
         }
         
-        // Extract location_name using the structure from the provided examples
+        // Extract location_name from data.location (following the JSON path)
         let locationName = null;
         // Check in direct data.location
         if (order.data && typeof order.data === 'object' && 

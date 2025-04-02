@@ -1,4 +1,3 @@
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
 
 const corsHeaders = {
@@ -173,23 +172,21 @@ async function handleSingleRequest(searchQuery, optimoRouteApiKey, supabase, cor
   const completionData = await completionResponse.json();
   console.log('Completion data:', completionData);
 
-  // Extract driver name from the search response
-  // Based on the example structure provided by the user
+  // Extract driver name from scheduleInformation
   let driverName = null;
   if (order.scheduleInformation && typeof order.scheduleInformation === 'object') {
     driverName = order.scheduleInformation.driverName || null;
-    console.log('Extracted driver name from scheduleInformation:', driverName);
+    console.log(`Extracted driver name from scheduleInformation: ${driverName}`);
   }
 
-  // Extract location name from the search response
-  // Based on the example structure provided by the user
+  // Extract location name from data.location
   let locationName = null;
   if (order.data && 
       typeof order.data === 'object' && 
       order.data.location && 
       typeof order.data.location === 'object') {
     locationName = order.data.location.locationName || null;
-    console.log('Extracted location name from data.location:', locationName);
+    console.log(`Extracted location name from data.location: ${locationName}`);
   }
 
   // 3. Store the data in Supabase
