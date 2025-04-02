@@ -1,4 +1,3 @@
-
 import { corsHeaders } from '../_shared/cors.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.33.1';
 
@@ -69,30 +68,13 @@ Deno.serve(async (req) => {
           continue;
         }
         
-        // Extract end_time from completion data
-        let endTime = null;
-        
-        // Try to extract end_time from various possible locations
-        const completionDetails = order.completion_response || order.completionDetails || {};
-        
-        if (completionDetails.data?.endTime) {
-          endTime = completionDetails.data.endTime;
-        } else if (completionDetails.data?.end_time) {
-          endTime = completionDetails.data.end_time;
-        } else if (completionDetails.orders && completionDetails.orders[0]?.data?.endTime) {
-          endTime = completionDetails.orders[0].data.endTime;
-        } else if (completionDetails.orders && completionDetails.orders[0]?.data?.end_time) {
-          endTime = completionDetails.orders[0].data.end_time;
-        }
-        
         // Transform order to match work_orders table schema
         const workOrder = {
           order_no: orderNo,
           status: 'pending_review', // Default status for imported orders
           timestamp: new Date().toISOString(),
           search_response: order.search_response || order, // Store original search data
-          completion_response: order.completion_response || order.completionDetails || null, // Store completion data if available
-          end_time: endTime // Store the extracted end_time
+          completion_response: order.completion_response || order.completionDetails || null // Store completion data if available
         };
         
         // Insert the order into the database

@@ -60,22 +60,6 @@ export const transformOrder = (order: RawOrderData): WorkOrder => {
   // Determine completion status
   const completionStatus = completionData?.status || null;
   
-  // Extract end_time from completion data
-  let endTime = null;
-  
-  // Try multiple paths to find end_time 
-  if (completionData?.endTime) {
-    endTime = completionData.endTime;
-  } else if (rawCompletionDetails.data?.endTime) {
-    endTime = rawCompletionDetails.data.endTime;
-  } else if (rawCompletionDetails.data?.end_time) {
-    endTime = rawCompletionDetails.data.end_time;
-  } else if (rawCompletionDetails.orders && rawCompletionDetails.orders[0]?.data?.endTime) {
-    endTime = rawCompletionDetails.orders[0].data.endTime;
-  } else if (rawCompletionDetails.orders && rawCompletionDetails.orders[0]?.data?.end_time) {
-    endTime = rawCompletionDetails.orders[0].data.end_time;
-  }
-  
   // Generate a unique ID if one doesn't exist
   const id = order.id || `temp-${Math.random().toString(36).substring(2, 15)}`;
   
@@ -103,8 +87,7 @@ export const transformOrder = (order: RawOrderData): WorkOrder => {
     tracking_url: trackingUrl,
     completion_status: completionStatus,
     search_response: order.searchResponse || null,
-    completion_response: rawCompletionDetails || null,
-    end_time: endTime // Add the end_time field to the result
+    completion_response: rawCompletionDetails || null
   };
   
   return result;

@@ -63,24 +63,6 @@ async function importOrders(orders: any[]): Promise<any> {
     
     console.log(`Importing ${orders.length} orders to database...`);
     
-    // Process orders to extract end_time before sending to bulk import
-    for (const order of orders) {
-      // Try to extract end_time field if not already present
-      if (!order.end_time) {
-        const completionDetails = order.completion_response || order.completionDetails || {};
-        
-        if (completionDetails.data?.endTime) {
-          order.end_time = completionDetails.data.endTime;
-        } else if (completionDetails.data?.end_time) {
-          order.end_time = completionDetails.data.end_time;
-        } else if (completionDetails.orders && completionDetails.orders[0]?.data?.endTime) {
-          order.end_time = completionDetails.orders[0].data.endTime;
-        } else if (completionDetails.orders && completionDetails.orders[0]?.data?.end_time) {
-          order.end_time = completionDetails.orders[0].data.end_time;
-        }
-      }
-    }
-    
     // Call the import-bulk-orders function
     const { data, error } = await adminClient.functions.invoke('import-bulk-orders', {
       body: { orders }

@@ -328,7 +328,6 @@ export type Database = {
           completion_response: Json | null
           created_at: string | null
           driver_name: string | null
-          end_time: string | null
           flagged_at: string | null
           flagged_by: string | null
           flagged_user: string | null
@@ -360,7 +359,6 @@ export type Database = {
           completion_response?: Json | null
           created_at?: string | null
           driver_name?: string | null
-          end_time?: string | null
           flagged_at?: string | null
           flagged_by?: string | null
           flagged_user?: string | null
@@ -392,7 +390,6 @@ export type Database = {
           completion_response?: Json | null
           created_at?: string | null
           driver_name?: string | null
-          end_time?: string | null
           flagged_at?: string | null
           flagged_by?: string | null
           flagged_user?: string | null
