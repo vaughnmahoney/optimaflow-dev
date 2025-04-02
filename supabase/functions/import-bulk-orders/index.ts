@@ -1,4 +1,3 @@
-
 import { corsHeaders } from '../_shared/cors.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.33.1';
 
@@ -68,27 +67,48 @@ Deno.serve(async (req) => {
           results.duplicates++;
           continue;
         }
-        
-        // Extract driver_name from search_response
+
+        // Extract driver_name using the structure from the provided examples
         let driverName = null;
-        if (order.searchResponse && order.searchResponse.extracted && order.searchResponse.extracted.driverName) {
-          driverName = order.searchResponse.extracted.driverName;
-        } else if (order.search_response && order.search_response.extracted && order.search_response.extracted.driverName) {
-          driverName = order.search_response.extracted.driverName;
-        } else if (order.searchResponse && order.searchResponse.scheduleInformation && order.searchResponse.scheduleInformation.driverName) {
+        // Check in scheduleInformation (most reliable based on the examples)
+        if (order.scheduleInformation && typeof order.scheduleInformation === 'object') {
+          driverName = order.scheduleInformation.driverName;
+          console.log(`Found driver name in direct scheduleInformation: ${driverName}`);
+        } 
+        // Check in searchResponse.scheduleInformation
+        else if (order.searchResponse && typeof order.searchResponse === 'object' && 
+                order.searchResponse.scheduleInformation && typeof order.searchResponse.scheduleInformation === 'object') {
           driverName = order.searchResponse.scheduleInformation.driverName;
-        } else if (order.search_response && order.search_response.scheduleInformation && order.search_response.scheduleInformation.driverName) {
+          console.log(`Found driver name in searchResponse.scheduleInformation: ${driverName}`);
+        }
+        // Check in search_response.scheduleInformation (snake_case version)
+        else if (order.search_response && typeof order.search_response === 'object' && 
+                order.search_response.scheduleInformation && typeof order.search_response.scheduleInformation === 'object') {
           driverName = order.search_response.scheduleInformation.driverName;
+          console.log(`Found driver name in search_response.scheduleInformation: ${driverName}`);
         }
         
-        // Extract location_name from search_response
+        // Extract location_name using the structure from the provided examples
         let locationName = null;
-        if (order.searchResponse && order.searchResponse.data && 
-            order.searchResponse.data.location && order.searchResponse.data.location.locationName) {
+        // Check in direct data.location
+        if (order.data && typeof order.data === 'object' && 
+            order.data.location && typeof order.data.location === 'object') {
+          locationName = order.data.location.locationName;
+          console.log(`Found location name in direct data.location: ${locationName}`);
+        }
+        // Check in searchResponse.data.location
+        else if (order.searchResponse && typeof order.searchResponse === 'object' &&
+                order.searchResponse.data && typeof order.searchResponse.data === 'object' && 
+                order.searchResponse.data.location && typeof order.searchResponse.data.location === 'object') {
           locationName = order.searchResponse.data.location.locationName;
-        } else if (order.search_response && order.search_response.data && 
-                order.search_response.data.location && order.search_response.data.location.locationName) {
+          console.log(`Found location name in searchResponse.data.location: ${locationName}`);
+        } 
+        // Check in search_response.data.location (snake_case version)
+        else if (order.search_response && typeof order.search_response === 'object' &&
+                order.search_response.data && typeof order.search_response.data === 'object' &&  
+                order.search_response.data.location && typeof order.search_response.data.location === 'object') {
           locationName = order.search_response.data.location.locationName;
+          console.log(`Found location name in search_response.data.location: ${locationName}`);
         }
         
         // Extract end_time from various possible locations
@@ -132,6 +152,8 @@ Deno.serve(async (req) => {
             endTime = new Date(`${serviceDate}T23:59:59Z`).toISOString();
           }
         }
+
+        console.log(`Extracted data for ${orderNo}: driver=${driverName}, location=${locationName}, endTime=${endTime}`);
         
         // Transform order to match work_orders table schema
         const workOrder = {
