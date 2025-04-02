@@ -1,4 +1,3 @@
-
 import { corsHeaders } from '../_shared/cors.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.33.1';
 
@@ -69,49 +68,13 @@ Deno.serve(async (req) => {
           continue;
         }
         
-        // Extract location name for direct filtering
-        let locationName = 'Unknown Location';
-        if (order.location && typeof order.location === 'object') {
-          locationName = order.location.name || order.location.locationName || 'Unknown Location';
-        } else if (order.searchResponse?.data?.location) {
-          const locData = order.searchResponse.data.location;
-          if (typeof locData === 'object') {
-            locationName = locData.name || locData.locationName || 'Unknown Location';
-          } else {
-            locationName = String(locData);
-          }
-        }
-        
-        // Extract driver name for direct filtering
-        let driverName = 'Unknown Driver';
-        if (order.driver && typeof order.driver === 'object') {
-          driverName = order.driver.name || 'Unknown Driver';
-        } else if (order.scheduleInformation && order.scheduleInformation.driverName) {
-          driverName = order.scheduleInformation.driverName;
-        } else if (order.searchResponse?.scheduleInformation?.driverName) {
-          driverName = order.searchResponse.scheduleInformation.driverName;
-        }
-        
-        // Extract end time for sorting
-        let endTime = null;
-        if (order.completionDetails?.data?.endTime?.utcTime) {
-          endTime = order.completionDetails.data.endTime.utcTime;
-        } else if (order.completion_response?.orders?.[0]?.data?.endTime?.utcTime) {
-          endTime = order.completion_response.orders[0].data.endTime.utcTime;
-        } else if (order.completion_response?.orders?.[0]?.data?.endTime) {
-          endTime = order.completion_response.orders[0].data.endTime;
-        }
-        
         // Transform order to match work_orders table schema
         const workOrder = {
           order_no: orderNo,
           status: 'pending_review', // Default status for imported orders
           timestamp: new Date().toISOString(),
           search_response: order.search_response || order, // Store original search data
-          completion_response: order.completion_response || order.completionDetails || null, // Store completion data if available
-          driver_name: driverName,
-          location_name: locationName,
-          end_time: endTime
+          completion_response: order.completion_response || order.completionDetails || null // Store completion data if available
         };
         
         // Insert the order into the database
