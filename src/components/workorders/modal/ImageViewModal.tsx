@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogOverlay } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { WorkOrder } from "../types";
 import { ModalHeader } from "./components/ModalHeader";
 import { ModalContent } from "./components/ModalContent";
@@ -10,6 +10,7 @@ import { getStatusBorderColor } from "./utils/modalUtils";
 import { useWorkOrderNavigation } from "@/hooks/useWorkOrderNavigation";
 import { MobileImageViewModal } from "./MobileImageViewModal";
 import { useMobile } from "@/hooks/use-mobile";
+import { VisuallyHidden } from "@/components/ui/visually-hidden";
 
 interface ImageViewModalProps {
   workOrder: WorkOrder | null;
@@ -113,10 +114,16 @@ export const ImageViewModal = ({
     onNavigate(index);
   };
 
+  const modalTitle = `Work Order #${currentWorkOrder.order_no}`;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogOverlay />
       <DialogContent className="max-w-6xl p-0 h-[90vh] flex flex-col rounded-lg overflow-hidden border-t-4 bg-white shadow-xl w-[95%] m-0" style={{ borderTopColor: getBorderColor() }}>
+        {/* Add DialogTitle for accessibility, but visually hidden */}
+        <VisuallyHidden>
+          <DialogTitle>{modalTitle}</DialogTitle>
+        </VisuallyHidden>
+        
         <ModalHeader workOrder={currentWorkOrder} onClose={onClose} />
         
         <ModalContent

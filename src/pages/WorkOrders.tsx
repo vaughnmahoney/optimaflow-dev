@@ -10,12 +10,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import { SortDirection, SortField, WorkOrder } from "@/components/workorders/types";
 import { useWorkOrderMutations } from "@/hooks/useWorkOrderMutations";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { toast } from "sonner";
 
 const WorkOrders = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
-  const { resolveWorkOrderFlag, updateWorkOrderStatus: updateStatus } = useWorkOrderMutations();
+  const { resolveWorkOrderFlag } = useWorkOrderMutations();
   const isMobile = useIsMobile();
   
   // Modal state management at the parent level
@@ -67,38 +68,95 @@ const WorkOrders = () => {
       setSelectedWorkOrderId(workOrderId);
       setActiveWorkOrder(workOrder);
       setIsImageModalOpen(true);
+    } else {
+      console.error("Work order not found:", workOrderId);
     }
   };
 
   // Function to handle closing the image viewer
   const handleCloseImageViewer = () => {
     setIsImageModalOpen(false);
+    // We don't clear the active work order immediately to avoid flicker
+    // if the user re-opens the modal
+    setTimeout(() => {
+      if (!isImageModalOpen) {
+        setActiveWorkOrder(null);
+        setSelectedWorkOrderId(null);
+      }
+    }, 300);
   };
 
   // Enhanced status update function that updates the activeWorkOrder
   const handleStatusUpdate = async (workOrderId: string, newStatus: string) => {
-    // Update the status in the database
-    await updateWorkOrderStatus(workOrderId, newStatus);
-    
-    // If this is the active work order, update its status in our local state
-    if (activeWorkOrder && activeWorkOrder.id === workOrderId) {
-      setActiveWorkOrder({
-        ...activeWorkOrder,
-        status: newStatus
-      });
+    try {
+      // First update our local activeWorkOrder state immediately
+      // This ensures the UI reflects the change right away
+      if (activeWorkOrder && activeWorkOrder.id === workOrderId) {
+        // Create a deep copy with the updated status
+        const updatedWorkOrder = {
+          ...activeWorkOrder,
+          status: newStatus,
+          // Add timestamp information
+          last_action_at: new Date().toISOString()
+        };
+        setActiveWorkOrder(updatedWorkOrder);
+        
+        // Show a toast notification for better UX
+        toast.success(`Work order status updated to ${newStatus}`);
+      }
+      
+      // Then update the status in the database asynchronously
+      await updateWorkOrderStatus(workOrderId, newStatus);
+    } catch (error) {
+      console.error("Error updating work order status:", error);
+      toast.error("Failed to update work order status");
+      
+      // Rollback the local state if the API call fails
+      if (activeWorkOrder && activeWorkOrder.id === workOrderId) {
+        // Find the original work order in the list
+        const originalWorkOrder = workOrders.find(wo => wo.id === workOrderId);
+        if (originalWorkOrder) {
+          setActiveWorkOrder(originalWorkOrder);
+        }
+      }
     }
   };
 
   // Handle resolving a flagged work order
   const handleResolveFlag = async (workOrderId: string, resolution: string) => {
-    await resolveWorkOrderFlag(workOrderId, resolution);
-    
-    // If this is the active work order, update its status in our local state
-    if (activeWorkOrder && activeWorkOrder.id === workOrderId) {
-      setActiveWorkOrder({
-        ...activeWorkOrder,
-        status: resolution === 'approved' ? 'resolved' : 'rejected'
-      });
+    try {
+      // First update our local activeWorkOrder state immediately
+      if (activeWorkOrder && activeWorkOrder.id === workOrderId) {
+        // Set the appropriate status based on the resolution
+        const newStatus = resolution === 'approved' ? 'resolved' : 'rejected';
+        
+        // Create a deep copy with the updated status
+        const updatedWorkOrder = {
+          ...activeWorkOrder,
+          status: newStatus,
+          // Add timestamp information
+          resolved_at: new Date().toISOString()
+        };
+        setActiveWorkOrder(updatedWorkOrder);
+        
+        // Show a toast notification for better UX
+        toast.success(`Flag resolved as ${resolution}`);
+      }
+      
+      // Then update in the database
+      await resolveWorkOrderFlag(workOrderId, resolution);
+    } catch (error) {
+      console.error("Error resolving flag:", error);
+      toast.error("Failed to resolve flag");
+      
+      // Rollback the local state if the API call fails
+      if (activeWorkOrder && activeWorkOrder.id === workOrderId) {
+        // Find the original work order in the list
+        const originalWorkOrder = workOrders.find(wo => wo.id === workOrderId);
+        if (originalWorkOrder) {
+          setActiveWorkOrder(originalWorkOrder);
+        }
+      }
     }
   };
 

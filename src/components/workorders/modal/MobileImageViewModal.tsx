@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { WorkOrder } from "../types";
 import { useWorkOrderNavigation } from "@/hooks/useWorkOrderNavigation";
 import { getStatusBorderColor } from "./utils/modalUtils";
@@ -8,6 +8,7 @@ import { MobileModalHeader } from "./components/mobile/MobileModalHeader";
 import { MobileModalContent } from "./components/mobile/MobileModalContent";
 import { MobileImageViewer } from "./components/mobile/MobileImageViewer";
 import { MobileNavigationControls } from "./components/mobile/MobileNavigationControls";
+import { VisuallyHidden } from "@/components/ui/visually-hidden";
 
 interface MobileImageViewModalProps {
   workOrder: WorkOrder | null;
@@ -71,10 +72,17 @@ export const MobileImageViewModal = ({
   // Toggle image viewer mode
   const openImageViewer = () => setIsImageViewerOpen(true);
   const closeImageViewer = () => setIsImageViewerOpen(false);
+  
+  const modalTitle = `Work Order #${currentWorkOrder.order_no}`;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className={`max-w-full p-0 h-[90vh] w-[95vw] flex flex-col rounded-lg overflow-hidden border-t-4 ${statusBorderColor}`}>
+        {/* Add DialogTitle for accessibility, but visually hidden */}
+        <VisuallyHidden>
+          <DialogTitle>{modalTitle}</DialogTitle>
+        </VisuallyHidden>
+      
         {isImageViewerOpen ? (
           // Show image viewer when in image mode
           <>
