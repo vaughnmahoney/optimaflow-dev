@@ -26,7 +26,6 @@ const WorkOrders = () => {
     onColumnFilterChange,
     clearColumnFilter,
     clearAllFilters,
-    searchOptimoRoute,
     openImageViewer,
     deleteWorkOrder,
     statusCounts,
@@ -76,12 +75,12 @@ const WorkOrders = () => {
         {/* Page title - shown on all devices now */}
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Work Orders</h1>
-          {isMobile && <ImportControls onOptimoRouteSearch={searchOptimoRoute} onRefresh={refetch} />}
+          {isMobile && <ImportControls onRefresh={refetch} />}
         </div>
         
         {/* Import controls - only shown on desktop */}
         {!isMobile && (
-          <ImportControls onOptimoRouteSearch={searchOptimoRoute} onRefresh={refetch} />
+          <ImportControls onRefresh={refetch} />
         )}
         
         <WorkOrderContent 
@@ -92,7 +91,6 @@ const WorkOrders = () => {
           onStatusUpdate={handleStatusUpdate}
           onImageView={openImageViewer}
           onDelete={deleteWorkOrder}
-          onOptimoRouteSearch={searchOptimoRoute}
           statusCounts={statusCounts}
           sortField={sortField}
           sortDirection={sortDirection}

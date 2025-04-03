@@ -1,9 +1,9 @@
+
 import { useState } from "react";
 import { SortField, SortDirection, PaginationState, WorkOrderFilters } from "@/components/workorders/types";
 import { useWorkOrderFetch } from "./useWorkOrderFetch";
 import { useWorkOrderStatusCounts } from "./useWorkOrderStatusCounts";
 import { useWorkOrderMutations } from "./useWorkOrderMutations";
-import { useWorkOrderImport } from "./useWorkOrderImport";
 
 export const useWorkOrderData = () => {
   const [filters, setFilters] = useState<WorkOrderFilters>({
@@ -12,7 +12,7 @@ export const useWorkOrderData = () => {
     driver: null,
     location: null,
     orderNo: null,
-    optimoRouteStatus: null // Ensure this field is initialized
+    optimoRouteStatus: null
   });
   
   const [sortField, setSortField] = useState<SortField>('end_time');
@@ -40,7 +40,6 @@ export const useWorkOrderData = () => {
   
   const statusCounts = useWorkOrderStatusCounts(workOrders, filters.status);
   
-  const { searchOptimoRoute } = useWorkOrderImport();
   const { updateWorkOrderStatus, deleteWorkOrder } = useWorkOrderMutations();
 
   const handleColumnFilterChange = (column: string, value: any) => {
@@ -63,7 +62,7 @@ export const useWorkOrderData = () => {
         case 'status':
           newFilters.status = value;
           break;
-        case 'optimoroute_status': // Ensure this case is handled
+        case 'optimoroute_status':
           newFilters.optimoRouteStatus = value;
           break;
       }
@@ -94,7 +93,7 @@ export const useWorkOrderData = () => {
         case 'status':
           newFilters.status = null;
           break;
-        case 'optimoroute_status': // Ensure this case is handled
+        case 'optimoroute_status':
           newFilters.optimoRouteStatus = null;
           break;
       }
@@ -112,7 +111,7 @@ export const useWorkOrderData = () => {
       driver: null,
       location: null,
       orderNo: null,
-      optimoRouteStatus: null // Ensure this field is reset
+      optimoRouteStatus: null
     });
     
     handlePageChange(1);
@@ -150,10 +149,9 @@ export const useWorkOrderData = () => {
     onColumnFilterChange: handleColumnFilterChange,
     clearColumnFilter,
     clearAllFilters,
-    searchOptimoRoute,
-    updateWorkOrderStatus,
     openImageViewer,
     deleteWorkOrder,
+    updateWorkOrderStatus,
     statusCounts,
     sortField,
     sortDirection,
