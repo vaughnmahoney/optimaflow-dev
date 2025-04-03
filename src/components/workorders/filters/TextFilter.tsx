@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ColumnFilterProps } from "./types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,17 +8,20 @@ import { X } from "lucide-react";
 export const TextFilter = ({ column, value, onChange, onClear }: ColumnFilterProps) => {
   const [localValue, setLocalValue] = useState(value || "");
   
+  // Update local state when value prop changes
+  useEffect(() => {
+    setLocalValue(value || "");
+  }, [value]);
+  
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLocalValue(e.target.value);
-  };
-  
-  const handleSubmit = () => {
-    onChange(localValue.trim() || null);
+    // Store the value in parent component without immediately applying the filter
+    onChange(e.target.value.trim() || null);
   };
   
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      handleSubmit();
+      onChange(localValue.trim() || null);
     }
   };
   
@@ -48,16 +51,6 @@ export const TextFilter = ({ column, value, onChange, onClear }: ColumnFilterPro
             <X className="h-3 w-3" />
           </Button>
         )}
-      </div>
-      <div className="flex justify-end">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={handleSubmit}
-          className="h-7 text-xs"
-        >
-          Apply
-        </Button>
       </div>
     </div>
   );

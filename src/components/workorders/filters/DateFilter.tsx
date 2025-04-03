@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ColumnFilterProps } from "./types";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -12,6 +12,14 @@ export const DateFilter = ({ column, value, onChange, onClear }: ColumnFilterPro
     from: value?.from || null,
     to: value?.to || null
   });
+  
+  // Update local state when value prop changes
+  useEffect(() => {
+    setDateRange({
+      from: value?.from || null,
+      to: value?.to || null
+    });
+  }, [value]);
   
   const handleClear = () => {
     setDateRange({ from: null, to: null });
@@ -65,11 +73,8 @@ export const DateFilter = ({ column, value, onChange, onClear }: ColumnFilterPro
                   to: range.to || null
                 };
                 setDateRange(newRange);
-                
-                // Only call onChange when we have a complete range or when clearing
-                if (newRange.from === null || (newRange.from && newRange.to)) {
-                  onChange(newRange);
-                }
+                // Update parent state but don't apply filter immediately
+                onChange(newRange);
               }
             }}
             initialFocus

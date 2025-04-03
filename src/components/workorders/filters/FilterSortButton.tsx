@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { SlidersHorizontal, X, ArrowUp, ArrowDown } from "lucide-react";
 import {
@@ -36,6 +36,13 @@ export const FilterSortButton = ({
   onSort = () => {},
 }: FilterSortButtonProps) => {
   const [open, setOpen] = useState(false);
+  // Create local states to track filter changes before applying them
+  const [localFilters, setLocalFilters] = useState<WorkOrderFilters>(filters);
+  
+  // Update local filters when props change
+  useEffect(() => {
+    setLocalFilters(filters);
+  }, [filters]);
   
   const hasActiveFilters = 
     filters.status !== null || 
@@ -50,6 +57,94 @@ export const FilterSortButton = ({
     // Toggle between oldest first (asc) and newest first (desc)
     const newDirection = sortDirection === 'asc' ? 'desc' : 'asc';
     onSort('end_time', newDirection);
+    setOpen(false);
+  };
+  
+  // Handler for local filter changes
+  const handleLocalFilterChange = (column: string, value: any) => {
+    setLocalFilters(prev => {
+      const newFilters = { ...prev };
+      
+      switch (column) {
+        case 'order_no':
+          newFilters.orderNo = value;
+          break;
+        case 'service_date':
+          newFilters.dateRange = value;
+          break;
+        case 'driver':
+          newFilters.driver = value;
+          break;
+        case 'location':
+          newFilters.location = value;
+          break;
+        case 'status':
+          newFilters.status = value;
+          break;
+        case 'optimoroute_status':
+          newFilters.optimoRouteStatus = value;
+          break;
+      }
+      
+      return newFilters;
+    });
+  };
+  
+  // Handler for local filter clearing
+  const handleLocalFilterClear = (column: string) => {
+    setLocalFilters(prev => {
+      const newFilters = { ...prev };
+      
+      switch (column) {
+        case 'order_no':
+          newFilters.orderNo = null;
+          break;
+        case 'service_date':
+          newFilters.dateRange = { from: null, to: null };
+          break;
+        case 'driver':
+          newFilters.driver = null;
+          break;
+        case 'location':
+          newFilters.location = null;
+          break;
+        case 'status':
+          newFilters.status = null;
+          break;
+        case 'optimoroute_status':
+          newFilters.optimoRouteStatus = null;
+          break;
+      }
+      
+      return newFilters;
+    });
+  };
+  
+  // Apply all filters at once
+  const applyAllFilters = () => {
+    // Apply all changes from localFilters to the parent component
+    Object.entries(localFilters).forEach(([key, value]) => {
+      switch(key) {
+        case 'orderNo':
+          onColumnFilterChange('order_no', value);
+          break;
+        case 'dateRange':
+          onColumnFilterChange('service_date', value);
+          break;
+        case 'driver':
+          onColumnFilterChange('driver', value);
+          break;
+        case 'location':
+          onColumnFilterChange('location', value);
+          break;
+        case 'status':
+          onColumnFilterChange('status', value);
+          break;
+        case 'optimoRouteStatus':
+          onColumnFilterChange('optimoroute_status', value);
+          break;
+      }
+    });
     setOpen(false);
   };
 
@@ -91,6 +186,14 @@ export const FilterSortButton = ({
                 size="sm"
                 onClick={() => {
                   clearAllFilters();
+                  setLocalFilters({
+                    status: null,
+                    dateRange: { from: null, to: null },
+                    driver: null,
+                    location: null,
+                    orderNo: null,
+                    optimoRouteStatus: null
+                  });
                   setOpen(false);
                 }}
               >
@@ -135,9 +238,9 @@ export const FilterSortButton = ({
                 <h3 className="text-sm font-medium">Order #</h3>
                 <TextFilter 
                   column="order_no" 
-                  value={filters.orderNo} 
-                  onChange={(value) => onColumnFilterChange('order_no', value)}
-                  onClear={() => clearColumnFilter('order_no')}
+                  value={localFilters.orderNo} 
+                  onChange={(value) => handleLocalFilterChange('order_no', value)}
+                  onClear={() => handleLocalFilterClear('order_no')}
                 />
               </div>
               
@@ -145,9 +248,9 @@ export const FilterSortButton = ({
                 <h3 className="text-sm font-medium">Date Range</h3>
                 <DateFilter 
                   column="service_date" 
-                  value={filters.dateRange} 
-                  onChange={(value) => onColumnFilterChange('service_date', value)}
-                  onClear={() => clearColumnFilter('service_date')}
+                  value={localFilters.dateRange} 
+                  onChange={(value) => handleLocalFilterChange('service_date', value)}
+                  onClear={() => handleLocalFilterClear('service_date')}
                 />
               </div>
               
@@ -155,9 +258,9 @@ export const FilterSortButton = ({
                 <h3 className="text-sm font-medium">Driver</h3>
                 <DriverFilter 
                   column="driver" 
-                  value={filters.driver} 
-                  onChange={(value) => onColumnFilterChange('driver', value)}
-                  onClear={() => clearColumnFilter('driver')}
+                  value={localFilters.driver} 
+                  onChange={(value) => handleLocalFilterChange('driver', value)}
+                  onClear={() => handleLocalFilterClear('driver')}
                 />
               </div>
               
@@ -165,9 +268,9 @@ export const FilterSortButton = ({
                 <h3 className="text-sm font-medium">Location</h3>
                 <LocationFilter 
                   column="location" 
-                  value={filters.location} 
-                  onChange={(value) => onColumnFilterChange('location', value)}
-                  onClear={() => clearColumnFilter('location')}
+                  value={localFilters.location} 
+                  onChange={(value) => handleLocalFilterChange('location', value)}
+                  onClear={() => handleLocalFilterClear('location')}
                 />
               </div>
               
@@ -175,9 +278,9 @@ export const FilterSortButton = ({
                 <h3 className="text-sm font-medium">Status</h3>
                 <StatusFilter 
                   column="status" 
-                  value={filters.status} 
-                  onChange={(value) => onColumnFilterChange('status', value)}
-                  onClear={() => clearColumnFilter('status')}
+                  value={localFilters.status} 
+                  onChange={(value) => handleLocalFilterChange('status', value)}
+                  onClear={() => handleLocalFilterClear('status')}
                 />
               </div>
               
@@ -185,37 +288,37 @@ export const FilterSortButton = ({
                 <h3 className="text-sm font-medium">OptimoRoute Status</h3>
                 <div className="flex flex-wrap gap-2">
                   <Button
-                    variant={filters.optimoRouteStatus === 'success' ? 'default' : 'outline'}
+                    variant={localFilters.optimoRouteStatus === 'success' ? 'default' : 'outline'}
                     size="sm"
-                    onClick={() => onColumnFilterChange('optimoroute_status', filters.optimoRouteStatus === 'success' ? null : 'success')}
+                    onClick={() => handleLocalFilterChange('optimoroute_status', localFilters.optimoRouteStatus === 'success' ? null : 'success')}
                     className="flex-1"
                   >
                     Success
                   </Button>
                   
                   <Button
-                    variant={filters.optimoRouteStatus === 'failed' ? 'default' : 'outline'}
+                    variant={localFilters.optimoRouteStatus === 'failed' ? 'default' : 'outline'}
                     size="sm"
-                    onClick={() => onColumnFilterChange('optimoroute_status', filters.optimoRouteStatus === 'failed' ? null : 'failed')}
+                    onClick={() => handleLocalFilterChange('optimoroute_status', localFilters.optimoRouteStatus === 'failed' ? null : 'failed')}
                     className="flex-1"
                   >
                     Failed
                   </Button>
                   
                   <Button
-                    variant={filters.optimoRouteStatus === 'rejected' ? 'default' : 'outline'}
+                    variant={localFilters.optimoRouteStatus === 'rejected' ? 'default' : 'outline'}
                     size="sm"
-                    onClick={() => onColumnFilterChange('optimoroute_status', filters.optimoRouteStatus === 'rejected' ? null : 'rejected')}
+                    onClick={() => handleLocalFilterChange('optimoroute_status', localFilters.optimoRouteStatus === 'rejected' ? null : 'rejected')}
                     className="flex-1"
                   >
                     Rejected
                   </Button>
                 </div>
-                {filters.optimoRouteStatus !== null && (
+                {localFilters.optimoRouteStatus !== null && (
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    onClick={() => clearColumnFilter('optimoroute_status')}
+                    onClick={() => handleLocalFilterClear('optimoroute_status')}
                     className="mt-1 h-auto p-0 text-xs text-muted-foreground hover:text-primary"
                   >
                     Clear
@@ -230,9 +333,12 @@ export const FilterSortButton = ({
         </ScrollArea>
         
         <div className="mt-4">
-          <SheetClose asChild>
-            <Button className="w-full">Apply Filters</Button>
-          </SheetClose>
+          <Button 
+            className="w-full" 
+            onClick={applyAllFilters}
+          >
+            Apply Filters
+          </Button>
         </div>
       </SheetContent>
     </Sheet>
