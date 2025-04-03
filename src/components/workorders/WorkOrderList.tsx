@@ -115,22 +115,16 @@ export const WorkOrderList = ({
   // Wrap the status update function to include filter and navigation logic
   const handleStatusUpdate = (workOrderId: string, newStatus: string) => {
     if (onStatusUpdate) {
-      onStatusUpdate(workOrderId, newStatus, {
-        filters,
-        workOrders,
-        onAdvanceToNextOrder: handleAdvanceToNextOrder
-      });
+      // Fixed: Pass only the workOrderId and newStatus to match the expected parameter count
+      onStatusUpdate(workOrderId, newStatus);
     }
   };
   
   // Wrap the resolve flag function to include filter and navigation logic
   const handleResolveFlag = (workOrderId: string, resolution: string) => {
     if (onResolveFlag) {
-      onResolveFlag(workOrderId, resolution, {
-        filters,
-        workOrders,
-        onAdvanceToNextOrder: handleAdvanceToNextOrder
-      });
+      // Fixed: Pass only the workOrderId and resolution to match the expected parameter count
+      onResolveFlag(workOrderId, resolution);
     }
   };
 
