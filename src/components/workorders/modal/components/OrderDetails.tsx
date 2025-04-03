@@ -89,22 +89,37 @@ export const OrderDetails = ({
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="w-full h-12 bg-white grid grid-cols-3 rounded-none">
-            <TabsTrigger value="details" className="rounded-none data-[state=active]:bg-gray-50 data-[state=active]:border-b-2 data-[state=active]:border-gray-700">
+          <TabsList className="w-full h-12 bg-gray-50/80 grid grid-cols-3 rounded-none">
+            <TabsTrigger 
+              value="details" 
+              className="rounded-none bg-gradient-to-b from-white to-gray-50 shadow-[inset_0_-1px_0_0_rgba(0,0,0,0.1)] 
+              data-[state=active]:bg-white data-[state=active]:from-white data-[state=active]:to-white
+              data-[state=active]:shadow-md data-[state=active]:shadow-gray-200/60 data-[state=active]:border-b-2 data-[state=active]:border-gray-800"
+            >
               <div className="flex items-center gap-2">
                 <FileText className="h-4 w-4 text-gray-600" />
                 <span className="text-sm hidden sm:inline font-medium">Details</span>
               </div>
             </TabsTrigger>
-            <TabsTrigger value="notes" className="rounded-none data-[state=active]:bg-gray-50 data-[state=active]:border-b-2 data-[state=active]:border-gray-700">
+            <TabsTrigger 
+              value="notes" 
+              className="rounded-none bg-gradient-to-b from-white to-gray-50 shadow-[inset_0_-1px_0_0_rgba(0,0,0,0.1)] 
+              data-[state=active]:bg-white data-[state=active]:from-white data-[state=active]:to-white
+              data-[state=active]:shadow-md data-[state=active]:shadow-gray-200/60 data-[state=active]:border-b-2 data-[state=active]:border-gray-800"
+            >
               <div className="flex items-center gap-2">
                 <MessageSquare className="h-4 w-4 text-gray-600" />
                 <span className="text-sm hidden sm:inline font-medium">Notes</span>
               </div>
             </TabsTrigger>
-            <TabsTrigger value="signature" className="rounded-none data-[state=active]:bg-gray-50 data-[state=active]:border-b-2 data-[state=active]:border-gray-700">
+            <TabsTrigger 
+              value="signature" 
+              className="rounded-none bg-gradient-to-b from-white to-gray-50 shadow-[inset_0_-1px_0_0_rgba(0,0,0,0.1)] 
+              data-[state=active]:bg-white data-[state=active]:from-white data-[state=active]:to-white
+              data-[state=active]:shadow-md data-[state=active]:shadow-gray-200/60 data-[state=active]:border-b-2 data-[state=active]:border-gray-800"
+            >
               <div className="flex items-center gap-2">
                 <FileSignature className="h-4 w-4 text-gray-600" />
                 <span className="text-sm hidden sm:inline font-medium">Signature</span>
