@@ -8,30 +8,28 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { StatusBadge } from "./StatusBadge";
 import { cn } from "@/lib/utils";
+import { useWorkOrderMutations } from "@/hooks/useWorkOrderMutations";
 import { StatusMenuItems } from "./dropdown/StatusMenuItems";
-import { toast } from "sonner";
 
 interface StatusBadgeDropdownProps {
   workOrderId: string;
   currentStatus: string;
   completionStatus?: string;
   className?: string;
-  onStatusUpdate: (workOrderId: string, newStatus: string) => void;
 }
 
 export const StatusBadgeDropdown = ({ 
   workOrderId, 
   currentStatus, 
   completionStatus,
-  className,
-  onStatusUpdate
+  className 
 }: StatusBadgeDropdownProps) => {
+  const { updateWorkOrderStatus } = useWorkOrderMutations();
   const [isOpen, setIsOpen] = useState(false);
 
   const handleStatusChange = (newStatus: string) => {
-    onStatusUpdate(workOrderId, newStatus);
+    updateWorkOrderStatus(workOrderId, newStatus);
     setIsOpen(false);
-    toast.success(`Status updated to ${newStatus.replace(/_/g, " ")}`);
   };
   
   const handleDropdownClick = (e: React.MouseEvent) => {
