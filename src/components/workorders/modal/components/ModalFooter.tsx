@@ -1,7 +1,9 @@
 
 import { Button } from "@/components/ui/button";
-import { Download, Info } from "lucide-react";
+import { Download, StickyNote, PenLine } from "lucide-react";
 import { useEffect } from "react";
+import { QcNotesSheet } from "./QcNotesSheet";
+import { ResolutionNotesSheet } from "./ResolutionNotesSheet";
 
 interface ModalFooterProps {
   workOrderId: string;
@@ -84,6 +86,10 @@ export const ModalFooter = ({
   return (
     <div className="p-3 bg-white dark:bg-gray-950 border-t flex flex-wrap justify-between items-center gap-2">
       <div className="flex flex-wrap items-center gap-2">
+        {/* Notes buttons - added back */}
+        <QcNotesSheet workOrder={workOrder} />
+        <ResolutionNotesSheet workOrder={workOrder} />
+        
         {/* User attribution information */}
         {userActionInfo && (
           <div className="ml-2 text-sm text-gray-500 flex flex-col">
