@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { WorkOrder } from "../types";
-import { useImageViewer } from "@/hooks/useImageViewer";
+import { useWorkOrderNavigation } from "@/hooks/useWorkOrderNavigation";
 import { getStatusBorderColor } from "./utils/modalUtils";
 import { MobileModalHeader } from "./components/mobile/MobileModalHeader";
 import { MobileModalContent } from "./components/mobile/MobileModalContent";
@@ -15,11 +15,11 @@ interface MobileImageViewModalProps {
   currentIndex: number;
   isOpen: boolean;
   onClose: () => void;
-  onStatusUpdate?: (workOrderId: string, status: string, closeModal?: boolean) => void;
+  onStatusUpdate?: (workOrderId: string, status: string) => void;
   onNavigate: (index: number) => void;
-  onPageBoundary?: (direction: number) => void;
+  onPageBoundary?: (direction: 'next' | 'previous') => void;
   onDownloadAll?: () => void;
-  onResolveFlag?: (workOrderId: string, resolution: string, closeModal?: boolean) => void;
+  onResolveFlag?: (workOrderId: string, resolution: string) => void;
 }
 
 export const MobileImageViewModal = ({
@@ -36,47 +36,41 @@ export const MobileImageViewModal = ({
 }: MobileImageViewModalProps) => {
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
   
-  if (!workOrder) return null;
-
-  // Get images from the work order's completion_response
-  const completionData = workOrder?.completion_response?.orders?.[0]?.data;
-  const images = completionData?.form?.images || [];
-  
   const {
+    currentWorkOrder,
+    currentIndex: navIndex,
     currentImageIndex,
-    setCurrentImageIndex
-  } = useImageViewer({
-    images,
-    initialIndex: 0
+    isNavigatingPages,
+    setCurrentImageIndex,
+    handlePreviousOrder,
+    handleNextOrder,
+    handleSetOrder
+  } = useWorkOrderNavigation({
+    workOrders,
+    initialWorkOrderId: workOrder?.id || null,
+    isOpen,
+    onClose,
+    onPageBoundary
   });
   
+  if (!currentWorkOrder) return null;
+
+  // Get images from the work order's completion_response
+  const completionData = currentWorkOrder?.completion_response?.orders?.[0]?.data;
+  const images = completionData?.form?.images || [];
+  
   // Status color for border
-  const statusBorderColor = getStatusBorderColor(workOrder.status || "pending_review");
+  const statusBorderColor = getStatusBorderColor(currentWorkOrder.status || "pending_review");
 
-  // Handle navigation
-  const handlePreviousOrder = () => {
-    if (currentIndex > 0) {
-      onNavigate(currentIndex - 1);
-    } else if (onPageBoundary) {
-      onPageBoundary(currentIndex - 1);
-    }
-  };
-
-  const handleNextOrder = () => {
-    if (currentIndex < workOrders.length - 1) {
-      onNavigate(currentIndex + 1);
-    } else if (onPageBoundary) {
-      onPageBoundary(currentIndex + 1);
-    }
+  // Sync navigation with parent component
+  const handleNavigate = (index: number) => {
+    handleSetOrder(index);
+    onNavigate(index);
   };
 
   // Toggle image viewer mode
   const openImageViewer = () => setIsImageViewerOpen(true);
   const closeImageViewer = () => setIsImageViewerOpen(false);
-  
-  const isNavigatingPages = false;
-  const hasPreviousPage = currentIndex === 0 && onPageBoundary !== undefined;
-  const hasNextPage = currentIndex === workOrders.length - 1 && onPageBoundary !== undefined;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -85,7 +79,7 @@ export const MobileImageViewModal = ({
           // Show image viewer when in image mode
           <>
             <MobileImageViewer
-              workOrderId={workOrder.id}
+              workOrderId={currentWorkOrder.id}
               images={images}
               currentImageIndex={currentImageIndex}
               setCurrentImageIndex={setCurrentImageIndex}
@@ -97,12 +91,12 @@ export const MobileImageViewModal = ({
           // Show main content when not in image mode
           <>
             <MobileModalHeader 
-              workOrder={workOrder} 
+              workOrder={currentWorkOrder} 
               onClose={onClose} 
             />
             
             <MobileModalContent
-              workOrder={workOrder}
+              workOrder={currentWorkOrder}
               images={images}
               onViewImages={openImageViewer}
               onStatusUpdate={onStatusUpdate}
@@ -111,13 +105,13 @@ export const MobileImageViewModal = ({
             />
             
             <MobileNavigationControls 
-              currentIndex={currentIndex}
+              currentIndex={navIndex}
               totalOrders={workOrders.length}
               onPreviousOrder={handlePreviousOrder}
               onNextOrder={handleNextOrder}
               isNavigatingPages={isNavigatingPages}
-              hasPreviousPage={hasPreviousPage}
-              hasNextPage={hasNextPage}
+              hasPreviousPage={onPageBoundary !== undefined && navIndex === 0}
+              hasNextPage={onPageBoundary !== undefined && navIndex === workOrders.length - 1}
             />
           </>
         )}
