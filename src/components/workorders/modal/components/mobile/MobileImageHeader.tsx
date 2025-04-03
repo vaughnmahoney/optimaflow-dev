@@ -32,7 +32,7 @@ export const MobileImageHeader = ({
       <span className="font-medium">Images</span>
       
       {/* Right side: Close button with fixed width to match left side */}
-      <div className="w-24 flex justify-end">
+      <div className="w-24 flex justify-end pr-1">
         <Button 
           variant="ghost" 
           size="icon" 
