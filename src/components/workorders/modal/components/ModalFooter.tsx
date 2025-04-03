@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Download, StickyNote, PenLine } from "lucide-react";
 import { useEffect } from "react";
@@ -104,12 +103,13 @@ export const ModalFooter = ({
       <div>
         {onDownloadAll && hasImages && (
           <Button 
-            variant="outline"
-            className="border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-800 font-medium rounded-md transition-colors shadow-sm"
+            variant="outline" 
+            size="sm" 
+            className="gap-1 px-2 py-1 h-7 rounded-md bg-white border border-gray-200 hover:bg-gray-50"
             onClick={onDownloadAll}
           >
-            <Download className="mr-1 h-4 w-4" />
-            Download All
+            <Download className="h-3.5 w-3.5 text-gray-600" />
+            <span className="text-xs font-medium text-gray-700">Download All</span>
           </Button>
         )}
       </div>
