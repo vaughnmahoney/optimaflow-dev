@@ -33,7 +33,12 @@ export const MobileImageHeader = ({
       
       {/* Right side: Close button with fixed width to match left side */}
       <div className="w-24 flex justify-end">
-        <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={onClose} 
+          className="hover:bg-gray-200 dark:hover:bg-gray-700"
+        >
           <X className="h-4 w-4" />
         </Button>
       </div>
