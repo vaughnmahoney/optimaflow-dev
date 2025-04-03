@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { WorkOrderListProps } from "./types";
 import { StatusFilterCards } from "./filters/StatusFilterCards";
@@ -29,45 +28,34 @@ export const WorkOrderList = ({
   onColumnFilterChange,
   clearColumnFilter,
   clearAllFilters,
-  onResolveFlag,
-  // Updated modal props
-  isImageModalOpen,
-  activeWorkOrder,
-  onCloseImageModal
+  onResolveFlag
 }: WorkOrderListProps) => {
   const [searchResponse, setSearchResponse] = useState<any>(null);
   const [transformedData, setTransformedData] = useState<any>(null);
+  const [selectedWorkOrder, setSelectedWorkOrder] = useState<string | null>(null);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const isMobile = useIsMobile();
 
   if (isLoading) {
     return <LoadingSkeleton />;
   }
 
-  // Handle status filter change
-  const handleStatusFilterChange = (status: string | null) => {
-    onFiltersChange({
-      ...filters,
-      status
-    });
+  // Get the current work order and its index
+  const currentWorkOrder = workOrders.find(wo => wo.id === selectedWorkOrder) || null;
+  const currentIndex = currentWorkOrder ? workOrders.findIndex(wo => wo.id === currentWorkOrder.id) : -1;
+
+  // Handle the image view click
+  const handleImageView = (workOrderId: string) => {
+    setSelectedWorkOrder(workOrderId);
+    setIsImageModalOpen(true);
+    // Also call the passed onImageView function if needed
+    if (onImageView) onImageView(workOrderId);
   };
 
-  // Handle sort change
-  const handleSortChange = (field: SortField, direction: SortDirection) => {
-    if (onSort) {
-      onSort(field, direction);
-    }
-  };
-  
-  // Get the current index for navigation within the current filtered list
-  const currentIndex = activeWorkOrder 
-    ? workOrders.findIndex(wo => wo.id === activeWorkOrder.id) 
-    : -1;
-  
   // Handle navigation between work orders in the modal
   const handleNavigate = (index: number) => {
     if (index >= 0 && index < workOrders.length) {
-      const navigatedWorkOrder = workOrders[index];
-      onImageView(navigatedWorkOrder.id);
+      setSelectedWorkOrder(workOrders[index].id);
     }
   };
   
@@ -87,7 +75,7 @@ export const WorkOrderList = ({
       setTimeout(() => {
         if (workOrders.length > 0) {
           // Select the first order when going to the next page
-          onImageView(workOrders[0].id);
+          setSelectedWorkOrder(workOrders[0].id);
         }
       }, 100);
     } else if (direction === 'previous' && pagination.page > 1) {
@@ -97,9 +85,24 @@ export const WorkOrderList = ({
       setTimeout(() => {
         if (workOrders.length > 0) {
           // Select the last order when going to the previous page
-          onImageView(workOrders[workOrders.length - 1].id);
+          setSelectedWorkOrder(workOrders[workOrders.length - 1].id);
         }
       }, 100);
+    }
+  };
+
+  // Handle status filter change
+  const handleStatusFilterChange = (status: string | null) => {
+    onFiltersChange({
+      ...filters,
+      status
+    });
+  };
+
+  // Handle sort change
+  const handleSortChange = (field: SortField, direction: SortDirection) => {
+    if (onSort) {
+      onSort(field, direction);
     }
   };
 
@@ -134,7 +137,7 @@ export const WorkOrderList = ({
       <WorkOrderTable 
         workOrders={workOrders}
         onStatusUpdate={onStatusUpdate}
-        onImageView={onImageView}
+        onImageView={handleImageView}
         onDelete={onDelete}
         sortField={sortField}
         sortDirection={sortDirection}
@@ -148,20 +151,20 @@ export const WorkOrderList = ({
         onClearAllFilters={clearAllFilters}
       />
 
-      {/* Image View Modal - Using activeWorkOrder directly */}
-      {isImageModalOpen && activeWorkOrder && (
+      {currentWorkOrder && (
         <ImageViewModal
-          workOrder={activeWorkOrder}
-          workOrders={workOrders} 
+          workOrder={currentWorkOrder}
+          workOrders={workOrders}
           currentIndex={currentIndex}
           isOpen={isImageModalOpen}
-          onClose={onCloseImageModal}
+          onClose={() => setIsImageModalOpen(false)}
           onStatusUpdate={onStatusUpdate}
           onNavigate={handleNavigate}
           onPageBoundary={handlePageBoundary}
           onResolveFlag={onResolveFlag}
           onDownloadAll={() => {
-            console.log("Download all images for:", activeWorkOrder.id);
+            // Placeholder for download all functionality
+            console.log("Download all images for:", currentWorkOrder.id);
           }}
         />
       )}
