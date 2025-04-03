@@ -1,39 +1,32 @@
 
-import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { SortDirection, SortField } from "../types";
+import { TableHead, TableHeader as UITableHeader, TableRow } from "@/components/ui/table";
+import { SortDirection, SortField, WorkOrderFilters } from "../types";
 import { useState } from "react";
 import { TextFilter, DateFilter, StatusFilter, DriverFilter, LocationFilter } from "../filters";
 import { ColumnHeader } from "./ColumnHeader";
 import { isColumnFiltered } from "./utils";
 
-interface WorkOrderTableHeaderProps {
-  sortField: SortField;
-  sortDirection: SortDirection;
-  onSort: (field: SortField) => void;
-  filters: {
-    orderNo: string | null;
-    dateRange: { from: Date | null; to: Date | null };
-    driver: string | null;
-    location: string | null;
-    status: string | null;
-    optimoRouteStatus: string | null; // Add the required field
-  };
-  onFilterChange: (column: string, value: any) => void;
-  onFilterClear: (column: string) => void;
+interface TableHeaderProps {
+  sortField?: SortField;
+  sortDirection?: SortDirection;
+  onSort?: (field: SortField, direction: SortDirection) => void;
+  filters: WorkOrderFilters;
+  onColumnFilterChange: (column: string, value: any) => void;
+  onColumnFilterClear: (column: string) => void;
 }
 
-export const WorkOrderTableHeader = ({ 
+export const TableHeader = ({ 
   sortField, 
   sortDirection, 
   onSort,
   filters,
-  onFilterChange,
-  onFilterClear
-}: WorkOrderTableHeaderProps) => {
+  onColumnFilterChange,
+  onColumnFilterClear
+}: TableHeaderProps) => {
   const [openPopover, setOpenPopover] = useState<string | null>(null);
   
   const handleFilterChange = (column: string, value: any) => {
-    onFilterChange(column, value);
+    onColumnFilterChange(column, value);
     // Don't close popover immediately to allow for multiple selections
   };
   
@@ -42,13 +35,13 @@ export const WorkOrderTableHeader = ({
   };
 
   return (
-    <TableHeader>
+    <UITableHeader>
       <TableRow>
         <ColumnHeader
           label="Order #"
           column="order_no"
           sortDirection={sortField === 'order_no' ? sortDirection : null}
-          onSort={() => onSort('order_no')}
+          onSort={() => onSort?.('order_no')}
           isFiltered={isColumnFiltered('order_no', filters)}
           filterContent={
             <TextFilter 
@@ -56,7 +49,7 @@ export const WorkOrderTableHeader = ({
               value={filters.orderNo} 
               onChange={(value) => handleFilterChange('order_no', value)}
               onClear={() => {
-                onFilterClear('order_no');
+                onColumnFilterClear('order_no');
                 closePopover();
               }}
             />
@@ -67,17 +60,17 @@ export const WorkOrderTableHeader = ({
         
         <ColumnHeader
           label="Service Date"
-          column="end_time" // Changed from service_date to end_time
-          sortDirection={sortField === 'end_time' ? sortDirection : null} // Changed from service_date to end_time
-          onSort={() => onSort('end_time')} // Changed from service_date to end_time
-          isFiltered={isColumnFiltered('service_date', filters)} // Keep this as service_date for UI continuity
+          column="end_time" 
+          sortDirection={sortField === 'end_time' ? sortDirection : null} 
+          onSort={() => onSort?.('end_time')} 
+          isFiltered={isColumnFiltered('service_date', filters)} 
           filterContent={
             <DateFilter 
-              column="service_date" // Keep this as service_date for UI continuity
+              column="service_date" 
               value={filters.dateRange} 
               onChange={(value) => handleFilterChange('service_date', value)}
               onClear={() => {
-                onFilterClear('service_date');
+                onColumnFilterClear('service_date');
                 closePopover();
               }}
             />
@@ -90,7 +83,7 @@ export const WorkOrderTableHeader = ({
           label="Driver"
           column="driver"
           sortDirection={sortField === 'driver' ? sortDirection : null}
-          onSort={() => onSort('driver')}
+          onSort={() => onSort?.('driver')}
           isFiltered={isColumnFiltered('driver', filters)}
           filterContent={
             <DriverFilter 
@@ -98,7 +91,7 @@ export const WorkOrderTableHeader = ({
               value={filters.driver} 
               onChange={(value) => handleFilterChange('driver', value)}
               onClear={() => {
-                onFilterClear('driver');
+                onColumnFilterClear('driver');
                 closePopover();
               }}
             />
@@ -111,7 +104,7 @@ export const WorkOrderTableHeader = ({
           label="Location"
           column="location"
           sortDirection={sortField === 'location' ? sortDirection : null}
-          onSort={() => onSort('location')}
+          onSort={() => onSort?.('location')}
           isFiltered={isColumnFiltered('location', filters)}
           filterContent={
             <LocationFilter 
@@ -119,7 +112,7 @@ export const WorkOrderTableHeader = ({
               value={filters.location} 
               onChange={(value) => handleFilterChange('location', value)}
               onClear={() => {
-                onFilterClear('location');
+                onColumnFilterClear('location');
                 closePopover();
               }}
             />
@@ -132,7 +125,7 @@ export const WorkOrderTableHeader = ({
           label="Status"
           column="status"
           sortDirection={sortField === 'status' ? sortDirection : null}
-          onSort={() => onSort('status')}
+          onSort={() => onSort?.('status')}
           isFiltered={isColumnFiltered('status', filters)}
           filterContent={
             <StatusFilter 
@@ -140,7 +133,7 @@ export const WorkOrderTableHeader = ({
               value={filters.status} 
               onChange={(value) => handleFilterChange('status', value)}
               onClear={() => {
-                onFilterClear('status');
+                onColumnFilterClear('status');
                 closePopover();
               }}
             />
@@ -151,6 +144,6 @@ export const WorkOrderTableHeader = ({
         
         <TableHead>Actions</TableHead>
       </TableRow>
-    </TableHeader>
+    </UITableHeader>
   );
 };
