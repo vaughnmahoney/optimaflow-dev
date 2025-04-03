@@ -19,11 +19,9 @@ export const Pagination = ({ pagination, onPageChange, onPageSizeChange }: Pagin
   
   // Calculate which page numbers to show
   const getPageNumbers = () => {
-    // Always show first page, last page, current page, and pages around current
     const pageNumbers: (number | 'ellipsis')[] = [];
     
     if (totalPages <= 7) {
-      // If 7 or fewer pages, show all pages
       for (let i = 1; i <= totalPages; i++) {
         pageNumbers.push(i);
       }
@@ -65,14 +63,14 @@ export const Pagination = ({ pagination, onPageChange, onPageSizeChange }: Pagin
   };
 
   return (
-    <div className="flex flex-col gap-2 p-3 mt-4 border rounded-lg bg-white">
+    <div className="flex flex-col gap-2 p-3 mt-4 bg-white">
       <div className="flex items-center justify-between">
         <div className="text-xs text-muted-foreground">
           {total} {total === 1 ? 'item' : 'items'}
         </div>
         
         <div className="flex items-center space-x-4">
-          {/* Page size selector - moved next to pagination buttons */}
+          {/* Page size selector */}
           <div className="flex items-center space-x-2 text-xs text-muted-foreground">
             <span>Rows:</span>
             <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
@@ -89,7 +87,7 @@ export const Pagination = ({ pagination, onPageChange, onPageSizeChange }: Pagin
             </Select>
           </div>
           
-          <div className="flex items-center space-x-1.5">
+          <div className="flex items-center">
             <Button 
               variant="outline" 
               size="icon" 
@@ -102,10 +100,10 @@ export const Pagination = ({ pagination, onPageChange, onPageSizeChange }: Pagin
             </Button>
             
             {!isMobile && (
-              <div className="flex items-center space-x-1.5 min-w-32 justify-center">
+              <div className="flex items-center space-x-1.5 px-3 min-w-32 justify-center">
                 {pageNumbers.map((pageNum, idx) => 
                   pageNum === 'ellipsis' ? (
-                    <span key={`ellipsis-${idx}`} className="px-2 text-xs text-muted-foreground">
+                    <span key={`ellipsis-${idx}`} className="px-1 text-xs text-muted-foreground">
                       ...
                     </span>
                   ) : (
@@ -124,7 +122,7 @@ export const Pagination = ({ pagination, onPageChange, onPageSizeChange }: Pagin
             )}
             
             {isMobile && (
-              <span className="text-xs px-2 py-1.5 bg-gray-100 rounded-md min-w-16 text-center">
+              <span className="text-xs px-2 py-1.5 bg-gray-100 rounded-md min-w-16 text-center mx-2">
                 {page} / {totalPages}
               </span>
             )}
