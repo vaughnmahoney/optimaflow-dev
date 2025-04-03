@@ -33,11 +33,11 @@ export const useAutoImport = () => {
       
       // Set up progress updates via EventSource
       let progressEventSource: EventSource | null = null;
+      let progressInterval: number | null = null;
       
       try {
         // Start a long-running connection to track progress
-        // Using a direct URL construction instead of accessing protected property
-        const progressUrl = `${process.env.SUPABASE_URL || 'https://eijdqiyvuhregbydndnb.supabase.co'}/functions/v1/auto-import-orders/progress`;
+        const progressUrl = `${import.meta.env.VITE_SUPABASE_URL || 'https://eijdqiyvuhregbydndnb.supabase.co'}/functions/v1/auto-import-orders/progress`;
         progressEventSource = new EventSource(progressUrl);
         
         progressEventSource.addEventListener('message', (event) => {
@@ -61,10 +61,28 @@ export const useAutoImport = () => {
         });
       } catch (err) {
         console.error('Failed to set up progress tracking:', err);
-        // Continue with the import even if progress tracking fails
+        
+        // If progress tracking fails, use a simulated progress bar
+        let simulatedPercentage = 0;
+        progressInterval = window.setInterval(() => {
+          // Simulate progress, slowly at first then faster
+          simulatedPercentage += simulatedPercentage < 30 ? 1 : 
+                              simulatedPercentage < 60 ? 0.7 : 
+                              simulatedPercentage < 85 ? 0.4 : 0.1;
+          
+          // Cap at 95% until we get the actual result
+          if (simulatedPercentage > 95) {
+            simulatedPercentage = 95;
+            if (progressInterval) clearInterval(progressInterval);
+          }
+          
+          setImportProgress({
+            percentage: Math.min(Math.round(simulatedPercentage), 95)
+          });
+        }, 200);
       }
 
-      // Call the actual import function - removing the signal property which isn't supported
+      // Call the actual import function
       const { data, error } = await supabase.functions.invoke('auto-import-orders', {
         body: {}
       });
@@ -73,6 +91,9 @@ export const useAutoImport = () => {
       clearTimeout(timeoutId);
       if (progressEventSource) {
         progressEventSource.close();
+      }
+      if (progressInterval) {
+        clearInterval(progressInterval);
       }
 
       if (error) {
@@ -83,7 +104,11 @@ export const useAutoImport = () => {
 
       if (data.success) {
         // Set progress to 100% when done
-        setImportProgress({ percentage: 100, current: data.imported + data.duplicates, total: data.imported + data.duplicates });
+        setImportProgress({ 
+          percentage: 100, 
+          current: data.imported + data.duplicates, 
+          total: data.imported + data.duplicates 
+        });
         
         // Calculate the correct message based on the results
         let successMessage = `Import complete. `;
