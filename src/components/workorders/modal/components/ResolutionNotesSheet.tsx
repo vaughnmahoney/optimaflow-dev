@@ -112,7 +112,7 @@ export const ResolutionNotesSheet = ({ workOrder }: ResolutionNotesSheetProps) =
             <Button 
               onClick={handleSaveResolutionNotes} 
               disabled={isSaving}
-              className="gap-2 bg-gray-800 hover:bg-gray-900 text-white"
+              className="gap-2 bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300"
             >
               <Save className="h-4 w-4" />
               {isSaving ? "Saving..." : "Save Notes"}
