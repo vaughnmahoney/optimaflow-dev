@@ -65,80 +65,82 @@ export const Pagination = ({ pagination, onPageChange, onPageSizeChange }: Pagin
   };
 
   return (
-    <div className="flex flex-col gap-2 p-3 mt-4 border rounded-lg bg-gray-50/70">
+    <div className="flex flex-col gap-2 p-3 mt-4 border rounded-lg bg-white">
       <div className="flex items-center justify-between">
         <div className="text-xs text-muted-foreground">
           {total} {total === 1 ? 'item' : 'items'}
         </div>
         
-        <div className="flex items-center space-x-1.5">
-          <Button 
-            variant="outline" 
-            size="icon" 
-            className="h-7 w-7 shadow-sm"
-            disabled={page <= 1}
-            onClick={() => onPageChange(page - 1)}
-          >
-            <ChevronLeft className="h-3.5 w-3.5" />
-            <span className="sr-only">Previous page</span>
-          </Button>
+        <div className="flex items-center space-x-4">
+          {/* Page size selector - moved next to pagination buttons */}
+          <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+            <span>Rows:</span>
+            <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
+              <SelectTrigger className="h-7 w-14 text-xs shadow-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="20">20</SelectItem>
+                <SelectItem value="30">30</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+                <SelectItem value="100">100</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           
-          {!isMobile && (
-            <div className="flex items-center space-x-1.5">
-              {pageNumbers.map((pageNum, idx) => 
-                pageNum === 'ellipsis' ? (
-                  <span key={`ellipsis-${idx}`} className="px-2 text-xs text-muted-foreground">
-                    ...
-                  </span>
-                ) : (
-                  <Button
-                    key={`page-${pageNum}`}
-                    variant={pageNum === page ? "default" : "outline"}
-                    size="icon"
-                    className="h-7 w-7 text-xs shadow-sm"
-                    onClick={() => onPageChange(pageNum as number)}
-                  >
-                    {pageNum}
-                  </Button>
-                )
-              )}
-            </div>
-          )}
-          
-          {isMobile && (
-            <span className="text-xs px-2 py-1.5 bg-gray-100 rounded-md">
-              {page} / {totalPages}
-            </span>
-          )}
-          
-          <Button 
-            variant="outline" 
-            size="icon" 
-            className="h-7 w-7 shadow-sm"
-            disabled={page >= totalPages}
-            onClick={() => onPageChange(page + 1)}
-          >
-            <ChevronRight className="h-3.5 w-3.5" />
-            <span className="sr-only">Next page</span>
-          </Button>
+          <div className="flex items-center space-x-1.5">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="h-7 w-7 shadow-sm"
+              disabled={page <= 1}
+              onClick={() => onPageChange(page - 1)}
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+              <span className="sr-only">Previous page</span>
+            </Button>
+            
+            {!isMobile && (
+              <div className="flex items-center space-x-1.5 min-w-32 justify-center">
+                {pageNumbers.map((pageNum, idx) => 
+                  pageNum === 'ellipsis' ? (
+                    <span key={`ellipsis-${idx}`} className="px-2 text-xs text-muted-foreground">
+                      ...
+                    </span>
+                  ) : (
+                    <Button
+                      key={`page-${pageNum}`}
+                      variant={pageNum === page ? "default" : "outline"}
+                      size="icon"
+                      className="h-7 w-7 text-xs shadow-sm"
+                      onClick={() => onPageChange(pageNum as number)}
+                    >
+                      {pageNum}
+                    </Button>
+                  )
+                )}
+              </div>
+            )}
+            
+            {isMobile && (
+              <span className="text-xs px-2 py-1.5 bg-gray-100 rounded-md min-w-16 text-center">
+                {page} / {totalPages}
+              </span>
+            )}
+            
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="h-7 w-7 shadow-sm"
+              disabled={page >= totalPages}
+              onClick={() => onPageChange(page + 1)}
+            >
+              <ChevronRight className="h-3.5 w-3.5" />
+              <span className="sr-only">Next page</span>
+            </Button>
+          </div>
         </div>
-      </div>
-
-      {/* Page size selector */}
-      <div className="flex items-center space-x-2 text-xs text-muted-foreground ml-auto">
-        <span>Rows per page:</span>
-        <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
-          <SelectTrigger className="h-7 w-16 text-xs shadow-sm">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="10">10</SelectItem>
-            <SelectItem value="20">20</SelectItem>
-            <SelectItem value="30">30</SelectItem>
-            <SelectItem value="50">50</SelectItem>
-            <SelectItem value="100">100</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
     </div>
   );
