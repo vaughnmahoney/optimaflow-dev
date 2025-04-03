@@ -1,25 +1,18 @@
 
-import {
-  Table,
-  TableBody,
-} from "@/components/ui/table";
-import { WorkOrder, SortDirection, SortField, PaginationState, WorkOrderFilters } from "../types";
-import { WorkOrderTableHeader } from "./TableHeader";
+import { Table } from "@/components/ui/table";
 import { WorkOrderRow } from "./WorkOrderRow";
-import { WorkOrderCard } from "./WorkOrderCard";
-import { EmptyState } from "./EmptyState";
-import { useSortableTable } from "./useSortableTable";
-import { Pagination } from "./Pagination";
+import { WorkOrder, WorkOrderFilters, SortDirection, SortField, PaginationState } from "../types";
+import { TableHeader } from "./TableHeader";
 import { PaginationIndicator } from "./PaginationIndicator";
-import { Button } from "@/components/ui/button";
-import { FilterX } from "lucide-react";
+import { EmptyState } from "./EmptyState";
+import { WorkOrderCard } from "./WorkOrderCard";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface WorkOrderTableProps {
   workOrders: WorkOrder[];
-  onStatusUpdate: (workOrderId: string, newStatus: string) => void;
+  onStatusUpdate: (workOrderId: string, newStatus: string, options?: any) => void;
   onImageView: (workOrderId: string) => void;
-  onDelete: (workOrderId: string) => void;
+  onDelete?: (workOrderId: string) => void;
   sortField?: SortField;
   sortDirection?: SortDirection;
   onSort?: (field: SortField, direction: SortDirection) => void;
@@ -30,83 +23,84 @@ interface WorkOrderTableProps {
   onColumnFilterChange: (column: string, value: any) => void;
   onColumnFilterClear: (column: string) => void;
   onClearAllFilters: () => void;
+  onRefresh?: () => Promise<any>;
 }
 
-export const WorkOrderTable = ({ 
-  workOrders: initialWorkOrders, 
+export const WorkOrderTable = ({
+  workOrders,
   onStatusUpdate,
   onImageView,
   onDelete,
-  sortField: externalSortField,
-  sortDirection: externalSortDirection,
-  onSort: externalOnSort,
+  sortField,
+  sortDirection,
+  onSort,
   pagination,
   onPageChange,
   onPageSizeChange,
   filters,
   onColumnFilterChange,
   onColumnFilterClear,
-  onClearAllFilters
+  onClearAllFilters,
+  onRefresh
 }: WorkOrderTableProps) => {
   const isMobile = useIsMobile();
-  
-  const { 
-    workOrders, 
-    sortField, 
-    sortDirection, 
-    handleSort 
-  } = useSortableTable(
-    initialWorkOrders, 
-    externalSortField, 
-    externalSortDirection, 
-    externalOnSort
-  );
 
-  // Check if any filter is active
-  const hasActiveFilters = 
-    filters.status !== null || 
-    filters.orderNo !== null || 
-    filters.driver !== null || 
-    filters.location !== null || 
-    filters.dateRange.from !== null || 
-    filters.dateRange.to !== null;
+  if (workOrders.length === 0) {
+    return <EmptyState />;
+  }
+
+  if (isMobile) {
+    return (
+      <div className="space-y-2">
+        {pagination && onPageChange && (
+          <PaginationIndicator 
+            pagination={pagination} 
+            onPageChange={onPageChange}
+            onRefresh={onRefresh}
+          />
+        )}
+        {workOrders.map(workOrder => (
+          <WorkOrderCard
+            key={workOrder.id}
+            workOrder={workOrder}
+            onStatusUpdate={onStatusUpdate}
+            onImageView={onImageView}
+            onDelete={onDelete}
+          />
+        ))}
+        {pagination && onPageChange && (
+          <PaginationIndicator 
+            pagination={pagination} 
+            onPageChange={onPageChange}
+            onRefresh={onRefresh}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-2">
-      {/* Active filters indicator */}
-      {hasActiveFilters && (
-        <div className="flex items-center justify-between mb-2 px-2">
-          <div className="text-sm text-muted-foreground">
-            Active filters applied
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClearAllFilters}
-            className="h-8 text-xs"
-          >
-            <FilterX className="h-3 w-3 mr-1" />
-            Clear all filters
-          </Button>
-        </div>
-      )}
-      
-      {/* Top pagination indicator */}
+    <div>
       {pagination && onPageChange && (
         <PaginationIndicator 
-          pagination={pagination}
-          onPageChange={onPageChange}
+          pagination={pagination} 
+          onPageChange={onPageChange} 
+          onRefresh={onRefresh}
         />
       )}
-
-      {/* Card grid layout for both mobile and desktop */}
-      <div className="space-y-2">
-        {workOrders.length === 0 ? (
-          <EmptyState />
-        ) : (
-          <div className={`grid gap-3 ${isMobile ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"}`}>
-            {workOrders.map((workOrder) => (
-              <WorkOrderCard
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader 
+            sortField={sortField} 
+            sortDirection={sortDirection}
+            onSort={onSort}
+            filters={filters}
+            onColumnFilterChange={onColumnFilterChange}
+            onColumnFilterClear={onColumnFilterClear}
+          />
+          <tbody>
+            {workOrders.map(workOrder => (
+              <WorkOrderRow
                 key={workOrder.id}
                 workOrder={workOrder}
                 onStatusUpdate={onStatusUpdate}
@@ -114,16 +108,16 @@ export const WorkOrderTable = ({
                 onDelete={onDelete}
               />
             ))}
-          </div>
-        )}
-        {pagination && onPageChange && onPageSizeChange && (
-          <Pagination 
-            pagination={pagination}
-            onPageChange={onPageChange}
-            onPageSizeChange={onPageSizeChange}
-          />
-        )}
+          </tbody>
+        </Table>
       </div>
+      {pagination && onPageChange && pagination.total > workOrders.length && (
+        <PaginationIndicator 
+          pagination={pagination} 
+          onPageChange={onPageChange}
+          onRefresh={onRefresh}
+        />
+      )}
     </div>
   );
 };

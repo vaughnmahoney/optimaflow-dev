@@ -3,13 +3,15 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { PaginationState } from "../types";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ImportControls } from "../ImportControls";
 
 interface PaginationIndicatorProps {
   pagination: PaginationState;
   onPageChange: (page: number) => void;
+  onRefresh?: () => void;
 }
 
-export const PaginationIndicator = ({ pagination, onPageChange }: PaginationIndicatorProps) => {
+export const PaginationIndicator = ({ pagination, onPageChange, onRefresh }: PaginationIndicatorProps) => {
   const { page, pageSize, total } = pagination;
   const totalPages = Math.ceil(total / pageSize);
   const isMobile = useIsMobile();
@@ -20,8 +22,9 @@ export const PaginationIndicator = ({ pagination, onPageChange }: PaginationIndi
 
   return (
     <div className="flex justify-between items-center py-2 px-3 mb-4 bg-white">
-      <div className="text-xs text-muted-foreground">
-        {total} {total === 1 ? 'item' : 'items'}
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <span>{total} {total === 1 ? 'order' : 'orders'}</span>
+        <ImportControls onRefresh={onRefresh} />
       </div>
 
       <div className="flex items-center">

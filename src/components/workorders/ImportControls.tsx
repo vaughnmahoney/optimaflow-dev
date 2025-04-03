@@ -49,34 +49,17 @@ export const ImportControls = ({
     }
   };
 
-  // Mobile UI
-  if (isMobile) {
-    return (
-      <div className="flex justify-end gap-2 mb-4">
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={handleRefresh}
-          disabled={isRefreshing || isAutoImporting}
-        >
-          <RefreshCw className={`h-4 w-4 ${isRefreshing || isAutoImporting ? 'animate-spin' : ''}`} />
-          <span className="sr-only">{isRefreshing || isAutoImporting ? 'Refreshing...' : 'Refresh'}</span>
-        </Button>
-      </div>
-    );
-  }
-
-  // Desktop UI
+  // Simple button for both mobile and desktop
   return (
-    <div className="flex items-center justify-end mb-4 bg-card p-4 rounded-md shadow-sm border">
-      <Button 
-        variant="outline" 
-        onClick={handleRefresh}
-        disabled={isRefreshing || isAutoImporting}
-      >
-        <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing || isAutoImporting ? 'animate-spin' : ''}`} />
-        {isRefreshing || isAutoImporting ? 'Refreshing...' : 'Refresh & Import'}
-      </Button>
-    </div>
+    <Button 
+      variant="ghost" 
+      size="icon"
+      onClick={handleRefresh}
+      disabled={isRefreshing || isAutoImporting}
+      className="h-8 w-8"
+    >
+      <RefreshCw className={`h-4 w-4 ${isRefreshing || isAutoImporting ? 'animate-spin' : ''}`} />
+      <span className="sr-only">{isRefreshing || isAutoImporting ? 'Refreshing...' : 'Refresh'}</span>
+    </Button>
   );
 };

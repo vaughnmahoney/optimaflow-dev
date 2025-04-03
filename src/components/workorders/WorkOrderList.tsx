@@ -174,6 +174,7 @@ export const WorkOrderList = ({
         onColumnFilterChange={onColumnFilterChange}
         onColumnFilterClear={clearColumnFilter}
         onClearAllFilters={clearAllFilters}
+        onRefresh={refetch}
       />
 
       {currentWorkOrder && (
