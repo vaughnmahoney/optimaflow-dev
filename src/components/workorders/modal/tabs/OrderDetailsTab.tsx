@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { WorkOrder } from "@/components/workorders/types";
-import { MapPin, Clock, User, ExternalLink } from "lucide-react";
+import { MapPin, Clock, User, ExternalLink, Package } from "lucide-react";
 import { format } from "date-fns";
 
 interface OrderDetailsTabProps {
@@ -50,6 +50,9 @@ export const OrderDetailsTab = ({
     [city, state, zip].filter(Boolean).join(", ")
   ].filter(part => part && part !== "N/A").join(", ");
 
+  // Extract material quantity
+  const materialQuantity = searchData?.customField3 || "N/A";
+  
   // Format LDS information
   const ldsRaw = searchData?.customField5 || workOrder.lds || "N/A";
   const ldsInfo = ldsRaw !== "N/A" && ldsRaw.includes(" ") 
@@ -62,10 +65,11 @@ export const OrderDetailsTab = ({
   return (
     <div className="p-4">
       <Card className="shadow-sm border-gray-100">
-        <div className="p-6 space-y-6">
+        <div className="p-4 space-y-4">
           {/* Top row with tracking button if available */}
-          {trackingUrl && (
-            <div className="flex justify-end mb-2">
+          <div className="flex justify-between items-center">
+            <h3 className="text-base font-medium text-gray-800">Order Details</h3>
+            {trackingUrl && (
               <Button 
                 variant="outline" 
                 size="sm"
@@ -75,42 +79,44 @@ export const OrderDetailsTab = ({
                 <ExternalLink className="h-4 w-4 mr-1.5" />
                 View Tracking
               </Button>
-            </div>
-          )}
+            )}
+          </div>
           
-          {/* Top section with Location (left) and Driver (right) */}
-          <div className="flex">
-            {/* Location Section - Left */}
-            <div className="space-y-3 flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <MapPin className="h-5 w-5 text-gray-400" />
-                <h3 className="text-base font-medium text-gray-800">Location</h3>
+          <Separator className="bg-gray-100" />
+          
+          {/* Location and Driver info in a grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Location Section */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-gray-400" />
+                <h4 className="text-sm font-medium text-gray-700">Location</h4>
               </div>
-              <div className="pl-7 space-y-1">
+              <div className="pl-6 space-y-0.5">
                 <p className="text-sm font-medium text-gray-700">{locationName}</p>
                 <p className="text-sm text-gray-600">{fullAddress}</p>
               </div>
             </div>
             
-            {/* Driver Section - Right */}
-            <div className="space-y-3 ml-10">
-              <div className="flex items-center gap-2 mb-2">
-                <User className="h-5 w-5 text-gray-400" />
-                <h3 className="text-base font-medium text-gray-800">Driver</h3>
+            {/* Driver Section */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4 text-gray-400" />
+                <h4 className="text-sm font-medium text-gray-700">Driver</h4>
               </div>
-              <p className="text-sm text-gray-700 pl-7">{driverName}</p>
+              <p className="text-sm text-gray-700 pl-6">{driverName}</p>
             </div>
           </div>
           
           <Separator className="bg-gray-100" />
           
           {/* Time Details Section */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 mb-2">
-              <Clock className="h-5 w-5 text-gray-400" />
-              <h3 className="text-base font-medium text-gray-800">Time Details</h3>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-gray-400" />
+              <h4 className="text-sm font-medium text-gray-700">Time Details</h4>
             </div>
-            <div className="pl-7 grid grid-cols-[100px_1fr] gap-y-2">
+            <div className="pl-6 grid grid-cols-[100px_1fr] gap-y-1">
               <span className="text-sm text-gray-600">Start Time:</span>
               <span className="text-sm text-gray-700">{startTime}</span>
               
@@ -119,6 +125,20 @@ export const OrderDetailsTab = ({
               
               <span className="text-sm text-gray-600">LDS:</span>
               <span className="text-sm text-gray-700">{ldsInfo}</span>
+            </div>
+          </div>
+          
+          <Separator className="bg-gray-100" />
+          
+          {/* Materials Section */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Package className="h-4 w-4 text-gray-400" />
+              <h4 className="text-sm font-medium text-gray-700">Materials</h4>
+            </div>
+            <div className="pl-6 grid grid-cols-[100px_1fr] gap-y-1">
+              <span className="text-sm text-gray-600">Quantity:</span>
+              <span className="text-sm text-gray-700">{materialQuantity}</span>
             </div>
           </div>
         </div>

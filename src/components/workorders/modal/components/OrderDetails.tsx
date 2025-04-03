@@ -95,7 +95,7 @@ export const OrderDetails = ({
             <TabsTrigger value="details" className="rounded-none data-[state=active]:bg-gray-50 data-[state=active]:border-b-2 data-[state=active]:border-gray-700">
               <div className="flex items-center gap-2">
                 <FileText className="h-4 w-4 text-gray-600" />
-                <span className="text-sm hidden sm:inline font-medium">Order Details</span>
+                <span className="text-sm hidden sm:inline font-medium">Details</span>
               </div>
             </TabsTrigger>
             <TabsTrigger value="notes" className="rounded-none data-[state=active]:bg-gray-50 data-[state=active]:border-b-2 data-[state=active]:border-gray-700">
