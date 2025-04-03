@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { WorkOrderListProps } from "./types";
 import { StatusFilterCards } from "./filters/StatusFilterCards";
@@ -28,7 +29,9 @@ export const WorkOrderList = ({
   onColumnFilterChange,
   clearColumnFilter,
   clearAllFilters,
-  onResolveFlag
+  onResolveFlag,
+  cachedWorkOrder, // Added cachedWorkOrder prop
+  clearCachedWorkOrder // Added clearCachedWorkOrder function
 }: WorkOrderListProps) => {
   const [searchResponse, setSearchResponse] = useState<any>(null);
   const [transformedData, setTransformedData] = useState<any>(null);
@@ -40,9 +43,18 @@ export const WorkOrderList = ({
     return <LoadingSkeleton />;
   }
 
-  // Get the current work order and its index
-  const currentWorkOrder = workOrders.find(wo => wo.id === selectedWorkOrder) || null;
-  const currentIndex = currentWorkOrder ? workOrders.findIndex(wo => wo.id === currentWorkOrder.id) : -1;
+  // Get the current work order and its index, now with support for cached work orders
+  let currentWorkOrder = workOrders.find(wo => wo.id === selectedWorkOrder);
+  
+  // If the selected work order is not in the filtered list but we have a cached version, use that
+  if (!currentWorkOrder && cachedWorkOrder && cachedWorkOrder.id === selectedWorkOrder) {
+    currentWorkOrder = cachedWorkOrder;
+  }
+  
+  // If there's a current work order, find its index in the filtered list
+  const currentIndex = currentWorkOrder ? 
+    workOrders.findIndex(wo => wo.id === currentWorkOrder?.id) : 
+    -1;
 
   // Handle the image view click
   const handleImageView = (workOrderId: string) => {
@@ -56,6 +68,10 @@ export const WorkOrderList = ({
   const handleNavigate = (index: number) => {
     if (index >= 0 && index < workOrders.length) {
       setSelectedWorkOrder(workOrders[index].id);
+      // Clear any cached work order when navigating to a new one
+      if (clearCachedWorkOrder) {
+        clearCachedWorkOrder();
+      }
     }
   };
   
@@ -76,6 +92,10 @@ export const WorkOrderList = ({
         if (workOrders.length > 0) {
           // Select the first order when going to the next page
           setSelectedWorkOrder(workOrders[0].id);
+          // Clear cached work order
+          if (clearCachedWorkOrder) {
+            clearCachedWorkOrder();
+          }
         }
       }, 100);
     } else if (direction === 'previous' && pagination.page > 1) {
@@ -86,6 +106,10 @@ export const WorkOrderList = ({
         if (workOrders.length > 0) {
           // Select the last order when going to the previous page
           setSelectedWorkOrder(workOrders[workOrders.length - 1].id);
+          // Clear cached work order
+          if (clearCachedWorkOrder) {
+            clearCachedWorkOrder();
+          }
         }
       }, 100);
     }
@@ -103,6 +127,15 @@ export const WorkOrderList = ({
   const handleSortChange = (field: SortField, direction: SortDirection) => {
     if (onSort) {
       onSort(field, direction);
+    }
+  };
+
+  // Handle modal close
+  const handleModalClose = () => {
+    setIsImageModalOpen(false);
+    // Clear any cached work order when closing the modal
+    if (clearCachedWorkOrder) {
+      clearCachedWorkOrder();
     }
   };
 
@@ -157,7 +190,7 @@ export const WorkOrderList = ({
           workOrders={workOrders}
           currentIndex={currentIndex}
           isOpen={isImageModalOpen}
-          onClose={() => setIsImageModalOpen(false)}
+          onClose={handleModalClose}
           onStatusUpdate={onStatusUpdate}
           onNavigate={handleNavigate}
           onPageBoundary={handlePageBoundary}

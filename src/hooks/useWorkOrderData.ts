@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { SortField, SortDirection, PaginationState, WorkOrderFilters } from "@/components/workorders/types";
 import { useWorkOrderFetch } from "./useWorkOrderFetch";
@@ -15,13 +14,15 @@ export const useWorkOrderData = () => {
     orderNo: null
   });
   
-  const [sortField, setSortField] = useState<SortField>('end_time'); // Changed from 'service_date' to 'end_time'
+  const [sortField, setSortField] = useState<SortField>('end_time');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [pagination, setPagination] = useState<PaginationState>({
     page: 1,
     pageSize: 10,
     total: 0
   });
+
+  const [cachedWorkOrder, setCachedWorkOrder] = useState<any>(null);
 
   const { data: workOrdersData = { data: [], total: 0 }, isLoading, refetch } = useWorkOrderFetch(
     filters, 
@@ -42,6 +43,22 @@ export const useWorkOrderData = () => {
   
   const { searchOptimoRoute } = useWorkOrderImport();
   const { updateWorkOrderStatus, deleteWorkOrder } = useWorkOrderMutations();
+
+  const handleUpdateWorkOrderStatus = async (workOrderId: string, newStatus: string) => {
+    const workOrderToCache = workOrders.find(wo => wo.id === workOrderId);
+    if (workOrderToCache) {
+      setCachedWorkOrder({
+        ...workOrderToCache,
+        status: newStatus
+      });
+    }
+    
+    await updateWorkOrderStatus(workOrderId, newStatus);
+  };
+
+  const clearCachedWorkOrder = () => {
+    setCachedWorkOrder(null);
+  };
 
   const handleColumnFilterChange = (column: string, value: any) => {
     setFilters(prev => {
@@ -68,6 +85,7 @@ export const useWorkOrderData = () => {
       return newFilters;
     });
     
+    setCachedWorkOrder(null);
     handlePageChange(1);
   };
 
@@ -96,6 +114,7 @@ export const useWorkOrderData = () => {
       return newFilters;
     });
     
+    setCachedWorkOrder(null);
     handlePageChange(1);
   };
 
@@ -108,6 +127,7 @@ export const useWorkOrderData = () => {
       orderNo: null
     });
     
+    setCachedWorkOrder(null);
     handlePageChange(1);
   };
 
@@ -124,19 +144,27 @@ export const useWorkOrderData = () => {
   const handlePageChange = (page: number) => {
     const newPage = Math.max(1, page);
     setPagination(prev => ({ ...prev, page: newPage }));
+    
+    setCachedWorkOrder(null);
   };
   
   const handlePageSizeChange = (pageSize: number) => {
     setPagination(prev => ({ ...prev, pageSize, page: 1 }));
+    
+    setCachedWorkOrder(null);
   };
   
   const handleFiltersChange = (newFilters: WorkOrderFilters) => {
     setFilters(newFilters);
+    
+    setCachedWorkOrder(null);
     handlePageChange(1);
   };
 
   return {
     data: workOrders,
+    cachedWorkOrder,
+    clearCachedWorkOrder,
     isLoading,
     filters,
     setFilters: handleFiltersChange,
@@ -144,7 +172,7 @@ export const useWorkOrderData = () => {
     clearColumnFilter,
     clearAllFilters,
     searchOptimoRoute,
-    updateWorkOrderStatus,
+    updateWorkOrderStatus: handleUpdateWorkOrderStatus,
     openImageViewer,
     deleteWorkOrder,
     statusCounts,

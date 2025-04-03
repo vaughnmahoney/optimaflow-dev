@@ -1,3 +1,4 @@
+
 import { ReactNode } from "react";
 import { WorkOrder } from './workOrder';
 import { WorkOrderFilters } from './filtering';
@@ -35,6 +36,8 @@ export interface WorkOrderListProps {
   clearColumnFilter: (column: string) => void;
   clearAllFilters: () => void;
   onResolveFlag?: (workOrderId: string, resolution: string) => void;
+  cachedWorkOrder?: WorkOrder | null; // Added prop for cached work order
+  clearCachedWorkOrder?: () => void; // Added prop for clearing cached work order
 }
 
 export interface StatusFilterProps {

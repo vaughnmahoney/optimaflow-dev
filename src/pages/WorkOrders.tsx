@@ -1,3 +1,4 @@
+
 import { Layout } from "@/components/Layout";
 import { WorkOrderContent } from "@/components/workorders/WorkOrderContent";
 import { WorkOrderHeader } from "@/components/workorders/WorkOrderHeader";
@@ -36,7 +37,9 @@ const WorkOrders = () => {
     pagination,
     handlePageChange,
     handlePageSizeChange,
-    refetch
+    refetch,
+    cachedWorkOrder,
+    clearCachedWorkOrder
   } = useWorkOrderData();
 
   useEffect(() => {
@@ -94,6 +97,8 @@ const WorkOrders = () => {
           clearColumnFilter={clearColumnFilter}
           clearAllFilters={clearAllFilters}
           onResolveFlag={resolveWorkOrderFlag}
+          cachedWorkOrder={cachedWorkOrder}
+          clearCachedWorkOrder={clearCachedWorkOrder}
         />
       </div>
     </Layout>
