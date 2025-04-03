@@ -1,4 +1,3 @@
-
 import { ReactNode } from "react";
 import { WorkOrder } from './workOrder';
 import { WorkOrderFilters } from './filtering';
@@ -47,4 +46,14 @@ export interface StatusFilterProps {
 export interface DebugDisplayProps {
   searchResponse?: any;
   transformedData?: any;
+}
+
+export interface FilterSortButtonProps {
+  filters: WorkOrderFilters;
+  onColumnFilterChange: (column: string, value: any) => void;
+  clearColumnFilter: (column: string) => void;
+  clearAllFilters: () => void;
+  sortField?: SortField;
+  sortDirection?: SortDirection;
+  onSort?: (field: SortField, direction: SortDirection) => void;
 }

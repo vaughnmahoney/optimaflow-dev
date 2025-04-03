@@ -1,4 +1,3 @@
-
 import { DateRangePicker } from "./DateRangePicker";
 import { EndpointTabs } from "./EndpointTabs";
 import { FetchButton } from "./FetchButton";
@@ -14,33 +13,26 @@ import { Button } from "@/components/ui/button";
 
 export const BulkOrdersProgressiveForm = () => {
   const {
-    // Date state
     startDate,
     setStartDate,
     endDate,
     setEndDate,
     
-    // Loading state
     isLoading,
     
-    // Tab state
     activeTab,
     setActiveTab,
     
-    // Progress state
     progressState,
     
-    // Response data
     rawOrders,
     
-    // Actions
     handleFetchOrders,
     pauseFetch,
     resumeFetch,
     resetFetch
   } = useBulkOrdersProgressiveFetch();
 
-  // Import hook for saving orders to database
   const { 
     importOrders, 
     isImporting, 
@@ -48,14 +40,12 @@ export const BulkOrdersProgressiveForm = () => {
     importProgress 
   } = useBulkOrderImport();
 
-  // Tracking state for auto-save
   const [hasTriggeredAutoSave, setHasTriggeredAutoSave] = useState(false);
   const [manualSaveEnabled, setManualSaveEnabled] = useState(false);
-  
-  // Calculate if bulk fetch has started
+  const [sortOrder, setSortOrder] = useState<SortDirection>('desc');
+
   const isFetchStarted = progressState.currentPage > 0 || progressState.isComplete;
-  
-  // Create derived status counts for display
+
   const statusCounts = {
     approved: 0,
     pending_review: rawOrders ? rawOrders.length : 0,
@@ -65,7 +55,6 @@ export const BulkOrdersProgressiveForm = () => {
     all: rawOrders ? rawOrders.length : 0
   };
 
-  // Handle manual import
   const handleManualImport = async () => {
     if (rawOrders && rawOrders.length > 0) {
       console.log(`Manually importing ${rawOrders.length} orders to database...`);
@@ -73,17 +62,8 @@ export const BulkOrdersProgressiveForm = () => {
     }
   };
 
-  // Auto-save to database when fetch is complete and orders are available
   useEffect(() => {
     const autoSaveToDatabase = async () => {
-      // Check if auto-save should be triggered - need all these conditions:
-      // 1. Fetch is truly complete (progress state shows complete)
-      // 2. We have orders to save
-      // 3. Not currently importing
-      // 4. No previous import attempt
-      // 5. Haven't already triggered auto-save
-      // 6. Manual save mode not enabled
-
       if (
         progressState.isComplete && 
         rawOrders && 
@@ -93,7 +73,6 @@ export const BulkOrdersProgressiveForm = () => {
         !hasTriggeredAutoSave &&
         !manualSaveEnabled
       ) {
-        // Add a slight delay to ensure data is fully loaded
         setTimeout(async () => {
           console.log(`Auto-saving ${rawOrders.length} orders to database...`);
           setHasTriggeredAutoSave(true);
@@ -105,16 +84,18 @@ export const BulkOrdersProgressiveForm = () => {
     autoSaveToDatabase();
   }, [progressState.isComplete, rawOrders, isImporting, importResult, importOrders, hasTriggeredAutoSave, manualSaveEnabled]);
 
-  // Reset auto-save trigger when starting a new fetch
   useEffect(() => {
     if (isLoading && progressState.currentPage === 1) {
       setHasTriggeredAutoSave(false);
     }
   }, [isLoading, progressState.currentPage]);
 
+  const handleSort = (field: SortField, direction: SortDirection) => {
+    setSortOrder(direction);
+  };
+
   return (
     <div className="space-y-6">
-      {/* Controls section */}
       <Card>
         <CardContent className="pt-6">
           <div className="space-y-4">
@@ -151,7 +132,6 @@ export const BulkOrdersProgressiveForm = () => {
               </div>
             </div>
             
-            {/* Progress bar */}
             <FetchProgressBar 
               state={progressState}
               onPause={pauseFetch}
@@ -159,7 +139,6 @@ export const BulkOrdersProgressiveForm = () => {
               onReset={resetFetch}
             />
             
-            {/* Import Progress (only show when actively importing) */}
             {isImporting && (
               <div className="mt-2 bg-blue-50 border border-blue-100 rounded p-3">
                 <div className="flex items-center gap-2 mb-2">
@@ -180,7 +159,6 @@ export const BulkOrdersProgressiveForm = () => {
               </div>
             )}
             
-            {/* Import Results (show when import is complete) */}
             {importResult && !isImporting && (
               <div className={`mt-2 ${importResult.success ? 'bg-green-50 border-green-100' : 'bg-amber-50 border-amber-100'} border rounded p-3`}>
                 <div className="flex items-center gap-2">
@@ -198,7 +176,6 @@ export const BulkOrdersProgressiveForm = () => {
               </div>
             )}
             
-            {/* Manual Import Button - show when fetch is complete and manual save mode is enabled */}
             {progressState.isComplete && manualSaveEnabled && rawOrders && rawOrders.length > 0 && !isImporting && (
               <div className="mt-4 flex justify-end">
                 <Button 
@@ -214,7 +191,6 @@ export const BulkOrdersProgressiveForm = () => {
         </CardContent>
       </Card>
       
-      {/* Simplified stats section - only show when fetching is complete */}
       {progressState.isComplete && rawOrders && rawOrders.length > 0 && (
         <Card className="bg-slate-50">
           <CardContent className="py-4">
@@ -231,7 +207,6 @@ export const BulkOrdersProgressiveForm = () => {
         </Card>
       )}
       
-      {/* Display a message when no orders have been fetched */}
       {!isLoading && (!rawOrders || rawOrders.length === 0) && !progressState.isComplete && (
         <div className="bg-slate-50 border rounded-md p-8 text-center">
           <h3 className="text-lg font-medium text-slate-800 mb-2">No orders loaded</h3>
@@ -239,7 +214,6 @@ export const BulkOrdersProgressiveForm = () => {
         </div>
       )}
       
-      {/* Only show work order content when there are orders */}
       {rawOrders && rawOrders.length > 0 && (
         <WorkOrderContent
           workOrders={rawOrders}
@@ -257,9 +231,9 @@ export const BulkOrdersProgressiveForm = () => {
           onDelete={() => {}}
           onOptimoRouteSearch={() => {}}
           statusCounts={statusCounts}
-          sortField="service_date"
-          sortDirection="desc"
-          onSort={() => {}}
+          sortField="end_time"
+          sortDirection={sortOrder}
+          onSort={handleSort}
           pagination={{
             page: 1,
             pageSize: 10,

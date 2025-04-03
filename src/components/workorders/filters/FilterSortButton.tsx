@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { SlidersHorizontal, X } from "lucide-react";
+import { SlidersHorizontal, X, ArrowUp, ArrowDown } from "lucide-react";
 import {
   Sheet,
   SheetClose,
@@ -10,14 +10,18 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { WorkOrderFilters } from "../types";
+import { WorkOrderFilters, SortDirection } from "../types";
 import { TextFilter, DateFilter, StatusFilter, DriverFilter, LocationFilter } from ".";
+import { Separator } from "@/components/ui/separator";
 
 interface FilterSortButtonProps {
   filters: WorkOrderFilters;
   onColumnFilterChange: (column: string, value: any) => void;
   clearColumnFilter: (column: string) => void;
   clearAllFilters: () => void;
+  sortField?: string;
+  sortDirection?: SortDirection;
+  onSort?: (field: string, direction: SortDirection) => void;
 }
 
 export const FilterSortButton = ({
@@ -25,6 +29,9 @@ export const FilterSortButton = ({
   onColumnFilterChange,
   clearColumnFilter,
   clearAllFilters,
+  sortField = 'end_time',
+  sortDirection = 'desc',
+  onSort = () => {},
 }: FilterSortButtonProps) => {
   const [open, setOpen] = useState(false);
   
@@ -35,6 +42,13 @@ export const FilterSortButton = ({
     filters.location !== null || 
     filters.dateRange.from !== null || 
     filters.dateRange.to !== null;
+
+  const toggleDateSort = () => {
+    // Toggle between oldest first (asc) and newest first (desc)
+    const newDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+    onSort('end_time', newDirection);
+    setOpen(false);
+  };
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -74,7 +88,33 @@ export const FilterSortButton = ({
           </div>
         </SheetHeader>
         
-        <div className="mt-6 space-y-6">
+        {/* Sort Section */}
+        <div className="mt-6 mb-2">
+          <h3 className="text-sm font-medium">Sort Orders</h3>
+          <div className="mt-2">
+            <Button 
+              variant="outline"
+              className="w-full justify-start"
+              onClick={toggleDateSort}
+            >
+              {sortDirection === 'asc' ? (
+                <>
+                  <ArrowUp className="h-4 w-4 mr-2" />
+                  <span>Showing oldest first</span>
+                </>
+              ) : (
+                <>
+                  <ArrowDown className="h-4 w-4 mr-2" />
+                  <span>Showing newest first</span>
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+        
+        <Separator className="my-4" />
+        
+        <div className="space-y-6">
           <div className="space-y-4">
             <h3 className="text-sm font-medium">Order #</h3>
             <TextFilter 

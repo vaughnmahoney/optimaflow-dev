@@ -100,6 +100,13 @@ export const WorkOrderList = ({
     });
   };
 
+  // Handle sort change
+  const handleSortChange = (field: string, direction: string) => {
+    if (onSort) {
+      onSort(field, direction);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className={`${isMobile ? 'flex flex-col space-y-4' : 'flex justify-between items-start'}`}>
@@ -124,6 +131,9 @@ export const WorkOrderList = ({
             onColumnFilterChange={onColumnFilterChange}
             clearColumnFilter={clearColumnFilter}
             clearAllFilters={clearAllFilters}
+            sortField={sortField}
+            sortDirection={sortDirection}
+            onSort={handleSortChange}
           />
         </div>
       </div>
