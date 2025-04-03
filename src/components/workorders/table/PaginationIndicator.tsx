@@ -8,7 +8,7 @@ import { ImportControls } from "../ImportControls";
 interface PaginationIndicatorProps {
   pagination: PaginationState;
   onPageChange: (page: number) => void;
-  onRefresh?: () => Promise<any>;
+  onRefresh?: () => void;
 }
 
 export const PaginationIndicator = ({ pagination, onPageChange, onRefresh }: PaginationIndicatorProps) => {
