@@ -1,3 +1,4 @@
+
 import { DateRangePicker } from "./DateRangePicker";
 import { EndpointTabs } from "./EndpointTabs";
 import { FetchButton } from "./FetchButton";
@@ -10,6 +11,7 @@ import { Package, Upload, AlertCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useBulkOrderImport } from "@/hooks/bulk-orders/useBulkOrderImport";
 import { Button } from "@/components/ui/button";
+import { SortDirection, SortField } from "@/components/workorders/types";
 
 export const BulkOrdersProgressiveForm = () => {
   const {

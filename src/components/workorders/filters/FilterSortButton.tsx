@@ -10,7 +10,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { WorkOrderFilters, SortDirection } from "../types";
+import { WorkOrderFilters, SortDirection, SortField } from "../types";
 import { TextFilter, DateFilter, StatusFilter, DriverFilter, LocationFilter } from ".";
 import { Separator } from "@/components/ui/separator";
 
@@ -19,9 +19,9 @@ interface FilterSortButtonProps {
   onColumnFilterChange: (column: string, value: any) => void;
   clearColumnFilter: (column: string) => void;
   clearAllFilters: () => void;
-  sortField?: string;
+  sortField?: SortField;
   sortDirection?: SortDirection;
-  onSort?: (field: string, direction: SortDirection) => void;
+  onSort?: (field: SortField, direction: SortDirection) => void;
 }
 
 export const FilterSortButton = ({

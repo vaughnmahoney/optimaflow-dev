@@ -8,6 +8,7 @@ import { LoadingSkeleton } from "./LoadingSkeleton";
 import { ImageViewModal } from "./modal/ImageViewModal";
 import { FilterSortButton } from "./filters/FilterSortButton";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { SortDirection, SortField } from "./types";
 
 export const WorkOrderList = ({ 
   workOrders, 
@@ -101,7 +102,7 @@ export const WorkOrderList = ({
   };
 
   // Handle sort change
-  const handleSortChange = (field: string, direction: string) => {
+  const handleSortChange = (field: SortField, direction: SortDirection) => {
     if (onSort) {
       onSort(field, direction);
     }
