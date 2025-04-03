@@ -21,11 +21,7 @@ export const Pagination = ({ pagination, onPageChange, onPageSizeChange }: Pagin
 
   return (
     <div className="flex flex-col gap-2 p-3 mt-4 bg-white">
-      <div className="flex items-center justify-between">
-        <div className="text-xs text-muted-foreground">
-          {total} {total === 1 ? 'item' : 'items'}
-        </div>
-        
+      <div className="flex items-center justify-end">
         <div className="flex items-center space-x-4">
           {/* Page size selector */}
           <div className="flex items-center space-x-2 text-xs text-muted-foreground">
