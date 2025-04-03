@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { WorkOrder } from "../../types";
@@ -18,6 +18,8 @@ export const ResolutionNotesSheet = ({ workOrder }: ResolutionNotesSheetProps) =
   const [isSaving, setIsSaving] = useState(false);
   const { updateWorkOrderResolutionNotes } = useWorkOrderMutations();
   const [isOpen, setIsOpen] = useState(false);
+  // Create a ref to receive the initial focus
+  const initialFocusRef = useRef<HTMLDivElement>(null);
   
   // Reset notes when the workOrder changes
   useEffect(() => {
@@ -63,7 +65,20 @@ export const ResolutionNotesSheet = ({ workOrder }: ResolutionNotesSheetProps) =
           )}
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md mx-auto px-6 py-6">
+      <DialogContent 
+        className="max-w-md mx-auto px-6 py-6"
+        onInteractOutside={(e) => e.preventDefault()}
+        // Use initialFocusRef to prevent focus on the textarea
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          if (initialFocusRef.current) {
+            initialFocusRef.current.focus();
+          }
+        }}
+      >
+        {/* Invisible div to receive initial focus */}
+        <div ref={initialFocusRef} tabIndex={-1} />
+        
         <DialogHeader className="pb-2 border-b mb-4">
           <DialogTitle className="flex items-center gap-2 text-gray-800">
             <StickyNote className="h-5 w-5 text-gray-500" />
@@ -76,7 +91,6 @@ export const ResolutionNotesSheet = ({ workOrder }: ResolutionNotesSheetProps) =
             className="min-h-[250px] mb-4 border-gray-200 focus-visible:border-gray-300 focus-visible:ring-0"
             value={resolutionNotes}
             onChange={(e) => setResolutionNotes(e.target.value)}
-            // Removed any autoFocus prop or autofocus HTML attribute
           />
         </div>
         <DialogFooter>
