@@ -24,7 +24,7 @@ export const FilterOption = ({
       className={cn(
         "flex items-center justify-center gap-1.5 text-xs px-3 py-1.5 rounded-md transition-all",
         isActive 
-          ? "bg-primary text-primary-foreground font-medium" 
+          ? "bg-sidebar-active text-primary-foreground font-medium" 
           : "bg-secondary hover:bg-secondary/80 text-secondary-foreground",
         className
       )}

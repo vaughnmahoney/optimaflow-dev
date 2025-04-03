@@ -32,15 +32,15 @@
     --sidebar-width-collapsed: 4.5rem;
     --sidebar-width-mobile: 0;
 
-    /* Sidebar specific colors - changed from blue to black */
+    /* Sidebar specific colors - changed from black to navy blue */
     --sidebar: 220 100% 100%;
     --sidebar-hover: 220 13% 95%;
-    --sidebar-active: 0 0% 0%; /* Changed to black */
+    --sidebar-active: 215 60% 25%; /* Changed to navy blue #193B68 */
     --sidebar-text: 215 25% 27%;
     --sidebar-hover-text: 217 33% 17%;
     --sidebar-active-text: 0 0% 100%;
     --sidebar-icon: 215 16% 47%;
-    --sidebar-accent: 0 0% 0%; /* Changed to black */
+    --sidebar-accent: 215 60% 25%; /* Changed to navy blue #193B68 */
     --sidebar-border: 220 13% 92%;
 
     /* Danger colors */
@@ -70,15 +70,15 @@
     --input: 215 27.9% 16.9%;
     --ring: 216 12.2% 83.9%;
 
-    /* Sidebar specific dark colors - changed from blue to black */
+    /* Sidebar specific dark colors - changed from black to navy blue */
     --sidebar: 222 47% 11%;
     --sidebar-hover: 223 47% 14%;
-    --sidebar-active: 0 0% 0%; /* Changed to black */
+    --sidebar-active: 215 60% 25%; /* Changed to navy blue #193B68 */
     --sidebar-text: 214 32% 91%;
     --sidebar-hover-text: 0 0% 100%;
     --sidebar-active-text: 0 0% 100%;
     --sidebar-icon: 214 32% 75%;
-    --sidebar-accent: 0 0% 0%; /* Changed to black */
+    --sidebar-accent: 215 60% 25%; /* Changed to navy blue #193B68 */
     --sidebar-border: 215 28% 17%;
 
     /* Danger colors */

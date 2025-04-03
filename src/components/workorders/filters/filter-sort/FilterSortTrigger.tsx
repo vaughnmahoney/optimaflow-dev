@@ -20,7 +20,7 @@ export const FilterSortTrigger = ({ filters }: FilterSortTriggerProps) => {
         className={cn(
           "flex items-center space-x-1.5 py-1 px-2.5 rounded-full transition-all shrink-0",
           "bg-white border border-gray-200 hover:border-gray-300 shadow-sm",
-          hasActiveFilters ? 'bg-primary/10 border-primary/20' : ''
+          hasActiveFilters ? 'bg-[#193B68]/10 border-[#193B68]/20' : ''
         )}
       >
         <div className={cn(
@@ -34,7 +34,7 @@ export const FilterSortTrigger = ({ filters }: FilterSortTriggerProps) => {
         </div>
         <span className="text-xs font-medium">Filters</span>
         {hasActiveFilters && (
-          <span className="inline-flex items-center justify-center text-xs font-medium rounded-full px-1.5 py-0.5 min-w-[18px] h-[18px] bg-primary text-white">
+          <span className="inline-flex items-center justify-center text-xs font-medium rounded-full px-1.5 py-0.5 min-w-[18px] h-[18px] bg-[#193B68] text-white">
             {activeFilterCount}
           </span>
         )}

@@ -41,7 +41,7 @@ export function SidebarNavItem({
           >
             <Icon size={20} strokeWidth={1.8} />
             {badge && (
-              <span className="absolute top-0 right-0 bg-white text-black text-xs w-4 h-4 flex items-center justify-center rounded-full">
+              <span className="absolute top-0 right-0 bg-white text-sidebar-active rounded-full text-xs w-4 h-4 flex items-center justify-center">
                 {badge > 99 ? '99+' : badge}
               </span>
             )}
@@ -71,7 +71,7 @@ export function SidebarNavItem({
         <span className={cn(
           "rounded-full px-2 py-0.5 text-xs font-medium",
           isActive 
-            ? "bg-white text-black" 
+            ? "bg-white text-sidebar-active" 
             : "bg-primary/10 text-primary"
         )}>
           {badge}
