@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useRef, KeyboardEvent } from "react";
 import { useLocation } from "react-router-dom";
-import { X, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
 import { SidebarLogout } from "@/components/sidebar/SidebarLogout";
 import { SidebarToggleButton } from "@/components/sidebar/SidebarToggleButton";
@@ -87,17 +87,6 @@ export function AppSidebar() {
         aria-label="Main navigation"
         role="navigation"
       >
-        {/* Mobile close button */}
-        {openMobile && (
-          <button
-            className="absolute right-2 top-2 p-1 rounded-full bg-sidebar-accent md:hidden"
-            onClick={() => setOpenMobile(false)}
-            aria-label="Close sidebar"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        )}
-        
         {/* Navigation Items - Scrollable Area */}
         <div className="overflow-y-auto flex-1 py-3 px-2">
           <SidebarNavigation 
