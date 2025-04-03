@@ -81,6 +81,7 @@ export const WorkOrderTable = ({
     return <EmptyState />;
   }
 
+  // Mobile view with cards
   if (isMobile) {
     return (
       <div className="space-y-2">
@@ -111,6 +112,7 @@ export const WorkOrderTable = ({
     );
   }
 
+  // Desktop view with table
   return (
     <div>
       {pagination && onPageChange && (

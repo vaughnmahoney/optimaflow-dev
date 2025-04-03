@@ -34,6 +34,16 @@ export const TableHeader = ({
     setOpenPopover(null);
   };
 
+  const handleSort = (field: SortField) => {
+    if (!onSort) return;
+    
+    // Toggle direction if already sorting by this field
+    const newDirection: SortDirection = 
+      sortField === field && sortDirection === 'asc' ? 'desc' : 'asc';
+    
+    onSort(field, newDirection);
+  };
+
   return (
     <UITableHeader>
       <TableRow>
@@ -41,7 +51,7 @@ export const TableHeader = ({
           label="Order #"
           column="order_no"
           sortDirection={sortField === 'order_no' ? sortDirection : null}
-          onSort={() => onSort?.('order_no')}
+          onSort={() => handleSort('order_no')}
           isFiltered={isColumnFiltered('order_no', filters)}
           filterContent={
             <TextFilter 
@@ -62,7 +72,7 @@ export const TableHeader = ({
           label="Service Date"
           column="end_time" 
           sortDirection={sortField === 'end_time' ? sortDirection : null} 
-          onSort={() => onSort?.('end_time')} 
+          onSort={() => handleSort('end_time')} 
           isFiltered={isColumnFiltered('service_date', filters)} 
           filterContent={
             <DateFilter 
@@ -83,7 +93,7 @@ export const TableHeader = ({
           label="Driver"
           column="driver"
           sortDirection={sortField === 'driver' ? sortDirection : null}
-          onSort={() => onSort?.('driver')}
+          onSort={() => handleSort('driver')}
           isFiltered={isColumnFiltered('driver', filters)}
           filterContent={
             <DriverFilter 
@@ -104,7 +114,7 @@ export const TableHeader = ({
           label="Location"
           column="location"
           sortDirection={sortField === 'location' ? sortDirection : null}
-          onSort={() => onSort?.('location')}
+          onSort={() => handleSort('location')}
           isFiltered={isColumnFiltered('location', filters)}
           filterContent={
             <LocationFilter 
@@ -125,7 +135,7 @@ export const TableHeader = ({
           label="Status"
           column="status"
           sortDirection={sortField === 'status' ? sortDirection : null}
-          onSort={() => onSort?.('status')}
+          onSort={() => handleSort('status')}
           isFiltered={isColumnFiltered('status', filters)}
           filterContent={
             <StatusFilter 
