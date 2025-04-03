@@ -2,8 +2,9 @@
 import { useState, useRef, useEffect } from "react";
 import { useImageZoom } from "@/hooks/useImageZoom";
 import { ImageType } from "../../types/image";
-import { ChevronLeft, ChevronRight, Maximize2, Minimize2, ZoomIn } from "lucide-react";
+import { ChevronLeft, ChevronRight, ZoomIn, Flag } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useWorkOrderMutations } from "@/hooks/useWorkOrderMutations";
 
 interface ImageViewerProps {
   images: ImageType[];
@@ -11,6 +12,7 @@ interface ImageViewerProps {
   setCurrentImageIndex: (index: number) => void;
   isImageExpanded: boolean;
   toggleImageExpand: () => void;
+  workOrderId: string; // Added workOrderId prop
 }
 
 export const ImageViewer = ({
@@ -19,9 +21,11 @@ export const ImageViewer = ({
   setCurrentImageIndex,
   isImageExpanded,
   toggleImageExpand,
+  workOrderId,
 }: ImageViewerProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { toggleImageFlag } = useWorkOrderMutations();
   
   const {
     zoomLevel,
@@ -67,6 +71,16 @@ export const ImageViewer = ({
     setIsLoading(false);
   };
 
+  // Handle flag toggle
+  const handleFlagToggle = () => {
+    if (images.length <= 0 || currentImageIndex < 0) return;
+    
+    const currentImage = images[currentImageIndex];
+    const isFlagged = !currentImage.flagged;
+    
+    toggleImageFlag(workOrderId, currentImageIndex, isFlagged);
+  };
+
   if (images.length === 0) {
     return (
       <div className="flex items-center justify-center h-full w-full bg-gray-100 dark:bg-gray-800">
@@ -82,6 +96,8 @@ export const ImageViewer = ({
       </div>
     );
   }
+
+  const currentImageFlagged = images[currentImageIndex]?.flagged || false;
 
   return (
     <div 
@@ -162,14 +178,14 @@ export const ImageViewer = ({
         <Button
           variant="outline"
           size="icon"
-          onClick={toggleImageExpand}
-          className="h-10 w-10 rounded-full bg-white/90 hover:bg-white border-gray-200 text-gray-700 shadow-md"
+          onClick={handleFlagToggle}
+          className={`h-10 w-10 rounded-full ${
+            currentImageFlagged 
+              ? "bg-red-100 hover:bg-red-50 border-red-300 text-red-600" 
+              : "bg-white/90 hover:bg-white border-gray-200 text-gray-700"
+          } shadow-md`}
         >
-          {isImageExpanded ? (
-            <Minimize2 className="h-4 w-4" />
-          ) : (
-            <Maximize2 className="h-4 w-4" />
-          )}
+          <Flag className={`h-4 w-4 ${currentImageFlagged ? "fill-red-500" : ""}`} />
         </Button>
         
         {isImageExpanded && (

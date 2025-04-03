@@ -6,6 +6,7 @@ import { ImageThumbnails } from "./ImageThumbnails";
 import { ImageEmptyState } from "./ImageEmptyState";
 
 interface ImageContentProps {
+  workOrderId: string; // Added workOrderId prop
   images: ImageType[];
   currentImageIndex: number;
   setCurrentImageIndex: (index: number) => void;
@@ -14,6 +15,7 @@ interface ImageContentProps {
 }
 
 export function ImageContent({ 
+  workOrderId, // Added workOrderId prop
   images, 
   currentImageIndex, 
   setCurrentImageIndex,
@@ -34,6 +36,7 @@ export function ImageContent({
       
       <div className={`relative flex-1 ${isImageExpanded ? 'max-h-full' : 'max-h-[60vh]'}`}>
         <ImageViewer 
+          workOrderId={workOrderId} // Pass the workOrderId prop
           images={images}
           currentImageIndex={currentImageIndex}
           setCurrentImageIndex={setCurrentImageIndex}

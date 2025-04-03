@@ -2,12 +2,14 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useStatusMutations } from "./useStatusMutations";
 
 /**
  * Hook for work order image-related mutations
  */
 export const useImageMutations = () => {
   const queryClient = useQueryClient();
+  const { updateWorkOrderStatus } = useStatusMutations();
 
   /**
    * Toggle the flag status of an image in a work order
@@ -17,7 +19,7 @@ export const useImageMutations = () => {
       // Get the current work order to access the completion_response
       const { data: workOrder, error: fetchError } = await supabase
         .from('work_orders')
-        .select('completion_response')
+        .select('completion_response, status')
         .eq('id', workOrderId)
         .single();
       
@@ -47,6 +49,11 @@ export const useImageMutations = () => {
           .eq('id', workOrderId);
         
         if (updateError) throw updateError;
+        
+        // If flagging an image and work order isn't already flagged, update the work order status
+        if (isFlagged && workOrder.status !== "flagged" && workOrder.status !== "flagged_followup") {
+          await updateWorkOrderStatus(workOrderId, "flagged");
+        }
         
         // Show success toast
         toast.success(isFlagged ? 'Image flagged' : 'Image flag removed');

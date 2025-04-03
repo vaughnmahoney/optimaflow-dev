@@ -1,6 +1,7 @@
 
 import React, { useEffect, useRef } from "react";
 import { ImageType } from "../../types/image";
+import { Flag } from "lucide-react";
 
 interface ImageThumbnailsProps {
   images: ImageType[];
@@ -65,6 +66,13 @@ export const ImageThumbnails = ({
               <span className="absolute bottom-0 right-0 text-[10px] bg-black/60 text-white px-1 rounded-tl-sm">
                 {idx + 1}
               </span>
+              
+              {/* Flag indicator for flagged images */}
+              {image.flagged && (
+                <div className="absolute top-0 right-0 bg-red-500 p-1 rounded-bl-md">
+                  <Flag className="h-3 w-3 text-white" />
+                </div>
+              )}
             </div>
           </div>
         ))}

@@ -27,6 +27,7 @@ export const ModalContent = ({
       {/* Left side: Image viewer */}
       <div className="w-full md:w-2/3 flex flex-col">
         <ImageContent 
+          workOrderId={workOrder.id} // Pass workOrderId from the work order
           images={images}
           currentImageIndex={currentImageIndex}
           setCurrentImageIndex={setCurrentImageIndex}
@@ -41,4 +42,4 @@ export const ModalContent = ({
       </div>
     </div>
   );
-};
+}

@@ -1,9 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Flag } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { ImageType } from "../../../types/image";
+import { useWorkOrderMutations } from "@/hooks/useWorkOrderMutations";
 
 interface MobileImageViewerProps {
+  workOrderId: string;
   images: ImageType[];
   currentImageIndex: number;
   setCurrentImageIndex: (index: number) => void;
@@ -11,6 +13,7 @@ interface MobileImageViewerProps {
 }
 
 export const MobileImageViewer = ({
+  workOrderId,
   images,
   currentImageIndex,
   setCurrentImageIndex,
@@ -19,12 +22,12 @@ export const MobileImageViewer = ({
   const [isLoading, setIsLoading] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const { toggleImageFlag } = useWorkOrderMutations();
   
   const containerRef = useRef<HTMLDivElement>(null);
   const thumbnailsContainerRef = useRef<HTMLDivElement>(null);
   const activeThumbRef = useRef<HTMLDivElement>(null);
   
-  // Minimum swipe distance to trigger nav (in px)
   const minSwipeDistance = 50;
   
   const handlePrevious = () => {
@@ -51,7 +54,6 @@ export const MobileImageViewer = ({
     setIsLoading(false);
   };
   
-  // Touch event handlers for swipe navigation
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
@@ -74,8 +76,16 @@ export const MobileImageViewer = ({
       handlePrevious();
     }
   };
+
+  const handleFlagToggle = () => {
+    if (images.length <= 0 || currentImageIndex < 0) return;
+    
+    const currentImage = images[currentImageIndex];
+    const isFlagged = !currentImage.flagged;
+    
+    toggleImageFlag(workOrderId, currentImageIndex, isFlagged);
+  };
   
-  // Keep the active thumbnail scrolled into view
   useEffect(() => {
     if (!thumbnailsContainerRef.current || !activeThumbRef.current) return;
     
@@ -109,13 +119,19 @@ export const MobileImageViewer = ({
     );
   }
 
+  const currentImageFlagged = images[currentImageIndex]?.flagged || false;
+
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
       <div className="p-3 flex justify-between items-center border-b bg-white">
-        <Button variant="ghost" size="sm" onClick={onClose} className="flex items-center gap-1">
-          <ChevronLeft className="h-4 w-4" />
-          <span>Back</span>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={handleFlagToggle} 
+          className={`flex items-center gap-1 ${currentImageFlagged ? "text-red-500" : ""}`}
+        >
+          <Flag className={`h-4 w-4 ${currentImageFlagged ? "fill-red-500" : ""}`} />
+          <span>{currentImageFlagged ? "Flagged" : "Flag"}</span>
         </Button>
         <span className="font-medium">Images</span>
         <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
@@ -123,7 +139,6 @@ export const MobileImageViewer = ({
         </Button>
       </div>
       
-      {/* Main image viewer */}
       <div 
         ref={containerRef}
         className="flex-1 flex items-center justify-center bg-gray-100 overflow-hidden"
@@ -131,7 +146,6 @@ export const MobileImageViewer = ({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Show skeleton while loading */}
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
             <div className="h-14 w-14 border-4 border-t-blue-500 border-r-transparent border-b-blue-500 border-l-transparent rounded-full animate-spin"></div>
@@ -147,7 +161,6 @@ export const MobileImageViewer = ({
         />
       </div>
       
-      {/* Thumbnails */}
       <div className="p-2 border-t bg-white">
         <div 
           ref={thumbnailsContainerRef}
@@ -170,12 +183,17 @@ export const MobileImageViewer = ({
                 alt={`Thumbnail ${idx + 1}`}
                 className="w-full h-full object-cover"
               />
+              
+              {image.flagged && (
+                <div className="absolute top-0 right-0 bg-red-500 p-1 rounded-bl-md">
+                  <Flag className="h-3 w-3 text-white" />
+                </div>
+              )}
             </div>
           ))}
         </div>
       </div>
       
-      {/* Counter */}
       <div className="py-2 bg-white text-center text-sm text-gray-600 border-t">
         {currentImageIndex + 1} of {images.length}
       </div>
