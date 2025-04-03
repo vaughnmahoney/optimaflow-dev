@@ -11,7 +11,7 @@ interface WorkOrderContentProps {
   onImageView: (workOrderId: string) => void;
   onDelete: (workOrderId: string) => void;
   onSearchChange?: (value: string) => void;
-  onOptimoRouteSearch?: (value: string) => void;
+  onOptimoRouteSearch: (value: string) => void;
   statusCounts?: {
     approved: number;
     pending_review: number;
