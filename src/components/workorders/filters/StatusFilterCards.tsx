@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Check, Flag, Clock, CheckCheck, AlertTriangle, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { FilterSortButton } from "./FilterSortButton";
 import { WorkOrderFilters, SortDirection, SortField } from "../types";
 
@@ -162,13 +162,15 @@ export const StatusFilterCards = ({
     );
   };
 
-  // Use the full width for status filter cards
+  // Fixed the scrolling by adding explicit width & height constraints,
+  // adding ScrollBar with orientation="horizontal", and ensuring proper layout
   return (
     <div className="mb-0 overflow-hidden w-full">
       <ScrollArea className="w-full">
-        <div className="flex space-x-2 pb-2">
+        <div className="flex space-x-2 pb-2 min-w-max">
           {renderStatusButtons()}
         </div>
+        <ScrollBar orientation="horizontal" />
       </ScrollArea>
     </div>
   );
