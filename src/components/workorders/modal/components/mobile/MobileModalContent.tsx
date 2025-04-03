@@ -7,7 +7,6 @@ import { MobileOrderDetails } from "./MobileOrderDetails";
 import { Image } from "lucide-react";
 import { QcNotesSheet } from "../QcNotesSheet";
 import { ResolutionNotesSheet } from "../ResolutionNotesSheet";
-import { StatusBadgeDropdown } from "../../../StatusBadgeDropdown";
 
 interface MobileModalContentProps {
   workOrder: WorkOrder;
@@ -27,14 +26,6 @@ export const MobileModalContent = ({
   onResolveFlag,
 }: MobileModalContentProps) => {
   const hasImages = images && images.length > 0;
-
-  // Extract the completion status from the appropriate place in the order object
-  const getCompletionStatus = (order: WorkOrder): string | undefined => {
-    return order.completion_status || 
-           (order.completionDetails?.data?.status) ||
-           (order.completion_response?.orders?.[0]?.data?.status) ||
-           (order.search_response?.scheduleInformation?.status);
-  };
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
@@ -58,16 +49,6 @@ export const MobileModalContent = ({
             <Image className="mr-1 h-3.5 w-3.5" />
             {hasImages ? `(${images.length})` : '(0)'}
           </Button>
-        </div>
-        
-        {/* Status dropdown */}
-        <div className="flex justify-center">
-          <StatusBadgeDropdown 
-            workOrderId={workOrder.id}
-            currentStatus={workOrder.status || "pending_review"} 
-            completionStatus={getCompletionStatus(workOrder)}
-            className="justify-center"
-          />
         </div>
         
         {/* Notes buttons - now below */}
