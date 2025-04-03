@@ -95,7 +95,7 @@ export function CreateUserDialog({ isOpen, onClose, onUserCreated }: CreateUserD
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] border border-gray-300">
         <DialogHeader>
           <DialogTitle>Add New User</DialogTitle>
         </DialogHeader>
@@ -119,6 +119,7 @@ export function CreateUserDialog({ isOpen, onClose, onUserCreated }: CreateUserD
               onChange={(e) => setUsername(e.target.value)}
               placeholder="johndoe"
               disabled={isSubmitting}
+              className="border border-gray-300"
             />
             {errors.username && (
               <p className="text-sm text-destructive">{errors.username}</p>
@@ -133,6 +134,7 @@ export function CreateUserDialog({ isOpen, onClose, onUserCreated }: CreateUserD
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={isSubmitting}
+              className="border border-gray-300"
             />
             {errors.password && (
               <p className="text-sm text-destructive">{errors.password}</p>
@@ -147,6 +149,7 @@ export function CreateUserDialog({ isOpen, onClose, onUserCreated }: CreateUserD
               onChange={(e) => setFullName(e.target.value)}
               placeholder="John Doe"
               disabled={isSubmitting}
+              className="border border-gray-300"
             />
             {errors.fullName && (
               <p className="text-sm text-destructive">{errors.fullName}</p>
@@ -178,6 +181,7 @@ export function CreateUserDialog({ isOpen, onClose, onUserCreated }: CreateUserD
               variant="outline" 
               onClick={handleClose}
               disabled={isSubmitting}
+              className="border border-gray-300"
             >
               Cancel
             </Button>

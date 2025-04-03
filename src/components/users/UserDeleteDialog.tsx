@@ -69,7 +69,7 @@ export function UserDeleteDialog({
         if (!open && !isSubmitting) handleClose();
       }}
     >
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] border border-gray-300">
         <DialogHeader>
           <DialogTitle className="text-destructive">Delete User</DialogTitle>
           <DialogDescription>
@@ -79,7 +79,7 @@ export function UserDeleteDialog({
         </DialogHeader>
         
         {serverError && (
-          <div className="bg-destructive/10 text-destructive rounded-md p-3 flex items-start space-x-2">
+          <div className="bg-destructive/10 text-destructive rounded-md p-3 flex items-start space-x-2 border border-destructive/20">
             <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
             <div className="text-sm">
               <p className="font-medium">Error deleting user</p>
@@ -94,6 +94,7 @@ export function UserDeleteDialog({
             variant="outline" 
             onClick={handleClose}
             disabled={isSubmitting}
+            className="border border-gray-300"
           >
             Cancel
           </Button>

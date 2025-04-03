@@ -105,7 +105,7 @@ export function UserEditDialog({
         if (!open && !isSubmitting) handleClose();
       }}
     >
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] border border-gray-300">
         <DialogHeader>
           <DialogTitle>Edit User: {user.username}</DialogTitle>
           <DialogDescription>
@@ -132,6 +132,7 @@ export function UserEditDialog({
               onChange={(e) => setFullName(e.target.value)}
               placeholder="John Doe"
               disabled={isSubmitting}
+              className="border border-gray-300"
             />
             {errors.fullName && (
               <p className="text-sm text-destructive">{errors.fullName}</p>
@@ -163,6 +164,7 @@ export function UserEditDialog({
               variant="outline" 
               onClick={handleClose}
               disabled={isSubmitting}
+              className="border border-gray-300"
             >
               Cancel
             </Button>
