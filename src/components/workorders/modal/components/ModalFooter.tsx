@@ -1,12 +1,14 @@
+
 import { Button } from "@/components/ui/button";
 import { Download, StickyNote, PenLine } from "lucide-react";
 import { useEffect } from "react";
 import { QcNotesSheet } from "./QcNotesSheet";
 import { ResolutionNotesSheet } from "./ResolutionNotesSheet";
+import { MobileStatusButton } from "./mobile/MobileStatusButton";
 
 interface ModalFooterProps {
   workOrderId: string;
-  onStatusUpdate?: (workOrderId: string, status: string) => void;
+  onStatusUpdate?: (workOrderId: string, status: string, options?: any) => void;
   onDownloadAll?: () => void;
   hasImages: boolean;
   status?: string;
@@ -16,6 +18,7 @@ interface ModalFooterProps {
 
 export const ModalFooter = ({
   workOrderId,
+  onStatusUpdate,
   onDownloadAll,
   hasImages,
   status,
@@ -85,9 +88,16 @@ export const ModalFooter = ({
   return (
     <div className="p-3 bg-white dark:bg-gray-950 border-t flex flex-wrap justify-between items-center gap-2">
       <div className="flex flex-wrap items-center gap-2">
-        {/* Notes buttons - added back */}
+        {/* Notes buttons */}
         <QcNotesSheet workOrder={workOrder} />
         <ResolutionNotesSheet workOrder={workOrder} />
+        
+        {/* Status button - added from mobile view */}
+        <MobileStatusButton 
+          workOrderId={workOrderId}
+          currentStatus={status || "pending_review"}
+          onStatusUpdate={onStatusUpdate}
+        />
         
         {/* User attribution information */}
         {userActionInfo && (
