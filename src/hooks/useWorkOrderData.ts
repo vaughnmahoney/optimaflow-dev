@@ -12,10 +12,11 @@ export const useWorkOrderData = () => {
     dateRange: { from: null, to: null },
     driver: null,
     location: null,
-    orderNo: null
+    orderNo: null,
+    optimoRouteStatus: null // Add new field
   });
   
-  const [sortField, setSortField] = useState<SortField>('end_time'); // Changed from 'service_date' to 'end_time'
+  const [sortField, setSortField] = useState<SortField>('end_time');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [pagination, setPagination] = useState<PaginationState>({
     page: 1,
@@ -63,6 +64,9 @@ export const useWorkOrderData = () => {
         case 'status':
           newFilters.status = value;
           break;
+        case 'optimoroute_status': // Add case for new field
+          newFilters.optimoRouteStatus = value;
+          break;
       }
       
       return newFilters;
@@ -91,6 +95,9 @@ export const useWorkOrderData = () => {
         case 'status':
           newFilters.status = null;
           break;
+        case 'optimoroute_status': // Add case for new field
+          newFilters.optimoRouteStatus = null;
+          break;
       }
       
       return newFilters;
@@ -105,7 +112,8 @@ export const useWorkOrderData = () => {
       dateRange: { from: null, to: null },
       driver: null,
       location: null,
-      orderNo: null
+      orderNo: null,
+      optimoRouteStatus: null // Include new field in reset
     });
     
     handlePageChange(1);

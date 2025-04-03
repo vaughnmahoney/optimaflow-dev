@@ -337,6 +337,7 @@ export type Database = {
           last_action_by: string | null
           last_action_user: string | null
           location_name: string | null
+          optimoroute_status: string | null
           order_no: string | null
           qc_notes: string | null
           rejected_at: string | null
@@ -369,6 +370,7 @@ export type Database = {
           last_action_by?: string | null
           last_action_user?: string | null
           location_name?: string | null
+          optimoroute_status?: string | null
           order_no?: string | null
           qc_notes?: string | null
           rejected_at?: string | null
@@ -401,6 +403,7 @@ export type Database = {
           last_action_by?: string | null
           last_action_user?: string | null
           location_name?: string | null
+          optimoroute_status?: string | null
           order_no?: string | null
           qc_notes?: string | null
           rejected_at?: string | null

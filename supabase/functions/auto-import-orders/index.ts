@@ -130,8 +130,40 @@ async function progressivelyLoadOrders(startDate: string, endDate: string): Prom
       if (batchOrders.length > 0) {
         allOrders = [...allOrders, ...batchOrders];
         
-        // Import this batch of orders
-        const importResult = await importOrders(batchOrders);
+        // Make sure each order has optimoroute_status extracted from completion data
+        const ordersWithOptimoRouteStatus = batchOrders.map(order => {
+          // Extract optimoroute_status
+          let optimoRouteStatus = null;
+          
+          // Check completion_response
+          if (order.completion_response && typeof order.completion_response === 'object') {
+            if (order.completion_response.orders && 
+                Array.isArray(order.completion_response.orders) && 
+                order.completion_response.orders[0]) {
+              const completionOrder = order.completion_response.orders[0];
+              if (completionOrder.data && completionOrder.data.status) {
+                optimoRouteStatus = completionOrder.data.status;
+              }
+            }
+            // Direct data property
+            else if (order.completion_response.data && order.completion_response.data.status) {
+              optimoRouteStatus = order.completion_response.data.status;
+            }
+          }
+          
+          // Check completionDetails if we didn't find it yet
+          if (!optimoRouteStatus && order.completionDetails && typeof order.completionDetails === 'object') {
+            if (order.completionDetails.data && order.completionDetails.data.status) {
+              optimoRouteStatus = order.completionDetails.data.status;
+            }
+          }
+          
+          // Add the extracted optimoroute_status to the order
+          return { ...order, optimoroute_status: optimoRouteStatus };
+        });
+        
+        // Import this batch of orders with optimoroute_status
+        const importResult = await importOrders(ordersWithOptimoRouteStatus);
         
         // Track the results
         if (importResult.success !== false) {

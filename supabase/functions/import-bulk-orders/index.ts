@@ -1,3 +1,4 @@
+
 import { corsHeaders } from '../_shared/cors.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.33.1';
 
@@ -153,7 +154,33 @@ Deno.serve(async (req) => {
           }
         }
 
-        console.log(`Extracted data for ${orderNo}: driver=${driverName}, location=${locationName}, endTime=${endTime}`);
+        // Extract optimoroute_status from various sources
+        let optimoRouteStatus = null;
+        
+        // First check completion_response
+        if (order.completion_response && typeof order.completion_response === 'object') {
+          if (order.completion_response.orders && 
+              Array.isArray(order.completion_response.orders) && 
+              order.completion_response.orders[0]) {
+            const completionOrder = order.completion_response.orders[0];
+            if (completionOrder.data && completionOrder.data.status) {
+              optimoRouteStatus = completionOrder.data.status;
+            }
+          }
+          // Direct data property
+          else if (order.completion_response.data && order.completion_response.data.status) {
+            optimoRouteStatus = order.completion_response.data.status;
+          }
+        }
+        
+        // Next check completionDetails if we didn't find it yet
+        if (!optimoRouteStatus && order.completionDetails && typeof order.completionDetails === 'object') {
+          if (order.completionDetails.data && order.completionDetails.data.status) {
+            optimoRouteStatus = order.completionDetails.data.status;
+          }
+        }
+
+        console.log(`Extracted data for ${orderNo}: driver=${driverName}, location=${locationName}, endTime=${endTime}, optimoRouteStatus=${optimoRouteStatus}`);
         
         // Transform order to match work_orders table schema
         const workOrder = {
@@ -163,6 +190,7 @@ Deno.serve(async (req) => {
           end_time: endTime, // Store extracted end_time
           driver_name: driverName, // Add the extracted driver name
           location_name: locationName, // Add the extracted location name
+          optimoroute_status: optimoRouteStatus, // Add the extracted optimoroute_status
           search_response: order.search_response || order, // Store original search data
           completion_response: order.completion_response || order.completionDetails || null // Store completion data if available
         };
