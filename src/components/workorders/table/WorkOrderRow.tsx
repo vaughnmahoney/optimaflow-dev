@@ -3,9 +3,9 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
 import { format } from "date-fns";
-import { StatusBadge } from "../StatusBadge";
 import { WorkOrder } from "../types";
 import { ActionsMenu } from "./ActionsMenu";
+import { StatusBadgeDropdown } from "../StatusBadgeDropdown";
 
 interface WorkOrderRowProps {
   workOrder: WorkOrder;
@@ -88,9 +88,10 @@ export const WorkOrderRow = ({ workOrder, onStatusUpdate, onImageView, onDelete 
       <TableCell className="max-w-xs truncate">
         {getLocationName(workOrder)}
       </TableCell>
-      <TableCell>
-        <StatusBadge 
-          status={workOrder.status || 'pending_review'} 
+      <TableCell onClick={(e) => e.stopPropagation()}>
+        <StatusBadgeDropdown
+          workOrderId={workOrder.id}
+          currentStatus={workOrder.status || 'pending_review'}
           completionStatus={getCompletionStatus(workOrder)}
         />
       </TableCell>

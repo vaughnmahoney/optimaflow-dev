@@ -1,12 +1,11 @@
-
 import { WorkOrder } from "../types";
-import { StatusBadge } from "../StatusBadge";
 import { Button } from "@/components/ui/button";
-import { Eye, MoreVertical } from "lucide-react";
+import { Eye } from "lucide-react";
 import { format } from "date-fns";
 import { ActionsMenu } from "./ActionsMenu";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { StatusBadgeDropdown } from "../StatusBadgeDropdown";
 
 interface WorkOrderCardProps {
   workOrder: WorkOrder;
@@ -36,7 +35,6 @@ export const WorkOrderCard = ({ workOrder, onStatusUpdate, onImageView, onDelete
     return 'No Driver Name';
   };
 
-  // Extract the completion status from the appropriate place in the order object
   const getCompletionStatus = (order: WorkOrder): string | undefined => {
     return order.completion_status || 
            (order.completionDetails?.data?.status) ||
@@ -44,9 +42,7 @@ export const WorkOrderCard = ({ workOrder, onStatusUpdate, onImageView, onDelete
            (order.search_response?.scheduleInformation?.status);
   };
 
-  // Get end date and time from completion data, or fall back to service_date
   const getServiceDateTime = (order: WorkOrder): string => {
-    // Try to get the end date from completion data first
     const endTime = order.completion_response?.orders?.[0]?.data?.endTime?.localTime;
     
     if (endTime) {
@@ -56,12 +52,10 @@ export const WorkOrderCard = ({ workOrder, onStatusUpdate, onImageView, onDelete
           return format(date, "MMM d, yyyy h:mmaaa");
         }
       } catch (error) {
-        // If date parsing fails, fall back to service_date
         console.error("Error formatting end date:", error);
       }
     }
     
-    // Fall back to service_date if end date is not available or invalid
     if (order.service_date) {
       try {
         return format(new Date(order.service_date), "MMM d, yyyy");
@@ -79,16 +73,17 @@ export const WorkOrderCard = ({ workOrder, onStatusUpdate, onImageView, onDelete
       className="overflow-hidden shadow-sm hover:shadow transition-shadow cursor-pointer"
       onClick={() => onImageView(workOrder.id)}
     >
-      {/* Card header with order number and status */}
       <div className="p-3 border-b flex justify-between items-center bg-gray-50">
         <div className="font-medium">{workOrder.order_no || 'N/A'}</div>
-        <StatusBadge 
-          status={workOrder.status || 'pending_review'} 
-          completionStatus={getCompletionStatus(workOrder)}
-        />
+        <div onClick={(e) => e.stopPropagation()}>
+          <StatusBadgeDropdown 
+            workOrderId={workOrder.id}
+            currentStatus={workOrder.status || 'pending_review'} 
+            completionStatus={getCompletionStatus(workOrder)}
+          />
+        </div>
       </div>
 
-      {/* Card body with order details */}
       <div className="p-3 space-y-2">
         <div className="text-sm flex justify-between items-start">
           <span className="text-muted-foreground">Driver:</span>
@@ -104,7 +99,6 @@ export const WorkOrderCard = ({ workOrder, onStatusUpdate, onImageView, onDelete
         </div>
       </div>
 
-      {/* Card footer with actions */}
       <div className="px-3 py-2 border-t flex justify-end items-center bg-gray-50">
         <div className="flex items-center space-x-2 opacity-80 hover:opacity-100">
           <Button 
