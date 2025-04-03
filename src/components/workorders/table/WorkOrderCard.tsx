@@ -1,3 +1,4 @@
+
 import { WorkOrder } from "../types";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
@@ -96,29 +97,6 @@ export const WorkOrderCard = ({ workOrder, onStatusUpdate, onImageView, onDelete
         <div className="text-sm flex justify-between items-center">
           <span className="text-muted-foreground">Date:</span>
           <span className="text-right font-medium">{getServiceDateTime(workOrder)}</span>
-        </div>
-      </div>
-
-      <div className="px-3 py-2 border-t flex justify-end items-center bg-gray-50">
-        <div className="flex items-center space-x-2 opacity-80 hover:opacity-100">
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              onImageView(workOrder.id);
-            }}
-            className="h-8 w-8"
-            title="View Proof of Service"
-          >
-            <Eye className="h-4 w-4" />
-          </Button>
-          
-          <ActionsMenu 
-            workOrder={workOrder}
-            onStatusUpdate={onStatusUpdate}
-            onDelete={onDelete}
-          />
         </div>
       </div>
     </Card>
