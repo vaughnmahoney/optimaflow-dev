@@ -12,7 +12,8 @@ export const useAdapterFilters = () => {
     dateRange: { from: null, to: null },
     driver: null,
     location: null,
-    orderNo: null
+    orderNo: null,
+    optimoRouteStatus: null // Add this required field
   });
   
   // Filter handling functions
@@ -40,6 +41,9 @@ export const useAdapterFilters = () => {
         case 'status':
           newFilters.status = value;
           break;
+        case 'optimoroute_status':
+          newFilters.optimoRouteStatus = value;
+          break;
       }
       
       return newFilters;
@@ -66,6 +70,9 @@ export const useAdapterFilters = () => {
         case 'status':
           newFilters.status = null;
           break;
+        case 'optimoroute_status':
+          newFilters.optimoRouteStatus = null;
+          break;
       }
       
       return newFilters;
@@ -78,7 +85,8 @@ export const useAdapterFilters = () => {
       dateRange: { from: null, to: null },
       driver: null,
       location: null,
-      orderNo: null
+      orderNo: null,
+      optimoRouteStatus: null // Include optimoRouteStatus in reset
     });
   };
 

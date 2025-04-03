@@ -16,6 +16,7 @@ interface WorkOrderTableHeaderProps {
     driver: string | null;
     location: string | null;
     status: string | null;
+    optimoRouteStatus: string | null; // Add the required field
   };
   onFilterChange: (column: string, value: any) => void;
   onFilterClear: (column: string) => void;

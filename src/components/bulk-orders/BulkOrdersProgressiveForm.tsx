@@ -1,4 +1,3 @@
-
 import { DateRangePicker } from "./DateRangePicker";
 import { EndpointTabs } from "./EndpointTabs";
 import { FetchButton } from "./FetchButton";
@@ -225,7 +224,8 @@ export const BulkOrdersProgressiveForm = () => {
             dateRange: { from: null, to: null },
             driver: null,
             location: null,
-            orderNo: null
+            orderNo: null,
+            optimoRouteStatus: null
           }}
           onFiltersChange={() => {}}
           onStatusUpdate={() => {}}

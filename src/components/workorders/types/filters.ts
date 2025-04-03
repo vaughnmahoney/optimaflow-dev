@@ -21,7 +21,7 @@ export interface WorkOrderFilters {
   driver: string | null;
   location: string | null;
   orderNo: string | null;
-  optimoRouteStatus?: string | null; // Add new field for optimoroute_status filter
+  optimoRouteStatus: string | null; // Changed from optional to required field
 }
 
 /**

@@ -12,7 +12,7 @@ export interface WorkOrderFilters {
   location: string | null;
   orderNo: string | null;
   searchQuery?: string; // Keeping for backward compatibility but will deprecate
-  optimoRouteStatus: string | null; // Changed from optional to required field
+  optimoRouteStatus: string | null; // Required field with null as allowed value
 }
 
 export interface ColumnFilterProps {
