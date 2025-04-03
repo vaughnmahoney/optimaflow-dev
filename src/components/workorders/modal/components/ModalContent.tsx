@@ -35,11 +35,9 @@ export const ModalContent = ({
         />
       </div>
       
-      {/* Right side: Order details panel with improved scrolling */}
+      {/* Right side: Order details panel with continuous scrolling */}
       <div className="w-full md:w-1/3 flex flex-col border-l h-full overflow-hidden">
-        <div className="h-full overflow-hidden">
-          <MobileOrderDetails workOrder={workOrder} />
-        </div>
+        <MobileOrderDetails workOrder={workOrder} />
       </div>
     </div>
   );
