@@ -36,8 +36,12 @@ export interface WorkOrderListProps {
   clearColumnFilter: (column: string) => void;
   clearAllFilters: () => void;
   onResolveFlag?: (workOrderId: string, resolution: string) => void;
-  cachedWorkOrder?: WorkOrder | null; // Added prop for cached work order
-  clearCachedWorkOrder?: () => void; // Added prop for clearing cached work order
+  cachedWorkOrder?: WorkOrder | null;
+  clearCachedWorkOrder?: () => void;
+  // New props for controlling the modal from parent
+  isImageModalOpen?: boolean;
+  selectedWorkOrderId?: string | null;
+  onCloseImageModal?: () => void;
 }
 
 export interface StatusFilterProps {

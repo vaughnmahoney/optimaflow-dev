@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { SortField, SortDirection, PaginationState, WorkOrderFilters } from "@/components/workorders/types";
 import { useWorkOrderFetch } from "./useWorkOrderFetch";
@@ -45,15 +46,19 @@ export const useWorkOrderData = () => {
   const { updateWorkOrderStatus, deleteWorkOrder } = useWorkOrderMutations();
 
   const handleUpdateWorkOrderStatus = async (workOrderId: string, newStatus: string) => {
+    // Always cache the work order before updating its status
     const workOrderToCache = workOrders.find(wo => wo.id === workOrderId);
+    
     if (workOrderToCache) {
+      // Create a deep copy of the work order with the new status
       setCachedWorkOrder({
-        ...workOrderToCache,
+        ...JSON.parse(JSON.stringify(workOrderToCache)),
         status: newStatus
       });
     }
     
     await updateWorkOrderStatus(workOrderId, newStatus);
+    // We don't clear the cached work order here - it will stay in the modal
   };
 
   const clearCachedWorkOrder = () => {
@@ -85,7 +90,7 @@ export const useWorkOrderData = () => {
       return newFilters;
     });
     
-    setCachedWorkOrder(null);
+    // Don't clear cached work order here, it might be needed for the modal
     handlePageChange(1);
   };
 
@@ -114,7 +119,7 @@ export const useWorkOrderData = () => {
       return newFilters;
     });
     
-    setCachedWorkOrder(null);
+    // Don't clear cached work order here, it might be needed for the modal
     handlePageChange(1);
   };
 
@@ -127,7 +132,7 @@ export const useWorkOrderData = () => {
       orderNo: null
     });
     
-    setCachedWorkOrder(null);
+    // Don't clear cached work order here, it might be needed for the modal
     handlePageChange(1);
   };
 
@@ -145,19 +150,19 @@ export const useWorkOrderData = () => {
     const newPage = Math.max(1, page);
     setPagination(prev => ({ ...prev, page: newPage }));
     
-    setCachedWorkOrder(null);
+    // Don't clear cached work order here, it might be needed for the modal
   };
   
   const handlePageSizeChange = (pageSize: number) => {
     setPagination(prev => ({ ...prev, pageSize, page: 1 }));
     
-    setCachedWorkOrder(null);
+    // Don't clear cached work order here, it might be needed for the modal
   };
   
   const handleFiltersChange = (newFilters: WorkOrderFilters) => {
     setFilters(newFilters);
     
-    setCachedWorkOrder(null);
+    // Don't clear cached work order here, it might be needed for the modal
     handlePageChange(1);
   };
 

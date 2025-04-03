@@ -1,9 +1,8 @@
-
 import { Layout } from "@/components/Layout";
 import { WorkOrderContent } from "@/components/workorders/WorkOrderContent";
 import { WorkOrderHeader } from "@/components/workorders/WorkOrderHeader";
 import { ImportControls } from "@/components/workorders/ImportControls";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useWorkOrderData } from "@/hooks/useWorkOrderData";
 import { useQueryClient } from "@tanstack/react-query";
@@ -17,6 +16,9 @@ const WorkOrders = () => {
   const queryClient = useQueryClient();
   const { resolveWorkOrderFlag } = useWorkOrderMutations();
   const isMobile = useIsMobile();
+  
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [selectedWorkOrderId, setSelectedWorkOrderId] = useState<string | null>(null);
   
   const {
     data: workOrders,
@@ -58,6 +60,24 @@ const WorkOrders = () => {
     setSort(field, direction);
   };
 
+  const handleOpenImageViewer = (workOrderId: string) => {
+    setSelectedWorkOrderId(workOrderId);
+    setIsImageModalOpen(true);
+    openImageViewer(workOrderId);
+  };
+
+  const handleCloseImageViewer = () => {
+    setIsImageModalOpen(false);
+    setTimeout(() => {
+      setSelectedWorkOrderId(null);
+      clearCachedWorkOrder();
+    }, 300);
+  };
+
+  const handleUpdateStatus = async (workOrderId: string, newStatus: string) => {
+    await updateWorkOrderStatus(workOrderId, newStatus);
+  };
+
   return (
     <Layout
       title="Work Orders"
@@ -66,13 +86,11 @@ const WorkOrders = () => {
       }
     >
       <div className="space-y-6 overflow-x-hidden">
-        {/* Page title - shown on all devices now */}
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Work Orders</h1>
           {isMobile && <ImportControls onOptimoRouteSearch={searchOptimoRoute} onRefresh={refetch} />}
         </div>
         
-        {/* Import controls - only shown on desktop */}
         {!isMobile && (
           <ImportControls onOptimoRouteSearch={searchOptimoRoute} onRefresh={refetch} />
         )}
@@ -82,8 +100,8 @@ const WorkOrders = () => {
           isLoading={isLoading}
           filters={filters}
           onFiltersChange={setFilters}
-          onStatusUpdate={updateWorkOrderStatus}
-          onImageView={openImageViewer}
+          onStatusUpdate={handleUpdateStatus}
+          onImageView={handleOpenImageViewer}
           onDelete={deleteWorkOrder}
           onOptimoRouteSearch={searchOptimoRoute}
           statusCounts={statusCounts}
@@ -99,6 +117,9 @@ const WorkOrders = () => {
           onResolveFlag={resolveWorkOrderFlag}
           cachedWorkOrder={cachedWorkOrder}
           clearCachedWorkOrder={clearCachedWorkOrder}
+          isImageModalOpen={isImageModalOpen}
+          selectedWorkOrderId={selectedWorkOrderId}
+          onCloseImageModal={handleCloseImageViewer}
         />
       </div>
     </Layout>

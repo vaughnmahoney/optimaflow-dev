@@ -30,8 +30,12 @@ interface WorkOrderContentProps {
   clearColumnFilter: (column: string) => void;
   clearAllFilters: () => void;
   onResolveFlag?: (workOrderId: string, resolution: string) => void;
-  cachedWorkOrder?: WorkOrder | null; // Added cached work order
-  clearCachedWorkOrder?: () => void; // Added clear function
+  cachedWorkOrder?: WorkOrder | null;
+  clearCachedWorkOrder?: () => void;
+  // New props
+  isImageModalOpen: boolean;
+  selectedWorkOrderId: string | null;
+  onCloseImageModal: () => void;
 }
 
 export const WorkOrderContent = ({
@@ -56,7 +60,11 @@ export const WorkOrderContent = ({
   clearAllFilters,
   onResolveFlag,
   cachedWorkOrder,
-  clearCachedWorkOrder
+  clearCachedWorkOrder,
+  // Pass the new props
+  isImageModalOpen,
+  selectedWorkOrderId,
+  onCloseImageModal
 }: WorkOrderContentProps) => {
   return (
     <WorkOrderList
@@ -82,6 +90,10 @@ export const WorkOrderContent = ({
       onResolveFlag={onResolveFlag}
       cachedWorkOrder={cachedWorkOrder}
       clearCachedWorkOrder={clearCachedWorkOrder}
+      // Pass the new props
+      isImageModalOpen={isImageModalOpen}
+      selectedWorkOrderId={selectedWorkOrderId}
+      onCloseImageModal={onCloseImageModal}
     />
   );
 };
