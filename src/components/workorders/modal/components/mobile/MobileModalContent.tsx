@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { WorkOrder } from "../../../types";
 import { ImageType } from "../../../types/image";
 import { MobileOrderDetails } from "./MobileOrderDetails";
-import { Image, Download } from "lucide-react";
+import { Image } from "lucide-react";
 import { QcNotesSheet } from "../QcNotesSheet";
 import { ResolutionNotesSheet } from "../ResolutionNotesSheet";
 
@@ -38,7 +38,7 @@ export const MobileModalContent = ({
       
       {/* Action buttons at the bottom */}
       <div className="p-3 border-t bg-gray-50 dark:bg-gray-900 space-y-3">
-        {/* View Images & Download buttons - now first */}
+        {/* View Images button - now first */}
         <div className="flex items-center gap-2">
           <Button 
             className="h-9 px-3 py-1 text-xs flex items-center justify-center"
@@ -49,17 +49,6 @@ export const MobileModalContent = ({
             <Image className="mr-1 h-3.5 w-3.5" />
             {hasImages ? `(${images.length})` : '(0)'}
           </Button>
-          
-          {onDownloadAll && hasImages && (
-            <Button 
-              className="w-9 h-9 justify-center items-center p-0"
-              variant="outline"
-              onClick={onDownloadAll}
-            >
-              <Download className="h-3.5 w-3.5" />
-              <span className="sr-only">Download All</span>
-            </Button>
-          )}
         </div>
         
         {/* Notes buttons - now below */}

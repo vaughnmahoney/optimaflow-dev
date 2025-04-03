@@ -79,11 +79,12 @@ export const MobileImageViewModal = ({
           // Show image viewer when in image mode
           <>
             <MobileImageViewer
-              workOrderId={currentWorkOrder.id} // Pass workOrderId
+              workOrderId={currentWorkOrder.id}
               images={images}
               currentImageIndex={currentImageIndex}
               setCurrentImageIndex={setCurrentImageIndex}
               onClose={closeImageViewer}
+              onDownloadAll={onDownloadAll} // Pass the onDownloadAll function
             />
           </>
         ) : (

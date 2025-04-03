@@ -7,6 +7,7 @@ import { useImagePreloading } from "@/hooks/useImagePreloading";
 import { useTouchGestures } from "@/hooks/useTouchGestures";
 import { MobileImageHeader } from "./MobileImageHeader";
 import { MobileThumbnails } from "./MobileThumbnails";
+import { Download } from "lucide-react";
 
 interface MobileImageViewerProps {
   workOrderId: string;
@@ -14,6 +15,7 @@ interface MobileImageViewerProps {
   currentImageIndex: number;
   setCurrentImageIndex: (index: number) => void;
   onClose: () => void;
+  onDownloadAll?: () => void; // Added onDownloadAll prop
 }
 
 export const MobileImageViewer = ({
@@ -22,6 +24,7 @@ export const MobileImageViewer = ({
   currentImageIndex,
   setCurrentImageIndex,
   onClose,
+  onDownloadAll, // Added onDownloadAll prop
 }: MobileImageViewerProps) => {
   const { toggleImageFlag } = useWorkOrderMutations();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -116,8 +119,27 @@ export const MobileImageViewer = ({
         setCurrentImageIndex={setCurrentImageIndex}
       />
       
-      <div className="py-2 bg-white text-center text-sm text-gray-600 border-t">
-        {currentImageIndex + 1} of {images.length}
+      <div className="py-2 px-3 bg-white text-center text-sm text-gray-600 border-t flex justify-between items-center">
+        {/* Download button now on the left */}
+        {onDownloadAll && (
+          <Button 
+            className="w-9 h-9 justify-center items-center p-0"
+            variant="outline"
+            onClick={onDownloadAll}
+            title="Download All Images"
+          >
+            <Download className="h-3.5 w-3.5" />
+            <span className="sr-only">Download All</span>
+          </Button>
+        )}
+        
+        {/* Image counter centered or right-aligned if download button exists */}
+        <div className={onDownloadAll ? "flex-1 text-center" : "w-full text-center"}>
+          {currentImageIndex + 1} of {images.length}
+        </div>
+        
+        {/* Empty div to help with alignment when download button exists */}
+        {onDownloadAll && <div className="w-9"></div>}
       </div>
     </div>
   );
