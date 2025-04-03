@@ -54,30 +54,13 @@ export const WorkOrderContent = ({
   clearAllFilters,
   onResolveFlag
 }: WorkOrderContentProps) => {
-  // Create wrapper functions that handle the optional options parameter
-  const handleStatusUpdate = (workOrderId: string, newStatus: string) => {
-    const options = {
-      filters,
-      workOrders,
-    };
-    onStatusUpdate(workOrderId, newStatus, options);
-  };
-
-  const handleResolveFlag = onResolveFlag ? (workOrderId: string, resolution: string) => {
-    const options = {
-      filters,
-      workOrders,
-    };
-    onResolveFlag(workOrderId, resolution, options);
-  } : undefined;
-
   return (
     <WorkOrderList
       workOrders={workOrders}
       isLoading={isLoading}
       filters={filters}
       onFiltersChange={onFiltersChange}
-      onStatusUpdate={handleStatusUpdate}
+      onStatusUpdate={onStatusUpdate}
       onImageView={onImageView}
       onDelete={onDelete}
       onSearchChange={onSearchChange}
@@ -92,7 +75,7 @@ export const WorkOrderContent = ({
       onColumnFilterChange={onColumnFilterChange}
       clearColumnFilter={clearColumnFilter}
       clearAllFilters={clearAllFilters}
-      onResolveFlag={handleResolveFlag}
+      onResolveFlag={onResolveFlag}
     />
   );
 };
