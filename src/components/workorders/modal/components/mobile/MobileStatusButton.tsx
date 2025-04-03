@@ -1,3 +1,4 @@
+
 import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -7,6 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { StatusMenuItems } from "../../../dropdown/StatusMenuItems";
 import { useQueryClient } from "@tanstack/react-query";
+import { getStatusBorderColor, getStatusBgColor } from "../../utils/modalUtils";
 
 interface MobileStatusButtonProps {
   workOrderId: string;
@@ -20,6 +22,10 @@ export const MobileStatusButton = ({
   onStatusUpdate
 }: MobileStatusButtonProps) => {
   const queryClient = useQueryClient();
+  
+  // Get status-based styling
+  const borderColorClass = getStatusBorderColor(currentStatus);
+  const bgColorClass = getStatusBgColor(currentStatus);
 
   const handleStatusChange = (newStatus: string) => {
     if (onStatusUpdate) {
@@ -44,7 +50,7 @@ export const MobileStatusButton = ({
         <Button 
           variant="ghost"
           size="sm"
-          className="h-8 px-3 text-xs flex items-center justify-center gap-1 text-gray-600 hover:bg-gray-100"
+          className={`h-8 px-3 text-xs flex items-center justify-center gap-1 text-gray-600 hover:bg-gray-100 border ${borderColorClass} ${bgColorClass}`}
         >
           Status
           <ChevronDown className="h-3 w-3" />
