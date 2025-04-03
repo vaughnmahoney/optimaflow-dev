@@ -1,9 +1,9 @@
 
 import React from "react";
 import { WorkOrder } from "../../types";
-import { OrderDetails } from "./OrderDetails";
 import { ImageContent } from "./ImageContent";
 import { ImageType } from "../../types/image";
+import { MobileOrderDetails } from "./mobile/MobileOrderDetails";
 
 interface ModalContentProps {
   workOrder: WorkOrder;
@@ -35,9 +35,11 @@ export const ModalContent = ({
         />
       </div>
       
-      {/* Right side: Order details */}
+      {/* Right side: Order details - now using the mobile component */}
       <div className="w-full md:w-1/3 flex flex-col border-l">
-        <OrderDetails workOrder={workOrder} />
+        <div className="p-2 overflow-y-auto h-full">
+          <MobileOrderDetails workOrder={workOrder} />
+        </div>
       </div>
     </div>
   );

@@ -14,10 +14,10 @@ export const MobileOrderDetails = ({
 }: MobileOrderDetailsProps) => {
   return (
     <Tabs defaultValue="details" className="w-full">
-      <TabsList className="grid grid-cols-3 mb-2 w-full">
-        <TabsTrigger value="details">Details</TabsTrigger>
-        <TabsTrigger value="notes">Notes</TabsTrigger>
-        <TabsTrigger value="signature">Signature</TabsTrigger>
+      <TabsList className="grid grid-cols-3 mb-2 w-full bg-gray-50 rounded-md p-1">
+        <TabsTrigger value="details" className="text-sm">Details</TabsTrigger>
+        <TabsTrigger value="notes" className="text-sm">Notes</TabsTrigger>
+        <TabsTrigger value="signature" className="text-sm">Signature</TabsTrigger>
       </TabsList>
       
       {/* Details Tab */}
