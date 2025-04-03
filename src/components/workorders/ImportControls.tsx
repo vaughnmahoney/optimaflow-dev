@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -36,20 +35,12 @@ export const ImportControls = ({
 
     setIsImporting(true);
     try {
-      // Call the onOptimoRouteSearch with the import value
       onOptimoRouteSearch(importValue.trim());
-      
-      // Clear the import field after successful import
       setImportValue("");
-      
-      // Close the search sheet if on mobile
       if (isMobile) {
         setIsSearchOpen(false);
       }
-      
-      // Refresh work orders data
       await queryClient.invalidateQueries({ queryKey: ["workOrders"] });
-      
       toast.success("Order imported successfully");
     } catch (error) {
       console.error("Import error:", error);
@@ -71,22 +62,17 @@ export const ImportControls = ({
     setIsRefreshing(true);
     
     try {
-      // First refresh the current data
       if (onRefresh) {
         await onRefresh();
       } else {
-        // Fallback to just invalidating the cache if no refresh function provided
         await queryClient.invalidateQueries({ queryKey: ["workOrders"] });
       }
       
-      // Then run the auto import to check for new orders
       const importSuccess = await runAutoImport();
       
       if (!importSuccess) {
-        // If auto-import didn't report success but the refresh worked, still show success message
         toast.success("Work orders refreshed");
       }
-      // If importSuccess is true, the auto-import will have shown its own success message
     } catch (error) {
       console.error("Error refreshing data:", error);
       toast.error("Failed to refresh work orders");
@@ -95,7 +81,6 @@ export const ImportControls = ({
     }
   };
 
-  // Mobile UI
   if (isMobile) {
     return (
       <div className="flex justify-end gap-2 mb-4">
@@ -148,13 +133,16 @@ export const ImportControls = ({
           disabled={isRefreshing || isAutoImporting}
         >
           <RefreshCw className={`h-4 w-4 ${isRefreshing || isAutoImporting ? 'animate-spin' : ''}`} />
-          <span className="ml-2">{isRefreshing || isAutoImporting ? 'Please wait...' : 'Refresh'}</span>
+          <span className="ml-2">
+            {isRefreshing || isAutoImporting ? (
+              <span className="text-muted-foreground">Please wait...</span>
+            ) : 'Refresh'}
+          </span>
         </Button>
       </div>
     );
   }
 
-  // Desktop UI
   return (
     <div className="flex items-center justify-between mb-4 bg-card p-4 rounded-md shadow-sm border">
       <div className="flex items-center gap-2">
@@ -163,7 +151,7 @@ export const ImportControls = ({
           placeholder="Import Order#"
           value={importValue}
           onChange={(e) => setImportValue(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && handleImport()}
+          onKeyPress={handleKeyPress}
           className="w-44"
         />
         <Button 
@@ -183,7 +171,9 @@ export const ImportControls = ({
           className="flex items-center"
         >
           <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing || isAutoImporting ? 'animate-spin' : ''}`} />
-          {isRefreshing || isAutoImporting ? 'Please wait...' : 'Refresh & Import'}
+          {isRefreshing || isAutoImporting ? (
+            <span className="text-muted-foreground">Please wait...</span>
+          ) : 'Refresh & Import'}
         </Button>
       </div>
     </div>

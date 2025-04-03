@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, RefreshCw, HourglassIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
 import { PaginationState } from "../types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAutoImport } from "@/hooks/useAutoImport";
@@ -59,10 +59,9 @@ export const PaginationIndicator = ({
             </Button>
           )}
           
-          {/* Display "Please wait" message when importing */}
+          {/* Display "Please wait" message when importing - updated styling */}
           {isImporting && (
-            <div className="flex items-center text-xs font-medium text-blue-700">
-              <RefreshCw className="h-3.5 w-3.5 animate-spin mr-1" />
+            <div className="text-xs font-medium text-muted-foreground">
               <span>Please wait...</span>
             </div>
           )}
