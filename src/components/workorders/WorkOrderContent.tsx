@@ -31,6 +31,7 @@ interface WorkOrderContentProps {
   clearAllFilters: () => void;
   onResolveFlag?: (workOrderId: string, resolution: string, options?: any) => void;
   refetch?: () => Promise<any>;
+  isRefreshing?: boolean;
 }
 
 export const WorkOrderContent = ({
@@ -54,7 +55,8 @@ export const WorkOrderContent = ({
   clearColumnFilter,
   clearAllFilters,
   onResolveFlag,
-  refetch
+  refetch,
+  isRefreshing
 }: WorkOrderContentProps) => {
   return (
     <WorkOrderList
@@ -79,6 +81,7 @@ export const WorkOrderContent = ({
       clearAllFilters={clearAllFilters}
       onResolveFlag={onResolveFlag}
       refetch={refetch}
+      isRefreshing={isRefreshing}
     />
   );
 };

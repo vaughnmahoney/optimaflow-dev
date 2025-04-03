@@ -31,13 +31,13 @@ export const WorkOrderList = ({
   clearColumnFilter,
   clearAllFilters,
   onResolveFlag,
-  refetch
+  refetch,
+  isRefreshing
 }: WorkOrderListProps) => {
   const [searchResponse, setSearchResponse] = useState<any>(null);
   const [transformedData, setTransformedData] = useState<any>(null);
   const [selectedWorkOrder, setSelectedWorkOrder] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const isMobile = useIsMobile();
   const queryClient = useQueryClient();
 
@@ -130,6 +130,12 @@ export const WorkOrderList = ({
     }
   };
 
+  const handleRefresh = () => {
+    if (refetch) {
+      refetch();
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -158,6 +164,16 @@ export const WorkOrderList = ({
         searchResponse={searchResponse}
         transformedData={transformedData}
       />
+
+      {/* Top pagination indicator with refresh button */}
+      {pagination && onPageChange && (
+        <PaginationIndicator 
+          pagination={pagination}
+          onPageChange={onPageChange}
+          onRefresh={handleRefresh}
+          isRefreshing={isRefreshing}
+        />
+      )}
 
       <WorkOrderTable 
         workOrders={workOrders}

@@ -2,8 +2,7 @@
 import { Layout } from "@/components/Layout";
 import { WorkOrderContent } from "@/components/workorders/WorkOrderContent";
 import { WorkOrderHeader } from "@/components/workorders/WorkOrderHeader";
-import { ImportControls } from "@/components/workorders/ImportControls";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useWorkOrderData } from "@/hooks/useWorkOrderData";
 import { useQueryClient } from "@tanstack/react-query";
@@ -15,6 +14,7 @@ const WorkOrders = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const { resolveWorkOrderFlag, updateWorkOrderStatus } = useWorkOrderMutations();
   const isMobile = useIsMobile();
   
@@ -65,6 +65,18 @@ const WorkOrders = () => {
     resolveWorkOrderFlag(workOrderId, resolution, options);
   };
 
+  // Handle refresh with loading state
+  const handleRefresh = async () => {
+    if (isRefreshing) return;
+    
+    setIsRefreshing(true);
+    try {
+      await refetch();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   return (
     <Layout
       title="Work Orders"
@@ -76,13 +88,7 @@ const WorkOrders = () => {
         {/* Page title - shown on all devices now */}
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Work Orders</h1>
-          {isMobile && <ImportControls onOptimoRouteSearch={searchOptimoRoute} onRefresh={refetch} />}
         </div>
-        
-        {/* Import controls - only shown on desktop */}
-        {!isMobile && (
-          <ImportControls onOptimoRouteSearch={searchOptimoRoute} onRefresh={refetch} />
-        )}
         
         <WorkOrderContent 
           workOrders={workOrders}
@@ -104,6 +110,8 @@ const WorkOrders = () => {
           clearColumnFilter={clearColumnFilter}
           clearAllFilters={clearAllFilters}
           onResolveFlag={handleResolveFlag}
+          refetch={handleRefresh}
+          isRefreshing={isRefreshing}
         />
       </div>
     </Layout>

@@ -1,15 +1,22 @@
 
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
 import { PaginationState } from "../types";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PaginationIndicatorProps {
   pagination: PaginationState;
   onPageChange: (page: number) => void;
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
 }
 
-export const PaginationIndicator = ({ pagination, onPageChange }: PaginationIndicatorProps) => {
+export const PaginationIndicator = ({ 
+  pagination, 
+  onPageChange,
+  onRefresh,
+  isRefreshing = false
+}: PaginationIndicatorProps) => {
   const { page, pageSize, total } = pagination;
   const totalPages = Math.ceil(total / pageSize);
   const isMobile = useIsMobile();
@@ -20,8 +27,21 @@ export const PaginationIndicator = ({ pagination, onPageChange }: PaginationIndi
 
   return (
     <div className="flex justify-between items-center py-2 px-3 mb-4 bg-white">
-      <div className="text-xs text-muted-foreground">
-        {total} {total === 1 ? 'item' : 'items'}
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <span>{total} {total === 1 ? 'order' : 'orders'}</span>
+        
+        {onRefresh && (
+          <Button 
+            variant="ghost" 
+            size="icon"
+            className="h-6 w-6 p-0.5"
+            onClick={onRefresh}
+            disabled={isRefreshing}
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span className="sr-only">Refresh</span>
+          </Button>
+        )}
       </div>
 
       <div className="flex items-center">
