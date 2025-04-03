@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogOverlay } from "@/components/ui/dialog";
 import { WorkOrder } from "../types";
 import { ModalHeader } from "./components/ModalHeader";
@@ -39,6 +39,16 @@ export const ImageViewModal = ({
   const isMobile = useMobile();
   const [isImageExpanded, setIsImageExpanded] = useState(false);
   
+  // Use a local state to track the work order to prevent unmounting
+  const [localWorkOrder, setLocalWorkOrder] = useState<WorkOrder | null>(workOrder);
+  
+  // Update local work order when prop changes and modal is open
+  useEffect(() => {
+    if (isOpen && workOrder) {
+      setLocalWorkOrder(workOrder);
+    }
+  }, [workOrder, isOpen]);
+  
   const {
     currentWorkOrder,
     currentIndex: navIndex,
@@ -51,22 +61,40 @@ export const ImageViewModal = ({
     handleSetOrder
   } = useWorkOrderNavigation({
     workOrders,
-    initialWorkOrderId: workOrder?.id || null,
+    initialWorkOrderId: localWorkOrder?.id || null,
     isOpen,
     onClose,
     onPageBoundary
   });
+
+  // Create a wrapper for status updates to update local state
+  const handleStatusUpdate = (workOrderId: string, status: string) => {
+    console.log("ImageViewModal: Updating status", workOrderId, status);
+    
+    // Update our local work order immediately
+    if (localWorkOrder && localWorkOrder.id === workOrderId) {
+      setLocalWorkOrder({
+        ...localWorkOrder,
+        status
+      });
+    }
+    
+    // Call the parent's handler
+    if (onStatusUpdate) {
+      onStatusUpdate(workOrderId, status);
+    }
+  };
   
   // Early return with mobile version, but AFTER all hooks have been called
-  if (isMobile && currentWorkOrder) {
+  if (isMobile && localWorkOrder) {
     return (
       <MobileImageViewModal 
-        workOrder={currentWorkOrder}
+        workOrder={localWorkOrder}
         workOrders={workOrders}
         currentIndex={navIndex}
         isOpen={isOpen}
         onClose={onClose}
-        onStatusUpdate={onStatusUpdate}
+        onStatusUpdate={handleStatusUpdate}
         onNavigate={onNavigate}
         onPageBoundary={onPageBoundary}
         onDownloadAll={onDownloadAll}
@@ -75,19 +103,22 @@ export const ImageViewModal = ({
     );
   }
   
+  // Use local work order instead of currentWorkOrder to prevent unmounting
+  const modalWorkOrder = localWorkOrder || currentWorkOrder;
+  
   // Return null if no work order, but AFTER all hooks have been called
-  if (!currentWorkOrder) return null;
+  if (!modalWorkOrder) return null;
 
   const toggleImageExpand = () => {
     setIsImageExpanded(!isImageExpanded);
   };
 
   // Get images from the work order's completion_response
-  const completionData = currentWorkOrder?.completion_response?.orders?.[0]?.data;
+  const completionData = modalWorkOrder?.completion_response?.orders?.[0]?.data;
   const images = completionData?.form?.images || [];
   
   // Status color for border
-  const statusBorderColor = getStatusBorderColor(currentWorkOrder.status || "pending_review");
+  const statusBorderColor = getStatusBorderColor(modalWorkOrder.status || "pending_review");
   
   // Map the border color class to actual color hex values
   const getBorderColor = () => {
@@ -117,10 +148,10 @@ export const ImageViewModal = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogOverlay />
       <DialogContent className="max-w-6xl p-0 h-[90vh] flex flex-col rounded-lg overflow-hidden border-t-4 bg-white shadow-xl w-[95%] m-0" style={{ borderTopColor: getBorderColor() }}>
-        <ModalHeader workOrder={currentWorkOrder} onClose={onClose} />
+        <ModalHeader workOrder={modalWorkOrder} onClose={onClose} />
         
         <ModalContent
-          workOrder={currentWorkOrder}
+          workOrder={modalWorkOrder}
           images={images}
           currentImageIndex={currentImageIndex}
           setCurrentImageIndex={setCurrentImageIndex}
@@ -129,13 +160,13 @@ export const ImageViewModal = ({
         />
         
         <ModalFooter 
-          workOrderId={currentWorkOrder.id} 
-          onStatusUpdate={onStatusUpdate} 
+          workOrderId={modalWorkOrder.id} 
+          onStatusUpdate={handleStatusUpdate}
           onDownloadAll={onDownloadAll}
           hasImages={images.length > 0}
-          status={currentWorkOrder.status}
+          status={modalWorkOrder.status}
           onResolveFlag={onResolveFlag}
-          workOrder={currentWorkOrder}
+          workOrder={modalWorkOrder}
         />
         
         <NavigationControls 

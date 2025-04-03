@@ -31,15 +31,23 @@ export const ActionButtons = ({
 
   const handleStatusUpdate = async (status: string) => {
     try {
+      console.log("ActionButtons: Updating status", workOrderId, status);
       setIsUpdating(status);
-      await onStatusUpdate?.(workOrderId, status);
       
-      // Immediately invalidate the badge count query to update the sidebar badge
-      queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
+      // Call the parent's status update handler
+      if (onStatusUpdate) {
+        onStatusUpdate(workOrderId, status);
+        
+        // Immediately invalidate the badge count query to update the sidebar badge
+        queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
+      }
     } catch (error) {
       console.error('Error updating status:', error);
     } finally {
-      setIsUpdating(null);
+      // Set a timeout to prevent the spinner from disappearing too quickly
+      setTimeout(() => {
+        setIsUpdating(null);
+      }, 500);
     }
   };
 

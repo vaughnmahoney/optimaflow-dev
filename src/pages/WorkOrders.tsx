@@ -1,3 +1,4 @@
+
 import { Layout } from "@/components/Layout";
 import { WorkOrderContent } from "@/components/workorders/WorkOrderContent";
 import { WorkOrderHeader } from "@/components/workorders/WorkOrderHeader";
@@ -55,6 +56,12 @@ const WorkOrders = () => {
     setSort(field, direction);
   };
 
+  // Custom status update handler that logs and delegates
+  const handleStatusUpdate = (workOrderId: string, newStatus: string) => {
+    console.log("WorkOrders: Updating status", workOrderId, newStatus);
+    updateWorkOrderStatus(workOrderId, newStatus);
+  };
+
   return (
     <Layout
       title="Work Orders"
@@ -79,7 +86,7 @@ const WorkOrders = () => {
           isLoading={isLoading}
           filters={filters}
           onFiltersChange={setFilters}
-          onStatusUpdate={updateWorkOrderStatus}
+          onStatusUpdate={handleStatusUpdate}
           onImageView={openImageViewer}
           onDelete={deleteWorkOrder}
           onOptimoRouteSearch={searchOptimoRoute}
