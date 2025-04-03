@@ -8,9 +8,6 @@ import { LoadingSkeleton } from "./LoadingSkeleton";
 import { ImageViewModal } from "./modal/ImageViewModal";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SortDirection, SortField } from "./types";
-import { Button } from "@/components/ui/button";
-import { RefreshCw } from "lucide-react";
-import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 
 export const WorkOrderList = ({ 
@@ -109,32 +106,6 @@ export const WorkOrderList = ({
     }
   };
 
-  const handleManualRefresh = async () => {
-    if (isRefreshing) return;
-    
-    setIsRefreshing(true);
-    try {
-      if (isImageModalOpen) {
-        setIsImageModalOpen(false);
-      }
-      
-      setSelectedWorkOrder(null);
-      
-      // Explicitly invalidate the work orders query to refresh data
-      queryClient.invalidateQueries({ queryKey: ["workOrders"] });
-      
-      if (refetch) {
-        await refetch();
-        toast.success("Work orders refreshed successfully");
-      }
-    } catch (error) {
-      console.error("Error refreshing work orders:", error);
-      toast.error("Failed to refresh work orders");
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
   const handleStatusUpdate = (workOrderId: string, newStatus: string, options?: any) => {
     const updatedOptions = {
       ...options,
@@ -181,16 +152,6 @@ export const WorkOrderList = ({
           sortDirection={sortDirection}
           onSort={handleSortChange}
         />
-        <Button 
-          onClick={handleManualRefresh}
-          variant="outline"
-          size="sm"
-          disabled={isRefreshing}
-          className="ml-2"
-        >
-          <RefreshCw className={`h-4 w-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
-          {isRefreshing ? 'Refreshing...' : 'Refresh'}
-        </Button>
       </div>
 
       <DebugDataDisplay 

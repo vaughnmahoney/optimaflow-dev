@@ -25,6 +25,7 @@ export const ImportControls = ({
 }: ImportControlsProps) => {
   const [importValue, setImportValue] = useState("");
   const [isImporting, setIsImporting] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const queryClient = useQueryClient();
   const isMobile = useIsMobile();
@@ -65,13 +66,32 @@ export const ImportControls = ({
   };
 
   const handleRefresh = async () => {
-    // First run the auto import
-    const importSuccess = await runAutoImport();
+    if (isRefreshing || isAutoImporting) return;
     
-    // If auto-import didn't run or if the onRefresh prop is provided, call it as a fallback
-    if (!importSuccess && onRefresh) {
-      onRefresh();
-      toast.success("Work orders refreshed");
+    setIsRefreshing(true);
+    
+    try {
+      // First refresh the current data
+      if (onRefresh) {
+        await onRefresh();
+      } else {
+        // Fallback to just invalidating the cache if no refresh function provided
+        await queryClient.invalidateQueries({ queryKey: ["workOrders"] });
+      }
+      
+      // Then run the auto import to check for new orders
+      const importSuccess = await runAutoImport();
+      
+      if (!importSuccess) {
+        // If auto-import didn't report success but the refresh worked, still show success message
+        toast.success("Work orders refreshed");
+      }
+      // If importSuccess is true, the auto-import will have shown its own success message
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+      toast.error("Failed to refresh work orders");
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -125,10 +145,10 @@ export const ImportControls = ({
           variant="outline" 
           size="sm"
           onClick={handleRefresh}
-          disabled={isAutoImporting}
+          disabled={isRefreshing || isAutoImporting}
         >
-          <RefreshCw className={`h-4 w-4 ${isAutoImporting ? 'animate-spin' : ''}`} />
-          <span className="sr-only">{isAutoImporting ? 'Importing...' : 'Refresh'}</span>
+          <RefreshCw className={`h-4 w-4 ${isRefreshing || isAutoImporting ? 'animate-spin' : ''}`} />
+          <span className="sr-only">{isRefreshing || isAutoImporting ? 'Refreshing...' : 'Refresh & Import'}</span>
         </Button>
       </div>
     );
@@ -159,10 +179,10 @@ export const ImportControls = ({
         <Button 
           variant="outline" 
           onClick={handleRefresh}
-          disabled={isAutoImporting}
+          disabled={isRefreshing || isAutoImporting}
         >
-          <RefreshCw className={`h-4 w-4 mr-2 ${isAutoImporting ? 'animate-spin' : ''}`} />
-          {isAutoImporting ? 'Importing...' : 'Refresh'}
+          <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing || isAutoImporting ? 'animate-spin' : ''}`} />
+          {isRefreshing || isAutoImporting ? 'Refreshing...' : 'Refresh & Import'}
         </Button>
       </div>
     </div>
