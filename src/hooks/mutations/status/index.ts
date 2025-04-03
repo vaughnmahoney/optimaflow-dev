@@ -1,6 +1,7 @@
 
 import { useStatusUpdate } from "./useStatusUpdate";
 import { useFlagResolution } from "./useFlagResolution";
+import { useLocalStateUpdate } from "./useLocalStateUpdate";
 
 /**
  * Combined hook for status-related mutations
@@ -16,4 +17,4 @@ export const useStatusMutations = () => {
   };
 };
 
-export { useStatusUpdate, useFlagResolution, useLocalStateUpdate } from "./useLocalStateUpdate";
+export { useStatusUpdate, useFlagResolution, useLocalStateUpdate };
