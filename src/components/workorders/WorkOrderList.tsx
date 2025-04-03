@@ -190,6 +190,7 @@ export const WorkOrderList = ({
           onNavigate={handleNavigate}
           onPageBoundary={handlePageBoundary}
           onResolveFlag={handleResolveFlag}
+          filters={filters}
           onDownloadAll={() => {
             // Placeholder for download all functionality
             console.log("Download all images for:", currentWorkOrder.id);

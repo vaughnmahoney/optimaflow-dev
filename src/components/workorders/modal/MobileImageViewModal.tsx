@@ -20,6 +20,7 @@ interface MobileImageViewModalProps {
   onPageBoundary?: (direction: 'next' | 'previous') => void;
   onDownloadAll?: () => void;
   onResolveFlag?: (workOrderId: string, resolution: string) => void;
+  filters?: any;
 }
 
 export const MobileImageViewModal = ({
@@ -33,6 +34,7 @@ export const MobileImageViewModal = ({
   onPageBoundary,
   onDownloadAll,
   onResolveFlag,
+  filters
 }: MobileImageViewModalProps) => {
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
   
@@ -67,6 +69,15 @@ export const MobileImageViewModal = ({
     handleSetOrder(index);
     onNavigate(index);
   };
+  
+  // Handle advancement to next order when current order is filtered out
+  const handleAdvanceToNextOrder = (nextOrderId: string) => {
+    // Find the index of the next order
+    const nextIndex = workOrders.findIndex(wo => wo.id === nextOrderId);
+    if (nextIndex !== -1) {
+      handleNavigate(nextIndex);
+    }
+  };
 
   // Toggle image viewer mode
   const openImageViewer = () => setIsImageViewerOpen(true);
@@ -92,7 +103,10 @@ export const MobileImageViewModal = ({
           <>
             <MobileModalHeader 
               workOrder={currentWorkOrder} 
-              onClose={onClose} 
+              onClose={onClose}
+              filters={filters}
+              workOrders={workOrders}
+              onAdvanceToNextOrder={handleAdvanceToNextOrder} 
             />
             
             <MobileModalContent

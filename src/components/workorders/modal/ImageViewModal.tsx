@@ -22,6 +22,7 @@ interface ImageViewModalProps {
   onPageBoundary?: (direction: 'next' | 'previous') => void;
   onDownloadAll?: () => void;
   onResolveFlag?: (workOrderId: string, resolution: string) => void;
+  filters?: any;
 }
 
 export const ImageViewModal = ({
@@ -35,6 +36,7 @@ export const ImageViewModal = ({
   onPageBoundary,
   onDownloadAll,
   onResolveFlag,
+  filters
 }: ImageViewModalProps) => {
   const isMobile = useMobile();
   const [isImageExpanded, setIsImageExpanded] = useState(false);
@@ -71,6 +73,7 @@ export const ImageViewModal = ({
         onPageBoundary={onPageBoundary}
         onDownloadAll={onDownloadAll}
         onResolveFlag={onResolveFlag}
+        filters={filters}
       />
     );
   }
@@ -112,12 +115,27 @@ export const ImageViewModal = ({
     handleSetOrder(index);
     onNavigate(index);
   };
+  
+  // Handle advancement to next order when current order is filtered out
+  const handleAdvanceToNextOrder = (nextOrderId: string) => {
+    // Find the index of the next order
+    const nextIndex = workOrders.findIndex(wo => wo.id === nextOrderId);
+    if (nextIndex !== -1) {
+      handleNavigate(nextIndex);
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogOverlay />
       <DialogContent className="max-w-6xl p-0 h-[90vh] flex flex-col rounded-lg overflow-hidden border-t-4 bg-white shadow-xl w-[95%] m-0" style={{ borderTopColor: getBorderColor() }}>
-        <ModalHeader workOrder={currentWorkOrder} onClose={onClose} />
+        <ModalHeader 
+          workOrder={currentWorkOrder} 
+          onClose={onClose} 
+          filters={filters}
+          workOrders={workOrders}
+          onAdvanceToNextOrder={handleAdvanceToNextOrder}
+        />
         
         <ModalContent
           workOrder={currentWorkOrder}

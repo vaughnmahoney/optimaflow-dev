@@ -7,11 +7,17 @@ import { WorkOrder } from "../../../types";
 interface MobileModalHeaderProps {
   workOrder: WorkOrder;
   onClose: () => void;
+  filters?: any;
+  workOrders?: WorkOrder[];
+  onAdvanceToNextOrder?: (nextOrderId: string) => void;
 }
 
 export const MobileModalHeader = ({ 
   workOrder, 
-  onClose 
+  onClose,
+  filters,
+  workOrders,
+  onAdvanceToNextOrder
 }: MobileModalHeaderProps) => {
   // Extract the completion status from the appropriate place in the order object
   const getCompletionStatus = (order: WorkOrder): string | undefined => {
@@ -31,6 +37,9 @@ export const MobileModalHeader = ({
               workOrderId={workOrder.id}
               currentStatus={workOrder.status || "pending_review"} 
               completionStatus={getCompletionStatus(workOrder)}
+              filters={filters}
+              workOrders={workOrders}
+              onAdvanceToNextOrder={onAdvanceToNextOrder}
             />
           </div>
         </div>

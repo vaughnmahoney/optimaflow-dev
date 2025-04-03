@@ -7,11 +7,17 @@ import { WorkOrder } from "../../types";
 interface ModalHeaderProps {
   workOrder: WorkOrder;
   onClose: () => void;
+  filters?: any;
+  workOrders?: WorkOrder[];
+  onAdvanceToNextOrder?: (nextOrderId: string) => void;
 }
 
 export const ModalHeader = ({ 
   workOrder, 
-  onClose 
+  onClose,
+  filters,
+  workOrders,
+  onAdvanceToNextOrder
 }: ModalHeaderProps) => {
   const driverName = workOrder.search_response?.scheduleInformation?.driverName || 'No Driver Assigned';
   
@@ -36,6 +42,9 @@ export const ModalHeader = ({
               workOrderId={workOrder.id}
               currentStatus={workOrder.status || "pending_review"} 
               completionStatus={getCompletionStatus(workOrder)}
+              filters={filters}
+              workOrders={workOrders}
+              onAdvanceToNextOrder={onAdvanceToNextOrder}
             />
           </div>
           <p className="text-sm text-muted-foreground">
