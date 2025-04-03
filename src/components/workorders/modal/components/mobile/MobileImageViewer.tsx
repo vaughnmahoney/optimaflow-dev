@@ -120,11 +120,11 @@ export const MobileImageViewer = ({
       />
       
       <div className="py-2 px-3 bg-white text-center text-sm text-gray-600 border-t flex justify-between items-center">
-        {/* Download button now on the left */}
+        {/* Download button now on the left with ghost styling */}
         {onDownloadAll && (
           <Button 
-            className="w-9 h-9 justify-center items-center p-0"
-            variant="outline"
+            className="w-9 h-9 justify-center items-center p-0 text-gray-600 hover:bg-gray-100"
+            variant="ghost"
             onClick={onDownloadAll}
             title="Download All Images"
           >

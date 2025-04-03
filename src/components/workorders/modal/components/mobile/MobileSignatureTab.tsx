@@ -1,6 +1,6 @@
 
 import { Card } from "@/components/ui/card";
-import { WorkOrder } from "../../../../types";
+import { WorkOrder } from "../../../types";
 
 interface MobileSignatureTabProps {
   workOrder: WorkOrder;
