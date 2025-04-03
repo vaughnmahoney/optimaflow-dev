@@ -1,7 +1,6 @@
 
 import { Card } from "@/components/ui/card";
 import { WorkOrder } from "../../../../types";
-import { Package } from "lucide-react";
 
 interface MobileNotesTabProps {
   workOrder: WorkOrder;
@@ -10,29 +9,12 @@ interface MobileNotesTabProps {
 export const MobileNotesTab = ({ workOrder }: MobileNotesTabProps) => {
   const completionData = workOrder.completion_response?.orders?.[0]?.data;
   const searchData = workOrder.search_response?.data;
-  
-  // Extract material quantity
-  const materialQuantity = searchData?.customField3 || "N/A";
 
   return (
     <Card className="border-gray-100">
       <div className="space-y-4 px-4 py-4">
-        {/* Materials Section */}
-        <div className="space-y-1">
-          <div className="flex items-center gap-1.5 text-gray-700 mb-1">
-            <Package className="h-4 w-4 text-gray-400" />
-            <h3 className="text-sm font-medium">Materials</h3>
-          </div>
-          <div className="space-y-0.5">
-            <div className="grid grid-cols-[80px_1fr]">
-              <span className="text-xs text-gray-500">Quantity:</span>
-              <span className="text-xs">{materialQuantity}</span>
-            </div>
-          </div>
-        </div>
-        
         {/* Tech Notes */}
-        <div className="space-y-1 border-t pt-3 first:border-t-0 first:pt-0">
+        <div className="space-y-1 first:border-t-0 first:pt-0">
           <div className="flex items-center gap-1.5 text-gray-700 mb-1">
             <h3 className="text-sm font-medium">Tech Notes</h3>
           </div>
