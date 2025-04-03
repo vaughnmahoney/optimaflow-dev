@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -46,7 +46,11 @@ export const StatusBadgeDropdown = ({
             status={currentStatus} 
             completionStatus={completionStatus} 
           />
-          <ChevronDown className="h-3 w-3 text-white" />
+          {isOpen ? (
+            <ChevronUp className="h-3 w-3 text-white transition-transform duration-300" />
+          ) : (
+            <ChevronDown className="h-3 w-3 text-white transition-transform duration-300" />
+          )}
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent 
