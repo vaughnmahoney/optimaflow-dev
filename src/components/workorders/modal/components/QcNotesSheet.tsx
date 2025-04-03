@@ -56,7 +56,7 @@ export const QcNotesSheet = ({ workOrder }: QcNotesSheetProps) => {
           }`}
         >
           {hasNotes ? <PenLine className="h-3.5 w-3.5 text-gray-700" /> : <StickyNote className="h-3.5 w-3.5 text-gray-600" />}
-          <span className="text-xs font-medium text-gray-700">{hasNotes ? "Edit QC Notes" : "Add QC Notes"}</span>
+          <span className="text-xs font-medium text-gray-700">QC Notes</span>
           {hasNotes && (
             <Badge 
               variant="info" 
