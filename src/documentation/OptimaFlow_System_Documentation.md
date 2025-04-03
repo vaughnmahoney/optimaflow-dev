@@ -438,10 +438,97 @@ Based on the current implementation, the following areas may be considered for f
 
 ## Technical Debt & Improvement Opportunities
 
-1. **Component Refactoring**: Large components like `WorkOrderList.tsx` should be further broken down
-2. **Performance Optimization**: Implement virtualized lists for large datasets
-3. **Test Coverage**: Add automated tests for critical business logic
-4. **Error Handling**: Enhance error handling and recovery mechanisms
-5. **Offline Support**: Add offline capabilities for field use cases
+### 1. Component Refactoring Needs
+
+Several components have grown too large and complex, requiring refactoring:
+
+1. **WorkOrderList.tsx**: This component has grown to over 500 lines and handles too many responsibilities including:
+   - Fetching data
+   - Managing filters
+   - Status updates
+   - Modal interactions
+   
+   It should be split into smaller components with focused responsibilities.
+
+2. **useUserManagement.ts**: At over 250 lines, this hook needs to be broken into smaller hooks for:
+   - User fetching
+   - User mutations (create/edit/delete)
+   - Error handling
+
+3. **UserManagementContent.tsx**: Needs clearer separation of UI and state management logic
+
+### 2. Unused and Partially Working Files
+
+The codebase contains several files that are either unused or contain non-functional code:
+
+1. **src/components/workorders/ImageControls.tsx**: Partially implemented but not used in the current workflow
+
+2. **src/components/users/UserListFilters.tsx**: Contains filtering functionality that's partially working but has UI issues
+
+3. **src/hooks/bulk-orders/useOrderDeduplication.ts**: Has hardcoded values but appears to be unused in production workflow
+
+4. **src/components/workorders/modal/components/ImageStatusIndicators.tsx**: Implemented but not integrated with current modal view
+
+### 3. Performance Issues
+
+Key performance issues that need addressing:
+
+1. **User Management Dialogs**: App freezes when closing user management dialogs, likely due to:
+   - State updates during unmounting
+   - Race conditions between API calls and UI updates
+   - Dialog state and form state conflicts
+
+2. **Large Data Handling**: The work orders table struggles with large datasets:
+   - No virtualization for large lists
+   - Inefficient filtering that recalculates on every render
+   - All images loaded at once rather than on-demand
+
+3. **Bulk Import Performance**: Imports of large batches cause UI freezes:
+   - Processing happens on main thread
+   - Missing progress indicators
+   - No cancelation mechanism
+
+### 4. User Management System Issues
+
+The User Management system has several critical issues that suggest it should be rebuilt:
+
+1. **UI Freezes**: The application freezes when closing dialogs, indicating serious state management issues
+   - Likely caused by state updates during component unmounting
+   - Dialog close handlers conflict with form submission handlers
+   - Multiple async operations may not be properly coordinated
+
+2. **Date Handling Issues**: Date fields in the user management are broken:
+   - Invalid date formats cause parsing errors
+   - Timezone inconsistencies between server and client
+   - Form validation doesn't properly handle date values
+
+3. **API Integration Problems**:
+   - Error handling is inconsistent
+   - Success/error toasts may be displayed at incorrect times
+   - The edge function handles too many responsibilities
+
+4. **Recommended Approach**: Keep the backend structure (tables, edge functions) but rebuild the frontend with:
+   - Clearer separation of concerns
+   - More reliable state management with proper cleanup
+   - Simplified dialog handling using controlled components
+   - Better form state management with React Hook Form
+
+## Next Steps for Development
+
+Based on this analysis, here are the recommended next steps for the OptimaFlow system:
+
+1. **Address Critical Issues**:
+   - Fix the TypeScript errors in WorkOrderList.tsx causing build failures
+   - Rebuild the User Management frontend components while keeping the backend intact
+
+2. **Technical Debt Reduction**:
+   - Break down large components into smaller, more focused ones
+   - Improve performance of bulk operations with pagination and virtualization
+   - Remove or complete partially implemented features
+
+3. **New Feature Development**:
+   - Implement the Billing System as the logical next step after work order approval
+   - Enhance reporting capabilities for management insights
+   - Add more sophisticated automation to the QC process
 
 This documentation provides a comprehensive overview of the current state of OptimaFlow. It should serve as a foundation for planning future development efforts and understanding the system's architecture and data flows.
