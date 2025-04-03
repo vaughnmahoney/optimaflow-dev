@@ -47,8 +47,15 @@ export const MobileModalContent = ({
             onClick={onViewImages}
             disabled={!hasImages}
           >
-            <Image className="mr-1 h-3.5 w-3.5" />
-            {hasImages ? `(${images.length})` : '(0)'}
+            <div className="relative">
+              <Image className="h-3.5 w-3.5" />
+              {hasImages && images.length > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-gray-200 text-gray-700 text-[10px] rounded-full h-4 w-4 flex items-center justify-center font-medium">
+                  {images.length}
+                </span>
+              )}
+            </div>
+            <span>Images</span>
           </Button>
           
           {/* Status button aligned to the right */}
