@@ -7,8 +7,7 @@ import { useImagePreloading } from "@/hooks/useImagePreloading";
 import { useTouchGestures } from "@/hooks/useTouchGestures";
 import { MobileImageHeader } from "./MobileImageHeader";
 import { MobileThumbnails } from "./MobileThumbnails";
-import { Download, Images } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Download } from "lucide-react";
 
 interface MobileImageViewerProps {
   workOrderId: string;
@@ -16,7 +15,7 @@ interface MobileImageViewerProps {
   currentImageIndex: number;
   setCurrentImageIndex: (index: number) => void;
   onClose: () => void;
-  onDownloadAll?: () => void;
+  onDownloadAll?: () => void; // Added onDownloadAll prop
 }
 
 export const MobileImageViewer = ({
@@ -25,7 +24,7 @@ export const MobileImageViewer = ({
   currentImageIndex,
   setCurrentImageIndex,
   onClose,
-  onDownloadAll,
+  onDownloadAll, // Added onDownloadAll prop
 }: MobileImageViewerProps) => {
   const { toggleImageFlag } = useWorkOrderMutations();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -121,35 +120,26 @@ export const MobileImageViewer = ({
       />
       
       <div className="py-2 px-3 bg-white text-center text-sm text-gray-600 border-t flex justify-between items-center">
-        {/* Download button with improved styling */}
+        {/* Download button now on the left with ghost styling */}
         {onDownloadAll && (
           <Button 
-            className="h-10 w-10 p-0 flex justify-center items-center text-gray-600 hover:bg-gray-100"
+            className="w-9 h-9 justify-center items-center p-0 text-gray-600 hover:bg-gray-100"
             variant="ghost"
             onClick={onDownloadAll}
             title="Download All Images"
           >
-            <Download className="h-5 w-5" /> {/* Increased icon size */}
+            <Download className="h-3.5 w-3.5" />
             <span className="sr-only">Download All</span>
           </Button>
         )}
         
-        {/* Image counter with improved styling */}
-        <div className="flex items-center justify-center gap-1.5">
-          <div className="relative">
-            <Images className="h-5 w-5 text-gray-500" /> {/* Increased icon size */}
-            <Badge 
-              variant="destructive" 
-              className="absolute -top-2.5 -right-2.5 px-1.5 min-w-5 h-5 flex items-center justify-center text-[11px] font-medium rounded-md"
-            >
-              {images.length}
-            </Badge>
-          </div>
-          <span>{currentImageIndex + 1} of {images.length}</span>
+        {/* Image counter centered or right-aligned if download button exists */}
+        <div className={onDownloadAll ? "flex-1 text-center" : "w-full text-center"}>
+          {currentImageIndex + 1} of {images.length}
         </div>
         
         {/* Empty div to help with alignment when download button exists */}
-        {onDownloadAll && <div className="w-10"></div>}
+        {onDownloadAll && <div className="w-9"></div>}
       </div>
     </div>
   );

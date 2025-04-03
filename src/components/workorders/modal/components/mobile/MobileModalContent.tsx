@@ -8,7 +8,6 @@ import { Image } from "lucide-react";
 import { QcNotesSheet } from "../QcNotesSheet";
 import { ResolutionNotesSheet } from "../ResolutionNotesSheet";
 import { MobileStatusButton } from "./MobileStatusButton";
-import { Badge } from "@/components/ui/badge";
 
 interface MobileModalContentProps {
   workOrder: WorkOrder;
@@ -43,23 +42,13 @@ export const MobileModalContent = ({
         {/* View Images button and Status button in same row */}
         <div className="flex items-center justify-between gap-2">
           <Button 
-            className="h-10 px-3 flex items-center justify-center gap-1.5 text-gray-600 hover:bg-gray-100"
+            className="h-8 px-3 text-xs flex items-center justify-center gap-1 text-gray-600 hover:bg-gray-100"
             variant="ghost"
             onClick={onViewImages}
             disabled={!hasImages}
           >
-            <div className="relative">
-              <Image className="h-5 w-5" /> {/* Increased icon size */}
-              {hasImages && (
-                <Badge 
-                  variant="destructive" 
-                  className="absolute -top-2.5 -right-2.5 px-1.5 min-w-5 h-5 flex items-center justify-center text-[11px] font-medium rounded-md"
-                >
-                  {images.length}
-                </Badge>
-              )}
-            </div>
-            <span>Images</span>
+            <Image className="mr-1 h-3.5 w-3.5" />
+            {hasImages ? `(${images.length})` : '(0)'}
           </Button>
           
           {/* Status button aligned to the right */}
