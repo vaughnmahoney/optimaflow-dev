@@ -124,12 +124,12 @@ export const MobileImageViewer = ({
         {/* Download button with improved styling */}
         {onDownloadAll && (
           <Button 
-            className="h-8 w-8 p-0 flex justify-center items-center text-gray-600 hover:bg-gray-100"
+            className="h-10 w-10 p-0 flex justify-center items-center text-gray-600 hover:bg-gray-100"
             variant="ghost"
             onClick={onDownloadAll}
             title="Download All Images"
           >
-            <Download className="h-3.5 w-3.5" />
+            <Download className="h-5 w-5" /> {/* Increased icon size */}
             <span className="sr-only">Download All</span>
           </Button>
         )}
@@ -137,10 +137,10 @@ export const MobileImageViewer = ({
         {/* Image counter with improved styling */}
         <div className="flex items-center justify-center gap-1.5">
           <div className="relative">
-            <Images className="h-3.5 w-3.5 text-gray-500" />
+            <Images className="h-5 w-5 text-gray-500" /> {/* Increased icon size */}
             <Badge 
-              variant="secondary" 
-              className="absolute -top-1 -right-1 px-1 min-w-4 h-4 flex items-center justify-center text-[10px] font-medium"
+              variant="destructive" 
+              className="absolute -top-2.5 -right-2.5 px-1.5 min-w-5 h-5 flex items-center justify-center text-[11px] font-medium rounded-md"
             >
               {images.length}
             </Badge>
@@ -149,7 +149,7 @@ export const MobileImageViewer = ({
         </div>
         
         {/* Empty div to help with alignment when download button exists */}
-        {onDownloadAll && <div className="w-8"></div>}
+        {onDownloadAll && <div className="w-10"></div>}
       </div>
     </div>
   );
