@@ -21,19 +21,24 @@ export const useNotesMutations = () => {
 
       if (error) throw error;
 
-      // Refetch work orders to update UI
-      queryClient.invalidateQueries({ queryKey: ["workOrders"] });
+      // Update the local cache without triggering a full refetch that would filter out the work order
+      queryClient.setQueriesData(
+        { queryKey: ["workOrders"] },
+        (oldData: any) => {
+          if (!oldData) return oldData;
+          
+          const newData = {
+            ...oldData,
+            data: oldData.data.map((wo: any) => 
+              wo.id === workOrderId ? { ...wo, qc_notes: qcNotes } : wo
+            )
+          };
+          return newData;
+        }
+      );
       
-      // Also directly update this specific work order if it's being viewed
-      const cachedWorkOrders = queryClient.getQueryData(["workOrders"]) as any[];
-      if (cachedWorkOrders) {
-        queryClient.setQueryData(
-          ["workOrders"], 
-          cachedWorkOrders.map(wo => 
-            wo.id === workOrderId ? { ...wo, qc_notes: qcNotes } : wo
-          )
-        );
-      }
+      // Also update badge counts separately without affecting the current view
+      queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
     } catch (error) {
       console.error('QC notes update error:', error);
       throw error; // We'll handle this in the component
@@ -52,19 +57,24 @@ export const useNotesMutations = () => {
 
       if (error) throw error;
 
-      // Refetch work orders to update UI
-      queryClient.invalidateQueries({ queryKey: ["workOrders"] });
+      // Update the local cache without triggering a full refetch that would filter out the work order
+      queryClient.setQueriesData(
+        { queryKey: ["workOrders"] },
+        (oldData: any) => {
+          if (!oldData) return oldData;
+          
+          const newData = {
+            ...oldData,
+            data: oldData.data.map((wo: any) => 
+              wo.id === workOrderId ? { ...wo, resolution_notes: resolutionNotes } : wo
+            )
+          };
+          return newData;
+        }
+      );
       
-      // Also directly update this specific work order if it's being viewed
-      const cachedWorkOrders = queryClient.getQueryData(["workOrders"]) as any[];
-      if (cachedWorkOrders) {
-        queryClient.setQueryData(
-          ["workOrders"], 
-          cachedWorkOrders.map(wo => 
-            wo.id === workOrderId ? { ...wo, resolution_notes: resolutionNotes } : wo
-          )
-        );
-      }
+      // Also update badge counts separately without affecting the current view
+      queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
     } catch (error) {
       console.error('Resolution notes update error:', error);
       throw error;
