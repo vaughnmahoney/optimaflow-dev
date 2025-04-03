@@ -52,14 +52,50 @@ export const useImageMutations = () => {
         
         // If flagging an image and work order isn't already flagged, update the work order status
         if (isFlagged && workOrder.status !== "flagged" && workOrder.status !== "flagged_followup") {
-          await updateWorkOrderStatus(workOrderId, "flagged");
+          // Use the options to prevent auto-filtering when flagging an image
+          await updateWorkOrderStatus(workOrderId, "flagged", {
+            skipRefresh: true,
+            updateLocal: true
+          });
         }
         
         // Show success toast
         toast.success(isFlagged ? 'Image flagged' : 'Image flag removed');
         
-        // Refetch work orders to update UI
-        queryClient.invalidateQueries({ queryKey: ["workOrders"] });
+        // Update the local cache without triggering a full refetch
+        queryClient.setQueriesData(
+          { queryKey: ["workOrders"] },
+          (oldData: any) => {
+            if (!oldData) return oldData;
+            
+            const newData = {
+              ...oldData,
+              data: oldData.data.map((wo: any) => {
+                if (wo.id === workOrderId) {
+                  // Create a shallow copy of the work order
+                  const updatedWo = { ...wo };
+                  
+                  // Update the completion_response with the flagged image
+                  if (updatedWo.completion_response?.orders?.[0]?.data?.form?.images) {
+                    updatedWo.completion_response.orders[0].data.form.images[imageIndex].flagged = isFlagged;
+                  }
+                  
+                  // If flagging an image, also update the work order status if needed
+                  if (isFlagged && wo.status !== "flagged" && wo.status !== "flagged_followup") {
+                    updatedWo.status = "flagged";
+                  }
+                  
+                  return updatedWo;
+                }
+                return wo;
+              })
+            };
+            return newData;
+          }
+        );
+        
+        // Update badge counts separately
+        queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
       }
     } catch (error) {
       console.error('Image flag toggle error:', error);
