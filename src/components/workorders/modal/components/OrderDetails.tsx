@@ -123,7 +123,7 @@ export const OrderDetails = ({
         </Tabs>
       </div>
 
-      <ScrollArea className="flex-1 overflow-auto">
+      <ScrollArea className="flex-1 overflow-auto scrollbar-none">
         <div className="space-y-0">
           {/* Order Details Section */}
           <div id="details-section" ref={detailsSectionRef} className="scroll-m-12">

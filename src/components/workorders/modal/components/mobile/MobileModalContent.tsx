@@ -30,7 +30,7 @@ export const MobileModalContent = ({
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Scrollable main content */}
-      <ScrollArea className="flex-1 overflow-auto">
+      <ScrollArea className="flex-1 overflow-auto scrollbar-none">
         <div className="py-2">
           <MobileOrderDetails workOrder={workOrder} />
         </div>

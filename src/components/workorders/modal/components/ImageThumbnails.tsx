@@ -42,8 +42,7 @@ export const ImageThumbnails = ({
       
       <div 
         ref={thumbnailsContainerRef} 
-        className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300 px-2 space-y-2" 
-        style={{ scrollbarWidth: 'thin' }}
+        className="flex-1 overflow-y-auto scrollbar-none px-2 space-y-2"
       >
         {images.map((image, idx) => (
           <div 

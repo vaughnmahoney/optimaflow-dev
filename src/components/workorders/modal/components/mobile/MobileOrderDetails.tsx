@@ -112,7 +112,7 @@ export const MobileOrderDetails = ({
       </Tabs>
       
       {/* Scrollable content with all sections */}
-      <ScrollArea className="flex-1 overflow-auto">
+      <ScrollArea className="flex-1 overflow-auto scrollbar-none">
         <div className="space-y-4 py-2">
           {/* Details Section */}
           <div id="mobile-details-section" ref={detailsSectionRef} className="scroll-m-12">

@@ -36,7 +36,7 @@ export const WorkOrderList = ({ workOrders }: WorkOrderListProps) => {
   }
 
   return (
-    <ScrollArea className="h-[calc(100vh-20rem)] pr-4">
+    <ScrollArea className="h-[calc(100vh-20rem)] pr-4 scrollbar-none">
       <div className="space-y-4">
         {workOrders.map((workOrder) => (
           <Card key={workOrder.id} className="shadow-sm">
