@@ -76,7 +76,7 @@ export function AppSidebar() {
         ref={sidebarRef}
         className={cn(
           "fixed left-0 top-[var(--header-height)] bottom-0 z-40",
-          "flex flex-col bg-sidebar border-r border-sidebar-border shadow-sm",
+          "flex flex-col bg-[hsl(var(--sidebar))] border-r border-sidebar-border shadow-sm",
           "transition-all duration-300 ease-in-out",
           "md:translate-x-0", // Always visible on desktop
           openMobile ? "translate-x-0" : "-translate-x-full" // Toggle on mobile

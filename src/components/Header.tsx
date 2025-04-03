@@ -21,7 +21,7 @@ export function Header({ title, children }: HeaderProps) {
   };
   
   return (
-    <div className="w-full h-full flex items-center justify-between px-3 sm:px-6 py-2">
+    <div className="w-full h-full flex items-center justify-between px-3 sm:px-6 py-2 bg-[hsl(var(--header-bg))]">
       {/* Left section with sidebar trigger or menu button */}
       <div className="flex items-center">
         {isMobile ? (
