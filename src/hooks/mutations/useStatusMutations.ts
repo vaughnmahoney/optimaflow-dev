@@ -25,7 +25,8 @@ export const useStatusMutations = () => {
     options?: { 
       filters?: WorkOrderFilters, 
       workOrders?: WorkOrder[], 
-      onAdvanceToNextOrder?: (nextOrderId: string) => void 
+      onAdvanceToNextOrder?: (nextOrderId: string) => void,
+      skipRefresh?: boolean // New option to skip refreshing queries
     }
   ) => {
     try {
@@ -92,7 +93,9 @@ export const useStatusMutations = () => {
       if (error) throw error;
       
       // Handle auto-advancement to next order if current order would be filtered out
-      if (options?.filters?.status && 
+      // Only attempt this if we're NOT skipping refresh
+      if (!options?.skipRefresh && 
+          options?.filters?.status && 
           options.filters.status !== newStatus && 
           options.workOrders && 
           options.onAdvanceToNextOrder) {
@@ -121,9 +124,12 @@ export const useStatusMutations = () => {
         }
       }
       
-      // Immediately refetch work orders and the badge count
-      queryClient.invalidateQueries({ queryKey: ["workOrders"] });
-      queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
+      // Only invalidate queries if skipRefresh is not true
+      if (!options?.skipRefresh) {
+        // Immediately refetch work orders and the badge count
+        queryClient.invalidateQueries({ queryKey: ["workOrders"] });
+        queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
+      }
     } catch (error) {
       console.error('Status update error:', error);
     }
@@ -138,7 +144,8 @@ export const useStatusMutations = () => {
     options?: { 
       filters?: WorkOrderFilters, 
       workOrders?: WorkOrder[], 
-      onAdvanceToNextOrder?: (nextOrderId: string) => void 
+      onAdvanceToNextOrder?: (nextOrderId: string) => void,
+      skipRefresh?: boolean // New option to skip refreshing queries
     }
   ) => {
     try {
@@ -161,7 +168,9 @@ export const useStatusMutations = () => {
       if (error) throw error;
       
       // Handle auto-advancement to next order if current order would be filtered out
-      if (options?.filters?.status && 
+      // Only attempt this if we're NOT skipping refresh
+      if (!options?.skipRefresh &&
+          options?.filters?.status && 
           options.filters.status !== newStatus && 
           options.workOrders && 
           options.onAdvanceToNextOrder) {
@@ -190,9 +199,12 @@ export const useStatusMutations = () => {
         }
       }
       
-      // Immediately refetch work orders and the badge count
-      queryClient.invalidateQueries({ queryKey: ["workOrders"] });
-      queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
+      // Only invalidate queries if skipRefresh is not true
+      if (!options?.skipRefresh) {
+        // Immediately refetch work orders and the badge count
+        queryClient.invalidateQueries({ queryKey: ["workOrders"] });
+        queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
+      }
     } catch (error) {
       console.error('Flag resolution error:', error);
     }

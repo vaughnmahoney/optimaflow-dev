@@ -34,9 +34,11 @@ export const StatusBadgeDropdown = ({
   const [isOpen, setIsOpen] = useState(false);
 
   const handleStatusChange = (newStatus: string) => {
-    const options = filters && workOrders && onAdvanceToNextOrder
-      ? { filters, workOrders, onAdvanceToNextOrder }
-      : undefined;
+    // Include skipRefresh: true to prevent automatic filtering
+    const options = { 
+      skipRefresh: true,
+      ...(filters && workOrders && onAdvanceToNextOrder ? { filters, workOrders, onAdvanceToNextOrder } : {})
+    };
     
     updateWorkOrderStatus(workOrderId, newStatus, options);
     setIsOpen(false);

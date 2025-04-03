@@ -1,18 +1,12 @@
-import { ReactNode } from "react";
-import { WorkOrder } from './workOrder';
-import { WorkOrderFilters } from './filtering';
-import { SortField, SortDirection } from './sorting';
-import { PaginationState } from './pagination';
 
-/**
- * Component prop types
- */
+import { WorkOrder, SortField, SortDirection, PaginationState, WorkOrderFilters } from "./index";
+
 export interface WorkOrderListProps {
   workOrders: WorkOrder[];
   isLoading: boolean;
   filters: WorkOrderFilters;
   onFiltersChange: (filters: WorkOrderFilters) => void;
-  onStatusUpdate: (workOrderId: string, newStatus: string) => void;
+  onStatusUpdate: (workOrderId: string, newStatus: string, options?: any) => void;
   onImageView: (workOrderId: string) => void;
   onDelete: (workOrderId: string) => void;
   onSearchChange?: (value: string) => void;
@@ -34,26 +28,6 @@ export interface WorkOrderListProps {
   onColumnFilterChange: (column: string, value: any) => void;
   clearColumnFilter: (column: string) => void;
   clearAllFilters: () => void;
-  onResolveFlag?: (workOrderId: string, resolution: string) => void;
-}
-
-export interface StatusFilterProps {
-  statusFilter: string | null;
-  onStatusFilterChange: (status: string | null) => void;
-}
-
-// Required to be exported but the data is handled within the debug component
-export interface DebugDisplayProps {
-  searchResponse?: any;
-  transformedData?: any;
-}
-
-export interface FilterSortButtonProps {
-  filters: WorkOrderFilters;
-  onColumnFilterChange: (column: string, value: any) => void;
-  clearColumnFilter: (column: string) => void;
-  clearAllFilters: () => void;
-  sortField?: SortField;
-  sortDirection?: SortDirection;
-  onSort?: (field: SortField, direction: SortDirection) => void;
+  onResolveFlag?: (workOrderId: string, resolution: string, options?: any) => void;
+  refetch?: () => Promise<any>;
 }

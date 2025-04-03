@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Flag, Download, Loader2 } from "lucide-react";
 import {
@@ -32,9 +31,12 @@ export const ActionButtons = ({
   const handleStatusUpdate = async (status: string) => {
     try {
       setIsUpdating(status);
-      await onStatusUpdate?.(workOrderId, status);
       
-      // Immediately invalidate the badge count query to update the sidebar badge
+      // Pass skipRefresh: true to prevent automatic filtering
+      await onStatusUpdate?.(workOrderId, status, { skipRefresh: true });
+      
+      // Update badge count separately to keep the sidebar accurate
+      // This won't affect the current filtered list
       queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
     } catch (error) {
       console.error('Error updating status:', error);

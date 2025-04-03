@@ -8,6 +8,9 @@ import { LoadingSkeleton } from "./LoadingSkeleton";
 import { ImageViewModal } from "./modal/ImageViewModal";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SortDirection, SortField } from "./types";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 
 export const WorkOrderList = ({ 
   workOrders, 
@@ -29,12 +32,14 @@ export const WorkOrderList = ({
   onColumnFilterChange,
   clearColumnFilter,
   clearAllFilters,
-  onResolveFlag
+  onResolveFlag,
+  refetch
 }: WorkOrderListProps) => {
   const [searchResponse, setSearchResponse] = useState<any>(null);
   const [transformedData, setTransformedData] = useState<any>(null);
   const [selectedWorkOrder, setSelectedWorkOrder] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const isMobile = useIsMobile();
 
   if (isLoading) {
@@ -112,50 +117,93 @@ export const WorkOrderList = ({
     }
   };
   
-  // Wrap the status update function to include filter and navigation logic
-  const handleStatusUpdate = (workOrderId: string, newStatus: string) => {
-    if (onStatusUpdate) {
-      onStatusUpdate(workOrderId, newStatus, {
-        filters,
-        workOrders,
-        onAdvanceToNextOrder: handleAdvanceToNextOrder
-      });
+  // Manual refresh function
+  const handleManualRefresh = async () => {
+    if (isRefreshing) return;
+    
+    setIsRefreshing(true);
+    try {
+      // Close modal if it's open
+      if (isImageModalOpen) {
+        setIsImageModalOpen(false);
+      }
+      
+      // Clear selected work order
+      setSelectedWorkOrder(null);
+      
+      // Call the refetch function from props
+      if (refetch) {
+        await refetch();
+        toast.success("Work orders refreshed successfully");
+      }
+    } catch (error) {
+      console.error("Error refreshing work orders:", error);
+      toast.error("Failed to refresh work orders");
+    } finally {
+      setIsRefreshing(false);
     }
   };
   
-  // Wrap the resolve flag function to include filter and navigation logic
-  const handleResolveFlag = (workOrderId: string, resolution: string) => {
+  // Wrap the status update function to include the skipRefresh option
+  const handleStatusUpdate = (workOrderId: string, newStatus: string, options?: any) => {
+    const updatedOptions = {
+      ...options,
+      skipRefresh: true, // Always skip refresh by default
+    };
+    
+    if (onStatusUpdate) {
+      onStatusUpdate(workOrderId, newStatus, updatedOptions);
+    }
+  };
+  
+  // Wrap the resolve flag function to include the skipRefresh option
+  const handleResolveFlag = (workOrderId: string, resolution: string, options?: any) => {
+    const updatedOptions = {
+      ...options,
+      skipRefresh: true, // Always skip refresh by default
+    };
+    
     if (onResolveFlag) {
-      onResolveFlag(workOrderId, resolution, {
-        filters,
-        workOrders,
-        onAdvanceToNextOrder: handleAdvanceToNextOrder
-      });
+      onResolveFlag(workOrderId, resolution, updatedOptions);
     }
   };
 
   return (
     <div className="space-y-4">
       {/* Status filter cards with integrated filter button */}
-      <StatusFilterCards 
-        statusFilter={filters.status}
-        onStatusFilterChange={handleStatusFilterChange}
-        statusCounts={{
-          approved: statusCounts.approved,
-          pending_review: statusCounts.pending_review,
-          flagged: statusCounts.flagged,
-          resolved: statusCounts.resolved,
-          rejected: statusCounts.rejected || 0,
-          all: statusCounts.all
-        }}
-        filters={filters}
-        onColumnFilterChange={onColumnFilterChange}
-        clearColumnFilter={clearColumnFilter}
-        clearAllFilters={clearAllFilters}
-        sortField={sortField}
-        sortDirection={sortDirection}
-        onSort={handleSortChange}
-      />
+      <div className="flex justify-between items-center">
+        <StatusFilterCards 
+          statusFilter={filters.status}
+          onStatusFilterChange={handleStatusFilterChange}
+          statusCounts={{
+            approved: statusCounts.approved,
+            pending_review: statusCounts.pending_review,
+            flagged: statusCounts.flagged,
+            resolved: statusCounts.resolved,
+            rejected: statusCounts.rejected || 0,
+            all: statusCounts.all
+          }}
+          filters={filters}
+          onColumnFilterChange={onColumnFilterChange}
+          clearColumnFilter={clearColumnFilter}
+          clearAllFilters={clearAllFilters}
+          sortField={sortField}
+          sortDirection={sortDirection}
+          onSort={handleSortChange}
+        />
+        
+        {/* Manual refresh button */}
+        <Button 
+          onClick={handleManualRefresh}
+          variant="outline"
+          size="sm"
+          disabled={isRefreshing}
+          className="ml-2"
+        >
+          <RefreshCw className={`h-4 w-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+          {isRefreshing ? 'Refreshing...' : 'Refresh'}
+        </Button>
+      </div>
 
       <DebugDataDisplay 
         searchResponse={searchResponse}
