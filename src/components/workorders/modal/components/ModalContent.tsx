@@ -35,9 +35,9 @@ export const ModalContent = ({
         />
       </div>
       
-      {/* Right side: Order details - now using the mobile component */}
-      <div className="w-full md:w-1/3 flex flex-col border-l">
-        <div className="p-2 overflow-y-auto h-full">
+      {/* Right side: Order details - now using the mobile component with proper spacing */}
+      <div className="w-full md:w-1/3 flex flex-col border-l h-full overflow-hidden">
+        <div className="p-0 h-full overflow-hidden">
           <MobileOrderDetails workOrder={workOrder} />
         </div>
       </div>
