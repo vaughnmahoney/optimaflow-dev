@@ -16,19 +16,29 @@ interface StatusBadgeDropdownProps {
   currentStatus: string;
   completionStatus?: string;
   className?: string;
+  filters?: any;
+  workOrders?: any[];
+  onAdvanceToNextOrder?: (nextOrderId: string) => void;
 }
 
 export const StatusBadgeDropdown = ({ 
   workOrderId, 
   currentStatus, 
   completionStatus,
-  className 
+  className,
+  filters,
+  workOrders,
+  onAdvanceToNextOrder
 }: StatusBadgeDropdownProps) => {
   const { updateWorkOrderStatus } = useWorkOrderMutations();
   const [isOpen, setIsOpen] = useState(false);
 
   const handleStatusChange = (newStatus: string) => {
-    updateWorkOrderStatus(workOrderId, newStatus);
+    const options = filters && workOrders && onAdvanceToNextOrder
+      ? { filters, workOrders, onAdvanceToNextOrder }
+      : undefined;
+    
+    updateWorkOrderStatus(workOrderId, newStatus, options);
     setIsOpen(false);
   };
   

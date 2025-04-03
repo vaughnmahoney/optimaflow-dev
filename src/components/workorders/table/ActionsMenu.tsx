@@ -12,11 +12,21 @@ import {
 
 interface ActionsMenuProps {
   workOrder: WorkOrder;
-  onStatusUpdate: (workOrderId: string, newStatus: string) => void;
+  onStatusUpdate: (workOrderId: string, newStatus: string, options?: any) => void;
   onDelete: (workOrderId: string) => void;
+  filters?: any;
+  workOrders?: WorkOrder[];
+  onAdvanceToNextOrder?: (nextOrderId: string) => void;
 }
 
-export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenuProps) => {
+export const ActionsMenu = ({ 
+  workOrder, 
+  onStatusUpdate, 
+  onDelete,
+  filters,
+  workOrders,
+  onAdvanceToNextOrder
+}: ActionsMenuProps) => {
   const isResolved = workOrder.status === 'resolved';
   const isFlagged = workOrder.status === 'flagged' || workOrder.status === 'flagged_followup';
   const isApproved = workOrder.status === 'approved';
@@ -38,6 +48,14 @@ export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenu
     e.stopPropagation();
     action();
   };
+  
+  const handleStatusUpdate = (newStatus: string) => {
+    const options = filters && workOrders && onAdvanceToNextOrder
+      ? { filters, workOrders, onAdvanceToNextOrder }
+      : undefined;
+    
+    onStatusUpdate(workOrder.id, newStatus, options);
+  };
 
   return (
     <DropdownMenu>
@@ -55,7 +73,7 @@ export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenu
         {/* Current status - clicking returns to pending */}
         {!isPending && (
           <DropdownMenuItem 
-            onClick={(e) => handleAction(e, () => onStatusUpdate(workOrder.id, "pending_review"))}
+            onClick={(e) => handleAction(e, () => handleStatusUpdate("pending_review"))}
             className={getStatusItemStyle()}
           >
             <Clock className="h-4 w-4 mr-2" />
@@ -66,7 +84,7 @@ export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenu
         {/* Show approve option if not already approved and not rejected */}
         {!isApproved && !isRejected && (
           <DropdownMenuItem 
-            onClick={(e) => handleAction(e, () => onStatusUpdate(workOrder.id, "approved"))}
+            onClick={(e) => handleAction(e, () => handleStatusUpdate("approved"))}
           >
             <CheckCircle className="h-4 w-4 mr-2" />
             Approve
@@ -76,7 +94,7 @@ export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenu
         {/* Show flag option if not already flagged and not rejected */}
         {!isFlagged && !isRejected && (
           <DropdownMenuItem 
-            onClick={(e) => handleAction(e, () => onStatusUpdate(workOrder.id, "flagged"))}
+            onClick={(e) => handleAction(e, () => handleStatusUpdate("flagged"))}
           >
             <Flag className="h-4 w-4 mr-2" />
             Flag
@@ -86,7 +104,7 @@ export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenu
         {/* Show resolve option for flagged states */}
         {isFlagged && (
           <DropdownMenuItem 
-            onClick={(e) => handleAction(e, () => onStatusUpdate(workOrder.id, "resolved"))}
+            onClick={(e) => handleAction(e, () => handleStatusUpdate("resolved"))}
             className="text-blue-600"
           >
             <CheckCheck className="h-4 w-4 mr-2" />
@@ -97,7 +115,7 @@ export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenu
         {/* If rejected, show option to reopen */}
         {isRejected && (
           <DropdownMenuItem 
-            onClick={(e) => handleAction(e, () => onStatusUpdate(workOrder.id, "pending_review"))}
+            onClick={(e) => handleAction(e, () => handleStatusUpdate("pending_review"))}
             className="text-yellow-600"
           >
             <Clock className="h-4 w-4 mr-2" />

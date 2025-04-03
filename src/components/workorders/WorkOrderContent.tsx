@@ -7,7 +7,7 @@ interface WorkOrderContentProps {
   isLoading: boolean;
   filters: WorkOrderFilters;
   onFiltersChange: (filters: WorkOrderFilters) => void;
-  onStatusUpdate: (workOrderId: string, newStatus: string) => void;
+  onStatusUpdate: (workOrderId: string, newStatus: string, options?: any) => void;
   onImageView: (workOrderId: string) => void;
   onDelete: (workOrderId: string) => void;
   onSearchChange?: (value: string) => void;
@@ -29,7 +29,7 @@ interface WorkOrderContentProps {
   onColumnFilterChange: (column: string, value: any) => void;
   clearColumnFilter: (column: string) => void;
   clearAllFilters: () => void;
-  onResolveFlag?: (workOrderId: string, resolution: string) => void;
+  onResolveFlag?: (workOrderId: string, resolution: string, options?: any) => void;
 }
 
 export const WorkOrderContent = ({

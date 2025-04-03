@@ -1,3 +1,4 @@
+
 import { Layout } from "@/components/Layout";
 import { WorkOrderContent } from "@/components/workorders/WorkOrderContent";
 import { WorkOrderHeader } from "@/components/workorders/WorkOrderHeader";
@@ -14,7 +15,7 @@ const WorkOrders = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
-  const { resolveWorkOrderFlag } = useWorkOrderMutations();
+  const { resolveWorkOrderFlag, updateWorkOrderStatus } = useWorkOrderMutations();
   const isMobile = useIsMobile();
   
   const {
@@ -26,7 +27,6 @@ const WorkOrders = () => {
     clearColumnFilter,
     clearAllFilters,
     searchOptimoRoute,
-    updateWorkOrderStatus,
     openImageViewer,
     deleteWorkOrder,
     statusCounts,
@@ -54,6 +54,16 @@ const WorkOrders = () => {
   const handleSort = (field: SortField, direction: SortDirection) => {
     setSort(field, direction);
   };
+  
+  // Enhanced status update with filter-aware navigation
+  const handleStatusUpdate = (workOrderId: string, newStatus: string, options?: any) => {
+    updateWorkOrderStatus(workOrderId, newStatus, options);
+  };
+  
+  // Enhanced flag resolution with filter-aware navigation
+  const handleResolveFlag = (workOrderId: string, resolution: string, options?: any) => {
+    resolveWorkOrderFlag(workOrderId, resolution, options);
+  };
 
   return (
     <Layout
@@ -79,7 +89,7 @@ const WorkOrders = () => {
           isLoading={isLoading}
           filters={filters}
           onFiltersChange={setFilters}
-          onStatusUpdate={updateWorkOrderStatus}
+          onStatusUpdate={handleStatusUpdate}
           onImageView={openImageViewer}
           onDelete={deleteWorkOrder}
           onOptimoRouteSearch={searchOptimoRoute}
@@ -93,7 +103,7 @@ const WorkOrders = () => {
           onColumnFilterChange={onColumnFilterChange}
           clearColumnFilter={clearColumnFilter}
           clearAllFilters={clearAllFilters}
-          onResolveFlag={resolveWorkOrderFlag}
+          onResolveFlag={handleResolveFlag}
         />
       </div>
     </Layout>

@@ -15,7 +15,7 @@ interface ActionButtonsProps {
   workOrderId: string;
   hasImages: boolean;
   currentStatus: string;
-  onStatusUpdate?: (workOrderId: string, status: string) => void;
+  onStatusUpdate?: (workOrderId: string, status: string, options?: any) => void;
   onDownloadAll?: () => void;
 }
 

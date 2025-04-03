@@ -2,6 +2,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
+import { WorkOrder, WorkOrderFilters } from "@/components/workorders/types";
 
 /**
  * Hook for work order status-related mutations
@@ -18,7 +19,15 @@ export const useStatusMutations = () => {
   /**
    * Update the status of a work order
    */
-  const updateWorkOrderStatus = async (workOrderId: string, newStatus: string) => {
+  const updateWorkOrderStatus = async (
+    workOrderId: string, 
+    newStatus: string, 
+    options?: { 
+      filters?: WorkOrderFilters, 
+      workOrders?: WorkOrder[], 
+      onAdvanceToNextOrder?: (nextOrderId: string) => void 
+    }
+  ) => {
     try {
       // Create an action record with user information
       const actionData = {
@@ -82,6 +91,36 @@ export const useStatusMutations = () => {
 
       if (error) throw error;
       
+      // Handle auto-advancement to next order if current order would be filtered out
+      if (options?.filters?.status && 
+          options.filters.status !== newStatus && 
+          options.workOrders && 
+          options.onAdvanceToNextOrder) {
+        
+        // Special handling for 'flagged' filter status which includes flagged_followup
+        const willBeFilteredOut = options.filters.status === 'flagged' 
+          ? (newStatus !== 'flagged' && newStatus !== 'flagged_followup')
+          : (options.filters.status !== newStatus);
+        
+        if (willBeFilteredOut) {
+          // Find the current work order's index
+          const currentIndex = options.workOrders.findIndex(wo => wo.id === workOrderId);
+          if (currentIndex !== -1) {
+            // Try to get the next order
+            const nextOrder = options.workOrders[currentIndex + 1];
+            // If there's no next order, try to get the previous order
+            const previousOrder = currentIndex > 0 ? options.workOrders[currentIndex - 1] : null;
+            
+            // Advance to next order if available, otherwise previous order
+            const nextWorkOrder = nextOrder || previousOrder;
+            
+            if (nextWorkOrder) {
+              options.onAdvanceToNextOrder(nextWorkOrder.id);
+            }
+          }
+        }
+      }
+      
       // Immediately refetch work orders and the badge count
       queryClient.invalidateQueries({ queryKey: ["workOrders"] });
       queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
@@ -93,13 +132,22 @@ export const useStatusMutations = () => {
   /**
    * Resolve a flagged work order
    */
-  const resolveWorkOrderFlag = async (workOrderId: string, resolution: string) => {
+  const resolveWorkOrderFlag = async (
+    workOrderId: string, 
+    resolution: string,
+    options?: { 
+      filters?: WorkOrderFilters, 
+      workOrders?: WorkOrder[], 
+      onAdvanceToNextOrder?: (nextOrderId: string) => void 
+    }
+  ) => {
     try {
       const timestamp = new Date().toISOString();
+      const newStatus = resolution === "followup" ? "flagged_followup" : resolution;
       
       // Include user information in the resolution
       const updateData = { 
-        status: resolution === "followup" ? "flagged_followup" : resolution,
+        status: newStatus,
         resolved_at: timestamp,
         resolved_by: userId,
         resolved_user: username
@@ -111,6 +159,36 @@ export const useStatusMutations = () => {
         .eq('id', workOrderId);
 
       if (error) throw error;
+      
+      // Handle auto-advancement to next order if current order would be filtered out
+      if (options?.filters?.status && 
+          options.filters.status !== newStatus && 
+          options.workOrders && 
+          options.onAdvanceToNextOrder) {
+        
+        // Special handling for 'flagged' filter status
+        const willBeFilteredOut = options.filters.status === 'flagged' 
+          ? (newStatus !== 'flagged' && newStatus !== 'flagged_followup') 
+          : (options.filters.status !== newStatus);
+        
+        if (willBeFilteredOut) {
+          // Find the current work order's index
+          const currentIndex = options.workOrders.findIndex(wo => wo.id === workOrderId);
+          if (currentIndex !== -1) {
+            // Try to get the next order
+            const nextOrder = options.workOrders[currentIndex + 1];
+            // If there's no next order, try to get the previous order
+            const previousOrder = currentIndex > 0 ? options.workOrders[currentIndex - 1] : null;
+            
+            // Advance to next order if available, otherwise previous order
+            const nextWorkOrder = nextOrder || previousOrder;
+            
+            if (nextWorkOrder) {
+              options.onAdvanceToNextOrder(nextWorkOrder.id);
+            }
+          }
+        }
+      }
       
       // Immediately refetch work orders and the badge count
       queryClient.invalidateQueries({ queryKey: ["workOrders"] });

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { WorkOrderListProps } from "./types";
 import { StatusFilterCards } from "./filters/StatusFilterCards";
@@ -59,6 +60,11 @@ export const WorkOrderList = ({
     }
   };
   
+  // Handle advancement to next order when current order is filtered out
+  const handleAdvanceToNextOrder = (nextOrderId: string) => {
+    setSelectedWorkOrder(nextOrderId);
+  };
+  
   // Handle navigation between pages from the modal
   const handlePageBoundary = (direction: 'next' | 'previous') => {
     if (!pagination || !onPageChange) return;
@@ -105,6 +111,28 @@ export const WorkOrderList = ({
       onSort(field, direction);
     }
   };
+  
+  // Wrap the status update function to include filter and navigation logic
+  const handleStatusUpdate = (workOrderId: string, newStatus: string) => {
+    if (onStatusUpdate) {
+      onStatusUpdate(workOrderId, newStatus, {
+        filters,
+        workOrders,
+        onAdvanceToNextOrder: handleAdvanceToNextOrder
+      });
+    }
+  };
+  
+  // Wrap the resolve flag function to include filter and navigation logic
+  const handleResolveFlag = (workOrderId: string, resolution: string) => {
+    if (onResolveFlag) {
+      onResolveFlag(workOrderId, resolution, {
+        filters,
+        workOrders,
+        onAdvanceToNextOrder: handleAdvanceToNextOrder
+      });
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -136,7 +164,7 @@ export const WorkOrderList = ({
 
       <WorkOrderTable 
         workOrders={workOrders}
-        onStatusUpdate={onStatusUpdate}
+        onStatusUpdate={handleStatusUpdate}
         onImageView={handleImageView}
         onDelete={onDelete}
         sortField={sortField}
@@ -158,10 +186,10 @@ export const WorkOrderList = ({
           currentIndex={currentIndex}
           isOpen={isImageModalOpen}
           onClose={() => setIsImageModalOpen(false)}
-          onStatusUpdate={onStatusUpdate}
+          onStatusUpdate={handleStatusUpdate}
           onNavigate={handleNavigate}
           onPageBoundary={handlePageBoundary}
-          onResolveFlag={onResolveFlag}
+          onResolveFlag={handleResolveFlag}
           onDownloadAll={() => {
             // Placeholder for download all functionality
             console.log("Download all images for:", currentWorkOrder.id);
