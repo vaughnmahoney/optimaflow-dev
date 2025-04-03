@@ -47,9 +47,9 @@ export const StatusBadgeDropdown = ({
             completionStatus={completionStatus} 
           />
           {isOpen ? (
-            <ChevronUp className="h-3 w-3 text-white transition-transform duration-300" />
+            <ChevronUp className="h-3 w-3 text-white bg-inherit transition-transform duration-300" />
           ) : (
-            <ChevronDown className="h-3 w-3 text-white transition-transform duration-300" />
+            <ChevronDown className="h-3 w-3 text-white bg-inherit transition-transform duration-300" />
           )}
         </div>
       </DropdownMenuTrigger>
