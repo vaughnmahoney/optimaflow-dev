@@ -13,6 +13,7 @@ import {
 import { WorkOrderFilters, SortDirection, SortField } from "../types";
 import { TextFilter, DateFilter, StatusFilter, DriverFilter, LocationFilter } from ".";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 interface FilterSortButtonProps {
   filters: WorkOrderFilters;
@@ -53,19 +54,29 @@ export const FilterSortButton = ({
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className={`gap-2 ${hasActiveFilters ? 'bg-primary/10' : ''}`}
+        <button
+          className={cn(
+            "flex items-center space-x-2 py-1.5 px-3 rounded-full transition-all shrink-0",
+            "bg-white border border-gray-200 hover:border-gray-300 shadow-sm",
+            hasActiveFilters ? 'bg-primary/10 border-primary/20' : ''
+          )}
         >
-          <SlidersHorizontal className="h-4 w-4" />
-          <span>Filters</span>
+          <div className={cn(
+            "flex items-center justify-center w-5 h-5 rounded-full",
+            "bg-gray-200"
+          )}>
+            <SlidersHorizontal 
+              size={14}
+              className="text-gray-700" 
+            />
+          </div>
+          <span className="text-sm font-medium">Filters</span>
           {hasActiveFilters && (
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+            <span className="inline-flex items-center justify-center text-xs font-medium rounded-full px-1.5 py-0.5 min-w-[20px] bg-primary text-white">
               {countActiveFilters(filters)}
             </span>
           )}
-        </Button>
+        </button>
       </SheetTrigger>
       <SheetContent side="right" className="w-full sm:w-[450px]">
         <SheetHeader>

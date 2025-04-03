@@ -1,9 +1,11 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Check, Flag, Clock, CheckCheck, AlertTriangle } from "lucide-react";
+import { Check, Flag, Clock, CheckCheck, AlertTriangle, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { FilterSortButton } from "./FilterSortButton";
+import { WorkOrderFilters, SortDirection, SortField } from "../types";
 
 interface StatusFilterCardsProps {
   statusFilter: string | null;
@@ -16,26 +18,30 @@ interface StatusFilterCardsProps {
     rejected: number;
     all?: number;
   };
+  filters: WorkOrderFilters;
+  onColumnFilterChange: (column: string, value: any) => void;
+  clearColumnFilter: (column: string) => void;
+  clearAllFilters: () => void;
+  sortField?: SortField;
+  sortDirection?: SortDirection;
+  onSort?: (field: SortField, direction: SortDirection) => void;
 }
 
 export const StatusFilterCards = ({
   statusFilter,
   onStatusFilterChange,
   statusCounts,
+  filters,
+  onColumnFilterChange,
+  clearColumnFilter,
+  clearAllFilters,
+  sortField = 'end_time',
+  sortDirection = 'desc',
+  onSort,
 }: StatusFilterCardsProps) => {
   const isMobile = useIsMobile();
   
   const statuses = [
-    { 
-      label: "Approved", 
-      value: "approved", 
-      icon: Check, 
-      color: "bg-green-500",
-      ringColor: "ring-green-500",
-      hoverColor: "hover:bg-green-600",
-      textColor: "text-green-500",
-      lightBg: "bg-green-50"
-    },
     { 
       label: "Pending Review", 
       value: "pending_review", 
@@ -55,6 +61,16 @@ export const StatusFilterCards = ({
       hoverColor: "hover:bg-red-600",
       textColor: "text-red-500",
       lightBg: "bg-red-50"
+    },
+    { 
+      label: "Approved", 
+      value: "approved", 
+      icon: Check, 
+      color: "bg-green-500",
+      ringColor: "ring-green-500",
+      hoverColor: "hover:bg-green-600",
+      textColor: "text-green-500",
+      lightBg: "bg-green-50"
     },
     { 
       label: "Resolved", 
@@ -80,46 +96,70 @@ export const StatusFilterCards = ({
 
   // Same button rendering function for both mobile and desktop to maintain consistency
   const renderStatusButtons = () => {
-    return statuses.map((status) => {
-      const isActive = statusFilter === status.value;
-      const count = statusCounts[status.value] || 0;
-      
-      return (
-        <button
-          key={status.value}
-          onClick={() => onStatusFilterChange(
-            statusFilter === status.value ? null : status.value
-          )}
-          className={cn(
-            "flex items-center space-x-2 py-1.5 px-3 rounded-full transition-all shrink-0",
-            isActive 
-              ? `${status.color} text-white shadow-md`
-              : `bg-white border border-gray-200 hover:border-gray-300 shadow-sm`
-          )}
-        >
-          <div className={cn(
-            "flex items-center justify-center w-5 h-5 rounded-full",
-            isActive ? "bg-white/20" : status.color
-          )}>
-            <status.icon 
-              size={14}
-              className={isActive ? "text-white" : "text-white"} 
-            />
-          </div>
-          <span className="text-sm font-medium">{status.label}</span>
-          {count > 0 && (
-            <span className={cn(
-              "inline-flex items-center justify-center text-xs font-medium rounded-full px-1.5 py-0.5 min-w-[20px]",
-              isActive 
-                ? "bg-white/20 text-white" 
-                : "bg-gray-100 text-gray-700"
-            )}>
-              {count}
-            </span>
-          )}
-        </button>
-      );
-    });
+    const hasActiveFilters = 
+      filters.status !== null || 
+      filters.orderNo !== null || 
+      filters.driver !== null || 
+      filters.location !== null || 
+      filters.dateRange.from !== null || 
+      filters.dateRange.to !== null;
+
+    return (
+      <>
+        {/* Filter button first */}
+        <FilterSortButton 
+          filters={filters}
+          onColumnFilterChange={onColumnFilterChange}
+          clearColumnFilter={clearColumnFilter}
+          clearAllFilters={clearAllFilters}
+          sortField={sortField}
+          sortDirection={sortDirection}
+          onSort={onSort}
+        />
+        
+        {/* Status buttons */}
+        {statuses.map((status) => {
+          const isActive = statusFilter === status.value;
+          const count = statusCounts[status.value] || 0;
+          
+          return (
+            <button
+              key={status.value}
+              onClick={() => onStatusFilterChange(
+                statusFilter === status.value ? null : status.value
+              )}
+              className={cn(
+                "flex items-center space-x-2 py-1.5 px-3 rounded-full transition-all shrink-0",
+                isActive 
+                  ? `${status.color} text-white shadow-md`
+                  : `bg-white border border-gray-200 hover:border-gray-300 shadow-sm`
+              )}
+            >
+              <div className={cn(
+                "flex items-center justify-center w-5 h-5 rounded-full",
+                isActive ? "bg-white/20" : status.color
+              )}>
+                <status.icon 
+                  size={14}
+                  className={isActive ? "text-white" : "text-white"} 
+                />
+              </div>
+              <span className="text-sm font-medium">{status.label}</span>
+              {count > 0 && (
+                <span className={cn(
+                  "inline-flex items-center justify-center text-xs font-medium rounded-full px-1.5 py-0.5 min-w-[20px]",
+                  isActive 
+                    ? "bg-white/20 text-white" 
+                    : "bg-gray-100 text-gray-700"
+                )}>
+                  {count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </>
+    );
   };
 
   // Use the full width for status filter cards
