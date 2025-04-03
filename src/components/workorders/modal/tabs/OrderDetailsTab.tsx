@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { WorkOrder } from "@/components/workorders/types";
-import { MapPin, Clock, User, ExternalLink, Package } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 
 interface OrderDetailsTabProps {
@@ -84,27 +84,20 @@ export const OrderDetailsTab = ({
           
           <Separator className="bg-gray-100" />
           
-          {/* Location and Driver info in a grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Location Section */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-gray-400" />
-                <h4 className="text-sm font-medium text-gray-700">Location</h4>
-              </div>
-              <div className="pl-6 space-y-0.5">
-                <p className="text-sm font-medium text-gray-700">{locationName}</p>
-                <p className="text-sm text-gray-600">{fullAddress}</p>
-              </div>
-            </div>
-            
-            {/* Driver Section */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-gray-400" />
-                <h4 className="text-sm font-medium text-gray-700">Driver</h4>
-              </div>
-              <p className="text-sm text-gray-700 pl-6">{driverName}</p>
+          {/* Driver Section - Now at the top */}
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium text-gray-700">Driver</h4>
+            <p className="text-sm text-gray-700">{driverName}</p>
+          </div>
+          
+          <Separator className="bg-gray-100" />
+          
+          {/* Location Section */}
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium text-gray-700">Location</h4>
+            <div className="space-y-0.5">
+              <p className="text-sm font-medium text-gray-700">{locationName}</p>
+              <p className="text-sm text-gray-600">{fullAddress}</p>
             </div>
           </div>
           
@@ -112,11 +105,8 @@ export const OrderDetailsTab = ({
           
           {/* Time Details Section */}
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-gray-400" />
-              <h4 className="text-sm font-medium text-gray-700">Time Details</h4>
-            </div>
-            <div className="pl-6 grid grid-cols-[100px_1fr] gap-y-1">
+            <h4 className="text-sm font-medium text-gray-700">Time Details</h4>
+            <div className="grid grid-cols-[100px_1fr] gap-y-1">
               <span className="text-sm text-gray-600">Start Time:</span>
               <span className="text-sm text-gray-700">{startTime}</span>
               
@@ -132,11 +122,8 @@ export const OrderDetailsTab = ({
           
           {/* Materials Section */}
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Package className="h-4 w-4 text-gray-400" />
-              <h4 className="text-sm font-medium text-gray-700">Materials</h4>
-            </div>
-            <div className="pl-6 grid grid-cols-[100px_1fr] gap-y-1">
+            <h4 className="text-sm font-medium text-gray-700">Materials</h4>
+            <div className="grid grid-cols-[100px_1fr] gap-y-1">
               <span className="text-sm text-gray-600">Quantity:</span>
               <span className="text-sm text-gray-700">{materialQuantity}</span>
             </div>

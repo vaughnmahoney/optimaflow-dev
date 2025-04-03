@@ -1,5 +1,4 @@
 
-import { User, MapPin, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { WorkOrder } from "../../types";
 
@@ -38,16 +37,14 @@ export const QuickInfo = ({
   return (
     <div className="p-3 bg-white dark:bg-gray-950 space-y-3">
       {/* Driver info */}
-      <div className="flex items-center space-x-2">
-        <User className="h-4 w-4 text-blue-600 flex-shrink-0" />
-        <div>
-          <p className="text-sm font-medium">{driverName}</p>
-        </div>
+      <div className="space-y-1">
+        <p className="text-xs text-gray-500">Driver</p>
+        <p className="text-sm font-medium">{driverName}</p>
       </div>
       
       {/* Location info */}
-      <div className="flex items-center space-x-2">
-        <MapPin className="h-4 w-4 text-blue-600 flex-shrink-0" />
+      <div className="space-y-1">
+        <p className="text-xs text-gray-500">Location</p>
         <div>
           <p className="text-sm font-medium">{locationName}</p>
           <p className="text-xs text-gray-500">{address}</p>
@@ -55,8 +52,8 @@ export const QuickInfo = ({
       </div>
       
       {/* Time info */}
-      <div className="flex items-center space-x-2">
-        <Clock className="h-4 w-4 text-blue-600 flex-shrink-0" />
+      <div className="space-y-1">
+        <p className="text-xs text-gray-500">Time</p>
         <div className="grid grid-cols-2 gap-2 text-sm w-full">
           <div>
             <p className="text-xs text-gray-500">Start:</p>

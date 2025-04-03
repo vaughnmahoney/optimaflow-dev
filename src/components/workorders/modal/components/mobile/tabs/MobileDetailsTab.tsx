@@ -1,7 +1,7 @@
 
 import { Card } from "@/components/ui/card";
 import { WorkOrder } from "../../../../types";
-import { MapPin, Clock, User } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
 
 interface MobileDetailsTabProps {
@@ -54,39 +54,34 @@ export const MobileDetailsTab = ({ workOrder }: MobileDetailsTabProps) => {
     ? ldsRaw.split(" ")[0] // Take only the date part from "2024-10-17 00:00"
     : ldsRaw;
 
+  // Extract material quantity
+  const materialQuantity = searchData?.customField3 || "N/A";
+
   return (
     <Card className="border-gray-100">
-      <div className="space-y-4">
-        {/* Top Row - Location (left) and Driver (right) */}
-        <div className="flex flex-row px-4 pt-4">
-          {/* Location Section - Left side */}
-          <div className="flex-1 space-y-1.5">
-            <div className="flex items-center gap-1.5 text-gray-700 mb-1">
-              <MapPin className="h-4 w-4 text-gray-400" />
-              <h3 className="text-sm font-medium">Location</h3>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium">{locationName}</p>
-              <p className="text-xs text-gray-600">{fullAddress}</p>
-            </div>
-          </div>
-          
-          {/* Driver Section - Right side */}
-          <div className="space-y-1.5 ml-4">
-            <div className="flex items-center gap-1.5 text-gray-700 mb-1">
-              <User className="h-4 w-4 text-gray-400" />
-              <h3 className="text-sm font-medium">Driver</h3>
-            </div>
-            <p className="text-sm">{driverName}</p>
+      <div className="p-4 space-y-4">
+        {/* Driver Section - Now first */}
+        <div className="space-y-1.5">
+          <h4 className="text-sm font-medium text-gray-700">Driver</h4>
+          <p className="text-sm">{driverName}</p>
+        </div>
+        
+        <Separator className="bg-gray-100" />
+        
+        {/* Location Section */}
+        <div className="space-y-1.5">
+          <h4 className="text-sm font-medium text-gray-700">Location</h4>
+          <div className="space-y-1">
+            <p className="text-sm font-medium">{locationName}</p>
+            <p className="text-xs text-gray-600">{fullAddress}</p>
           </div>
         </div>
         
+        <Separator className="bg-gray-100" />
+        
         {/* Time Details Section */}
-        <div className="space-y-1.5 px-4 pb-4">
-          <div className="flex items-center gap-1.5 text-gray-700 mb-1">
-            <Clock className="h-4 w-4 text-gray-400" />
-            <h3 className="text-sm font-medium">Time Details</h3>
-          </div>
+        <div className="space-y-1.5">
+          <h4 className="text-sm font-medium text-gray-700">Time Details</h4>
           <div className="space-y-0.5">
             <div className="grid grid-cols-[80px_1fr]">
               <span className="text-xs text-gray-500">Start Time:</span>
@@ -100,6 +95,17 @@ export const MobileDetailsTab = ({ workOrder }: MobileDetailsTabProps) => {
               <span className="text-xs text-gray-500">LDS:</span>
               <span className="text-xs">{ldsInfo}</span>
             </div>
+          </div>
+        </div>
+        
+        <Separator className="bg-gray-100" />
+        
+        {/* Materials Section */}
+        <div className="space-y-1.5">
+          <h4 className="text-sm font-medium text-gray-700">Materials</h4>
+          <div className="grid grid-cols-[80px_1fr]">
+            <span className="text-xs text-gray-500">Quantity:</span>
+            <span className="text-xs">{materialQuantity}</span>
           </div>
         </div>
       </div>
