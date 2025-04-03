@@ -7,6 +7,7 @@ import { MobileOrderDetails } from "./MobileOrderDetails";
 import { Image } from "lucide-react";
 import { QcNotesSheet } from "../QcNotesSheet";
 import { ResolutionNotesSheet } from "../ResolutionNotesSheet";
+import { MobileStatusButton } from "./MobileStatusButton";
 
 interface MobileModalContentProps {
   workOrder: WorkOrder;
@@ -38,8 +39,8 @@ export const MobileModalContent = ({
       
       {/* Action buttons at the bottom */}
       <div className="p-3 border-t bg-gray-50 dark:bg-gray-900 space-y-3">
-        {/* View Images button - now first */}
-        <div className="flex items-center gap-2">
+        {/* View Images button and Status button in same row */}
+        <div className="flex items-center justify-between gap-2">
           <Button 
             className="h-9 px-3 py-1 text-xs flex items-center justify-center"
             variant="outline"
@@ -49,6 +50,13 @@ export const MobileModalContent = ({
             <Image className="mr-1 h-3.5 w-3.5" />
             {hasImages ? `(${images.length})` : '(0)'}
           </Button>
+          
+          {/* Status button aligned to the right */}
+          <MobileStatusButton 
+            workOrderId={workOrder.id}
+            currentStatus={workOrder.status || "pending_review"}
+            onStatusUpdate={onStatusUpdate}
+          />
         </div>
         
         {/* Notes buttons - now below */}

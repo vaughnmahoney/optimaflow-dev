@@ -84,7 +84,7 @@ export const MobileImageViewModal = ({
               currentImageIndex={currentImageIndex}
               setCurrentImageIndex={setCurrentImageIndex}
               onClose={closeImageViewer}
-              onDownloadAll={onDownloadAll} // Pass the onDownloadAll function
+              onDownloadAll={onDownloadAll}
             />
           </>
         ) : (
