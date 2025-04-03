@@ -2,7 +2,7 @@
 import { useLocation } from "react-router-dom";
 import { 
   AlertCircle, Database, Users,
-  LucideIcon
+  LucideIcon  // Add explicit import for LucideIcon type
 } from "lucide-react";
 import { SidebarNavItem } from "./SidebarNavItem";
 import { useAuth } from "@/components/AuthProvider";
@@ -15,11 +15,11 @@ interface SidebarNavigationProps {
 
 interface NavItem {
   to: string;
-  icon: LucideIcon;
+  icon: LucideIcon;  // Now properly typed
   label: string;
   isActive: boolean;
   badge?: number;
-  roles?: string[];
+  roles?: string[]; // Add roles to control visibility
 }
 
 export function SidebarNavigation({ 
@@ -38,21 +38,21 @@ export function SidebarNavigation({
       label: "Quality Control", 
       isActive: location.pathname.startsWith("/work-orders"),
       badge: flaggedWorkOrdersCount > 0 ? flaggedWorkOrdersCount : undefined,
-      roles: ["admin", "lead", "user"]
+      roles: ["admin", "lead", "user"] // Everyone can see this
     },
     { 
       to: "/bulk-orders", 
       icon: Database, 
       label: "Bulk Import Test", 
       isActive: location.pathname.startsWith("/bulk-orders"),
-      roles: ["admin"]
+      roles: ["admin"] // Only admins
     },
     { 
       to: "/users", 
       icon: Users, 
       label: "User Management", 
       isActive: location.pathname.startsWith("/users"),
-      roles: ["admin"]
+      roles: ["admin"] // Only admins
     }
   ];
 
@@ -63,7 +63,7 @@ export function SidebarNavigation({
   );
 
   return (
-    <nav className="flex flex-col gap-1.5 px-1">
+    <nav className="flex flex-col gap-1">
       {filteredNavItems.map((item) => (
         <SidebarNavItem
           key={item.to}

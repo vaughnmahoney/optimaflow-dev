@@ -73,9 +73,9 @@ const WorkOrders = () => {
       }
     >
       <div className="space-y-6 overflow-x-hidden">
-        {/* Page title with subtle separator */}
-        <div className="flex justify-between items-center pb-2 border-b border-border/40">
-          <h1 className="text-2xl font-bold text-[#193B68]">Work Orders</h1>
+        {/* Page title - shown on all devices now */}
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Work Orders</h1>
           {isMobile && <ImportControls onOptimoRouteSearch={searchOptimoRoute} onRefresh={refetch} />}
         </div>
         
@@ -104,7 +104,6 @@ const WorkOrders = () => {
           clearColumnFilter={clearColumnFilter}
           clearAllFilters={clearAllFilters}
           onResolveFlag={handleResolveFlag}
-          refetch={refetch}
         />
       </div>
     </Layout>

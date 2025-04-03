@@ -71,12 +71,12 @@ export const WorkOrderCard = ({ workOrder, onStatusUpdate, onImageView, onDelete
 
   return (
     <Card 
-      className="overflow-hidden shadow hover:shadow-md transition-all duration-200 cursor-pointer transform hover:translate-y-[-2px] border border-border/40"
+      className="overflow-hidden shadow-sm hover:shadow transition-shadow cursor-pointer"
       onClick={() => onImageView(workOrder.id)}
     >
-      <div className="p-3 border-b border-border/60 flex justify-between items-center bg-card/60">
-        <div className="font-medium text-sm truncate">{workOrder.order_no || 'N/A'}</div>
-        <div onClick={(e) => e.stopPropagation()} className="z-10">
+      <div className="p-3 border-b flex justify-between items-center bg-gray-50">
+        <div className="font-medium">{workOrder.order_no || 'N/A'}</div>
+        <div onClick={(e) => e.stopPropagation()}>
           <StatusBadgeDropdown 
             workOrderId={workOrder.id}
             currentStatus={workOrder.status || 'pending_review'} 
@@ -85,17 +85,17 @@ export const WorkOrderCard = ({ workOrder, onStatusUpdate, onImageView, onDelete
         </div>
       </div>
 
-      <div className="p-4 space-y-3">
+      <div className="p-3 space-y-2">
         <div className="text-sm flex justify-between items-start">
-          <span className="text-muted-foreground whitespace-nowrap mr-2">Driver:</span>
+          <span className="text-muted-foreground">Driver:</span>
           <span className="text-right font-medium max-w-[70%] break-words">{getDriverName(workOrder)}</span>
         </div>
         <div className="text-sm flex justify-between items-start">
-          <span className="text-muted-foreground whitespace-nowrap mr-2">Location:</span>
+          <span className="text-muted-foreground">Location:</span>
           <span className="text-right font-medium max-w-[70%] break-words">{getLocationName(workOrder)}</span>
         </div>
-        <div className="text-sm flex justify-between items-start">
-          <span className="text-muted-foreground whitespace-nowrap mr-2">Date:</span>
+        <div className="text-sm flex justify-between items-center">
+          <span className="text-muted-foreground">Date:</span>
           <span className="text-right font-medium">{getServiceDateTime(workOrder)}</span>
         </div>
       </div>

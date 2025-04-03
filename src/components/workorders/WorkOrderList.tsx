@@ -160,7 +160,7 @@ export const WorkOrderList = ({
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <div className="flex justify-between items-center">
         <StatusFilterCards 
           statusFilter={filters.status}
@@ -186,10 +186,10 @@ export const WorkOrderList = ({
           variant="outline"
           size="sm"
           disabled={isRefreshing}
-          className="ml-2 h-9"
+          className="ml-2"
         >
-          <RefreshCw className={`h-4 w-4 mr-1.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-          <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
+          <RefreshCw className={`h-4 w-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+          {isRefreshing ? 'Refreshing...' : 'Refresh'}
         </Button>
       </div>
 
