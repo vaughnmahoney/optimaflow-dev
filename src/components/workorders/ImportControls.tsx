@@ -118,7 +118,7 @@ export const ImportControls = ({
                   placeholder="Enter Order #"
                   value={importValue}
                   onChange={(e) => setImportValue(e.target.value)}
-                  onKeyPress={handleKeyPress}
+                  onKeyPress={(e) => e.key === 'Enter' && handleImport()}
                   className="flex-1"
                   autoFocus
                 />
@@ -148,7 +148,7 @@ export const ImportControls = ({
           disabled={isRefreshing || isAutoImporting}
         >
           <RefreshCw className={`h-4 w-4 ${isRefreshing || isAutoImporting ? 'animate-spin' : ''}`} />
-          <span className="sr-only">{isRefreshing || isAutoImporting ? 'Refreshing...' : 'Refresh & Import'}</span>
+          <span className="ml-2">{isRefreshing || isAutoImporting ? 'Please wait...' : 'Refresh'}</span>
         </Button>
       </div>
     );
@@ -163,7 +163,7 @@ export const ImportControls = ({
           placeholder="Import Order#"
           value={importValue}
           onChange={(e) => setImportValue(e.target.value)}
-          onKeyPress={handleKeyPress}
+          onKeyPress={(e) => e.key === 'Enter' && handleImport()}
           className="w-44"
         />
         <Button 
@@ -180,9 +180,10 @@ export const ImportControls = ({
           variant="outline" 
           onClick={handleRefresh}
           disabled={isRefreshing || isAutoImporting}
+          className="flex items-center"
         >
           <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing || isAutoImporting ? 'animate-spin' : ''}`} />
-          {isRefreshing || isAutoImporting ? 'Refreshing...' : 'Refresh & Import'}
+          {isRefreshing || isAutoImporting ? 'Please wait...' : 'Refresh & Import'}
         </Button>
       </div>
     </div>
