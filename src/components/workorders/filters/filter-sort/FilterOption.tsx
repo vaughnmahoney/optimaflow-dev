@@ -22,10 +22,10 @@ export const FilterOption = ({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex items-center justify-center gap-1.5 text-xs px-3 py-1.5 rounded-md transition-all",
+        "flex items-center justify-center gap-1.5 text-xs px-3.5 py-2 rounded-md transition-all duration-200",
         isActive 
-          ? "bg-sidebar-active text-primary-foreground font-medium" 
-          : "bg-secondary hover:bg-secondary/80 text-secondary-foreground",
+          ? "bg-sidebar-active text-primary-foreground font-medium shadow-sm" 
+          : "bg-secondary/70 hover:bg-secondary text-secondary-foreground hover:shadow-sm",
         className
       )}
     >

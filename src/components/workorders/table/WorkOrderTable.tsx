@@ -72,10 +72,10 @@ export const WorkOrderTable = ({
     filters.dateRange.to !== null;
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {/* Active filters indicator */}
       {hasActiveFilters && (
-        <div className="flex items-center justify-between mb-2 px-2">
+        <div className="flex items-center justify-between mb-2 px-1">
           <div className="text-sm text-muted-foreground">
             Active filters applied
           </div>
@@ -85,7 +85,7 @@ export const WorkOrderTable = ({
             onClick={onClearAllFilters}
             className="h-8 text-xs"
           >
-            <FilterX className="h-3 w-3 mr-1" />
+            <FilterX className="h-3.5 w-3.5 mr-1.5" />
             Clear all filters
           </Button>
         </div>
@@ -96,15 +96,21 @@ export const WorkOrderTable = ({
         <PaginationIndicator 
           pagination={pagination}
           onPageChange={onPageChange}
+          className="mb-2"
         />
       )}
 
-      {/* Card grid layout for both mobile and desktop */}
-      <div className="space-y-2">
+      {/* Card grid layout */}
+      <div className="space-y-3">
         {workOrders.length === 0 ? (
           <EmptyState />
         ) : (
-          <div className={`grid gap-3 ${isMobile ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"}`}>
+          <div className={cn(
+            "grid gap-4", 
+            isMobile 
+              ? "grid-cols-1" 
+              : "grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+          )}>
             {workOrders.map((workOrder) => (
               <WorkOrderCard
                 key={workOrder.id}
@@ -127,3 +133,7 @@ export const WorkOrderTable = ({
     </div>
   );
 };
+
+function cn(...classes: any[]) {
+  return classes.filter(Boolean).join(" ");
+}
