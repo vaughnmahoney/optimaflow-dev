@@ -30,10 +30,16 @@ export function Header({ title, children }: HeaderProps) {
             className="p-1 mr-2"
             aria-label={openMobile ? "Close menu" : "Open menu"}
           >
-            {openMobile ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            <Menu className="h-5 w-5" />
           </button>
         ) : (
-          <SidebarTrigger className="mr-3" />
+          <button
+            onClick={() => useSidebar().toggleSidebar()}
+            className="mr-3"
+            aria-label="Toggle Sidebar"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
         )}
       </div>
       
