@@ -30,17 +30,17 @@ export const FilterSortContent = ({
   return (
     <>
       {/* Wrap content in ScrollArea for scrollability */}
-      <ScrollArea className="h-[calc(100vh-150px)] pr-4">
-        <div className="space-y-4 pt-4">
+      <ScrollArea className="h-[calc(100vh-140px)] pr-3">
+        <div className="space-y-3">
           {/* Sort Section */}
           <SortControl 
             sortDirection={sortDirection} 
             onSort={onSort} 
           />
           
-          <Separator className="my-4" />
+          <Separator className="my-3" />
           
-          <div className="space-y-6">
+          <div className="space-y-4">
             <FilterSectionContainer title="Order #">
               <TextFilter 
                 column="order_no" 
@@ -96,13 +96,13 @@ export const FilterSortContent = ({
           </div>
           
           {/* Add padding at the bottom for better scrolling UX */}
-          <div className="h-8"></div>
+          <div className="h-4"></div>
         </div>
       </ScrollArea>
       
-      <div className="mt-4">
+      <div className="mt-2 sticky bottom-0 pt-2 border-t">
         <Button 
-          className="w-full" 
+          className="w-full h-9 text-sm" 
           onClick={applyAllFilters}
         >
           Apply Filters

@@ -20,23 +20,24 @@ export const SortControl = ({
   };
 
   return (
-    <div className="mb-2">
-      <h3 className="text-sm font-medium">Sort Orders</h3>
-      <div className="mt-2">
+    <div className="mb-1">
+      <h3 className="text-xs font-medium text-muted-foreground mb-1.5">Sort Orders</h3>
+      <div>
         <Button 
           variant="outline"
-          className="w-full justify-start"
+          size="sm"
+          className="w-full justify-start h-8 text-xs font-normal"
           onClick={toggleDateSort}
         >
           {sortDirection === 'asc' ? (
             <>
-              <ArrowUp className="h-4 w-4 mr-2" />
-              <span>Showing oldest first</span>
+              <ArrowUp className="h-3.5 w-3.5 mr-1.5" />
+              <span>Oldest first</span>
             </>
           ) : (
             <>
-              <ArrowDown className="h-4 w-4 mr-2" />
-              <span>Showing newest first</span>
+              <ArrowDown className="h-3.5 w-3.5 mr-1.5" />
+              <span>Newest first</span>
             </>
           )}
         </Button>

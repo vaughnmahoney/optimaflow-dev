@@ -43,7 +43,7 @@ export const StatusFilterCards = ({
   
   const statuses = [
     { 
-      label: "Pending Review", 
+      label: "Pending", 
       value: "pending_review", 
       icon: Clock, 
       color: "bg-yellow-500",
@@ -96,14 +96,6 @@ export const StatusFilterCards = ({
 
   // Same button rendering function for both mobile and desktop to maintain consistency
   const renderStatusButtons = () => {
-    const hasActiveFilters = 
-      filters.status !== null || 
-      filters.orderNo !== null || 
-      filters.driver !== null || 
-      filters.location !== null || 
-      filters.dateRange.from !== null || 
-      filters.dateRange.to !== null;
-
     return (
       <>
         {/* Filter button first */}
@@ -129,25 +121,25 @@ export const StatusFilterCards = ({
                 statusFilter === status.value ? null : status.value
               )}
               className={cn(
-                "flex items-center space-x-2 py-1.5 px-3 rounded-full transition-all shrink-0",
+                "flex items-center space-x-1.5 py-1 px-2.5 rounded-full transition-all shrink-0",
                 isActive 
-                  ? `${status.color} text-white shadow-md`
+                  ? `${status.color} text-white shadow-sm`
                   : `bg-white border border-gray-200 hover:border-gray-300 shadow-sm`
               )}
             >
               <div className={cn(
-                "flex items-center justify-center w-5 h-5 rounded-full",
+                "flex items-center justify-center w-4 h-4 rounded-full",
                 isActive ? "bg-white/20" : status.color
               )}>
                 <status.icon 
-                  size={14}
+                  size={12}
                   className={isActive ? "text-white" : "text-white"} 
                 />
               </div>
-              <span className="text-sm font-medium">{status.label}</span>
+              <span className="text-xs font-medium">{status.label}</span>
               {count > 0 && (
                 <span className={cn(
-                  "inline-flex items-center justify-center text-xs font-medium rounded-full px-1.5 py-0.5 min-w-[20px]",
+                  "inline-flex items-center justify-center text-xs font-medium rounded-full px-1.5 py-0.5 min-w-[18px] h-[18px]",
                   isActive 
                     ? "bg-white/20 text-white" 
                     : "bg-gray-100 text-gray-700"
@@ -166,7 +158,7 @@ export const StatusFilterCards = ({
   return (
     <div className="mb-0 overflow-hidden w-full">
       <ScrollArea className="w-full scrollbar-none">
-        <div className="flex space-x-2 pb-2 min-w-max">
+        <div className="flex space-x-1.5 pb-1.5 min-w-max">
           {renderStatusButtons()}
         </div>
         <ScrollBar orientation="horizontal" className="hidden" />

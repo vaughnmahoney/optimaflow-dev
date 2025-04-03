@@ -159,3 +159,16 @@
     min-width: 44px;
   }
 }
+
+/* Custom compact styling for sheets */
+.compact-sheet {
+  @apply p-3;
+}
+
+.compact-sheet .sheet-header {
+  @apply pb-2;
+}
+
+.compact-sheet .sheet-content {
+  @apply px-3 py-2;
+}

@@ -2,6 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { FilterOption } from "./FilterOption";
+import { Check, X, AlertTriangle } from "lucide-react";
 
 interface OptimRouteStatusFilterProps {
   value: string | null;
@@ -19,10 +20,11 @@ export const OptimRouteStatusFilter = ({
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap gap-2">
+    <div className="space-y-2">
+      <div className="flex flex-wrap gap-1.5">
         <FilterOption 
           label="Success"
+          icon={<Check className="h-3 w-3" />}
           isActive={value === 'success'}
           onClick={() => handleStatusChange('success')}
           className="flex-1"
@@ -30,6 +32,7 @@ export const OptimRouteStatusFilter = ({
         
         <FilterOption 
           label="Failed"
+          icon={<X className="h-3 w-3" />}
           isActive={value === 'failed'}
           onClick={() => handleStatusChange('failed')}
           className="flex-1"
@@ -37,6 +40,7 @@ export const OptimRouteStatusFilter = ({
         
         <FilterOption 
           label="Rejected"
+          icon={<AlertTriangle className="h-3 w-3" />}
           isActive={value === 'rejected'}
           onClick={() => handleStatusChange('rejected')}
           className="flex-1"
@@ -47,7 +51,7 @@ export const OptimRouteStatusFilter = ({
           variant="ghost" 
           size="sm" 
           onClick={onClear}
-          className="mt-1 h-auto p-0 text-xs text-muted-foreground hover:text-primary"
+          className="h-6 p-0 text-xs text-muted-foreground hover:text-primary"
         >
           Clear
         </Button>

@@ -14,21 +14,22 @@ export const FilterSortHeader = ({
   onClearAll 
 }: FilterSortHeaderProps) => {
   return (
-    <SheetHeader>
-      <SheetTitle>Filters & Sort</SheetTitle>
+    <SheetHeader className="pb-2">
       <div className="flex justify-between items-center">
-        <p className="text-sm text-muted-foreground">Refine your work order view</p>
+        <SheetTitle className="text-lg">Filters & Sort</SheetTitle>
         {hasActiveFilters && (
           <Button 
             variant="ghost" 
             size="sm"
             onClick={onClearAll}
+            className="h-7 px-2"
           >
-            <X className="h-4 w-4 mr-1" />
-            Clear all
+            <X className="h-3.5 w-3.5 mr-1" />
+            <span className="text-xs">Clear all</span>
           </Button>
         )}
       </div>
+      <p className="text-xs text-muted-foreground mt-0">Refine your work order view</p>
     </SheetHeader>
   );
 };

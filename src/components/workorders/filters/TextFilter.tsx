@@ -31,7 +31,7 @@ export const TextFilter = ({ column, value, onChange, onClear }: ColumnFilterPro
   };
   
   return (
-    <div className="flex flex-col space-y-2 p-2">
+    <div className="flex flex-col space-y-1.5">
       <div className="flex items-center space-x-1">
         <Input
           type="text"
@@ -39,14 +39,14 @@ export const TextFilter = ({ column, value, onChange, onClear }: ColumnFilterPro
           onChange={handleChange}
           onKeyPress={handleKeyPress}
           placeholder={`Filter ${column}...`}
-          className="h-8 text-sm"
+          className="h-7 text-xs"
         />
         {localValue && (
           <Button 
             variant="ghost" 
             size="icon" 
             onClick={handleClear}
-            className="h-6 w-6"
+            className="h-5 w-5"
           >
             <X className="h-3 w-3" />
           </Button>
