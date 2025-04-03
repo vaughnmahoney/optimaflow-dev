@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import {
   Table,
@@ -24,7 +25,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Pagination } from "@/components/ui/pagination";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -42,6 +42,7 @@ import {
 import { StatusBadge } from "@/components/workorders/StatusBadge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import { PaginationIndicator } from "./PaginationIndicator";
 
 interface WorkOrderTableProps {
   workOrders: WorkOrder[] | undefined;
@@ -62,45 +63,6 @@ interface WorkOrderTableProps {
   onResolveFlag: (workOrderId: string, resolution: string, options?: any) => void;
 }
 
-interface PaginationIndicatorProps {
-  pagination: any;
-  onPageChange: (page: number) => void;
-}
-
-const PaginationIndicator: React.FC<PaginationIndicatorProps> = ({
-  pagination,
-  onPageChange,
-}) => {
-  return (
-    <div className="flex w-full items-center justify-between text-sm">
-      <div className="flex-1 text-muted-foreground">
-        {pagination?.totalCount} total items
-      </div>
-      <div className="flex items-center space-x-6 lg:space-x-8">
-        <div className="flex items-center space-x-2">
-          <p className="text-sm font-medium">Rows per page</p>
-          <select
-            value={pagination?.pageSize || 10}
-            onChange={(e) => onPageChange(Number(e.target.value))}
-            className="flex h-8 w-[70px] items-center justify-center rounded-md border border-input bg-background px-2 text-sm font-medium placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {[10, 20, 30, 40, 50].map((pageSize) => (
-              <option key={pageSize} value={pageSize}>
-                {pageSize}
-              </option>
-            ))}
-          </select>
-        </div>
-        <Pagination
-          pageCount={pagination?.pageCount || 1}
-          currentPage={pagination?.currentPage || 1}
-          onPageChange={onPageChange}
-        />
-      </div>
-    </div>
-  );
-};
-
 export function WorkOrderTable({
   workOrders,
   isLoading,
@@ -119,13 +81,12 @@ export function WorkOrderTable({
   clearAllFilters,
   onResolveFlag
 }: WorkOrderTableProps) {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
     []
   );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = useState({});
 
   const columns: ColumnDef<WorkOrder>[] = [
     {
@@ -197,7 +158,9 @@ export function WorkOrderTable({
         );
       },
       cell: ({ row }) => {
-        const address = row.original.search_response?.scheduleInformation?.address;
+        // Use optional chaining to safely access possibly undefined properties
+        const address = row.original.search_response?.scheduleInformation?.address ||
+                      row.original.location?.address;
         return <div className="max-w-[200px] truncate">{address || "N/A"}</div>;
       },
     },
@@ -219,7 +182,9 @@ export function WorkOrderTable({
         );
       },
       cell: ({ row }) => {
-        const city = row.original.search_response?.scheduleInformation?.city;
+        // Use optional chaining to safely access possibly undefined properties
+        const city = row.original.search_response?.scheduleInformation?.city ||
+                   row.original.location?.city;
         return <div className="max-w-[100px] truncate">{city || "N/A"}</div>;
       },
     },
@@ -241,7 +206,9 @@ export function WorkOrderTable({
         );
       },
       cell: ({ row }) => {
-        const state = row.original.search_response?.scheduleInformation?.state;
+        // Use optional chaining to safely access possibly undefined properties
+        const state = row.original.search_response?.scheduleInformation?.state ||
+                    row.original.location?.state;
         return <div>{state || "N/A"}</div>;
       },
     },
@@ -263,7 +230,9 @@ export function WorkOrderTable({
         );
       },
       cell: ({ row }) => {
-        const zip = row.original.search_response?.scheduleInformation?.zip;
+        // Use optional chaining to safely access possibly undefined properties
+        const zip = row.original.search_response?.scheduleInformation?.zip ||
+                  row.original.location?.zip;
         return <div>{zip || "N/A"}</div>;
       },
     },
