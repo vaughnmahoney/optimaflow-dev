@@ -5,8 +5,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { WorkOrder } from "../../types";
 import { useWorkOrderMutations } from "@/hooks/useWorkOrderMutations";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { PenLine, StickyNote, Save } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { PenLine, StickyNote, Save, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface ResolutionNotesSheetProps {
@@ -67,7 +67,8 @@ export const ResolutionNotesSheet = ({ workOrder }: ResolutionNotesSheetProps) =
       </DialogTrigger>
       <DialogContent 
         className="max-w-md mx-auto px-6 py-6"
-        onInteractOutside={(e) => e.preventDefault()}
+        // Allow clicking outside to close
+        onInteractOutside={() => setIsOpen(false)}
         // Use initialFocusRef to prevent focus on the textarea
         onOpenAutoFocus={(e) => {
           e.preventDefault();
@@ -80,10 +81,18 @@ export const ResolutionNotesSheet = ({ workOrder }: ResolutionNotesSheetProps) =
         <div ref={initialFocusRef} tabIndex={-1} />
         
         <DialogHeader className="pb-2 border-b mb-4">
-          <DialogTitle className="flex items-center gap-2 text-gray-800">
-            <StickyNote className="h-5 w-5 text-blue-500" />
-            Resolution Notes
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="flex items-center gap-2 text-gray-800">
+              <StickyNote className="h-5 w-5 text-blue-500" />
+              Resolution Notes
+            </DialogTitle>
+            <DialogClose asChild>
+              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full">
+                <X className="h-4 w-4" />
+                <span className="sr-only">Close</span>
+              </Button>
+            </DialogClose>
+          </div>
         </DialogHeader>
         <div className="py-2">
           <Textarea 
@@ -94,14 +103,21 @@ export const ResolutionNotesSheet = ({ workOrder }: ResolutionNotesSheetProps) =
           />
         </div>
         <DialogFooter>
-          <Button 
-            onClick={handleSaveResolutionNotes} 
-            disabled={isSaving}
-            className="w-full gap-2 bg-gray-800 hover:bg-gray-900 text-white"
-          >
-            <Save className="h-4 w-4" />
-            {isSaving ? "Saving..." : "Save Notes"}
-          </Button>
+          <div className="flex justify-end gap-2 w-full">
+            <DialogClose asChild>
+              <Button variant="outline">
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button 
+              onClick={handleSaveResolutionNotes} 
+              disabled={isSaving}
+              className="gap-2 bg-gray-800 hover:bg-gray-900 text-white"
+            >
+              <Save className="h-4 w-4" />
+              {isSaving ? "Saving..." : "Save Notes"}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
