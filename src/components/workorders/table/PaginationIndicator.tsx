@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
 import { PaginationState } from "../types";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAutoImport } from "@/hooks/useAutoImport";
 
 interface PaginationIndicatorProps {
   pagination: PaginationState;
@@ -20,6 +21,20 @@ export const PaginationIndicator = ({
   const { page, pageSize, total } = pagination;
   const totalPages = Math.ceil(total / pageSize);
   const isMobile = useIsMobile();
+  const { runAutoImport, isImporting } = useAutoImport();
+  
+  // Combined function to handle both refresh and auto-import
+  const handleRefreshAndImport = async () => {
+    if (isRefreshing || isImporting) return;
+    
+    // First refresh the current data if a refresh handler is provided
+    if (onRefresh) {
+      await onRefresh();
+    }
+    
+    // Then run the auto-import to check for new orders
+    await runAutoImport();
+  };
   
   if (total === 0) {
     return null;
@@ -35,11 +50,11 @@ export const PaginationIndicator = ({
             variant="ghost" 
             size="icon"
             className="h-6 w-6 p-0.5"
-            onClick={onRefresh}
-            disabled={isRefreshing}
+            onClick={handleRefreshAndImport}
+            disabled={isRefreshing || isImporting}
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span className="sr-only">Refresh</span>
+            <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing || isImporting ? 'animate-spin' : ''}`} />
+            <span className="sr-only">Refresh & Import</span>
           </Button>
         )}
       </div>
