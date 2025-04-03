@@ -1,396 +1,129 @@
 
-import React, { useState } from "react";
 import {
   Table,
   TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
 } from "@/components/ui/table";
-import { WorkOrder } from "@/components/workorders/types";
-import { Badge } from "@/components/ui/badge";
-import {
-  ArrowDown,
-  ArrowUp,
-  ChevronsUpDown,
-  MoreHorizontal,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import { StatusBadge } from "@/components/workorders/StatusBadge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { cn } from "@/lib/utils";
+import { WorkOrder, SortDirection, SortField, PaginationState, WorkOrderFilters } from "../types";
+import { WorkOrderTableHeader } from "./TableHeader";
+import { WorkOrderRow } from "./WorkOrderRow";
+import { WorkOrderCard } from "./WorkOrderCard";
+import { EmptyState } from "./EmptyState";
+import { useSortableTable } from "./useSortableTable";
+import { Pagination } from "./Pagination";
 import { PaginationIndicator } from "./PaginationIndicator";
+import { Button } from "@/components/ui/button";
+import { FilterX } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface WorkOrderTableProps {
-  workOrders: WorkOrder[] | undefined;
-  isLoading: boolean;
-  onStatusUpdate: (workOrderId: string, newStatus: string, options?: any) => void;
+  workOrders: WorkOrder[];
+  onStatusUpdate: (workOrderId: string, newStatus: string) => void;
   onImageView: (workOrderId: string) => void;
   onDelete: (workOrderId: string) => void;
-  statusCounts: { [key: string]: number };
-  sortField: string;
-  sortDirection: string;
-  onSort: (field: string, direction: string) => void;
-  pagination: any;
-  onPageChange: (page: number) => void;
-  onPageSizeChange: (pageSize: number) => void;
-  onColumnFilterChange: (columnId: string, value: string) => void;
-  clearColumnFilter: (columnId: string) => void;
-  clearAllFilters: () => void;
-  onResolveFlag: (workOrderId: string, resolution: string, options?: any) => void;
+  sortField?: SortField;
+  sortDirection?: SortDirection;
+  onSort?: (field: SortField, direction: SortDirection) => void;
+  pagination?: PaginationState;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
+  filters: WorkOrderFilters;
+  onColumnFilterChange: (column: string, value: any) => void;
+  onColumnFilterClear: (column: string) => void;
+  onClearAllFilters: () => void;
 }
 
-export function WorkOrderTable({
-  workOrders,
-  isLoading,
+export const WorkOrderTable = ({ 
+  workOrders: initialWorkOrders, 
   onStatusUpdate,
   onImageView,
   onDelete,
-  statusCounts,
-  sortField,
-  sortDirection,
-  onSort,
+  sortField: externalSortField,
+  sortDirection: externalSortDirection,
+  onSort: externalOnSort,
   pagination,
   onPageChange,
   onPageSizeChange,
+  filters,
   onColumnFilterChange,
-  clearColumnFilter,
-  clearAllFilters,
-  onResolveFlag
-}: WorkOrderTableProps) {
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
-    []
+  onColumnFilterClear,
+  onClearAllFilters
+}: WorkOrderTableProps) => {
+  const isMobile = useIsMobile();
+  
+  const { 
+    workOrders, 
+    sortField, 
+    sortDirection, 
+    handleSort 
+  } = useSortableTable(
+    initialWorkOrders, 
+    externalSortField, 
+    externalSortDirection, 
+    externalOnSort
   );
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState({});
 
-  const columns: ColumnDef<WorkOrder>[] = [
-    {
-      id: "select",
-      header: ({ table }) => (
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected()
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-          className="translate-y-[2px]"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-          className="translate-y-[2px]"
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
-    {
-      accessorKey: "order_no",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => {
-              column.toggleSorting(column.getIsSorted() === "asc");
-            }}
-          >
-            Order #
-            <ChevronsUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ row }) => <div className="w-[80px]">{row.getValue("order_no")}</div>,
-    },
-    {
-      accessorKey: "status",
-      header: "Status",
-      cell: ({ row }) => (
-        <StatusBadge
-          status={row.original.status}
-          completionStatus={row.original.completion_status}
-          workOrderId={row.original.id}
-          onStatusUpdate={onStatusUpdate}
-          onResolveFlag={onResolveFlag}
-        />
-      ),
-    },
-    {
-      accessorKey: "search_response.scheduleInformation.address",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => {
-              column.toggleSorting(column.getIsSorted() === "asc");
-            }}
-          >
-            Address
-            <ChevronsUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ row }) => {
-        // Use optional chaining to safely access possibly undefined properties
-        const address = row.original.search_response?.scheduleInformation?.address ||
-                      row.original.location?.address;
-        return <div className="max-w-[200px] truncate">{address || "N/A"}</div>;
-      },
-    },
-    {
-      accessorKey: "search_response.scheduleInformation.city",
-      header: ({ column }) => {
-        return (
-          <div className="text-left">
-            <Button
-              variant="ghost"
-              onClick={() => {
-                column.toggleSorting(column.getIsSorted() === "asc");
-              }}
-            >
-              City
-              <ChevronsUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        );
-      },
-      cell: ({ row }) => {
-        // Use optional chaining to safely access possibly undefined properties
-        const city = row.original.search_response?.scheduleInformation?.city ||
-                   row.original.location?.city;
-        return <div className="max-w-[100px] truncate">{city || "N/A"}</div>;
-      },
-    },
-    {
-      accessorKey: "search_response.scheduleInformation.state",
-      header: ({ column }) => {
-        return (
-          <div className="text-left">
-            <Button
-              variant="ghost"
-              onClick={() => {
-                column.toggleSorting(column.getIsSorted() === "asc");
-              }}
-            >
-              State
-              <ChevronsUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        );
-      },
-      cell: ({ row }) => {
-        // Use optional chaining to safely access possibly undefined properties
-        const state = row.original.search_response?.scheduleInformation?.state ||
-                    row.original.location?.state;
-        return <div>{state || "N/A"}</div>;
-      },
-    },
-    {
-      accessorKey: "search_response.scheduleInformation.zip",
-      header: ({ column }) => {
-        return (
-          <div className="text-left">
-            <Button
-              variant="ghost"
-              onClick={() => {
-                column.toggleSorting(column.getIsSorted() === "asc");
-              }}
-            >
-              Zip
-              <ChevronsUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        );
-      },
-      cell: ({ row }) => {
-        // Use optional chaining to safely access possibly undefined properties
-        const zip = row.original.search_response?.scheduleInformation?.zip ||
-                  row.original.location?.zip;
-        return <div>{zip || "N/A"}</div>;
-      },
-    },
-    {
-      id: "actions",
-      header: () => <div className="text-right">Actions</div>,
-      cell: ({ row }) => {
-        const workOrder = row.original;
-
-        return (
-          <div className="text-right">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                  <span className="sr-only">Open menu</span>
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem
-                  onClick={() => onImageView(workOrder.id)}
-                >
-                  View Images
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => onDelete(workOrder.id)}
-                  className="text-red-500"
-                >
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        );
-      },
-    },
-  ];
-
-  const table = useReactTable({
-    data: workOrders || [],
-    columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection,
-    },
-  });
+  // Check if any filter is active
+  const hasActiveFilters = 
+    filters.status !== null || 
+    filters.orderNo !== null || 
+    filters.driver !== null || 
+    filters.location !== null || 
+    filters.dateRange.from !== null || 
+    filters.dateRange.to !== null;
 
   return (
-    <div className="w-full">
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Filter order numbers..."
-          value={(table.getColumn("order_no")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("order_no")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
+    <div className="space-y-2">
+      {/* Active filters indicator */}
+      {hasActiveFilters && (
+        <div className="flex items-center justify-between mb-2 px-2">
+          <div className="text-sm text-muted-foreground">
+            Active filters applied
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClearAllFilters}
+            className="h-8 text-xs"
+          >
+            <FilterX className="h-3 w-3 mr-1" />
+            Clear all filters
+          </Button>
+        </div>
+      )}
+      
+      {/* Top pagination indicator */}
+      {pagination && onPageChange && (
+        <PaginationIndicator 
+          pagination={pagination}
+          onPageChange={onPageChange}
         />
-        <Button
-          variant="ghost"
-          onClick={() => clearAllFilters()}
-          className="ml-2"
-        >
-          Clear Filters
-        </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Columns <ChevronsUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuItem
-                    key={column.id}
-                    className="flex items-center"
-                    onClick={() => {
-                      column.toggleVisibility();
-                    }}
-                  >
-                    <Checkbox
-                      checked={column.getIsVisible()}
-                      className="mr-2"
-                    />
-                    {column.id}
-                  </DropdownMenuItem>
-                );
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
+      )}
+
+      {/* Card grid layout for both mobile and desktop */}
+      <div className="space-y-2">
+        {workOrders.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <div className={`grid gap-3 ${isMobile ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"}`}>
+            {workOrders.map((workOrder) => (
+              <WorkOrderCard
+                key={workOrder.id}
+                workOrder={workOrder}
+                onStatusUpdate={onStatusUpdate}
+                onImageView={onImageView}
+                onDelete={onDelete}
+              />
             ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <tr>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  {isLoading ? "Loading..." : "No results."}
-                </TableCell>
-              </tr>
-            )}
-          </TableBody>
-        </Table>
+          </div>
+        )}
+        {pagination && onPageChange && onPageSizeChange && (
+          <Pagination 
+            pagination={pagination}
+            onPageChange={onPageChange}
+            onPageSizeChange={onPageSizeChange}
+          />
+        )}
       </div>
-      <PaginationIndicator
-        pagination={pagination}
-        onPageChange={onPageChange}
-      />
     </div>
   );
-}
+};

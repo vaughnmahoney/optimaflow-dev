@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { WorkOrderListProps } from "./types";
 import { StatusFilterCards } from "./filters/StatusFilterCards";
@@ -91,6 +92,7 @@ export const WorkOrderList = ({
   };
 
   const handleStatusFilterChange = (status: string | null) => {
+    // When filter changes, refresh the data to show accurate statuses
     queryClient.invalidateQueries({ queryKey: ["workOrders"] });
     
     onFiltersChange({
@@ -101,6 +103,7 @@ export const WorkOrderList = ({
 
   const handleSortChange = (field: SortField, direction: SortDirection) => {
     if (onSort) {
+      // Refresh data when sort changes
       queryClient.invalidateQueries({ queryKey: ["workOrders"] });
       onSort(field, direction);
     }
@@ -117,6 +120,7 @@ export const WorkOrderList = ({
       
       setSelectedWorkOrder(null);
       
+      // Explicitly invalidate the work orders query to refresh data
       queryClient.invalidateQueries({ queryKey: ["workOrders"] });
       
       if (refetch) {
@@ -189,9 +193,13 @@ export const WorkOrderList = ({
         </Button>
       </div>
 
+      <DebugDataDisplay 
+        searchResponse={searchResponse}
+        transformedData={transformedData}
+      />
+
       <WorkOrderTable 
         workOrders={workOrders}
-        isLoading={isLoading}
         onStatusUpdate={handleStatusUpdate}
         onImageView={handleImageView}
         onDelete={onDelete}
@@ -201,11 +209,10 @@ export const WorkOrderList = ({
         pagination={pagination}
         onPageChange={onPageChange}
         onPageSizeChange={onPageSizeChange}
+        filters={filters}
         onColumnFilterChange={onColumnFilterChange}
-        clearColumnFilter={clearColumnFilter}
-        clearAllFilters={clearAllFilters}
-        statusCounts={statusCounts}
-        onResolveFlag={handleResolveFlag}
+        onColumnFilterClear={clearColumnFilter}
+        onClearAllFilters={clearAllFilters}
       />
 
       {currentWorkOrder && (

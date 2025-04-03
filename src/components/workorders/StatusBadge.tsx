@@ -1,15 +1,13 @@
+
 import { Badge } from "@/components/ui/badge";
 import { Check, Clock, Flag, XCircle, CheckCheck, AlertTriangle } from "lucide-react";
 
-export interface StatusBadgeProps {
+interface StatusBadgeProps {
   status: string;
   completionStatus?: string;
-  workOrderId?: string;
-  onStatusUpdate?: (workOrderId: string, newStatus: string, options?: any) => void;
-  onResolveFlag?: (workOrderId: string, resolution: string, options?: any) => void;
 }
 
-export const StatusBadge = ({ status, completionStatus, workOrderId, onStatusUpdate, onResolveFlag }: StatusBadgeProps) => {
+export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
   // Function to get the QC status styling
   const getQcStyling = () => {
     switch (status) {
