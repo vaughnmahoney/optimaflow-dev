@@ -1,7 +1,7 @@
 
 import { useNavigate } from "react-router-dom";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Menu, Zap } from "lucide-react";
+import { Menu, X, Zap } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { UserDisplay } from "./UserDisplay";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -14,7 +14,11 @@ interface HeaderProps {
 export function Header({ title, children }: HeaderProps) {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { setOpenMobile } = useSidebar();
+  const { openMobile, setOpenMobile } = useSidebar();
+  
+  const toggleMobileSidebar = () => {
+    setOpenMobile(!openMobile);
+  };
   
   return (
     <div className="w-full h-full flex items-center justify-between px-3 sm:px-6 py-2">
@@ -22,11 +26,11 @@ export function Header({ title, children }: HeaderProps) {
       <div className="flex items-center">
         {isMobile ? (
           <button
-            onClick={() => setOpenMobile(true)}
+            onClick={toggleMobileSidebar}
             className="p-1 mr-2"
-            aria-label="Open menu"
+            aria-label={openMobile ? "Close menu" : "Open menu"}
           >
-            <Menu className="h-5 w-5" />
+            {openMobile ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         ) : (
           <SidebarTrigger className="mr-3" />

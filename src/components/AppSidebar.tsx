@@ -40,7 +40,7 @@ export function AppSidebar() {
   // Close mobile sidebar when route changes
   useEffect(() => {
     setOpenMobile(false);
-  }, [location]);
+  }, [location, setOpenMobile]);
 
   // Fetch flagged work orders count for badge
   const { data: flaggedWorkOrdersCount = 0 } = useQuery({
