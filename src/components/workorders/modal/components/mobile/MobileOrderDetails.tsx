@@ -13,25 +13,25 @@ export const MobileOrderDetails = ({
   workOrder
 }: MobileOrderDetailsProps) => {
   return (
-    <Tabs defaultValue="details" className="w-full h-full">
-      <TabsList className="grid grid-cols-3 mb-2 w-full bg-gray-50 rounded-md p-1 sticky top-0 z-10">
+    <Tabs defaultValue="details" className="w-full h-full flex flex-col">
+      <TabsList className="grid grid-cols-3 mb-0 w-full bg-gray-50 rounded-md p-1 sticky top-0 z-10 flex-shrink-0">
         <TabsTrigger value="details" className="text-sm">Details</TabsTrigger>
         <TabsTrigger value="notes" className="text-sm">Notes</TabsTrigger>
         <TabsTrigger value="signature" className="text-sm">Signature</TabsTrigger>
       </TabsList>
       
-      {/* Details Tab */}
-      <TabsContent value="details" className="mt-0 h-[calc(100%-40px)] overflow-auto">
+      {/* Details Tab - improved scroll handling */}
+      <TabsContent value="details" className="mt-0 flex-1 overflow-auto px-0 py-2">
         <MobileDetailsTab workOrder={workOrder} />
       </TabsContent>
       
-      {/* Notes Tab */}
-      <TabsContent value="notes" className="mt-0 h-[calc(100%-40px)] overflow-auto">
+      {/* Notes Tab - improved scroll handling */}
+      <TabsContent value="notes" className="mt-0 flex-1 overflow-auto px-0 py-2">
         <MobileNotesTab workOrder={workOrder} />
       </TabsContent>
       
-      {/* Signature Tab */}
-      <TabsContent value="signature" className="mt-0 h-[calc(100%-40px)] overflow-auto">
+      {/* Signature Tab - improved scroll handling */}
+      <TabsContent value="signature" className="mt-0 flex-1 overflow-auto px-0 py-2">
         <MobileSignatureTab workOrder={workOrder} />
       </TabsContent>
     </Tabs>
