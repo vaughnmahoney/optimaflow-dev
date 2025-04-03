@@ -30,8 +30,7 @@ export const WorkOrderList = ({
   clearColumnFilter,
   clearAllFilters,
   onResolveFlag,
-  // New props
-  selectedWorkOrderId,
+  // Updated modal props
   isImageModalOpen,
   activeWorkOrder,
   onCloseImageModal
@@ -43,12 +42,6 @@ export const WorkOrderList = ({
   if (isLoading) {
     return <LoadingSkeleton />;
   }
-
-  // Use the currently filtered work orders or the active work order for the modal
-  const currentWorkOrder = activeWorkOrder || workOrders.find(wo => wo.id === selectedWorkOrderId) || null;
-  
-  // Get the current work order index in the filtered list (for navigation)
-  const currentIndex = currentWorkOrder ? workOrders.findIndex(wo => wo.id === currentWorkOrder.id) : -1;
 
   // Handle status filter change
   const handleStatusFilterChange = (status: string | null) => {
@@ -65,7 +58,12 @@ export const WorkOrderList = ({
     }
   };
   
-  // Navigate between work orders in the modal
+  // Get the current index for navigation within the current filtered list
+  const currentIndex = activeWorkOrder 
+    ? workOrders.findIndex(wo => wo.id === activeWorkOrder.id) 
+    : -1;
+  
+  // Handle navigation between work orders in the modal
   const handleNavigate = (index: number) => {
     if (index >= 0 && index < workOrders.length) {
       const navigatedWorkOrder = workOrders[index];
@@ -150,21 +148,20 @@ export const WorkOrderList = ({
         onClearAllFilters={clearAllFilters}
       />
 
-      {/* Image View Modal - Now using the activeWorkOrder or currentWorkOrder */}
-      {currentWorkOrder && (
+      {/* Image View Modal - Using activeWorkOrder directly */}
+      {isImageModalOpen && activeWorkOrder && (
         <ImageViewModal
-          workOrder={currentWorkOrder}
-          workOrders={workOrders}
+          workOrder={activeWorkOrder}
+          workOrders={workOrders} 
           currentIndex={currentIndex}
-          isOpen={isImageModalOpen === true}
-          onClose={onCloseImageModal || (() => {})}
+          isOpen={isImageModalOpen}
+          onClose={onCloseImageModal}
           onStatusUpdate={onStatusUpdate}
           onNavigate={handleNavigate}
           onPageBoundary={handlePageBoundary}
           onResolveFlag={onResolveFlag}
           onDownloadAll={() => {
-            // Placeholder for download all functionality
-            console.log("Download all images for:", currentWorkOrder.id);
+            console.log("Download all images for:", activeWorkOrder.id);
           }}
         />
       )}

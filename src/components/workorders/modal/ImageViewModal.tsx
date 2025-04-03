@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { WorkOrder } from "../types";
 import { ModalHeader } from "./components/ModalHeader";
@@ -40,6 +40,11 @@ export const ImageViewModal = ({
   const isMobile = useMobile();
   const [isImageExpanded, setIsImageExpanded] = useState(false);
   
+  // For debugging
+  useEffect(() => {
+    console.log("ImageViewModal render", { isOpen, workOrderId: workOrder?.id });
+  }, [isOpen, workOrder]);
+  
   const {
     currentWorkOrder,
     currentIndex: navIndex,
@@ -59,12 +64,12 @@ export const ImageViewModal = ({
   });
   
   // Early return with mobile version, but AFTER all hooks have been called
-  if (isMobile && currentWorkOrder) {
+  if (isMobile && workOrder) {
     return (
       <MobileImageViewModal 
-        workOrder={currentWorkOrder}
+        workOrder={workOrder}
         workOrders={workOrders}
-        currentIndex={navIndex}
+        currentIndex={currentIndex}
         isOpen={isOpen}
         onClose={onClose}
         onStatusUpdate={onStatusUpdate}
@@ -77,18 +82,18 @@ export const ImageViewModal = ({
   }
   
   // Return null if no work order, but AFTER all hooks have been called
-  if (!currentWorkOrder) return null;
+  if (!workOrder) return null;
 
   const toggleImageExpand = () => {
     setIsImageExpanded(!isImageExpanded);
   };
 
   // Get images from the work order's completion_response
-  const completionData = currentWorkOrder?.completion_response?.orders?.[0]?.data;
+  const completionData = workOrder?.completion_response?.orders?.[0]?.data;
   const images = completionData?.form?.images || [];
   
   // Status color for border
-  const statusBorderColor = getStatusBorderColor(currentWorkOrder.status || "pending_review");
+  const statusBorderColor = getStatusBorderColor(workOrder.status || "pending_review");
   
   // Map the border color class to actual color hex values
   const getBorderColor = () => {
@@ -114,20 +119,22 @@ export const ImageViewModal = ({
     onNavigate(index);
   };
 
-  const modalTitle = `Work Order #${currentWorkOrder.order_no}`;
+  const modalTitle = `Work Order #${workOrder.order_no}`;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if (!open) onClose();
+    }}>
       <DialogContent className="max-w-6xl p-0 h-[90vh] flex flex-col rounded-lg overflow-hidden border-t-4 bg-white shadow-xl w-[95%] m-0" style={{ borderTopColor: getBorderColor() }}>
         {/* Add DialogTitle for accessibility, but visually hidden */}
         <VisuallyHidden>
           <DialogTitle>{modalTitle}</DialogTitle>
         </VisuallyHidden>
         
-        <ModalHeader workOrder={currentWorkOrder} onClose={onClose} />
+        <ModalHeader workOrder={workOrder} onClose={onClose} />
         
         <ModalContent
-          workOrder={currentWorkOrder}
+          workOrder={workOrder}
           images={images}
           currentImageIndex={currentImageIndex}
           setCurrentImageIndex={setCurrentImageIndex}
@@ -136,23 +143,23 @@ export const ImageViewModal = ({
         />
         
         <ModalFooter 
-          workOrderId={currentWorkOrder.id} 
+          workOrderId={workOrder.id} 
           onStatusUpdate={onStatusUpdate} 
           onDownloadAll={onDownloadAll}
           hasImages={images.length > 0}
-          status={currentWorkOrder.status}
+          status={workOrder.status}
           onResolveFlag={onResolveFlag}
-          workOrder={currentWorkOrder}
+          workOrder={workOrder}
         />
         
         <NavigationControls 
-          currentIndex={navIndex}
+          currentIndex={currentIndex === -1 ? navIndex : currentIndex}
           totalOrders={workOrders.length}
           onPreviousOrder={handlePreviousOrder}
           onNextOrder={handleNextOrder}
           isNavigatingPages={isNavigatingPages}
-          hasPreviousPage={onPageBoundary !== undefined && navIndex === 0}
-          hasNextPage={onPageBoundary !== undefined && navIndex === workOrders.length - 1}
+          hasPreviousPage={onPageBoundary !== undefined && (currentIndex === -1 ? navIndex === 0 : currentIndex === 0)}
+          hasNextPage={onPageBoundary !== undefined && (currentIndex === -1 ? navIndex === workOrders.length - 1 : currentIndex === workOrders.length - 1)}
         />
       </DialogContent>
     </Dialog>

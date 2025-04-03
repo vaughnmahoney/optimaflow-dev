@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { WorkOrder } from "../types";
 import { useWorkOrderNavigation } from "@/hooks/useWorkOrderNavigation";
@@ -36,9 +36,14 @@ export const MobileImageViewModal = ({
   onResolveFlag,
 }: MobileImageViewModalProps) => {
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+
+  // For debugging
+  useEffect(() => {
+    console.log("MobileImageViewModal render", { isOpen, workOrderId: workOrder?.id });
+  }, [isOpen, workOrder]);
   
   const {
-    currentWorkOrder,
+    currentWorkOrder: navigationWorkOrder,
     currentIndex: navIndex,
     currentImageIndex,
     isNavigatingPages,
@@ -54,14 +59,15 @@ export const MobileImageViewModal = ({
     onPageBoundary
   });
   
-  if (!currentWorkOrder) return null;
+  // Use the passed workOrder directly instead of relying on the derived one
+  if (!workOrder) return null;
 
   // Get images from the work order's completion_response
-  const completionData = currentWorkOrder?.completion_response?.orders?.[0]?.data;
+  const completionData = workOrder?.completion_response?.orders?.[0]?.data;
   const images = completionData?.form?.images || [];
   
   // Status color for border
-  const statusBorderColor = getStatusBorderColor(currentWorkOrder.status || "pending_review");
+  const statusBorderColor = getStatusBorderColor(workOrder.status || "pending_review");
 
   // Sync navigation with parent component
   const handleNavigate = (index: number) => {
@@ -73,10 +79,15 @@ export const MobileImageViewModal = ({
   const openImageViewer = () => setIsImageViewerOpen(true);
   const closeImageViewer = () => setIsImageViewerOpen(false);
   
-  const modalTitle = `Work Order #${currentWorkOrder.order_no}`;
+  const modalTitle = `Work Order #${workOrder.order_no}`;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog 
+      open={isOpen} 
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
       <DialogContent className={`max-w-full p-0 h-[90vh] w-[95vw] flex flex-col rounded-lg overflow-hidden border-t-4 ${statusBorderColor}`}>
         {/* Add DialogTitle for accessibility, but visually hidden */}
         <VisuallyHidden>
@@ -87,7 +98,7 @@ export const MobileImageViewModal = ({
           // Show image viewer when in image mode
           <>
             <MobileImageViewer
-              workOrderId={currentWorkOrder.id}
+              workOrderId={workOrder.id}
               images={images}
               currentImageIndex={currentImageIndex}
               setCurrentImageIndex={setCurrentImageIndex}
@@ -99,12 +110,12 @@ export const MobileImageViewModal = ({
           // Show main content when not in image mode
           <>
             <MobileModalHeader 
-              workOrder={currentWorkOrder} 
+              workOrder={workOrder} 
               onClose={onClose} 
             />
             
             <MobileModalContent
-              workOrder={currentWorkOrder}
+              workOrder={workOrder}
               images={images}
               onViewImages={openImageViewer}
               onStatusUpdate={onStatusUpdate}
@@ -113,13 +124,13 @@ export const MobileImageViewModal = ({
             />
             
             <MobileNavigationControls 
-              currentIndex={navIndex}
+              currentIndex={currentIndex === -1 ? navIndex : currentIndex}
               totalOrders={workOrders.length}
               onPreviousOrder={handlePreviousOrder}
               onNextOrder={handleNextOrder}
               isNavigatingPages={isNavigatingPages}
-              hasPreviousPage={onPageBoundary !== undefined && navIndex === 0}
-              hasNextPage={onPageBoundary !== undefined && navIndex === workOrders.length - 1}
+              hasPreviousPage={onPageBoundary !== undefined && (currentIndex === -1 ? navIndex === 0 : currentIndex === 0)}
+              hasNextPage={onPageBoundary !== undefined && (currentIndex === -1 ? navIndex === workOrders.length - 1 : currentIndex === workOrders.length - 1)}
             />
           </>
         )}
