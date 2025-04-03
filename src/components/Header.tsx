@@ -14,7 +14,7 @@ interface HeaderProps {
 export function Header({ title, children }: HeaderProps) {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { openMobile, setOpenMobile } = useSidebar();
+  const { openMobile, setOpenMobile, toggleSidebar } = useSidebar();
   
   const toggleMobileSidebar = () => {
     setOpenMobile(!openMobile);
@@ -34,7 +34,7 @@ export function Header({ title, children }: HeaderProps) {
           </button>
         ) : (
           <button
-            onClick={() => useSidebar().toggleSidebar()}
+            onClick={toggleSidebar}
             className="mr-3"
             aria-label="Toggle Sidebar"
           >
