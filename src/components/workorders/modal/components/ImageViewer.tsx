@@ -1,10 +1,13 @@
 
-import { useState, useRef, useEffect } from "react";
+import { useRef } from "react";
 import { useImageZoom } from "@/hooks/useImageZoom";
 import { ImageType } from "../../types/image";
-import { ChevronLeft, ChevronRight, ZoomIn, Flag } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useWorkOrderMutations } from "@/hooks/useWorkOrderMutations";
+import { useImagePreloading } from "@/hooks/useImagePreloading";
+import { ImageNavigationButtons } from "./ImageNavigationButtons";
+import { ImageControlButtons } from "./ImageControlButtons";
+import { ImageStatusIndicators } from "./ImageStatusIndicators";
+import { ImageEmptyState } from "./ImageEmptyState";
 
 interface ImageViewerProps {
   images: ImageType[];
@@ -12,7 +15,7 @@ interface ImageViewerProps {
   setCurrentImageIndex: (index: number) => void;
   isImageExpanded: boolean;
   toggleImageExpand: () => void;
-  workOrderId: string; // Added workOrderId prop
+  workOrderId: string;
 }
 
 export const ImageViewer = ({
@@ -24,7 +27,6 @@ export const ImageViewer = ({
   workOrderId,
 }: ImageViewerProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const { toggleImageFlag } = useWorkOrderMutations();
   
   const {
@@ -42,12 +44,12 @@ export const ImageViewer = ({
     resetZoomOnImageChange
   } = useImageZoom({ isImageExpanded });
   
+  const { isLoading, handleImageLoad } = useImagePreloading(images, currentImageIndex);
+  
   const handlePrevious = () => {
     if (currentImageIndex > 0) {
-      setIsLoading(true);
       setCurrentImageIndex(currentImageIndex - 1);
     } else if (images.length > 0) {
-      setIsLoading(true);
       setCurrentImageIndex(images.length - 1);
     }
     // Reset zoom when changing images
@@ -56,19 +58,12 @@ export const ImageViewer = ({
   
   const handleNext = () => {
     if (currentImageIndex < images.length - 1) {
-      setIsLoading(true);
       setCurrentImageIndex(currentImageIndex + 1);
     } else if (images.length > 0) {
-      setIsLoading(true);
       setCurrentImageIndex(0);
     }
     // Reset zoom when changing images
     resetZoomOnImageChange();
-  };
-
-  // Handle image load complete
-  const handleImageLoad = () => {
-    setIsLoading(false);
   };
 
   // Handle flag toggle
@@ -82,19 +77,7 @@ export const ImageViewer = ({
   };
 
   if (images.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-full w-full bg-gray-100 dark:bg-gray-800">
-        <div className="text-center space-y-4 text-muted-foreground">
-          <div className="mx-auto h-16 w-16 text-gray-400">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-          </div>
-          <p className="text-lg font-medium">No images available</p>
-          <p className="text-sm">This work order doesn't have any images attached.</p>
-        </div>
-      </div>
-    );
+    return <ImageEmptyState />;
   }
 
   const currentImageFlagged = images[currentImageIndex]?.flagged || false;
@@ -145,67 +128,28 @@ export const ImageViewer = ({
         />
       </div>
       
-      {/* Image counter */}
-      <div className="absolute top-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium">
-        {currentImageIndex + 1} / {images.length}
-      </div>
+      {/* Status indicators */}
+      <ImageStatusIndicators 
+        currentIndex={currentImageIndex} 
+        totalImages={images.length}
+        zoomLevel={zoomLevel}
+        isImageExpanded={isImageExpanded}
+      />
       
-      {/* Previous/Next buttons */}
-      <div className="absolute inset-y-0 left-0 flex items-center">
-        <Button 
-          variant="outline" 
-          size="icon" 
-          className="h-10 w-10 rounded-full bg-white/90 hover:bg-white border-gray-200 text-gray-700 shadow-md ml-2"
-          onClick={handlePrevious}
-        >
-          <ChevronLeft className="h-6 w-6" />
-        </Button>
-      </div>
-      
-      <div className="absolute inset-y-0 right-0 flex items-center">
-        <Button 
-          variant="outline" 
-          size="icon" 
-          className="h-10 w-10 rounded-full bg-white/90 hover:bg-white border-gray-200 text-gray-700 shadow-md mr-2"
-          onClick={handleNext}
-        >
-          <ChevronRight className="h-6 w-6" />
-        </Button>
-      </div>
+      {/* Navigation buttons */}
+      <ImageNavigationButtons 
+        handlePrevious={handlePrevious}
+        handleNext={handleNext}
+      />
       
       {/* Control buttons */}
-      <div className="absolute top-4 left-4 flex gap-2">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={handleFlagToggle}
-          className={`h-10 w-10 rounded-full ${
-            currentImageFlagged 
-              ? "bg-red-100 hover:bg-red-50 border-red-300 text-red-600" 
-              : "bg-white/90 hover:bg-white border-gray-200 text-gray-700"
-          } shadow-md`}
-        >
-          <Flag className={`h-4 w-4 ${currentImageFlagged ? "fill-red-500" : ""}`} />
-        </Button>
-        
-        {isImageExpanded && (
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={toggleZoomMode}
-            className={`h-10 w-10 rounded-full bg-white/90 hover:bg-white border-gray-200 text-gray-700 shadow-md ${zoomModeEnabled ? 'bg-blue-100 border-blue-300' : ''}`}
-          >
-            <ZoomIn className={`h-4 w-4 ${zoomModeEnabled ? 'text-blue-500' : ''}`} />
-          </Button>
-        )}
-      </div>
-      
-      {/* Zoom indicator - only show when zoomed */}
-      {isImageExpanded && zoomLevel !== 1 && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium">
-          {Math.round(zoomLevel * 100)}%
-        </div>
-      )}
+      <ImageControlButtons
+        currentImageFlagged={currentImageFlagged}
+        handleFlagToggle={handleFlagToggle}
+        isImageExpanded={isImageExpanded}
+        zoomModeEnabled={zoomModeEnabled}
+        toggleZoomMode={toggleZoomMode}
+      />
     </div>
   );
 };
