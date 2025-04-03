@@ -16,10 +16,7 @@ export const useAutoImport = () => {
    */
   const runAutoImport = async () => {
     setIsImporting(true);
-    toast.info("Please wait, importing work orders...", {
-      duration: 10000 // Longer duration to ensure message stays visible during import
-    });
-
+    
     try {
       // Call the import function
       const { data, error } = await supabase.functions.invoke('auto-import-orders', {
