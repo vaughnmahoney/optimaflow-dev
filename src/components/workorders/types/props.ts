@@ -35,6 +35,10 @@ export interface WorkOrderListProps {
   clearColumnFilter: (column: string) => void;
   clearAllFilters: () => void;
   onResolveFlag?: (workOrderId: string, resolution: string) => void;
+  selectedWorkOrderId?: string | null;
+  isImageModalOpen?: boolean;
+  activeWorkOrder?: WorkOrder | null;
+  onCloseImageModal?: () => void;
 }
 
 export interface StatusFilterProps {

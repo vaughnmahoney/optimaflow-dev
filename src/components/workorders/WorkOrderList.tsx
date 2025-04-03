@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { WorkOrderListProps } from "./types";
 import { StatusFilterCards } from "./filters/StatusFilterCards";
@@ -28,34 +29,47 @@ export const WorkOrderList = ({
   onColumnFilterChange,
   clearColumnFilter,
   clearAllFilters,
-  onResolveFlag
+  onResolveFlag,
+  // New props
+  selectedWorkOrderId,
+  isImageModalOpen,
+  activeWorkOrder,
+  onCloseImageModal
 }: WorkOrderListProps) => {
   const [searchResponse, setSearchResponse] = useState<any>(null);
   const [transformedData, setTransformedData] = useState<any>(null);
-  const [selectedWorkOrder, setSelectedWorkOrder] = useState<string | null>(null);
-  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const isMobile = useIsMobile();
 
   if (isLoading) {
     return <LoadingSkeleton />;
   }
 
-  // Get the current work order and its index
-  const currentWorkOrder = workOrders.find(wo => wo.id === selectedWorkOrder) || null;
+  // Use the currently filtered work orders or the active work order for the modal
+  const currentWorkOrder = activeWorkOrder || workOrders.find(wo => wo.id === selectedWorkOrderId) || null;
+  
+  // Get the current work order index in the filtered list (for navigation)
   const currentIndex = currentWorkOrder ? workOrders.findIndex(wo => wo.id === currentWorkOrder.id) : -1;
 
-  // Handle the image view click
-  const handleImageView = (workOrderId: string) => {
-    setSelectedWorkOrder(workOrderId);
-    setIsImageModalOpen(true);
-    // Also call the passed onImageView function if needed
-    if (onImageView) onImageView(workOrderId);
+  // Handle status filter change
+  const handleStatusFilterChange = (status: string | null) => {
+    onFiltersChange({
+      ...filters,
+      status
+    });
   };
 
-  // Handle navigation between work orders in the modal
+  // Handle sort change
+  const handleSortChange = (field: SortField, direction: SortDirection) => {
+    if (onSort) {
+      onSort(field, direction);
+    }
+  };
+  
+  // Navigate between work orders in the modal
   const handleNavigate = (index: number) => {
     if (index >= 0 && index < workOrders.length) {
-      setSelectedWorkOrder(workOrders[index].id);
+      const navigatedWorkOrder = workOrders[index];
+      onImageView(navigatedWorkOrder.id);
     }
   };
   
@@ -75,7 +89,7 @@ export const WorkOrderList = ({
       setTimeout(() => {
         if (workOrders.length > 0) {
           // Select the first order when going to the next page
-          setSelectedWorkOrder(workOrders[0].id);
+          onImageView(workOrders[0].id);
         }
       }, 100);
     } else if (direction === 'previous' && pagination.page > 1) {
@@ -85,24 +99,9 @@ export const WorkOrderList = ({
       setTimeout(() => {
         if (workOrders.length > 0) {
           // Select the last order when going to the previous page
-          setSelectedWorkOrder(workOrders[workOrders.length - 1].id);
+          onImageView(workOrders[workOrders.length - 1].id);
         }
       }, 100);
-    }
-  };
-
-  // Handle status filter change
-  const handleStatusFilterChange = (status: string | null) => {
-    onFiltersChange({
-      ...filters,
-      status
-    });
-  };
-
-  // Handle sort change
-  const handleSortChange = (field: SortField, direction: SortDirection) => {
-    if (onSort) {
-      onSort(field, direction);
     }
   };
 
@@ -137,7 +136,7 @@ export const WorkOrderList = ({
       <WorkOrderTable 
         workOrders={workOrders}
         onStatusUpdate={onStatusUpdate}
-        onImageView={handleImageView}
+        onImageView={onImageView}
         onDelete={onDelete}
         sortField={sortField}
         sortDirection={sortDirection}
@@ -151,13 +150,14 @@ export const WorkOrderList = ({
         onClearAllFilters={clearAllFilters}
       />
 
+      {/* Image View Modal - Now using the activeWorkOrder or currentWorkOrder */}
       {currentWorkOrder && (
         <ImageViewModal
           workOrder={currentWorkOrder}
           workOrders={workOrders}
           currentIndex={currentIndex}
-          isOpen={isImageModalOpen}
-          onClose={() => setIsImageModalOpen(false)}
+          isOpen={isImageModalOpen === true}
+          onClose={onCloseImageModal || (() => {})}
           onStatusUpdate={onStatusUpdate}
           onNavigate={handleNavigate}
           onPageBoundary={handlePageBoundary}

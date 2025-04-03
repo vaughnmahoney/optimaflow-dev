@@ -41,7 +41,7 @@ export const useWorkOrderData = () => {
   const statusCounts = useWorkOrderStatusCounts(workOrders, filters.status);
   
   const { searchOptimoRoute } = useWorkOrderImport();
-  const { updateWorkOrderStatus, deleteWorkOrder } = useWorkOrderMutations();
+  const { updateWorkOrderStatus: apiUpdateStatus, deleteWorkOrder: apiDeleteWorkOrder } = useWorkOrderMutations();
 
   const handleColumnFilterChange = (column: string, value: any) => {
     setFilters(prev => {
@@ -113,6 +113,19 @@ export const useWorkOrderData = () => {
 
   const openImageViewer = (workOrderId: string) => {
     console.log(`Opening images for work order: ${workOrderId}`);
+  };
+
+  // Update work order status - now just calls the API function
+  const updateWorkOrderStatus = async (workOrderId: string, newStatus: string) => {
+    await apiUpdateStatus(workOrderId, newStatus);
+    // Optionally refetch data if needed, but the parent component will handle state updates
+  };
+  
+  // Delete work order - now just calls the API function
+  const deleteWorkOrder = async (workOrderId: string) => {
+    await apiDeleteWorkOrder(workOrderId);
+    // Refetch to update the list
+    refetch();
   };
 
   const handleSort = (field: SortField, direction: SortDirection) => {

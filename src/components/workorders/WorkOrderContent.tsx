@@ -30,6 +30,11 @@ interface WorkOrderContentProps {
   clearColumnFilter: (column: string) => void;
   clearAllFilters: () => void;
   onResolveFlag?: (workOrderId: string, resolution: string) => void;
+  // New props for modal state management
+  selectedWorkOrderId?: string | null;
+  isImageModalOpen?: boolean;
+  activeWorkOrder?: WorkOrder | null;
+  onCloseImageModal?: () => void;
 }
 
 export const WorkOrderContent = ({
@@ -52,7 +57,12 @@ export const WorkOrderContent = ({
   onColumnFilterChange,
   clearColumnFilter,
   clearAllFilters,
-  onResolveFlag
+  onResolveFlag,
+  // New props
+  selectedWorkOrderId,
+  isImageModalOpen,
+  activeWorkOrder,
+  onCloseImageModal
 }: WorkOrderContentProps) => {
   return (
     <WorkOrderList
@@ -76,6 +86,11 @@ export const WorkOrderContent = ({
       clearColumnFilter={clearColumnFilter}
       clearAllFilters={clearAllFilters}
       onResolveFlag={onResolveFlag}
+      // Pass new props
+      selectedWorkOrderId={selectedWorkOrderId}
+      isImageModalOpen={isImageModalOpen}
+      activeWorkOrder={activeWorkOrder}
+      onCloseImageModal={onCloseImageModal}
     />
   );
 };
