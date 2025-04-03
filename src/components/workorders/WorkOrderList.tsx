@@ -1,10 +1,10 @@
+
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { WorkOrderTable } from "./table/WorkOrderTable";
 import { ImageViewModal } from "./modal/ImageViewModal";
 import { useWorkOrderData } from "@/hooks/useWorkOrderData";
 import { useWorkOrderMutations } from "@/hooks/useWorkOrderMutations";
-import { useImageViewer } from "@/hooks/useImageViewer";
 import { useWorkOrderNavigation } from "@/hooks/useWorkOrderNavigation";
 import { WorkOrder } from "./types/workOrder";
 
@@ -16,31 +16,44 @@ export function WorkOrderList() {
   const indicatorRef = useRef<HTMLDivElement>(null);
 
   const workOrderData = useWorkOrderData();
-  const { updateStatus, resolveFlag, isUpdating } = useWorkOrderMutations();
-  const {
-    imageViewerState,
-    imageViewerActions,
-  } = useImageViewer(imageViewerRef, indicatorRef);
+  const { updateWorkOrderStatus, resolveWorkOrderFlag } = useWorkOrderMutations();
 
   const {
-    handleNextWorkOrder,
-    handlePrevWorkOrder,
-    hasNextWorkOrder,
-    hasPrevWorkOrder,
-  } = useWorkOrderNavigation(workOrderData.data || [], selectedWorkOrder?.id);
+    currentWorkOrder,
+    currentIndex,
+    currentImageIndex,
+    setCurrentImageIndex,
+    handleNextOrder,
+    handlePreviousOrder,
+    handleSetOrder
+  } = useWorkOrderNavigation({
+    workOrders: workOrderData.data || [],
+    initialWorkOrderId: selectedWorkOrder?.id || null,
+    isOpen: isModalOpen,
+    onClose: () => setIsModalOpen(false)
+  });
+
+  const hasNextWorkOrder = currentIndex < (workOrderData.data?.length || 0) - 1;
+  const hasPreviousWorkOrder = currentIndex > 0;
 
   const onStatusUpdate = useCallback(
     (workOrderId: string, status: string, closeModal?: boolean) => {
-      updateStatus(workOrderId, status, closeModal);
+      updateWorkOrderStatus(workOrderId, status);
+      if (closeModal) {
+        setIsModalOpen(false);
+      }
     },
-    [updateStatus]
+    [updateWorkOrderStatus]
   );
 
   const onResolveFlag = useCallback(
     (workOrderId: string, notes: string, closeModal?: boolean) => {
-      resolveFlag(workOrderId, notes, closeModal);
+      resolveWorkOrderFlag(workOrderId, notes);
+      if (closeModal) {
+        setIsModalOpen(false);
+      }
     },
-    [resolveFlag]
+    [resolveWorkOrderFlag]
   );
 
   // Extract current workorder ID from URL if present
@@ -92,31 +105,29 @@ export function WorkOrderList() {
       <WorkOrderTable
         workOrders={workOrderData.data || []}
         isLoading={workOrderData.isLoading}
-        error={workOrderData.error}
         onRowClick={handleRowClick}
         onStatusUpdate={handleStatusUpdate}
-        currentPage={workOrderData.currentPage}
-        totalPages={workOrderData.totalPages}
-        totalCount={workOrderData.totalCount}
-        onPageChange={workOrderData.setCurrentPage}
+        pagination={workOrderData.pagination}
+        onPageChange={workOrderData.handlePageChange}
         onResolveFlag={handleResolveFlag}
         ref={indicatorRef}
       />
       
       {selectedWorkOrder && (
         <ImageViewModal
+          workOrder={selectedWorkOrder}
+          workOrders={workOrderData.data || []}
+          currentIndex={currentIndex}
           isOpen={isModalOpen}
           onClose={handleModalClose}
-          workOrder={selectedWorkOrder}
           onStatusUpdate={onStatusUpdate}
           onResolveFlag={onResolveFlag}
-          ref={imageViewerRef}
-          onNextWorkOrder={handleNextWorkOrder}
-          onPrevWorkOrder={handlePrevWorkOrder}
+          onNavigate={handleSetOrder}
+          onPageBoundary={workOrderData.handlePageChange}
           hasNextWorkOrder={hasNextWorkOrder}
-          hasPrevWorkOrder={hasPrevWorkOrder}
-          imageViewerState={imageViewerState}
-          imageViewerActions={imageViewerActions}
+          hasPreviousWorkOrder={hasPreviousWorkOrder}
+          onNextWorkOrder={handleNextOrder}
+          onPreviousWorkOrder={handlePreviousOrder}
         />
       )}
     </div>

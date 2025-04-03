@@ -3,11 +3,11 @@ import { useState } from "react";
 import { ImageType } from "@/components/workorders/types/image";
 
 interface UseImageViewerProps {
-  images: ImageType[];
+  images?: ImageType[];
   initialIndex?: number;
 }
 
-export function useImageViewer({ images, initialIndex = 0 }: UseImageViewerProps) {
+export function useImageViewer({ images = [], initialIndex = 0 }: UseImageViewerProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(initialIndex);
   const [isImageExpanded, setIsImageExpanded] = useState(false);
   

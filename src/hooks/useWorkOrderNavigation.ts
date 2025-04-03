@@ -7,7 +7,7 @@ interface UseWorkOrderNavigationProps {
   initialWorkOrderId: string | null;
   isOpen: boolean;
   onClose: () => void;
-  onPageBoundary?: (direction: 'next' | 'previous') => void;
+  onPageBoundary?: (direction: number) => void;
 }
 
 export const useWorkOrderNavigation = ({
@@ -83,7 +83,7 @@ export const useWorkOrderNavigation = ({
     } else if (onPageBoundary && currentIndex === 0) {
       // We're at the first order of the current page
       setIsNavigatingPages(true);
-      onPageBoundary('previous');
+      onPageBoundary(-1); // Previous page
     }
   };
 
@@ -94,7 +94,7 @@ export const useWorkOrderNavigation = ({
     } else if (onPageBoundary && currentIndex === workOrders.length - 1) {
       // We're at the last order of the current page
       setIsNavigatingPages(true);
-      onPageBoundary('next');
+      onPageBoundary(1); // Next page
     }
   };
 

@@ -7,21 +7,25 @@ import { ModalContent } from "./components/ModalContent";
 import { ModalFooter } from "./components/ModalFooter";
 import { NavigationControls } from "./components/NavigationControls";
 import { getStatusBorderColor } from "./utils/modalUtils";
-import { useWorkOrderNavigation } from "@/hooks/useWorkOrderNavigation";
+import { useImageViewer } from "@/hooks/useImageViewer";
 import { MobileImageViewModal } from "./MobileImageViewModal";
 import { useMobile } from "@/hooks/use-mobile";
 
 interface ImageViewModalProps {
-  workOrder: WorkOrder | null;
+  workOrder: WorkOrder;
   workOrders: WorkOrder[];
   currentIndex: number;
   isOpen: boolean;
   onClose: () => void;
-  onStatusUpdate?: (workOrderId: string, status: string) => void;
+  onStatusUpdate?: (workOrderId: string, status: string, closeModal?: boolean) => void;
+  onResolveFlag?: (workOrderId: string, notes: string, closeModal?: boolean) => void;
   onNavigate: (index: number) => void;
-  onPageBoundary?: (direction: 'next' | 'previous') => void;
+  onPageBoundary?: (direction: number) => void;
   onDownloadAll?: () => void;
-  onResolveFlag?: (workOrderId: string, resolution: string) => void;
+  onNextWorkOrder?: () => void;
+  onPreviousWorkOrder?: () => void;
+  hasNextWorkOrder?: boolean;
+  hasPreviousWorkOrder?: boolean;
 }
 
 export const ImageViewModal = ({
@@ -35,59 +39,48 @@ export const ImageViewModal = ({
   onPageBoundary,
   onDownloadAll,
   onResolveFlag,
+  onNextWorkOrder,
+  onPreviousWorkOrder,
+  hasNextWorkOrder,
+  hasPreviousWorkOrder,
 }: ImageViewModalProps) => {
   const isMobile = useMobile();
   const [isImageExpanded, setIsImageExpanded] = useState(false);
   
+  // Extract images from the work order's completion_response
+  const completionData = workOrder?.completion_response?.orders?.[0]?.data;
+  const images = completionData?.form?.images || [];
+  
   const {
-    currentWorkOrder,
-    currentIndex: navIndex,
     currentImageIndex,
-    isNavigatingPages,
     setCurrentImageIndex,
-    setIsNavigatingPages,
-    handlePreviousOrder,
-    handleNextOrder,
-    handleSetOrder
-  } = useWorkOrderNavigation({
-    workOrders,
-    initialWorkOrderId: workOrder?.id || null,
-    isOpen,
-    onClose,
-    onPageBoundary
+    isImageExpanded: isExpanded,
+    toggleImageExpand
+  } = useImageViewer({
+    images,
+    initialIndex: 0
   });
   
-  // Early return with mobile version, but AFTER all hooks have been called
-  if (isMobile && currentWorkOrder) {
+  // Early return with mobile version
+  if (isMobile) {
     return (
       <MobileImageViewModal 
-        workOrder={currentWorkOrder}
+        workOrder={workOrder}
         workOrders={workOrders}
-        currentIndex={navIndex}
+        currentIndex={currentIndex}
         isOpen={isOpen}
         onClose={onClose}
         onStatusUpdate={onStatusUpdate}
         onNavigate={onNavigate}
-        onPageBoundary={onPageBoundary}
+        onPageBoundary={page => onPageBoundary && onPageBoundary(page)}
         onDownloadAll={onDownloadAll}
         onResolveFlag={onResolveFlag}
       />
     );
   }
   
-  // Return null if no work order, but AFTER all hooks have been called
-  if (!currentWorkOrder) return null;
-
-  const toggleImageExpand = () => {
-    setIsImageExpanded(!isImageExpanded);
-  };
-
-  // Get images from the work order's completion_response
-  const completionData = currentWorkOrder?.completion_response?.orders?.[0]?.data;
-  const images = completionData?.form?.images || [];
-  
   // Status color for border
-  const statusBorderColor = getStatusBorderColor(currentWorkOrder.status || "pending_review");
+  const statusBorderColor = getStatusBorderColor(workOrder.status || "pending_review");
   
   // Map the border color class to actual color hex values
   const getBorderColor = () => {
@@ -107,45 +100,39 @@ export const ImageViewModal = ({
     }
   };
 
-  // Sync navigation with parent component
-  const handleNavigate = (index: number) => {
-    handleSetOrder(index);
-    onNavigate(index);
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogOverlay />
       <DialogContent className="max-w-6xl p-0 h-[90vh] flex flex-col rounded-lg overflow-hidden border-t-4 bg-white shadow-xl w-[95%] m-0" style={{ borderTopColor: getBorderColor() }}>
-        <ModalHeader workOrder={currentWorkOrder} onClose={onClose} />
+        <ModalHeader workOrder={workOrder} onClose={onClose} />
         
         <ModalContent
-          workOrder={currentWorkOrder}
+          workOrder={workOrder}
           images={images}
           currentImageIndex={currentImageIndex}
           setCurrentImageIndex={setCurrentImageIndex}
-          isImageExpanded={isImageExpanded}
+          isImageExpanded={isExpanded}
           toggleImageExpand={toggleImageExpand}
         />
         
         <ModalFooter 
-          workOrderId={currentWorkOrder.id} 
+          workOrderId={workOrder.id} 
           onStatusUpdate={onStatusUpdate} 
           onDownloadAll={onDownloadAll}
           hasImages={images.length > 0}
-          status={currentWorkOrder.status}
+          status={workOrder.status}
           onResolveFlag={onResolveFlag}
-          workOrder={currentWorkOrder}
+          workOrder={workOrder}
         />
         
         <NavigationControls 
-          currentIndex={navIndex}
+          currentIndex={currentIndex}
           totalOrders={workOrders.length}
-          onPreviousOrder={handlePreviousOrder}
-          onNextOrder={handleNextOrder}
-          isNavigatingPages={isNavigatingPages}
-          hasPreviousPage={onPageBoundary !== undefined && navIndex === 0}
-          hasNextPage={onPageBoundary !== undefined && navIndex === workOrders.length - 1}
+          onPreviousOrder={onPreviousWorkOrder}
+          onNextOrder={onNextWorkOrder}
+          isNavigatingPages={false}
+          hasPreviousPage={hasPreviousWorkOrder}
+          hasNextPage={hasNextWorkOrder}
         />
       </DialogContent>
     </Dialog>
