@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useUserManagement } from "@/hooks/useUserManagement";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -95,13 +94,13 @@ export function CreateUserDialog({ isOpen, onClose, onUserCreated }: CreateUserD
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[425px] border border-gray-300">
+      <DialogContent className="sm:max-w-[425px] border border-solid border-gray-300">
         <DialogHeader>
           <DialogTitle>Add New User</DialogTitle>
         </DialogHeader>
         
         {serverError && (
-          <div className="bg-destructive/10 text-destructive rounded-md p-3 flex items-start space-x-2">
+          <div className="bg-destructive/10 text-destructive rounded-md p-3 flex items-start space-x-2 border border-solid border-destructive/20">
             <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
             <div className="text-sm">
               <p className="font-medium">Error creating user</p>
@@ -119,7 +118,6 @@ export function CreateUserDialog({ isOpen, onClose, onUserCreated }: CreateUserD
               onChange={(e) => setUsername(e.target.value)}
               placeholder="johndoe"
               disabled={isSubmitting}
-              className="border border-gray-300"
             />
             {errors.username && (
               <p className="text-sm text-destructive">{errors.username}</p>
@@ -134,7 +132,6 @@ export function CreateUserDialog({ isOpen, onClose, onUserCreated }: CreateUserD
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={isSubmitting}
-              className="border border-gray-300"
             />
             {errors.password && (
               <p className="text-sm text-destructive">{errors.password}</p>
@@ -149,7 +146,6 @@ export function CreateUserDialog({ isOpen, onClose, onUserCreated }: CreateUserD
               onChange={(e) => setFullName(e.target.value)}
               placeholder="John Doe"
               disabled={isSubmitting}
-              className="border border-gray-300"
             />
             {errors.fullName && (
               <p className="text-sm text-destructive">{errors.fullName}</p>
@@ -181,7 +177,7 @@ export function CreateUserDialog({ isOpen, onClose, onUserCreated }: CreateUserD
               variant="outline" 
               onClick={handleClose}
               disabled={isSubmitting}
-              className="border border-gray-300"
+              className="border border-solid border-gray-300"
             >
               Cancel
             </Button>

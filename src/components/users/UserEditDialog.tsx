@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useUserManagement } from "@/hooks/useUserManagement";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
@@ -36,7 +35,6 @@ export function UserEditDialog({
   
   const { updateUser } = useUserManagement();
 
-  // Reset form when user prop changes or dialog opens
   useEffect(() => {
     if (isOpen && user) {
       setFullName(user.full_name);
@@ -74,11 +72,8 @@ export function UserEditDialog({
         role,
       });
       
-      // First notify parent about the update
       onUserUpdated();
       
-      // Then close the dialog with a slight delay to avoid UI glitches
-      // This prevents React state update conflicts
       setTimeout(() => {
         if (isOpen) onClose();
       }, 0);
@@ -105,7 +100,7 @@ export function UserEditDialog({
         if (!open && !isSubmitting) handleClose();
       }}
     >
-      <DialogContent className="sm:max-w-[425px] border border-gray-300">
+      <DialogContent className="sm:max-w-[425px] border border-solid border-gray-300">
         <DialogHeader>
           <DialogTitle>Edit User: {user.username}</DialogTitle>
           <DialogDescription>
@@ -114,7 +109,7 @@ export function UserEditDialog({
         </DialogHeader>
         
         {serverError && (
-          <div className="bg-destructive/10 text-destructive rounded-md p-3 flex items-start space-x-2">
+          <div className="bg-destructive/10 text-destructive rounded-md p-3 flex items-start space-x-2 border border-solid border-destructive/20">
             <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
             <div className="text-sm">
               <p className="font-medium">Error updating user</p>
@@ -132,7 +127,6 @@ export function UserEditDialog({
               onChange={(e) => setFullName(e.target.value)}
               placeholder="John Doe"
               disabled={isSubmitting}
-              className="border border-gray-300"
             />
             {errors.fullName && (
               <p className="text-sm text-destructive">{errors.fullName}</p>
@@ -164,7 +158,7 @@ export function UserEditDialog({
               variant="outline" 
               onClick={handleClose}
               disabled={isSubmitting}
-              className="border border-gray-300"
+              className="border border-solid border-gray-300"
             >
               Cancel
             </Button>
