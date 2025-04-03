@@ -38,34 +38,34 @@ export const MobileModalContent = ({
       
       {/* Action buttons at the bottom */}
       <div className="p-3 border-t bg-gray-50 dark:bg-gray-900 space-y-3">
-        {/* Notes buttons */}
-        <div className="flex items-center justify-between gap-2">
-          <QcNotesSheet workOrder={workOrder} />
-          <ResolutionNotesSheet workOrder={workOrder} />
-        </div>
-        
-        {/* View Images & Download buttons */}
+        {/* View Images & Download buttons - now first */}
         <div className="flex items-center gap-2">
           <Button 
-            className="w-full justify-center items-center"
+            className="flex-1 justify-center items-center"
             variant="outline"
             onClick={onViewImages}
             disabled={!hasImages}
           >
             <Image className="mr-2 h-4 w-4" />
-            View Images {hasImages ? `(${images.length})` : '(0)'}
+            {hasImages ? `(${images.length})` : '(0)'}
           </Button>
           
           {onDownloadAll && hasImages && (
             <Button 
-              className="min-w-[130px] justify-center items-center"
+              className="w-10 justify-center items-center aspect-square p-0"
               variant="outline"
               onClick={onDownloadAll}
             >
-              <Download className="mr-2 h-4 w-4" />
-              Download All
+              <Download className="h-4 w-4" />
+              <span className="sr-only">Download All</span>
             </Button>
           )}
+        </div>
+        
+        {/* Notes buttons - now below */}
+        <div className="flex items-center justify-between gap-2">
+          <QcNotesSheet workOrder={workOrder} />
+          <ResolutionNotesSheet workOrder={workOrder} />
         </div>
       </div>
     </div>
