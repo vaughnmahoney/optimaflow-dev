@@ -88,6 +88,24 @@ export const ImageViewModal = ({
   
   // Status color for border
   const statusBorderColor = getStatusBorderColor(currentWorkOrder.status || "pending_review");
+  
+  // Map the border color class to actual color hex values
+  const getBorderColor = () => {
+    switch (statusBorderColor) {
+      case "border-green-500":
+        return "#22c55e";
+      case "border-red-500":
+        return "#ef4444";
+      case "border-yellow-500":
+        return "#eab308";
+      case "border-blue-500":
+        return "#3b82f6";
+      case "border-orange-500":
+        return "#f97316";
+      default:
+        return "#64748b";
+    }
+  };
 
   // Sync navigation with parent component
   const handleNavigate = (index: number) => {
@@ -98,7 +116,7 @@ export const ImageViewModal = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogOverlay />
-      <DialogContent className="max-w-6xl p-0 h-[90vh] flex flex-col rounded-lg overflow-hidden border-t-4 bg-white shadow-xl w-[95%] m-0" style={{ borderTopColor: statusBorderColor === 'border-t-green-500' ? '#22c55e' : statusBorderColor === 'border-t-red-500' ? '#ef4444' : statusBorderColor === 'border-t-yellow-500' ? '#eab308' : statusBorderColor === 'border-t-blue-500' ? '#3b82f6' : '#64748b' }}>
+      <DialogContent className="max-w-6xl p-0 h-[90vh] flex flex-col rounded-lg overflow-hidden border-t-4 bg-white shadow-xl w-[95%] m-0" style={{ borderTopColor: getBorderColor() }}>
         <ModalHeader workOrder={currentWorkOrder} onClose={onClose} />
         
         <ModalContent
@@ -133,4 +151,3 @@ export const ImageViewModal = ({
     </Dialog>
   );
 };
-
