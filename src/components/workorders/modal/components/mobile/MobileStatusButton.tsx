@@ -11,7 +11,7 @@ import { StatusMenuItems } from "../../../dropdown/StatusMenuItems";
 interface MobileStatusButtonProps {
   workOrderId: string;
   currentStatus: string;
-  onStatusUpdate?: (workOrderId: string, newStatus: string, options?: any) => void;
+  onStatusUpdate?: (workOrderId: string, newStatus: string) => void;
 }
 
 export const MobileStatusButton = ({
@@ -21,8 +21,7 @@ export const MobileStatusButton = ({
 }: MobileStatusButtonProps) => {
   const handleStatusChange = (newStatus: string) => {
     if (onStatusUpdate) {
-      // Use skipRefresh option to prevent immediate list refresh
-      onStatusUpdate(workOrderId, newStatus, { skipRefresh: true });
+      onStatusUpdate(workOrderId, newStatus);
     }
   };
 

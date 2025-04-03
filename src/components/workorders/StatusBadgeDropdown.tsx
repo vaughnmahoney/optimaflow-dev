@@ -35,7 +35,7 @@ export const StatusBadgeDropdown = ({
 
   const handleStatusChange = (newStatus: string) => {
     const options = filters && workOrders && onAdvanceToNextOrder
-      ? { filters, workOrders, onAdvanceToNextOrder, skipRefresh: false }
+      ? { filters, workOrders, onAdvanceToNextOrder }
       : undefined;
     
     updateWorkOrderStatus(workOrderId, newStatus, options);

@@ -25,8 +25,7 @@ export const useStatusMutations = () => {
     options?: { 
       filters?: WorkOrderFilters, 
       workOrders?: WorkOrder[], 
-      onAdvanceToNextOrder?: (nextOrderId: string) => void,
-      skipRefresh?: boolean
+      onAdvanceToNextOrder?: (nextOrderId: string) => void 
     }
   ) => {
     try {
@@ -96,8 +95,7 @@ export const useStatusMutations = () => {
       if (options?.filters?.status && 
           options.filters.status !== newStatus && 
           options.workOrders && 
-          options.onAdvanceToNextOrder &&
-          !options.skipRefresh) {
+          options.onAdvanceToNextOrder) {
         
         // Special handling for 'flagged' filter status which includes flagged_followup
         const willBeFilteredOut = options.filters.status === 'flagged' 
@@ -123,11 +121,9 @@ export const useStatusMutations = () => {
         }
       }
       
-      // Only invalidate queries if not skipping refresh
-      if (!options?.skipRefresh) {
-        queryClient.invalidateQueries({ queryKey: ["workOrders"] });
-        queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
-      }
+      // Immediately refetch work orders and the badge count
+      queryClient.invalidateQueries({ queryKey: ["workOrders"] });
+      queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
     } catch (error) {
       console.error('Status update error:', error);
     }
@@ -142,8 +138,7 @@ export const useStatusMutations = () => {
     options?: { 
       filters?: WorkOrderFilters, 
       workOrders?: WorkOrder[], 
-      onAdvanceToNextOrder?: (nextOrderId: string) => void,
-      skipRefresh?: boolean
+      onAdvanceToNextOrder?: (nextOrderId: string) => void 
     }
   ) => {
     try {
@@ -169,8 +164,7 @@ export const useStatusMutations = () => {
       if (options?.filters?.status && 
           options.filters.status !== newStatus && 
           options.workOrders && 
-          options.onAdvanceToNextOrder &&
-          !options.skipRefresh) {
+          options.onAdvanceToNextOrder) {
         
         // Special handling for 'flagged' filter status
         const willBeFilteredOut = options.filters.status === 'flagged' 
@@ -196,11 +190,9 @@ export const useStatusMutations = () => {
         }
       }
       
-      // Only invalidate queries if not skipping refresh
-      if (!options?.skipRefresh) {
-        queryClient.invalidateQueries({ queryKey: ["workOrders"] });
-        queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
-      }
+      // Immediately refetch work orders and the badge count
+      queryClient.invalidateQueries({ queryKey: ["workOrders"] });
+      queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
     } catch (error) {
       console.error('Flag resolution error:', error);
     }
