@@ -1,6 +1,6 @@
 
-import { WorkOrderList } from './WorkOrderList';
-import { WorkOrderFilters, SortDirection, SortField, PaginationState, WorkOrder } from './types';
+import { WorkOrderList } from "./WorkOrderList";
+import { WorkOrder, SortDirection, SortField, PaginationState, WorkOrderFilters } from "./types";
 
 interface WorkOrderContentProps {
   workOrders: WorkOrder[];
@@ -10,19 +10,19 @@ interface WorkOrderContentProps {
   onStatusUpdate: (workOrderId: string, newStatus: string) => void;
   onImageView: (workOrderId: string) => void;
   onDelete: (workOrderId: string) => void;
-  onSearchChange?: (searchTerm: string) => void;
-  onOptimoRouteSearch: (orderNumber: string) => void;
-  statusCounts: {
+  onSearchChange?: (value: string) => void;
+  onOptimoRouteSearch: (value: string) => void;
+  statusCounts?: {
     approved: number;
     pending_review: number;
     flagged: number;
     resolved: number;
     rejected: number;
-    all: number;
+    all?: number;
   };
-  sortField: SortField;
-  sortDirection: SortDirection;
-  onSort: (field: SortField, direction: SortDirection) => void;
+  sortField?: SortField;
+  sortDirection?: SortDirection;
+  onSort?: (field: SortField, direction: SortDirection) => void;
   pagination?: PaginationState;
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (pageSize: number) => void;
@@ -30,12 +30,6 @@ interface WorkOrderContentProps {
   clearColumnFilter: (column: string) => void;
   clearAllFilters: () => void;
   onResolveFlag?: (workOrderId: string, resolution: string) => void;
-  cachedWorkOrder?: WorkOrder | null;
-  clearCachedWorkOrder?: () => void;
-  // New props
-  isImageModalOpen: boolean;
-  selectedWorkOrderId: string | null;
-  onCloseImageModal: () => void;
 }
 
 export const WorkOrderContent = ({
@@ -48,7 +42,7 @@ export const WorkOrderContent = ({
   onDelete,
   onSearchChange,
   onOptimoRouteSearch,
-  statusCounts,
+  statusCounts = { approved: 0, pending_review: 0, flagged: 0, resolved: 0, rejected: 0 },
   sortField,
   sortDirection,
   onSort,
@@ -58,13 +52,7 @@ export const WorkOrderContent = ({
   onColumnFilterChange,
   clearColumnFilter,
   clearAllFilters,
-  onResolveFlag,
-  cachedWorkOrder,
-  clearCachedWorkOrder,
-  // Pass the new props
-  isImageModalOpen,
-  selectedWorkOrderId,
-  onCloseImageModal
+  onResolveFlag
 }: WorkOrderContentProps) => {
   return (
     <WorkOrderList
@@ -88,12 +76,6 @@ export const WorkOrderContent = ({
       clearColumnFilter={clearColumnFilter}
       clearAllFilters={clearAllFilters}
       onResolveFlag={onResolveFlag}
-      cachedWorkOrder={cachedWorkOrder}
-      clearCachedWorkOrder={clearCachedWorkOrder}
-      // Pass the new props
-      isImageModalOpen={isImageModalOpen}
-      selectedWorkOrderId={selectedWorkOrderId}
-      onCloseImageModal={onCloseImageModal}
     />
   );
 };

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { WorkOrderListProps } from "./types";
 import { StatusFilterCards } from "./filters/StatusFilterCards";
 import { DebugDataDisplay } from "./debug/DebugDataDisplay";
@@ -28,74 +28,38 @@ export const WorkOrderList = ({
   onColumnFilterChange,
   clearColumnFilter,
   clearAllFilters,
-  onResolveFlag,
-  cachedWorkOrder,
-  clearCachedWorkOrder,
-  isImageModalOpen,
-  selectedWorkOrderId,
-  onCloseImageModal
+  onResolveFlag
 }: WorkOrderListProps) => {
   const [searchResponse, setSearchResponse] = useState<any>(null);
   const [transformedData, setTransformedData] = useState<any>(null);
-  
-  const [localSelectedWorkOrder, setLocalSelectedWorkOrder] = useState<string | null>(null);
-  const [localIsImageModalOpen, setLocalIsImageModalOpen] = useState(false);
-  
+  const [selectedWorkOrder, setSelectedWorkOrder] = useState<string | null>(null);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const isMobile = useIsMobile();
-
-  useEffect(() => {
-    if (selectedWorkOrderId !== undefined) {
-      setLocalSelectedWorkOrder(selectedWorkOrderId);
-    }
-  }, [selectedWorkOrderId]);
-  
-  useEffect(() => {
-    if (isImageModalOpen !== undefined) {
-      setLocalIsImageModalOpen(isImageModalOpen);
-    }
-  }, [isImageModalOpen]);
-
-  const effectiveSelectedWorkOrderId = selectedWorkOrderId !== undefined ? selectedWorkOrderId : localSelectedWorkOrder;
-  const effectiveIsImageModalOpen = isImageModalOpen !== undefined ? isImageModalOpen : localIsImageModalOpen;
 
   if (isLoading) {
     return <LoadingSkeleton />;
   }
 
-  let currentWorkOrder = workOrders.find(wo => wo.id === effectiveSelectedWorkOrderId);
-  
-  if (!currentWorkOrder && cachedWorkOrder && cachedWorkOrder.id === effectiveSelectedWorkOrderId) {
-    currentWorkOrder = cachedWorkOrder;
-  }
-  
-  const currentIndex = currentWorkOrder ? 
-    workOrders.findIndex(wo => wo.id === currentWorkOrder?.id) : 
-    -1;
+  // Get the current work order and its index
+  const currentWorkOrder = workOrders.find(wo => wo.id === selectedWorkOrder) || null;
+  const currentIndex = currentWorkOrder ? workOrders.findIndex(wo => wo.id === currentWorkOrder.id) : -1;
 
+  // Handle the image view click
   const handleImageView = (workOrderId: string) => {
-    if (selectedWorkOrderId === undefined) {
-      setLocalSelectedWorkOrder(workOrderId);
-      setLocalIsImageModalOpen(true);
-    }
+    setSelectedWorkOrder(workOrderId);
+    setIsImageModalOpen(true);
+    // Also call the passed onImageView function if needed
     if (onImageView) onImageView(workOrderId);
   };
 
+  // Handle navigation between work orders in the modal
   const handleNavigate = (index: number) => {
     if (index >= 0 && index < workOrders.length) {
-      const newWorkOrderId = workOrders[index].id;
-      
-      if (selectedWorkOrderId === undefined) {
-        setLocalSelectedWorkOrder(newWorkOrderId);
-      } else {
-        onImageView(newWorkOrderId);
-      }
-      
-      if (clearCachedWorkOrder) {
-        clearCachedWorkOrder();
-      }
+      setSelectedWorkOrder(workOrders[index].id);
     }
   };
   
+  // Handle navigation between pages from the modal
   const handlePageBoundary = (direction: 'next' | 'previous') => {
     if (!pagination || !onPageChange) return;
     
@@ -103,45 +67,31 @@ export const WorkOrderList = ({
       ? pagination.page + 1 
       : Math.max(1, pagination.page - 1);
     
+    // Only navigate if we have more pages
     if (direction === 'next' && pagination.page < Math.ceil(pagination.total / pagination.pageSize)) {
       onPageChange(newPage);
       
+      // We use setTimeout to ensure this runs after the new data is loaded
       setTimeout(() => {
         if (workOrders.length > 0) {
-          const newWorkOrderId = workOrders[0].id;
-          
-          if (selectedWorkOrderId === undefined) {
-            setLocalSelectedWorkOrder(newWorkOrderId);
-          } else {
-            onImageView(newWorkOrderId);
-          }
-          
-          if (clearCachedWorkOrder) {
-            clearCachedWorkOrder();
-          }
+          // Select the first order when going to the next page
+          setSelectedWorkOrder(workOrders[0].id);
         }
       }, 100);
     } else if (direction === 'previous' && pagination.page > 1) {
       onPageChange(newPage);
       
+      // We use setTimeout to ensure this runs after the new data is loaded
       setTimeout(() => {
         if (workOrders.length > 0) {
-          const newWorkOrderId = workOrders[workOrders.length - 1].id;
-          
-          if (selectedWorkOrderId === undefined) {
-            setLocalSelectedWorkOrder(newWorkOrderId);
-          } else {
-            onImageView(newWorkOrderId);
-          }
-          
-          if (clearCachedWorkOrder) {
-            clearCachedWorkOrder();
-          }
+          // Select the last order when going to the previous page
+          setSelectedWorkOrder(workOrders[workOrders.length - 1].id);
         }
       }, 100);
     }
   };
 
+  // Handle status filter change
   const handleStatusFilterChange = (status: string | null) => {
     onFiltersChange({
       ...filters,
@@ -149,28 +99,16 @@ export const WorkOrderList = ({
     });
   };
 
+  // Handle sort change
   const handleSortChange = (field: SortField, direction: SortDirection) => {
     if (onSort) {
       onSort(field, direction);
     }
   };
 
-  const handleModalClose = () => {
-    if (onCloseImageModal !== undefined) {
-      onCloseImageModal();
-    } else {
-      setLocalIsImageModalOpen(false);
-      setTimeout(() => {
-        setLocalSelectedWorkOrder(null);
-        if (clearCachedWorkOrder) {
-          clearCachedWorkOrder();
-        }
-      }, 300);
-    }
-  };
-
   return (
     <div className="space-y-4">
+      {/* Status filter cards with integrated filter button */}
       <StatusFilterCards 
         statusFilter={filters.status}
         onStatusFilterChange={handleStatusFilterChange}
@@ -218,13 +156,14 @@ export const WorkOrderList = ({
           workOrder={currentWorkOrder}
           workOrders={workOrders}
           currentIndex={currentIndex}
-          isOpen={effectiveIsImageModalOpen}
-          onClose={handleModalClose}
+          isOpen={isImageModalOpen}
+          onClose={() => setIsImageModalOpen(false)}
           onStatusUpdate={onStatusUpdate}
           onNavigate={handleNavigate}
           onPageBoundary={handlePageBoundary}
           onResolveFlag={onResolveFlag}
           onDownloadAll={() => {
+            // Placeholder for download all functionality
             console.log("Download all images for:", currentWorkOrder.id);
           }}
         />

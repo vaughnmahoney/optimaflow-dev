@@ -15,15 +15,13 @@ export const useWorkOrderData = () => {
     orderNo: null
   });
   
-  const [sortField, setSortField] = useState<SortField>('end_time');
+  const [sortField, setSortField] = useState<SortField>('end_time'); // Changed from 'service_date' to 'end_time'
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [pagination, setPagination] = useState<PaginationState>({
     page: 1,
     pageSize: 10,
     total: 0
   });
-
-  const [cachedWorkOrder, setCachedWorkOrder] = useState<any>(null);
 
   const { data: workOrdersData = { data: [], total: 0 }, isLoading, refetch } = useWorkOrderFetch(
     filters, 
@@ -44,26 +42,6 @@ export const useWorkOrderData = () => {
   
   const { searchOptimoRoute } = useWorkOrderImport();
   const { updateWorkOrderStatus, deleteWorkOrder } = useWorkOrderMutations();
-
-  const handleUpdateWorkOrderStatus = async (workOrderId: string, newStatus: string) => {
-    // Always cache the work order before updating its status
-    const workOrderToCache = workOrders.find(wo => wo.id === workOrderId);
-    
-    if (workOrderToCache) {
-      // Create a deep copy of the work order with the new status
-      setCachedWorkOrder({
-        ...JSON.parse(JSON.stringify(workOrderToCache)),
-        status: newStatus
-      });
-    }
-    
-    await updateWorkOrderStatus(workOrderId, newStatus);
-    // We don't clear the cached work order here - it will stay in the modal
-  };
-
-  const clearCachedWorkOrder = () => {
-    setCachedWorkOrder(null);
-  };
 
   const handleColumnFilterChange = (column: string, value: any) => {
     setFilters(prev => {
@@ -90,7 +68,6 @@ export const useWorkOrderData = () => {
       return newFilters;
     });
     
-    // Don't clear cached work order here, it might be needed for the modal
     handlePageChange(1);
   };
 
@@ -119,7 +96,6 @@ export const useWorkOrderData = () => {
       return newFilters;
     });
     
-    // Don't clear cached work order here, it might be needed for the modal
     handlePageChange(1);
   };
 
@@ -132,7 +108,6 @@ export const useWorkOrderData = () => {
       orderNo: null
     });
     
-    // Don't clear cached work order here, it might be needed for the modal
     handlePageChange(1);
   };
 
@@ -149,27 +124,19 @@ export const useWorkOrderData = () => {
   const handlePageChange = (page: number) => {
     const newPage = Math.max(1, page);
     setPagination(prev => ({ ...prev, page: newPage }));
-    
-    // Don't clear cached work order here, it might be needed for the modal
   };
   
   const handlePageSizeChange = (pageSize: number) => {
     setPagination(prev => ({ ...prev, pageSize, page: 1 }));
-    
-    // Don't clear cached work order here, it might be needed for the modal
   };
   
   const handleFiltersChange = (newFilters: WorkOrderFilters) => {
     setFilters(newFilters);
-    
-    // Don't clear cached work order here, it might be needed for the modal
     handlePageChange(1);
   };
 
   return {
     data: workOrders,
-    cachedWorkOrder,
-    clearCachedWorkOrder,
     isLoading,
     filters,
     setFilters: handleFiltersChange,
@@ -177,7 +144,7 @@ export const useWorkOrderData = () => {
     clearColumnFilter,
     clearAllFilters,
     searchOptimoRoute,
-    updateWorkOrderStatus: handleUpdateWorkOrderStatus,
+    updateWorkOrderStatus,
     openImageViewer,
     deleteWorkOrder,
     statusCounts,

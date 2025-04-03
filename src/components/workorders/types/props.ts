@@ -1,4 +1,3 @@
-
 import { ReactNode } from "react";
 import { WorkOrder } from './workOrder';
 import { WorkOrderFilters } from './filtering';
@@ -36,12 +35,6 @@ export interface WorkOrderListProps {
   clearColumnFilter: (column: string) => void;
   clearAllFilters: () => void;
   onResolveFlag?: (workOrderId: string, resolution: string) => void;
-  cachedWorkOrder?: WorkOrder | null;
-  clearCachedWorkOrder?: () => void;
-  // New props for controlling the modal from parent
-  isImageModalOpen?: boolean;
-  selectedWorkOrderId?: string | null;
-  onCloseImageModal?: () => void;
 }
 
 export interface StatusFilterProps {
