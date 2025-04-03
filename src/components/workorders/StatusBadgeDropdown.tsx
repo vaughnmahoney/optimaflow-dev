@@ -24,13 +24,40 @@ export const StatusBadgeDropdown = ({
   completionStatus,
   className 
 }: StatusBadgeDropdownProps) => {
-  // Use the enhanced StatusBadge component instead
+  const { updateWorkOrderStatus } = useWorkOrderMutations();
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleStatusChange = (newStatus: string) => {
+    updateWorkOrderStatus(workOrderId, newStatus);
+    setIsOpen(false);
+  };
+  
+  const handleDropdownClick = (e: React.MouseEvent) => {
+    // Prevent event from bubbling up to parent elements
+    e.stopPropagation();
+    e.preventDefault();
+  };
+
   return (
-    <StatusBadge
-      status={currentStatus}
-      completionStatus={completionStatus}
-      workOrderId={workOrderId}
-      className={className}
-    />
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+      <DropdownMenuTrigger asChild onClick={handleDropdownClick}>
+        <div className={cn("flex items-center gap-1 cursor-pointer", className)}>
+          <StatusBadge 
+            status={currentStatus} 
+            completionStatus={completionStatus} 
+          />
+          <ChevronDown className="h-3 w-3 text-white" />
+        </div>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent 
+        onClick={handleDropdownClick} 
+        className="bg-white dark:bg-gray-900 border shadow-md z-50"
+      >
+        <StatusMenuItems 
+          currentStatus={currentStatus}
+          onStatusChange={handleStatusChange}
+        />
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };

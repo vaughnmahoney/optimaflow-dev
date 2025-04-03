@@ -88,11 +88,10 @@ export const WorkOrderRow = ({ workOrder, onStatusUpdate, onImageView, onDelete 
       <TableCell className="max-w-xs truncate">
         {getLocationName(workOrder)}
       </TableCell>
-      <TableCell onClick={(e) => e.stopPropagation()}>
+      <TableCell>
         <StatusBadge 
           status={workOrder.status || 'pending_review'} 
           completionStatus={getCompletionStatus(workOrder)}
-          workOrderId={workOrder.id}
         />
       </TableCell>
       <TableCell onClick={(e) => e.stopPropagation()} className="transition-opacity">

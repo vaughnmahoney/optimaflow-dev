@@ -1,34 +1,13 @@
 
 import { Badge } from "@/components/ui/badge";
-import { Check, Clock, Flag, XCircle, CheckCheck, AlertTriangle, ChevronUp, ChevronDown } from "lucide-react";
-import { useState } from "react";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
-import { StatusMenuItems } from "./dropdown/StatusMenuItems";
-import { useWorkOrderMutations } from "@/hooks/useWorkOrderMutations";
-import { cn } from "@/lib/utils";
+import { Check, Clock, Flag, XCircle, CheckCheck, AlertTriangle } from "lucide-react";
 
 interface StatusBadgeProps {
   status: string;
   completionStatus?: string;
-  workOrderId?: string;
-  disableDropdown?: boolean;
-  className?: string;
 }
 
-export const StatusBadge = ({ 
-  status, 
-  completionStatus, 
-  workOrderId, 
-  disableDropdown = false,
-  className 
-}: StatusBadgeProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const { updateWorkOrderStatus } = useWorkOrderMutations();
-  
+export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
   // Function to get the QC status styling
   const getQcStyling = () => {
     switch (status) {
@@ -73,63 +52,16 @@ export const StatusBadge = ({
     }
   };
 
-  const handleStatusChange = (newStatus: string) => {
-    if (workOrderId) {
-      updateWorkOrderStatus(workOrderId, newStatus);
-      setIsOpen(false);
-    }
-  };
-  
-  // Handle dropdown click to prevent event bubbling
-  const handleDropdownClick = (e: React.MouseEvent) => {
-    if (!disableDropdown && workOrderId) {
-      e.stopPropagation();
-      e.preventDefault();
-    }
-  };
-
   // Get the QC status styling
   const { icon, bgColor } = getQcStyling();
 
-  // If dropdown is disabled or no workOrderId provided, return simple badge
-  if (disableDropdown || !workOrderId) {
-    return (
-      <Badge 
-        className={cn(`text-white font-semibold px-2.5 py-1.5 transition-colors ${bgColor} inline-flex items-center gap-1.5 rounded-full shadow-sm hover:shadow`, className)}
-        title={`QC Status: ${status.replace(/_/g, " ").toUpperCase()}`}
-      >
-        {icon}
-        {getStatusLabel()}
-      </Badge>
-    );
-  }
-  
-  // Return interactive badge with dropdown
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger asChild onClick={handleDropdownClick}>
-        <Badge 
-          className={cn(`text-white font-semibold px-2.5 py-1.5 cursor-pointer transition-colors ${bgColor} inline-flex items-center gap-1.5 rounded-full shadow-sm hover:shadow`, className)}
-          title={`QC Status: ${status.replace(/_/g, " ").toUpperCase()}`}
-        >
-          {icon}
-          {getStatusLabel()}
-          {isOpen ? (
-            <ChevronUp className="h-3 w-3 ml-1 animate-fade-in" />
-          ) : (
-            <ChevronDown className="h-3 w-3 ml-1 animate-fade-in" />
-          )}
-        </Badge>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent 
-        onClick={handleDropdownClick} 
-        className="bg-white dark:bg-gray-900 border shadow-md z-50"
-      >
-        <StatusMenuItems 
-          currentStatus={status}
-          onStatusChange={handleStatusChange}
-        />
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Badge 
+      className={`text-white font-semibold px-2.5 py-1.5 transition-colors ${bgColor} inline-flex items-center gap-1.5 rounded-full shadow-sm hover:shadow`}
+      title={`QC Status: ${status.replace(/_/g, " ").toUpperCase()}`}
+    >
+      {icon}
+      {getStatusLabel()}
+    </Badge>
   );
 };

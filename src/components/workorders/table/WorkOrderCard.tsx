@@ -82,13 +82,10 @@ export const WorkOrderCard = ({ workOrder, onStatusUpdate, onImageView, onDelete
       {/* Card header with order number and status */}
       <div className="p-3 border-b flex justify-between items-center bg-gray-50">
         <div className="font-medium">{workOrder.order_no || 'N/A'}</div>
-        <div onClick={(e) => e.stopPropagation()}>
-          <StatusBadge 
-            status={workOrder.status || 'pending_review'} 
-            completionStatus={getCompletionStatus(workOrder)}
-            workOrderId={workOrder.id}
-          />
-        </div>
+        <StatusBadge 
+          status={workOrder.status || 'pending_review'} 
+          completionStatus={getCompletionStatus(workOrder)}
+        />
       </div>
 
       {/* Card body with order details */}

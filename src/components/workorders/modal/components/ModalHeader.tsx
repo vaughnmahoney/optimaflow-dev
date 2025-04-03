@@ -1,15 +1,20 @@
 
-import { X } from "lucide-react";
-import { WorkOrder } from "../../types";
-import { StatusBadge } from "../../StatusBadge";
+import { User, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { StatusBadgeDropdown } from "../../StatusBadgeDropdown";
+import { WorkOrder } from "../../types";
 
 interface ModalHeaderProps {
   workOrder: WorkOrder;
   onClose: () => void;
 }
 
-export const ModalHeader = ({ workOrder, onClose }: ModalHeaderProps) => {
+export const ModalHeader = ({ 
+  workOrder, 
+  onClose 
+}: ModalHeaderProps) => {
+  const driverName = workOrder.search_response?.scheduleInformation?.driverName || 'No Driver Assigned';
+  
   // Extract the completion status from the appropriate place in the order object
   const getCompletionStatus = (order: WorkOrder): string | undefined => {
     return order.completion_status || 
@@ -19,24 +24,33 @@ export const ModalHeader = ({ workOrder, onClose }: ModalHeaderProps) => {
   };
 
   return (
-    <div className="flex justify-between items-center p-4 border-b bg-gray-50">
-      <div className="flex items-center gap-4">
-        <div>
-          <h3 className="text-lg font-medium">Order #{workOrder.order_no || 'Unknown'}</h3>
-          <div className="text-sm text-muted-foreground mt-1">
-            {workOrder.location && typeof workOrder.location === 'object' && 
-              (workOrder.location.name || workOrder.location.locationName || 'Unknown Location')}
-          </div>
+    <div className="flex justify-between items-center px-4 py-3 bg-white dark:bg-gray-950 border-b">
+      <div className="flex items-center space-x-4">
+        <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full">
+          <User className="h-5 w-5 text-gray-600 dark:text-gray-300" />
         </div>
-        <StatusBadge 
-          status={workOrder.status || 'pending_review'} 
-          completionStatus={getCompletionStatus(workOrder)} 
-          disableDropdown={true} 
-        />
+        <div className="text-left">
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-semibold">Order #{workOrder.order_no}</h2>
+            <StatusBadgeDropdown 
+              workOrderId={workOrder.id}
+              currentStatus={workOrder.status || "pending_review"} 
+              completionStatus={getCompletionStatus(workOrder)}
+            />
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Driver: {driverName}
+          </p>
+        </div>
       </div>
-      <Button variant="ghost" size="icon" onClick={onClose} className="text-gray-500 hover:text-gray-700">
-        <X className="h-5 w-5" />
-        <span className="sr-only">Close</span>
+      
+      <Button 
+        variant="ghost" 
+        size="icon" 
+        onClick={onClose} 
+        className="rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+      >
+        <X className="h-4 w-4" />
       </Button>
     </div>
   );
