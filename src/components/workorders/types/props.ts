@@ -30,4 +30,5 @@ export interface WorkOrderListProps {
   clearAllFilters: () => void;
   onResolveFlag?: (workOrderId: string, resolution: string, options?: any) => void;
   refetch?: () => Promise<any>;
+  isRefreshing?: boolean; // Added the missing property
 }
