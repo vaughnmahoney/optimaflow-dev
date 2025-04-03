@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Check, Flag, Clock, CheckCheck, AlertTriangle, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -94,7 +93,6 @@ export const StatusFilterCards = ({
     },
   ];
 
-  // Same button rendering function for both mobile and desktop to maintain consistency
   const renderStatusButtons = () => {
     const hasActiveFilters = 
       filters.status !== null || 
@@ -106,7 +104,6 @@ export const StatusFilterCards = ({
 
     return (
       <>
-        {/* Filter button first */}
         <FilterSortButton 
           filters={filters}
           onColumnFilterChange={onColumnFilterChange}
@@ -117,7 +114,6 @@ export const StatusFilterCards = ({
           onSort={onSort}
         />
         
-        {/* Status buttons */}
         {statuses.map((status) => {
           const isActive = statusFilter === status.value;
           const count = statusCounts[status.value] || 0;
@@ -162,15 +158,12 @@ export const StatusFilterCards = ({
     );
   };
 
-  // Fixed the scrolling by adding explicit width & height constraints,
-  // adding ScrollBar with orientation="horizontal", and ensuring proper layout
   return (
     <div className="mb-0 overflow-hidden w-full">
-      <ScrollArea className="w-full">
+      <ScrollArea className="w-full scrollbar-none">
         <div className="flex space-x-2 pb-2 min-w-max">
           {renderStatusButtons()}
         </div>
-        <ScrollBar orientation="horizontal" />
       </ScrollArea>
     </div>
   );
