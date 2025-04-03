@@ -3,7 +3,6 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
 import { format } from "date-fns";
-import { StatusBadge } from "../StatusBadge";
 import { WorkOrder } from "../types";
 import { ActionsMenu } from "./ActionsMenu";
 import { StatusBadgeDropdown } from "../StatusBadgeDropdown";
@@ -94,6 +93,7 @@ export const WorkOrderRow = ({ workOrder, onStatusUpdate, onImageView, onDelete 
           workOrderId={workOrder.id}
           currentStatus={workOrder.status || 'pending_review'}
           completionStatus={getCompletionStatus(workOrder)}
+          onStatusUpdate={onStatusUpdate}
         />
       </TableCell>
       <TableCell onClick={(e) => e.stopPropagation()} className="transition-opacity">
