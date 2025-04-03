@@ -1,6 +1,5 @@
 
 import { useRef, useState, useEffect } from "react";
-import { OrderDetailsTab } from "../OrderDetailsTab";
 import { NotesTab } from "../tabs/NotesTab";
 import { SignatureTab } from "../tabs/SignatureTab";
 import { WorkOrder } from "../../types";
@@ -9,6 +8,7 @@ import { QcNotesSheet } from "./QcNotesSheet";
 import { ResolutionNotesSheet } from "./ResolutionNotesSheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { OrderDetailsTab } from "../tabs/OrderDetailsTab";
 
 interface OrderDetailsProps {
   workOrder: WorkOrder;
