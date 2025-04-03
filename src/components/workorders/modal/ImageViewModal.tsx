@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Dialog } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogOverlay } from "@/components/ui/dialog";
 import { WorkOrder } from "../types";
 import { ModalHeader } from "./components/ModalHeader";
 import { ModalContent } from "./components/ModalContent";
@@ -97,7 +97,8 @@ export const ImageViewModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <div className={`max-w-6xl p-0 h-[90vh] flex flex-col rounded-lg overflow-hidden border-t-4 ${statusBorderColor} bg-white shadow-xl fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[95%] z-50`}>
+      <DialogOverlay />
+      <DialogContent className="max-w-6xl p-0 h-[90vh] flex flex-col rounded-lg overflow-hidden border-t-4 bg-white shadow-xl w-[95%] m-0" style={{ borderTopColor: statusBorderColor === 'border-t-green-500' ? '#22c55e' : statusBorderColor === 'border-t-red-500' ? '#ef4444' : statusBorderColor === 'border-t-yellow-500' ? '#eab308' : statusBorderColor === 'border-t-blue-500' ? '#3b82f6' : '#64748b' }}>
         <ModalHeader workOrder={currentWorkOrder} onClose={onClose} />
         
         <ModalContent
@@ -128,7 +129,8 @@ export const ImageViewModal = ({
           hasPreviousPage={onPageBoundary !== undefined && navIndex === 0}
           hasNextPage={onPageBoundary !== undefined && navIndex === workOrders.length - 1}
         />
-      </div>
+      </DialogContent>
     </Dialog>
   );
 };
+
