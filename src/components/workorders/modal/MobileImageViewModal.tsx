@@ -8,6 +8,8 @@ import { MobileModalHeader } from "./components/mobile/MobileModalHeader";
 import { MobileModalContent } from "./components/mobile/MobileModalContent";
 import { MobileImageViewer } from "./components/mobile/MobileImageViewer";
 import { MobileNavigationControls } from "./components/mobile/MobileNavigationControls";
+import { useLocalWorkOrderState } from "@/hooks/useLocalWorkOrderState";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface MobileImageViewModalProps {
   workOrder: WorkOrder | null;
@@ -15,11 +17,11 @@ interface MobileImageViewModalProps {
   currentIndex: number;
   isOpen: boolean;
   onClose: () => void;
-  onStatusUpdate?: (workOrderId: string, status: string) => void;
+  onStatusUpdate?: (workOrderId: string, status: string, options?: any) => void;
   onNavigate: (index: number) => void;
   onPageBoundary?: (direction: 'next' | 'previous') => void;
   onDownloadAll?: () => void;
-  onResolveFlag?: (workOrderId: string, resolution: string) => void;
+  onResolveFlag?: (workOrderId: string, resolution: string, options?: any) => void;
   filters?: any;
 }
 
@@ -37,9 +39,10 @@ export const MobileImageViewModal = ({
   filters
 }: MobileImageViewModalProps) => {
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+  const queryClient = useQueryClient();
   
   const {
-    currentWorkOrder,
+    currentWorkOrder: navigationWorkOrder,
     currentIndex: navIndex,
     currentImageIndex,
     isNavigatingPages,
@@ -55,17 +58,42 @@ export const MobileImageViewModal = ({
     onPageBoundary
   });
   
-  if (!currentWorkOrder) return null;
+  // Use our new hook to manage local work order state
+  const {
+    localWorkOrder,
+    handleStatusUpdate: handleLocalStatusUpdate,
+    handleResolveFlag: handleLocalResolveFlag,
+    handleClose: handleLocalClose,
+    hasLocalChanges
+  } = useLocalWorkOrderState({
+    initialWorkOrder: navigationWorkOrder,
+    onStatusUpdate,
+    onResolveFlag,
+    onClose: () => {
+      // Refresh queries when closing to update filter lists
+      queryClient.invalidateQueries({ queryKey: ["workOrders"] });
+      queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
+      onClose();
+    }
+  });
+  
+  if (!localWorkOrder) return null;
 
   // Get images from the work order's completion_response
-  const completionData = currentWorkOrder?.completion_response?.orders?.[0]?.data;
+  const completionData = localWorkOrder?.completion_response?.orders?.[0]?.data;
   const images = completionData?.form?.images || [];
   
   // Status color for border
-  const statusBorderColor = getStatusBorderColor(currentWorkOrder.status || "pending_review");
+  const statusBorderColor = getStatusBorderColor(localWorkOrder.status || "pending_review");
 
-  // Sync navigation with parent component
+  // Custom navigation handler that refreshes queries before navigating
   const handleNavigate = (index: number) => {
+    // If we have local changes, refresh the queries before navigating
+    if (hasLocalChanges.current) {
+      queryClient.invalidateQueries({ queryKey: ["workOrders"] });
+      queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
+    }
+    
     handleSetOrder(index);
     onNavigate(index);
   };
@@ -84,13 +112,13 @@ export const MobileImageViewModal = ({
   const closeImageViewer = () => setIsImageViewerOpen(false);
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleLocalClose}>
       <DialogContent className={`max-w-full p-0 h-[90vh] w-[95vw] flex flex-col rounded-lg overflow-hidden border-t-4 ${statusBorderColor}`}>
         {isImageViewerOpen ? (
           // Show image viewer when in image mode
           <>
             <MobileImageViewer
-              workOrderId={currentWorkOrder.id}
+              workOrderId={localWorkOrder.id}
               images={images}
               currentImageIndex={currentImageIndex}
               setCurrentImageIndex={setCurrentImageIndex}
@@ -102,27 +130,41 @@ export const MobileImageViewModal = ({
           // Show main content when not in image mode
           <>
             <MobileModalHeader 
-              workOrder={currentWorkOrder} 
-              onClose={onClose}
+              workOrder={localWorkOrder} 
+              onClose={handleLocalClose}
               filters={filters}
               workOrders={workOrders}
               onAdvanceToNextOrder={handleAdvanceToNextOrder} 
             />
             
             <MobileModalContent
-              workOrder={currentWorkOrder}
+              workOrder={localWorkOrder}
               images={images}
               onViewImages={openImageViewer}
-              onStatusUpdate={onStatusUpdate}
+              onStatusUpdate={handleLocalStatusUpdate}
               onDownloadAll={onDownloadAll}
-              onResolveFlag={onResolveFlag}
+              onResolveFlag={handleLocalResolveFlag}
             />
             
             <MobileNavigationControls 
               currentIndex={navIndex}
               totalOrders={workOrders.length}
-              onPreviousOrder={handlePreviousOrder}
-              onNextOrder={handleNextOrder}
+              onPreviousOrder={() => {
+                // If we have local changes, refresh the queries before navigating
+                if (hasLocalChanges.current) {
+                  queryClient.invalidateQueries({ queryKey: ["workOrders"] });
+                  queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
+                }
+                handlePreviousOrder();
+              }}
+              onNextOrder={() => {
+                // If we have local changes, refresh the queries before navigating
+                if (hasLocalChanges.current) {
+                  queryClient.invalidateQueries({ queryKey: ["workOrders"] });
+                  queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
+                }
+                handleNextOrder();
+              }}
               isNavigatingPages={isNavigatingPages}
               hasPreviousPage={onPageBoundary !== undefined && navIndex === 0}
               hasNextPage={onPageBoundary !== undefined && navIndex === workOrders.length - 1}

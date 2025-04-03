@@ -32,10 +32,12 @@ export const ActionButtons = ({
   const handleStatusUpdate = async (status: string) => {
     try {
       setIsUpdating(status);
-      await onStatusUpdate?.(workOrderId, status);
       
-      // Immediately invalidate the badge count query to update the sidebar badge
-      queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
+      // Pass the skipRefresh option to prevent immediate list refresh
+      await onStatusUpdate?.(workOrderId, status, { skipRefresh: true });
+      
+      // Don't invalidate immediately - will be done on modal close or navigation
+      // This prevents the modal from unmounting
     } catch (error) {
       console.error('Error updating status:', error);
     } finally {
