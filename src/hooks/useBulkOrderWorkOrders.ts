@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { SortDirection, SortField, WorkOrder, WorkOrderFilters, PaginationState } from "@/components/workorders/types";
 import { useWorkOrderMutations } from "./useWorkOrderMutations";
@@ -20,7 +19,8 @@ export const useBulkOrderWorkOrders = (
     dateRange: { from: null, to: null },
     driver: null,
     location: null,
-    orderNo: null
+    orderNo: null,
+    optimoRouteStatus: null // Initialize with null
   });
   
   // Initialize with default sorting by end_time descending (newest first)

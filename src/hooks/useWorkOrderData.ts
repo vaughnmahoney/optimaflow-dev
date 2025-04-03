@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { SortField, SortDirection, PaginationState, WorkOrderFilters } from "@/components/workorders/types";
 import { useWorkOrderFetch } from "./useWorkOrderFetch";
@@ -13,7 +12,7 @@ export const useWorkOrderData = () => {
     driver: null,
     location: null,
     orderNo: null,
-    optimoRouteStatus: null // Add new field
+    optimoRouteStatus: null // Ensure this field is initialized
   });
   
   const [sortField, setSortField] = useState<SortField>('end_time');
@@ -64,7 +63,7 @@ export const useWorkOrderData = () => {
         case 'status':
           newFilters.status = value;
           break;
-        case 'optimoroute_status': // Add case for new field
+        case 'optimoroute_status': // Ensure this case is handled
           newFilters.optimoRouteStatus = value;
           break;
       }
@@ -95,7 +94,7 @@ export const useWorkOrderData = () => {
         case 'status':
           newFilters.status = null;
           break;
-        case 'optimoroute_status': // Add case for new field
+        case 'optimoroute_status': // Ensure this case is handled
           newFilters.optimoRouteStatus = null;
           break;
       }
@@ -113,7 +112,7 @@ export const useWorkOrderData = () => {
       driver: null,
       location: null,
       orderNo: null,
-      optimoRouteStatus: null // Include new field in reset
+      optimoRouteStatus: null // Ensure this field is reset
     });
     
     handlePageChange(1);
