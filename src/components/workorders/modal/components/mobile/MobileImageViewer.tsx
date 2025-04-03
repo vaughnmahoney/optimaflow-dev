@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, X, Flag } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
@@ -19,7 +20,9 @@ export const MobileImageViewer = ({
   setCurrentImageIndex,
   onClose,
 }: MobileImageViewerProps) => {
-  const [isLoading, setIsLoading] = useState(false);
+  // Track loaded images to prevent unnecessary loading states
+  const [loadedImages, setLoadedImages] = useState<Record<number, boolean>>({});
+  const [isLoading, setIsLoading] = useState(true);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const { toggleImageFlag } = useWorkOrderMutations();
@@ -30,28 +33,55 @@ export const MobileImageViewer = ({
   
   const minSwipeDistance = 50;
   
+  // Preload adjacent images
+  useEffect(() => {
+    if (images.length <= 1) return;
+    
+    const preloadImage = (index: number) => {
+      if (index >= 0 && index < images.length) {
+        const img = new Image();
+        img.src = images[index].url;
+        img.onload = () => {
+          setLoadedImages(prev => ({...prev, [index]: true}));
+        };
+      }
+    };
+    
+    // Only show loading on initial load or when image hasn't been loaded yet
+    if (!loadedImages[currentImageIndex]) {
+      setIsLoading(true);
+    } else {
+      setIsLoading(false);
+    }
+    
+    // Preload next and previous images
+    if (currentImageIndex < images.length - 1) {
+      preloadImage(currentImageIndex + 1);
+    }
+    if (currentImageIndex > 0) {
+      preloadImage(currentImageIndex - 1);
+    }
+  }, [images, currentImageIndex, loadedImages]);
+  
   const handlePrevious = () => {
     if (currentImageIndex > 0) {
-      setIsLoading(true);
       setCurrentImageIndex(currentImageIndex - 1);
     } else if (images.length > 0) {
-      setIsLoading(true);
       setCurrentImageIndex(images.length - 1);
     }
   };
   
   const handleNext = () => {
     if (currentImageIndex < images.length - 1) {
-      setIsLoading(true);
       setCurrentImageIndex(currentImageIndex + 1);
     } else if (images.length > 0) {
-      setIsLoading(true);
       setCurrentImageIndex(0);
     }
   };
   
   const handleImageLoad = () => {
     setIsLoading(false);
+    setLoadedImages(prev => ({...prev, [currentImageIndex]: true}));
   };
   
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -146,7 +176,7 @@ export const MobileImageViewer = ({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {isLoading && (
+        {isLoading && !loadedImages[currentImageIndex] && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
             <div className="h-14 w-14 border-4 border-t-blue-500 border-r-transparent border-b-blue-500 border-l-transparent rounded-full animate-spin"></div>
           </div>
@@ -164,8 +194,7 @@ export const MobileImageViewer = ({
       <div className="p-2 border-t bg-white">
         <div 
           ref={thumbnailsContainerRef}
-          className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300"
-          style={{ scrollbarWidth: 'thin' }}
+          className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-none"
         >
           {images.map((image, idx) => (
             <div 
