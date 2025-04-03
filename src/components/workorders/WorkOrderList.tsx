@@ -9,6 +9,7 @@ import { ImageViewModal } from "./modal/ImageViewModal";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SortDirection, SortField } from "./types";
 import { useQueryClient } from "@tanstack/react-query";
+import { PaginationIndicator } from "./table/PaginationIndicator";
 
 export const WorkOrderList = ({ 
   workOrders, 
