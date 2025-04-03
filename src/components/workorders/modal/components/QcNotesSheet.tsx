@@ -51,16 +51,16 @@ export const QcNotesSheet = ({ workOrder }: QcNotesSheetProps) => {
           size="sm" 
           className={`relative gap-1 px-2 py-1 h-7 rounded-md ${
             hasNotes 
-              ? "bg-gray-100 border border-gray-200 hover:bg-gray-200" 
+              ? "bg-red-50 border border-red-200 hover:bg-red-100 text-red-700" 
               : "bg-white border border-gray-200 hover:bg-gray-50"
           }`}
         >
-          {hasNotes ? <PenLine className="h-3.5 w-3.5 text-gray-700" /> : <StickyNote className="h-3.5 w-3.5 text-gray-600" />}
-          <span className="text-xs font-medium text-gray-700">QC Notes</span>
+          {hasNotes ? <PenLine className="h-3.5 w-3.5 text-red-600" /> : <StickyNote className="h-3.5 w-3.5 text-gray-600" />}
+          <span className={`text-xs font-medium ${hasNotes ? "text-red-700" : "text-gray-700"}`}>QC Notes</span>
           {hasNotes && (
             <Badge 
-              variant="info" 
-              className="w-2 h-2 p-0 absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-gray-500"
+              variant="destructive" 
+              className="w-2 h-2 p-0 absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-red-500"
             />
           )}
         </Button>
@@ -81,7 +81,7 @@ export const QcNotesSheet = ({ workOrder }: QcNotesSheetProps) => {
         
         <DialogHeader className="pb-2 border-b mb-4">
           <DialogTitle className="flex items-center gap-2 text-gray-800">
-            <StickyNote className="h-5 w-5 text-gray-500" />
+            <StickyNote className="h-5 w-5 text-red-500" />
             Quality Control Notes
           </DialogTitle>
         </DialogHeader>

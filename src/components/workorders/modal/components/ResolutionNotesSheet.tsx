@@ -51,16 +51,16 @@ export const ResolutionNotesSheet = ({ workOrder }: ResolutionNotesSheetProps) =
           size="sm" 
           className={`relative gap-1 px-2 py-1 h-7 rounded-md ${
             hasNotes 
-              ? "bg-gray-100 border border-gray-200 hover:bg-gray-200" 
+              ? "bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-700" 
               : "bg-white border border-gray-200 hover:bg-gray-50"
           }`}
         >
-          {hasNotes ? <PenLine className="h-3.5 w-3.5 text-gray-700" /> : <StickyNote className="h-3.5 w-3.5 text-gray-600" />}
-          <span className="text-xs font-medium text-gray-700">Resolution Notes</span>
+          {hasNotes ? <PenLine className="h-3.5 w-3.5 text-blue-600" /> : <StickyNote className="h-3.5 w-3.5 text-gray-600" />}
+          <span className={`text-xs font-medium ${hasNotes ? "text-blue-700" : "text-gray-700"}`}>Resolution Notes</span>
           {hasNotes && (
             <Badge 
               variant="info" 
-              className="w-2 h-2 p-0 absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-gray-500"
+              className="w-2 h-2 p-0 absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-blue-500"
             />
           )}
         </Button>
@@ -81,7 +81,7 @@ export const ResolutionNotesSheet = ({ workOrder }: ResolutionNotesSheetProps) =
         
         <DialogHeader className="pb-2 border-b mb-4">
           <DialogTitle className="flex items-center gap-2 text-gray-800">
-            <StickyNote className="h-5 w-5 text-gray-500" />
+            <StickyNote className="h-5 w-5 text-blue-500" />
             Resolution Notes
           </DialogTitle>
         </DialogHeader>
