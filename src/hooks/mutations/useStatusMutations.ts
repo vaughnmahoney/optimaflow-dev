@@ -1,7 +1,6 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
 
 /**
@@ -82,15 +81,12 @@ export const useStatusMutations = () => {
         .eq('id', workOrderId);
 
       if (error) throw error;
-
-      toast.success(`Status updated to ${newStatus}`);
       
       // Immediately refetch work orders and the badge count
       queryClient.invalidateQueries({ queryKey: ["workOrders"] });
       queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
     } catch (error) {
       console.error('Status update error:', error);
-      toast.error('Failed to update status');
     }
   };
 
@@ -115,30 +111,12 @@ export const useStatusMutations = () => {
         .eq('id', workOrderId);
 
       if (error) throw error;
-
-      let statusMessage = "";
-      switch(resolution) {
-        case "approved":
-          statusMessage = "Order approved despite flag";
-          break;
-        case "rejected":
-          statusMessage = "Order rejected";
-          break;
-        case "followup":
-          statusMessage = "Follow-up requested from technician";
-          break;
-        default:
-          statusMessage = "Order status updated";
-      }
-
-      toast.success(statusMessage);
       
       // Immediately refetch work orders and the badge count
       queryClient.invalidateQueries({ queryKey: ["workOrders"] });
       queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
     } catch (error) {
       console.error('Flag resolution error:', error);
-      toast.error('Failed to resolve flagged order');
     }
   };
 

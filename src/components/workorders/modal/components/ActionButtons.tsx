@@ -8,7 +8,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useState } from "react";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -37,18 +36,8 @@ export const ActionButtons = ({
       
       // Immediately invalidate the badge count query to update the sidebar badge
       queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
-      
-      toast.success(
-        status === 'approved' 
-          ? 'Work order approved successfully' 
-          : 'Work order flagged for review'
-      );
     } catch (error) {
-      toast.error(
-        status === 'approved'
-          ? 'Failed to approve work order'
-          : 'Failed to flag work order'
-      );
+      console.error('Error updating status:', error);
     } finally {
       setIsUpdating(null);
     }
