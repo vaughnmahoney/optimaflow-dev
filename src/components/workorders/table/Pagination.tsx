@@ -19,37 +19,37 @@ export const Pagination = ({ pagination, onPageChange, onPageSizeChange }: Pagin
   
   // Calculate which page numbers to show
   const getPageNumbers = () => {
+    // Always show first page, last page, current page, and pages around current
     const pageNumbers: (number | 'ellipsis')[] = [];
     
-    if (totalPages <= 5) {
-      // Show all pages if 5 or fewer
+    if (totalPages <= 7) {
+      // If 7 or fewer pages, show all pages
       for (let i = 1; i <= totalPages; i++) {
         pageNumbers.push(i);
       }
     } else {
-      // Always show first page
+      // Always add first page
       pageNumbers.push(1);
       
-      // Show ellipsis if current page is more than 3
+      // Add ellipsis if needed
       if (page > 3) {
         pageNumbers.push('ellipsis');
       }
       
-      // Calculate range around current page
+      // Add pages around current page
       const startPage = Math.max(2, page - 1);
       const endPage = Math.min(totalPages - 1, page + 1);
       
-      // Add pages around current page
       for (let i = startPage; i <= endPage; i++) {
         pageNumbers.push(i);
       }
       
-      // Show ellipsis if current page is less than totalPages - 2
+      // Add ellipsis if needed
       if (page < totalPages - 2) {
         pageNumbers.push('ellipsis');
       }
       
-      // Always show last page if more than 1 page
+      // Add last page if we have more than 1 page
       if (totalPages > 1) {
         pageNumbers.push(totalPages);
       }
@@ -65,15 +65,15 @@ export const Pagination = ({ pagination, onPageChange, onPageSizeChange }: Pagin
   };
 
   return (
-    <div className="flex flex-col gap-2 p-3 mt-4 border rounded-lg bg-white shadow-sm">
+    <div className="flex flex-col gap-2 p-3 mt-4 border rounded-lg bg-white">
       <div className="flex items-center justify-between">
         <div className="text-xs text-muted-foreground">
           {total} {total === 1 ? 'item' : 'items'}
         </div>
         
-        <div className="flex items-center gap-4">
-          {/* Page size selector - next to pagination buttons */}
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="flex items-center space-x-4">
+          {/* Page size selector - moved next to pagination buttons */}
+          <div className="flex items-center space-x-2 text-xs text-muted-foreground">
             <span>Rows:</span>
             <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
               <SelectTrigger className="h-7 w-14 text-xs shadow-sm">
@@ -89,20 +89,20 @@ export const Pagination = ({ pagination, onPageChange, onPageSizeChange }: Pagin
             </Select>
           </div>
           
-          <div className="flex items-center gap-1">
+          <div className="flex items-center space-x-1.5">
             <Button 
               variant="outline" 
-              size="sm" 
-              className="h-9 px-3 gap-1 text-sm font-normal"
+              size="icon" 
+              className="h-7 w-7 shadow-sm"
               disabled={page <= 1}
               onClick={() => onPageChange(page - 1)}
             >
-              <ChevronLeft className="h-4 w-4" />
-              <span>Previous</span>
+              <ChevronLeft className="h-3.5 w-3.5" />
+              <span className="sr-only">Previous page</span>
             </Button>
             
             {!isMobile && (
-              <div className="flex items-center">
+              <div className="flex items-center space-x-1.5 min-w-32 justify-center">
                 {pageNumbers.map((pageNum, idx) => 
                   pageNum === 'ellipsis' ? (
                     <span key={`ellipsis-${idx}`} className="px-2 text-xs text-muted-foreground">
@@ -112,8 +112,8 @@ export const Pagination = ({ pagination, onPageChange, onPageSizeChange }: Pagin
                     <Button
                       key={`page-${pageNum}`}
                       variant={pageNum === page ? "default" : "outline"}
-                      size="sm"
-                      className={`h-9 w-9 text-sm ${pageNum === page ? 'bg-primary text-primary-foreground' : 'bg-white'}`}
+                      size="icon"
+                      className="h-7 w-7 text-xs shadow-sm"
                       onClick={() => onPageChange(pageNum as number)}
                     >
                       {pageNum}
@@ -124,20 +124,20 @@ export const Pagination = ({ pagination, onPageChange, onPageSizeChange }: Pagin
             )}
             
             {isMobile && (
-              <span className="px-4 py-2 text-sm font-medium">
+              <span className="text-xs px-2 py-1.5 bg-gray-100 rounded-md min-w-16 text-center">
                 {page} / {totalPages}
               </span>
             )}
             
             <Button 
               variant="outline" 
-              size="sm"
-              className="h-9 px-3 gap-1 text-sm font-normal"
+              size="icon" 
+              className="h-7 w-7 shadow-sm"
               disabled={page >= totalPages}
               onClick={() => onPageChange(page + 1)}
             >
-              <span>Next</span>
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-3.5 w-3.5" />
+              <span className="sr-only">Next page</span>
             </Button>
           </div>
         </div>

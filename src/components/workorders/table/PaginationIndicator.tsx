@@ -16,35 +16,28 @@ export const PaginationIndicator = ({ pagination, onPageChange }: PaginationIndi
   const getPageNumbers = () => {
     const pageNumbers: (number | 'ellipsis')[] = [];
     
-    if (totalPages <= 5) {
-      // Show all pages if 5 or fewer
+    if (totalPages <= 7) {
       for (let i = 1; i <= totalPages; i++) {
         pageNumbers.push(i);
       }
     } else {
-      // Always show first page
       pageNumbers.push(1);
       
-      // Show ellipsis if current page is more than 3
       if (page > 3) {
         pageNumbers.push('ellipsis');
       }
       
-      // Calculate range around current page
       const startPage = Math.max(2, page - 1);
       const endPage = Math.min(totalPages - 1, page + 1);
       
-      // Add pages around current page
       for (let i = startPage; i <= endPage; i++) {
         pageNumbers.push(i);
       }
       
-      // Show ellipsis if current page is less than totalPages - 2
       if (page < totalPages - 2) {
         pageNumbers.push('ellipsis');
       }
       
-      // Always show last page if more than 1 page
       if (totalPages > 1) {
         pageNumbers.push(totalPages);
       }
@@ -60,35 +53,34 @@ export const PaginationIndicator = ({ pagination, onPageChange }: PaginationIndi
   }
 
   return (
-    <div className="flex justify-between items-center py-3 px-4 mb-4 border rounded-lg bg-white shadow-sm">
-      <div className="text-xs text-muted-foreground">
+    <div className="flex justify-end items-center py-2 px-3 mb-4 border rounded-lg bg-white">
+      <div className="text-xs text-muted-foreground mr-4">
         {total} {total === 1 ? 'item' : 'items'}
       </div>
 
-      <div className="flex items-center gap-1">
+      <div className="flex items-center space-x-1.5">
         <Button 
           variant="outline" 
-          size="sm"
-          className="h-9 px-3 gap-1 text-sm font-normal"
+          size="icon" 
+          className="h-7 w-7 shadow-sm"
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1)}
         >
-          <ChevronLeft className="h-4 w-4" />
-          <span>Previous</span>
+          <ChevronLeft className="h-3.5 w-3.5" />
         </Button>
         
-        <div className="flex items-center">
+        <div className="flex items-center space-x-1.5 min-w-32 justify-center">
           {pageNumbers.map((pageNum, idx) => 
             pageNum === 'ellipsis' ? (
-              <span key={`ellipsis-${idx}`} className="px-2 text-xs text-muted-foreground">
+              <span key={`ellipsis-top-${idx}`} className="px-2 text-xs text-muted-foreground">
                 ...
               </span>
             ) : (
               <Button
-                key={`page-${pageNum}`}
+                key={`page-top-${pageNum}`}
                 variant={pageNum === page ? "default" : "outline"}
-                size="sm"
-                className={`h-9 w-9 text-sm ${pageNum === page ? 'bg-primary text-primary-foreground' : 'bg-white'}`}
+                size="icon"
+                className="h-7 w-7 text-xs shadow-sm"
                 onClick={() => onPageChange(pageNum as number)}
               >
                 {pageNum}
@@ -99,13 +91,12 @@ export const PaginationIndicator = ({ pagination, onPageChange }: PaginationIndi
         
         <Button 
           variant="outline" 
-          size="sm"
-          className="h-9 px-3 gap-1 text-sm font-normal"
+          size="icon" 
+          className="h-7 w-7 shadow-sm"
           disabled={page >= totalPages}
           onClick={() => onPageChange(page + 1)}
         >
-          <span>Next</span>
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="h-3.5 w-3.5" />
         </Button>
       </div>
     </div>
