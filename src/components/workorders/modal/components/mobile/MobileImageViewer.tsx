@@ -7,7 +7,8 @@ import { useImagePreloading } from "@/hooks/useImagePreloading";
 import { useTouchGestures } from "@/hooks/useTouchGestures";
 import { MobileImageHeader } from "./MobileImageHeader";
 import { MobileThumbnails } from "./MobileThumbnails";
-import { Download } from "lucide-react";
+import { Download, Images } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface MobileImageViewerProps {
   workOrderId: string;
@@ -15,7 +16,7 @@ interface MobileImageViewerProps {
   currentImageIndex: number;
   setCurrentImageIndex: (index: number) => void;
   onClose: () => void;
-  onDownloadAll?: () => void; // Added onDownloadAll prop
+  onDownloadAll?: () => void;
 }
 
 export const MobileImageViewer = ({
@@ -24,7 +25,7 @@ export const MobileImageViewer = ({
   currentImageIndex,
   setCurrentImageIndex,
   onClose,
-  onDownloadAll, // Added onDownloadAll prop
+  onDownloadAll,
 }: MobileImageViewerProps) => {
   const { toggleImageFlag } = useWorkOrderMutations();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -120,10 +121,10 @@ export const MobileImageViewer = ({
       />
       
       <div className="py-2 px-3 bg-white text-center text-sm text-gray-600 border-t flex justify-between items-center">
-        {/* Download button now on the left with ghost styling */}
+        {/* Download button with improved styling */}
         {onDownloadAll && (
           <Button 
-            className="w-9 h-9 justify-center items-center p-0 text-gray-600 hover:bg-gray-100"
+            className="h-8 w-8 p-0 flex justify-center items-center text-gray-600 hover:bg-gray-100"
             variant="ghost"
             onClick={onDownloadAll}
             title="Download All Images"
@@ -133,13 +134,22 @@ export const MobileImageViewer = ({
           </Button>
         )}
         
-        {/* Image counter centered or right-aligned if download button exists */}
-        <div className={onDownloadAll ? "flex-1 text-center" : "w-full text-center"}>
-          {currentImageIndex + 1} of {images.length}
+        {/* Image counter with improved styling */}
+        <div className="flex items-center justify-center gap-1.5">
+          <div className="relative">
+            <Images className="h-3.5 w-3.5 text-gray-500" />
+            <Badge 
+              variant="secondary" 
+              className="absolute -top-1 -right-1 px-1 min-w-4 h-4 flex items-center justify-center text-[10px] font-medium"
+            >
+              {images.length}
+            </Badge>
+          </div>
+          <span>{currentImageIndex + 1} of {images.length}</span>
         </div>
         
         {/* Empty div to help with alignment when download button exists */}
-        {onDownloadAll && <div className="w-9"></div>}
+        {onDownloadAll && <div className="w-8"></div>}
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ import { Image } from "lucide-react";
 import { QcNotesSheet } from "../QcNotesSheet";
 import { ResolutionNotesSheet } from "../ResolutionNotesSheet";
 import { MobileStatusButton } from "./MobileStatusButton";
+import { Badge } from "@/components/ui/badge";
 
 interface MobileModalContentProps {
   workOrder: WorkOrder;
@@ -49,10 +50,13 @@ export const MobileModalContent = ({
           >
             <div className="relative">
               <Image className="h-3.5 w-3.5" />
-              {hasImages && images.length > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-gray-200 text-gray-700 text-[10px] rounded-full h-4 w-4 flex items-center justify-center font-medium">
+              {hasImages && (
+                <Badge 
+                  variant="secondary" 
+                  className="absolute -top-1 -right-1 px-1 min-w-4 h-4 flex items-center justify-center text-[10px] font-medium"
+                >
                   {images.length}
-                </span>
+                </Badge>
               )}
             </div>
             <span>Images</span>
