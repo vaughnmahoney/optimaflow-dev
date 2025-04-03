@@ -1,32 +1,39 @@
 
-import { TableHead, TableHeader as UITableHeader, TableRow } from "@/components/ui/table";
-import { SortDirection, SortField, WorkOrderFilters } from "../types";
+import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { SortDirection, SortField } from "../types";
 import { useState } from "react";
 import { TextFilter, DateFilter, StatusFilter, DriverFilter, LocationFilter } from "../filters";
 import { ColumnHeader } from "./ColumnHeader";
 import { isColumnFiltered } from "./utils";
 
-interface TableHeaderProps {
-  sortField?: SortField;
-  sortDirection?: SortDirection;
-  onSort?: (field: SortField, direction: SortDirection) => void;
-  filters: WorkOrderFilters;
-  onColumnFilterChange: (column: string, value: any) => void;
-  onColumnFilterClear: (column: string) => void;
+interface WorkOrderTableHeaderProps {
+  sortField: SortField;
+  sortDirection: SortDirection;
+  onSort: (field: SortField) => void;
+  filters: {
+    orderNo: string | null;
+    dateRange: { from: Date | null; to: Date | null };
+    driver: string | null;
+    location: string | null;
+    status: string | null;
+    optimoRouteStatus: string | null; // Add the required field
+  };
+  onFilterChange: (column: string, value: any) => void;
+  onFilterClear: (column: string) => void;
 }
 
-export const TableHeader = ({ 
+export const WorkOrderTableHeader = ({ 
   sortField, 
   sortDirection, 
   onSort,
   filters,
-  onColumnFilterChange,
-  onColumnFilterClear
-}: TableHeaderProps) => {
+  onFilterChange,
+  onFilterClear
+}: WorkOrderTableHeaderProps) => {
   const [openPopover, setOpenPopover] = useState<string | null>(null);
   
   const handleFilterChange = (column: string, value: any) => {
-    onColumnFilterChange(column, value);
+    onFilterChange(column, value);
     // Don't close popover immediately to allow for multiple selections
   };
   
@@ -34,24 +41,14 @@ export const TableHeader = ({
     setOpenPopover(null);
   };
 
-  const handleSort = (field: SortField) => {
-    if (!onSort) return;
-    
-    // Toggle direction if already sorting by this field
-    const newDirection: SortDirection = 
-      sortField === field && sortDirection === 'asc' ? 'desc' : 'asc';
-    
-    onSort(field, newDirection);
-  };
-
   return (
-    <UITableHeader>
+    <TableHeader>
       <TableRow>
         <ColumnHeader
           label="Order #"
           column="order_no"
           sortDirection={sortField === 'order_no' ? sortDirection : null}
-          onSort={() => handleSort('order_no')}
+          onSort={() => onSort('order_no')}
           isFiltered={isColumnFiltered('order_no', filters)}
           filterContent={
             <TextFilter 
@@ -59,7 +56,7 @@ export const TableHeader = ({
               value={filters.orderNo} 
               onChange={(value) => handleFilterChange('order_no', value)}
               onClear={() => {
-                onColumnFilterClear('order_no');
+                onFilterClear('order_no');
                 closePopover();
               }}
             />
@@ -70,17 +67,17 @@ export const TableHeader = ({
         
         <ColumnHeader
           label="Service Date"
-          column="end_time" 
-          sortDirection={sortField === 'end_time' ? sortDirection : null} 
-          onSort={() => handleSort('end_time')} 
-          isFiltered={isColumnFiltered('service_date', filters)} 
+          column="end_time" // Changed from service_date to end_time
+          sortDirection={sortField === 'end_time' ? sortDirection : null} // Changed from service_date to end_time
+          onSort={() => onSort('end_time')} // Changed from service_date to end_time
+          isFiltered={isColumnFiltered('service_date', filters)} // Keep this as service_date for UI continuity
           filterContent={
             <DateFilter 
-              column="service_date" 
+              column="service_date" // Keep this as service_date for UI continuity
               value={filters.dateRange} 
               onChange={(value) => handleFilterChange('service_date', value)}
               onClear={() => {
-                onColumnFilterClear('service_date');
+                onFilterClear('service_date');
                 closePopover();
               }}
             />
@@ -93,7 +90,7 @@ export const TableHeader = ({
           label="Driver"
           column="driver"
           sortDirection={sortField === 'driver' ? sortDirection : null}
-          onSort={() => handleSort('driver')}
+          onSort={() => onSort('driver')}
           isFiltered={isColumnFiltered('driver', filters)}
           filterContent={
             <DriverFilter 
@@ -101,7 +98,7 @@ export const TableHeader = ({
               value={filters.driver} 
               onChange={(value) => handleFilterChange('driver', value)}
               onClear={() => {
-                onColumnFilterClear('driver');
+                onFilterClear('driver');
                 closePopover();
               }}
             />
@@ -114,7 +111,7 @@ export const TableHeader = ({
           label="Location"
           column="location"
           sortDirection={sortField === 'location' ? sortDirection : null}
-          onSort={() => handleSort('location')}
+          onSort={() => onSort('location')}
           isFiltered={isColumnFiltered('location', filters)}
           filterContent={
             <LocationFilter 
@@ -122,7 +119,7 @@ export const TableHeader = ({
               value={filters.location} 
               onChange={(value) => handleFilterChange('location', value)}
               onClear={() => {
-                onColumnFilterClear('location');
+                onFilterClear('location');
                 closePopover();
               }}
             />
@@ -135,7 +132,7 @@ export const TableHeader = ({
           label="Status"
           column="status"
           sortDirection={sortField === 'status' ? sortDirection : null}
-          onSort={() => handleSort('status')}
+          onSort={() => onSort('status')}
           isFiltered={isColumnFiltered('status', filters)}
           filterContent={
             <StatusFilter 
@@ -143,7 +140,7 @@ export const TableHeader = ({
               value={filters.status} 
               onChange={(value) => handleFilterChange('status', value)}
               onClear={() => {
-                onColumnFilterClear('status');
+                onFilterClear('status');
                 closePopover();
               }}
             />
@@ -154,6 +151,6 @@ export const TableHeader = ({
         
         <TableHead>Actions</TableHead>
       </TableRow>
-    </UITableHeader>
+    </TableHeader>
   );
 };

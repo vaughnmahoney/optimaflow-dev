@@ -7,10 +7,6 @@ import { PaginationIndicator } from "./PaginationIndicator";
 import { EmptyState } from "./EmptyState";
 import { WorkOrderCard } from "./WorkOrderCard";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useAutoImport } from "@/hooks/useAutoImport";
-import { useState } from "react";
-import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
 
 interface WorkOrderTableProps {
   workOrders: WorkOrder[];
@@ -48,40 +44,11 @@ export const WorkOrderTable = ({
   onRefresh
 }: WorkOrderTableProps) => {
   const isMobile = useIsMobile();
-  const queryClient = useQueryClient();
-  const { isImporting, runAutoImport } = useAutoImport();
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const handleRefresh = async () => {
-    if (isRefreshing || isImporting) return;
-    
-    setIsRefreshing(true);
-    
-    try {
-      // First refresh the current data
-      if (onRefresh) {
-        await onRefresh();
-      }
-      
-      // Then run the auto import to check for new orders
-      const importSuccess = await runAutoImport();
-      
-      if (!importSuccess) {
-        toast.success("Work orders refreshed");
-      }
-    } catch (error) {
-      console.error("Error refreshing data:", error);
-      toast.error("Failed to refresh work orders");
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
 
   if (workOrders.length === 0) {
     return <EmptyState />;
   }
 
-  // Mobile view with cards
   if (isMobile) {
     return (
       <div className="space-y-2">
@@ -89,7 +56,7 @@ export const WorkOrderTable = ({
           <PaginationIndicator 
             pagination={pagination} 
             onPageChange={onPageChange}
-            onRefresh={handleRefresh}
+            onRefresh={onRefresh}
           />
         )}
         {workOrders.map(workOrder => (
@@ -105,21 +72,20 @@ export const WorkOrderTable = ({
           <PaginationIndicator 
             pagination={pagination} 
             onPageChange={onPageChange}
-            onRefresh={handleRefresh}
+            onRefresh={onRefresh}
           />
         )}
       </div>
     );
   }
 
-  // Desktop view with table
   return (
     <div>
       {pagination && onPageChange && (
         <PaginationIndicator 
           pagination={pagination} 
           onPageChange={onPageChange} 
-          onRefresh={handleRefresh}
+          onRefresh={onRefresh}
         />
       )}
       <div className="rounded-md border">
@@ -149,7 +115,7 @@ export const WorkOrderTable = ({
         <PaginationIndicator 
           pagination={pagination} 
           onPageChange={onPageChange}
-          onRefresh={handleRefresh}
+          onRefresh={onRefresh}
         />
       )}
     </div>

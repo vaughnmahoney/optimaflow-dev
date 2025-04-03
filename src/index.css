@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -170,17 +171,4 @@
 
 .compact-sheet .sheet-content {
   @apply px-3 py-2;
-}
-
-/* Custom styles for the refresh button */
-.refresh-button {
-  @apply text-muted-foreground hover:text-foreground transition-colors;
-}
-
-.refresh-button:hover .refresh-icon {
-  @apply animate-pulse;
-}
-
-.refresh-button:disabled {
-  @apply opacity-50;
 }

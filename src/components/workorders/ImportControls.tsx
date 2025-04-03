@@ -1,6 +1,4 @@
 
-// This component is no longer directly used, as the refresh functionality
-// is now integrated directly into the PaginationIndicator component
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
@@ -27,17 +25,22 @@ export const ImportControls = ({
     setIsRefreshing(true);
     
     try {
+      // First refresh the current data
       if (onRefresh) {
         await onRefresh();
       } else {
+        // Fallback to just invalidating the cache if no refresh function provided
         await queryClient.invalidateQueries({ queryKey: ["workOrders"] });
       }
       
+      // Then run the auto import to check for new orders
       const importSuccess = await runAutoImport();
       
       if (!importSuccess) {
+        // If auto-import didn't report success but the refresh worked, still show success message
         toast.success("Work orders refreshed");
       }
+      // If importSuccess is true, the auto-import will have shown its own success message
     } catch (error) {
       console.error("Error refreshing data:", error);
       toast.error("Failed to refresh work orders");
@@ -46,6 +49,7 @@ export const ImportControls = ({
     }
   };
 
+  // Simple button for both mobile and desktop
   return (
     <Button 
       variant="ghost" 
