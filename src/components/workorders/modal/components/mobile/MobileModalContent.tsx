@@ -41,22 +41,22 @@ export const MobileModalContent = ({
         {/* View Images & Download buttons - now first */}
         <div className="flex items-center gap-2">
           <Button 
-            className="flex-1 justify-center items-center"
+            className="h-9 px-3 py-1 text-xs flex items-center justify-center"
             variant="outline"
             onClick={onViewImages}
             disabled={!hasImages}
           >
-            <Image className="mr-2 h-4 w-4" />
+            <Image className="mr-1 h-3.5 w-3.5" />
             {hasImages ? `(${images.length})` : '(0)'}
           </Button>
           
           {onDownloadAll && hasImages && (
             <Button 
-              className="w-10 justify-center items-center aspect-square p-0"
+              className="w-9 h-9 justify-center items-center p-0"
               variant="outline"
               onClick={onDownloadAll}
             >
-              <Download className="h-4 w-4" />
+              <Download className="h-3.5 w-3.5" />
               <span className="sr-only">Download All</span>
             </Button>
           )}
