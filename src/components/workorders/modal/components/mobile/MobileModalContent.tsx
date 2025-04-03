@@ -42,8 +42,8 @@ export const MobileModalContent = ({
         {/* View Images button and Status button in same row */}
         <div className="flex items-center justify-between gap-2">
           <Button 
-            className="h-9 px-3 py-1 text-xs flex items-center justify-center"
-            variant="outline"
+            className="h-8 px-3 py-1 text-xs flex items-center justify-center"
+            variant={hasImages ? "outline" : "ghost"}
             onClick={onViewImages}
             disabled={!hasImages}
           >

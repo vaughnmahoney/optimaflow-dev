@@ -50,7 +50,7 @@ export const ActionButtons = ({
           <TooltipTrigger asChild>
             <Button 
               className="w-full justify-start relative"
-              variant="outline"
+              variant="ghost"
               onClick={() => handleStatusUpdate('approved')}
               disabled={isUpdating !== null || currentStatus === 'approved'}
             >
@@ -74,7 +74,7 @@ export const ActionButtons = ({
           <TooltipTrigger asChild>
             <Button 
               className="w-full justify-start relative"
-              variant="outline"
+              variant="ghost"
               onClick={() => handleStatusUpdate('flagged')}
               disabled={isUpdating !== null || currentStatus === 'flagged'}
             >
@@ -96,7 +96,7 @@ export const ActionButtons = ({
         
         <Button 
           className="w-full justify-start"
-          variant="outline"
+          variant="ghost"
           onClick={onDownloadAll}
           disabled={!hasImages}
         >

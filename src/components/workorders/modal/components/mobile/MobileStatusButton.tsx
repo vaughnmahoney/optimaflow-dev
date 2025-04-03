@@ -35,9 +35,9 @@ export const MobileStatusButton = ({
     <DropdownMenu>
       <DropdownMenuTrigger asChild onClick={handleDropdownClick}>
         <Button 
-          variant="outline"
+          variant="ghost"
           size="sm"
-          className="h-9 px-3 py-1 text-xs flex items-center justify-center gap-1 border-gray-300 text-gray-600"
+          className="h-8 px-3 text-xs flex items-center justify-center gap-1 text-gray-600 hover:bg-gray-100"
         >
           Status
           <ChevronDown className="h-3 w-3" />
