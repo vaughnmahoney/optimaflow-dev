@@ -37,7 +37,7 @@ export const MobileImageHeader = ({
           variant="ghost" 
           size="icon" 
           onClick={onClose} 
-          className="hover:bg-gray-200 dark:hover:bg-gray-700"
+          className="rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
         >
           <X className="h-4 w-4" />
         </Button>
