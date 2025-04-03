@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { WorkOrderListProps } from "./types";
 import { StatusFilterCards } from "./filters/StatusFilterCards";
@@ -10,6 +11,7 @@ import { SortDirection, SortField } from "./types";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const WorkOrderList = ({ 
   workOrders, 
@@ -40,6 +42,7 @@ export const WorkOrderList = ({
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const isMobile = useIsMobile();
+  const queryClient = useQueryClient();
 
   if (isLoading) {
     return <LoadingSkeleton />;
@@ -89,6 +92,9 @@ export const WorkOrderList = ({
   };
 
   const handleStatusFilterChange = (status: string | null) => {
+    // When filter changes, refresh the data to show accurate statuses
+    queryClient.invalidateQueries({ queryKey: ["workOrders"] });
+    
     onFiltersChange({
       ...filters,
       status
@@ -97,6 +103,8 @@ export const WorkOrderList = ({
 
   const handleSortChange = (field: SortField, direction: SortDirection) => {
     if (onSort) {
+      // Refresh data when sort changes
+      queryClient.invalidateQueries({ queryKey: ["workOrders"] });
       onSort(field, direction);
     }
   };
@@ -111,6 +119,9 @@ export const WorkOrderList = ({
       }
       
       setSelectedWorkOrder(null);
+      
+      // Explicitly invalidate the work orders query to refresh data
+      queryClient.invalidateQueries({ queryKey: ["workOrders"] });
       
       if (refetch) {
         await refetch();

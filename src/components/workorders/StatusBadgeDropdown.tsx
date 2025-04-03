@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { 
@@ -10,6 +9,7 @@ import { StatusBadge } from "./StatusBadge";
 import { cn } from "@/lib/utils";
 import { useWorkOrderMutations } from "@/hooks/useWorkOrderMutations";
 import { StatusMenuItems } from "./dropdown/StatusMenuItems";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface StatusBadgeDropdownProps {
   workOrderId: string;
@@ -32,6 +32,7 @@ export const StatusBadgeDropdown = ({
 }: StatusBadgeDropdownProps) => {
   const { updateWorkOrderStatus } = useWorkOrderMutations();
   const [isOpen, setIsOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   const handleStatusChange = (newStatus: string) => {
     // Include skipRefresh: true to prevent automatic filtering
@@ -43,6 +44,10 @@ export const StatusBadgeDropdown = ({
     };
     
     updateWorkOrderStatus(workOrderId, newStatus, options);
+    
+    // Keep the badge count updated separately for sidebar accuracy
+    queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
+    
     setIsOpen(false);
   };
   

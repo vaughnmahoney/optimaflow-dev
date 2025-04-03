@@ -1,4 +1,3 @@
-
 import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -7,6 +6,7 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { StatusMenuItems } from "../../../dropdown/StatusMenuItems";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface MobileStatusButtonProps {
   workOrderId: string;
@@ -19,11 +19,16 @@ export const MobileStatusButton = ({
   currentStatus,
   onStatusUpdate
 }: MobileStatusButtonProps) => {
+  const queryClient = useQueryClient();
+
   const handleStatusChange = (newStatus: string) => {
     if (onStatusUpdate) {
       // Pass skipRefresh: true to prevent automatic filtering
       // And updateLocal: true to update the UI status immediately
       onStatusUpdate(workOrderId, newStatus, { skipRefresh: true, updateLocal: true });
+      
+      // Keep the badge count updated separately for sidebar accuracy
+      queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
     }
   };
 
