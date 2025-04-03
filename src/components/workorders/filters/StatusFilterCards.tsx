@@ -162,15 +162,14 @@ export const StatusFilterCards = ({
     );
   };
 
-  // Fixed the scrolling by adding explicit width & height constraints,
-  // adding ScrollBar with orientation="horizontal", and ensuring proper layout
+  // Updated to maintain scroll functionality but hide the scrollbar
   return (
     <div className="mb-0 overflow-hidden w-full">
-      <ScrollArea className="w-full">
+      <ScrollArea className="w-full scrollbar-none">
         <div className="flex space-x-2 pb-2 min-w-max">
           {renderStatusButtons()}
         </div>
-        <ScrollBar orientation="horizontal" />
+        <ScrollBar orientation="horizontal" className="hidden" />
       </ScrollArea>
     </div>
   );
