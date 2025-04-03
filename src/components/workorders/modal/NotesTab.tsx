@@ -1,7 +1,6 @@
 
 import { Card } from "@/components/ui/card";
 import { WorkOrder } from "../types";
-import { Package } from "lucide-react";
 
 interface NotesTabProps {
   workOrder: WorkOrder;
@@ -16,20 +15,6 @@ export const NotesTab = ({ workOrder }: NotesTabProps) => {
   
   return (
     <div className="space-y-4">
-      {/* Materials card */}
-      <Card className="overflow-hidden border shadow-sm bg-white">
-        <div className="p-5">
-          <div className="flex items-center gap-2 border-b border-gray-100 pb-2 mb-3">
-            <Package className="h-5 w-5 text-blue-600" />
-            <h3 className="font-medium text-blue-800 text-lg">Materials</h3>
-          </div>
-          <div className="pl-7 grid grid-cols-[100px_1fr] gap-y-2">
-            <span className="text-sm text-gray-600">Quantity:</span>
-            <span className="text-sm text-gray-700">{materialQuantity}</span>
-          </div>
-        </div>
-      </Card>
-
       {/* Notes card */}
       <Card className="overflow-hidden border shadow-sm bg-white">
         <div className="p-5">

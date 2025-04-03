@@ -1,7 +1,6 @@
 
 import { Card } from "@/components/ui/card";
 import { WorkOrder } from "@/components/workorders/types";
-import { FileSignature } from "lucide-react";
 
 interface SignatureTabProps {
   workOrder: WorkOrder;
@@ -14,8 +13,7 @@ export const SignatureTab = ({ workOrder }: SignatureTabProps) => {
     <div className="p-4">
       <Card className="overflow-hidden border shadow-sm bg-white">
         <div className="p-4 space-y-2">
-          <div className="flex items-center gap-2">
-            <FileSignature className="h-4 w-4 text-gray-400" />
+          <div className="flex items-center">
             <h4 className="text-sm font-medium text-gray-700">Customer Signature</h4>
           </div>
           
@@ -36,7 +34,6 @@ export const SignatureTab = ({ workOrder }: SignatureTabProps) => {
               </div>
             ) : (
               <div className="text-center py-8 px-6 bg-gray-50 border border-gray-100 rounded-md w-full">
-                <FileSignature className="h-10 w-10 text-gray-200 mx-auto mb-3" />
                 <p className="text-gray-500 font-medium">No signature available</p>
                 <p className="text-xs text-gray-400 mt-1">This work order doesn't have a signature attached</p>
               </div>
