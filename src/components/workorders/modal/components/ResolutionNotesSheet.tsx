@@ -76,6 +76,7 @@ export const ResolutionNotesSheet = ({ workOrder }: ResolutionNotesSheetProps) =
             className="min-h-[250px] mb-4 border-gray-200 focus-visible:border-gray-300 focus-visible:ring-0"
             value={resolutionNotes}
             onChange={(e) => setResolutionNotes(e.target.value)}
+            // Removed any autoFocus prop or autofocus HTML attribute
           />
         </div>
         <DialogFooter>

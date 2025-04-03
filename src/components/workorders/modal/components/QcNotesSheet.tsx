@@ -76,6 +76,7 @@ export const QcNotesSheet = ({ workOrder }: QcNotesSheetProps) => {
             className="min-h-[250px] mb-4 border-gray-200 focus-visible:border-gray-300 focus-visible:ring-0"
             value={qcNotes}
             onChange={(e) => setQcNotes(e.target.value)}
+            // Removed any autoFocus prop or autofocus HTML attribute
           />
         </div>
         <DialogFooter>
