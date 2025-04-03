@@ -143,10 +143,7 @@ export const FilterSortButton = ({
       <FilterSortTrigger filters={filters} />
       
       <SheetContent side="right" className="w-full sm:w-[450px]">
-        <FilterSortHeader 
-          hasActiveFilters={hasActiveFilters} 
-          onClearAll={handleClearAll} 
-        />
+        <FilterSortHeader />
         
         <FilterSortContent 
           localFilters={localFilters}
@@ -156,6 +153,8 @@ export const FilterSortButton = ({
           onSort={onSort}
           applyAllFilters={applyAllFilters}
           setOpen={setOpen}
+          hasActiveFilters={hasActiveFilters}
+          onClearAll={handleClearAll}
         />
       </SheetContent>
     </Sheet>

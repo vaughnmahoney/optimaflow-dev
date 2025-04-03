@@ -8,6 +8,7 @@ import { TextFilter, DateFilter, DriverFilter, LocationFilter, StatusFilter } fr
 import { FilterSectionContainer } from "./FilterSectionContainer";
 import { SortControl } from "./SortControl";
 import { OptimRouteStatusFilter } from "./OptimRouteStatusFilter";
+import { X } from "lucide-react";
 
 interface FilterSortContentProps {
   localFilters: WorkOrderFilters;
@@ -17,6 +18,8 @@ interface FilterSortContentProps {
   onSort: (field: SortField, direction: SortDirection) => void;
   applyAllFilters: () => void;
   setOpen: (value: boolean) => void;
+  hasActiveFilters: boolean;
+  onClearAll: () => void;
 }
 
 export const FilterSortContent = ({
@@ -25,7 +28,9 @@ export const FilterSortContent = ({
   handleLocalFilterClear,
   sortDirection,
   onSort,
-  applyAllFilters
+  applyAllFilters,
+  hasActiveFilters,
+  onClearAll
 }: FilterSortContentProps) => {
   return (
     <>
@@ -101,12 +106,26 @@ export const FilterSortContent = ({
       </ScrollArea>
       
       <div className="mt-2 sticky bottom-0 pt-2 border-t">
-        <Button 
-          className="w-full h-9 text-sm" 
-          onClick={applyAllFilters}
-        >
-          Apply Filters
-        </Button>
+        <div className="flex gap-2 justify-between">
+          {hasActiveFilters && (
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={onClearAll}
+              className="h-9 text-sm"
+            >
+              <X className="h-3.5 w-3.5 mr-1" />
+              Clear All
+            </Button>
+          )}
+          
+          <Button 
+            className={`h-9 text-sm ${hasActiveFilters ? 'flex-1' : 'w-full'}`}
+            onClick={applyAllFilters}
+          >
+            Apply Filters
+          </Button>
+        </div>
       </div>
     </>
   );
