@@ -36,7 +36,9 @@ export const useAutoImport = () => {
       
       try {
         // Start a long-running connection to track progress
-        progressEventSource = new EventSource(`${supabase.functions.url}/auto-import-orders/progress`);
+        // Using a direct URL construction instead of accessing protected property
+        const progressUrl = `${process.env.SUPABASE_URL || 'https://eijdqiyvuhregbydndnb.supabase.co'}/functions/v1/auto-import-orders/progress`;
+        progressEventSource = new EventSource(progressUrl);
         
         progressEventSource.addEventListener('message', (event) => {
           try {
@@ -62,10 +64,9 @@ export const useAutoImport = () => {
         // Continue with the import even if progress tracking fails
       }
 
-      // Call the actual import function
+      // Call the actual import function - removing the signal property which isn't supported
       const { data, error } = await supabase.functions.invoke('auto-import-orders', {
-        body: {},
-        signal: abortController.signal
+        body: {}
       });
 
       // Clean up
