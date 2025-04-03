@@ -98,7 +98,9 @@ export const useSortableTable = (
             valueB = b.order_no || '';
             break;
           case 'service_date':
-            // Use our updated date extraction logic
+          case 'end_time':
+            // Use our updated date extraction logic for both service_date and end_time sorting
+            // This ensures consistent behavior between the two fields
             const dateA = getServiceDateValue(a);
             const dateB = getServiceDateValue(b);
             
@@ -111,8 +113,8 @@ export const useSortableTable = (
             if (!validA && validB) return sortDirection === 'asc' ? 1 : -1;
             // If both are invalid, use alphabetical sorting on the raw strings
             if (!validA && !validB) {
-              valueA = a.service_date || '';
-              valueB = b.service_date || '';
+              valueA = (a.end_time || a.service_date || '');
+              valueB = (b.end_time || b.service_date || '');
               return sortDirection === 'asc' 
                 ? valueA.localeCompare(valueB)
                 : valueB.localeCompare(valueA);
@@ -151,7 +153,7 @@ export const useSortableTable = (
           : valueB - valueA;
       });
     } else {
-      // Default sort if no sort criteria provided - sort by service_date descending
+      // Default sort if no sort criteria provided - sort by end_time descending
       sortedWorkOrders.sort((a, b) => {
         const dateA = getServiceDateValue(a);
         const dateB = getServiceDateValue(b);
@@ -186,7 +188,7 @@ export const useSortableTable = (
     }
   };
 
-  // Helper functions for getting display values - using safe property access
+  // Helper functions for getting display values
   const getLocationName = (order: WorkOrder): string => {
     if (!order.location) return 'N/A';
     

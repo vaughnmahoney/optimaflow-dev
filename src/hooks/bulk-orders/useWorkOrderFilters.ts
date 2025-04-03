@@ -40,12 +40,29 @@ export const applyFilters = (orders: WorkOrder[], filters: WorkOrderFilters): Wo
       }
     }
     
-    // Filter by date range
+    // Filter by date range, prioritizing end_time over service_date
     if (filters.dateRange.from || filters.dateRange.to) {
-      if (!order.service_date) return false;
+      // Try to get a valid date from either end_time or service_date
+      let orderDate: Date | null = null;
       
-      const orderDate = new Date(order.service_date);
-      if (isNaN(orderDate.getTime())) return false;
+      // First try end_time if available
+      if (order.end_time) {
+        const endTimeDate = new Date(order.end_time);
+        if (!isNaN(endTimeDate.getTime())) {
+          orderDate = endTimeDate;
+        }
+      }
+      
+      // If no valid end_time, fall back to service_date
+      if (!orderDate && order.service_date) {
+        const serviceDate = new Date(order.service_date);
+        if (!isNaN(serviceDate.getTime())) {
+          orderDate = serviceDate;
+        }
+      }
+      
+      // If no valid date available, filter this record out
+      if (!orderDate) return false;
       
       if (filters.dateRange.from) {
         const fromDate = new Date(filters.dateRange.from);

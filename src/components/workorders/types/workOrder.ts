@@ -12,7 +12,7 @@ export interface WorkOrder {
   status: string;
   timestamp: string;
   service_date?: string;
-  end_time?: string;  // Added the end_time property
+  end_time?: string;  // Critical field for date filtering and sorting
   service_notes?: string;
   tech_notes?: string;
   notes?: string;

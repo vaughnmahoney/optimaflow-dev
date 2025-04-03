@@ -60,7 +60,7 @@ export const applyOrderNoFilter = (countQuery: any, dataQuery: any, orderNo: str
 };
 
 /**
- * Applies date range filters to both count and data queries using the new service_date column
+ * Applies date range filters to both count and data queries using the end_time column
  * @param countQuery The count query to modify
  * @param dataQuery The data query to modify
  * @param fromDate The start date filter
@@ -74,21 +74,35 @@ export const applyDateRangeFilter = (
   toDate: Date | null
 ) => {
   try {
-    // Apply date range filter using the new service_date column
+    // Apply date range filter using the end_time column first (preferred),
+    // falling back to service_date if end_time is not available
     if (fromDate) {
-      const fromDateStr = fromDate.toISOString().split('T')[0];
-      countQuery = countQuery.gte('service_date', fromDateStr);
-      dataQuery = dataQuery.gte('service_date', fromDateStr);
+      const fromDateStr = fromDate.toISOString();
+      
+      // We need to handle records that may have either end_time or service_date but not both
+      // Create a filter condition for end_time with fallback to service_date
+      countQuery = countQuery.or(
+        `end_time.gte.${fromDateStr},and(end_time.is.null,service_date.gte.${fromDate.toISOString().split('T')[0]})`
+      );
+      dataQuery = dataQuery.or(
+        `end_time.gte.${fromDateStr},and(end_time.is.null,service_date.gte.${fromDate.toISOString().split('T')[0]})`
+      );
     }
     
     if (toDate) {
       // Add a day to the end date to include that day (inclusive range)
       const inclusiveToDate = new Date(toDate);
       inclusiveToDate.setDate(inclusiveToDate.getDate() + 1);
-      const toDateStr = inclusiveToDate.toISOString().split('T')[0];
+      const toDateStr = inclusiveToDate.toISOString();
+      const toDateServiceStr = inclusiveToDate.toISOString().split('T')[0];
       
-      countQuery = countQuery.lt('service_date', toDateStr);
-      dataQuery = dataQuery.lt('service_date', toDateStr);
+      // Create a filter condition for end_time with fallback to service_date
+      countQuery = countQuery.or(
+        `end_time.lt.${toDateStr},and(end_time.is.null,service_date.lt.${toDateServiceStr})`
+      );
+      dataQuery = dataQuery.or(
+        `end_time.lt.${toDateStr},and(end_time.is.null,service_date.lt.${toDateServiceStr})`
+      );
     }
   } catch (error) {
     console.error("Error applying date filter:", error);
@@ -141,7 +155,7 @@ export const applyTextSearchFilter = (
  */
 export const applySorting = (
   dataQuery: any, 
-  sortField: SortField = 'end_time', // Changed default from 'service_date' to 'end_time'
+  sortField: SortField = 'end_time',
   sortDirection: SortDirection = 'desc'
 ) => {
   if (sortField && sortDirection) {
