@@ -12,6 +12,7 @@ export interface WorkOrderFilters {
   location: string | null;
   orderNo: string | null;
   searchQuery?: string; // Keeping for backward compatibility but will deprecate
+  optimoRouteStatus?: string | null; // Add the optimoRouteStatus field
 }
 
 export interface ColumnFilterProps {

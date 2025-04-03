@@ -40,6 +40,13 @@ export const applyFilters = (orders: WorkOrder[], filters: WorkOrderFilters): Wo
       }
     }
     
+    // Filter by optimoRouteStatus
+    if (filters.optimoRouteStatus && order.optimoroute_status) {
+      if (order.optimoroute_status !== filters.optimoRouteStatus) {
+        return false;
+      }
+    }
+    
     // Filter by date range, prioritizing end_time over service_date
     if (filters.dateRange.from || filters.dateRange.to) {
       // Try to get a valid date from either end_time or service_date
@@ -114,6 +121,9 @@ export const useFilterHandlers = (
         case 'status':
           newFilters.status = value;
           break;
+        case 'optimoroute_status': // Add handling for optimoroute_status
+          newFilters.optimoRouteStatus = value;
+          break;
       }
       
       return newFilters;
@@ -143,6 +153,9 @@ export const useFilterHandlers = (
         case 'status':
           newFilters.status = null;
           break;
+        case 'optimoroute_status': // Add clearing for optimoroute_status
+          newFilters.optimoRouteStatus = null;
+          break;
       }
       
       return newFilters;
@@ -158,7 +171,8 @@ export const useFilterHandlers = (
       dateRange: { from: null, to: null },
       driver: null,
       location: null,
-      orderNo: null
+      orderNo: null,
+      optimoRouteStatus: null // Include optimoRouteStatus in the reset
     });
     
     // Reset to first page when all filters are cleared

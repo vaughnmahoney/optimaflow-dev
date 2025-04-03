@@ -42,7 +42,8 @@ export const FilterSortButton = ({
     filters.driver !== null || 
     filters.location !== null || 
     filters.dateRange.from !== null || 
-    filters.dateRange.to !== null;
+    filters.dateRange.to !== null ||
+    filters.optimoRouteStatus !== null;
 
   const toggleDateSort = () => {
     // Toggle between oldest first (asc) and newest first (desc)
@@ -175,6 +176,16 @@ export const FilterSortButton = ({
               onClear={() => clearColumnFilter('status')}
             />
           </div>
+          
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium">OptimoRoute Status</h3>
+            <StatusFilter 
+              column="optimoroute_status" 
+              value={filters.optimoRouteStatus} 
+              onChange={(value) => onColumnFilterChange('optimoroute_status', value)}
+              onClear={() => clearColumnFilter('optimoroute_status')}
+            />
+          </div>
         </div>
         
         <div className="mt-6">
@@ -195,5 +206,6 @@ const countActiveFilters = (filters: WorkOrderFilters): number => {
   if (filters.driver) count++;
   if (filters.location) count++;
   if (filters.dateRange.from || filters.dateRange.to) count++;
+  if (filters.optimoRouteStatus) count++; // Count optimoRouteStatus as well
   return count;
 };
