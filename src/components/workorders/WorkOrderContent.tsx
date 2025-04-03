@@ -1,5 +1,4 @@
 
-import { useState, useRef } from "react";
 import { WorkOrderList } from "./WorkOrderList";
 import { WorkOrder, SortDirection, SortField, PaginationState, WorkOrderFilters } from "./types";
 
@@ -55,22 +54,13 @@ export const WorkOrderContent = ({
   clearAllFilters,
   onResolveFlag
 }: WorkOrderContentProps) => {
-  // Create a wrapper for onStatusUpdate that will be passed to the WorkOrderList
-  // This ensures the modal stays open during status updates
-  const handleStatusUpdate = (workOrderId: string, newStatus: string) => {
-    if (onStatusUpdate) {
-      console.log("WorkOrderContent: Updating status", workOrderId, newStatus);
-      onStatusUpdate(workOrderId, newStatus);
-    }
-  };
-
   return (
     <WorkOrderList
       workOrders={workOrders}
       isLoading={isLoading}
       filters={filters}
       onFiltersChange={onFiltersChange}
-      onStatusUpdate={handleStatusUpdate}
+      onStatusUpdate={onStatusUpdate}
       onImageView={onImageView}
       onDelete={onDelete}
       onSearchChange={onSearchChange}

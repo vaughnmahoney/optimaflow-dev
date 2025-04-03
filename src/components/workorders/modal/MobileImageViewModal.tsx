@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { WorkOrder } from "../types";
 import { useWorkOrderNavigation } from "@/hooks/useWorkOrderNavigation";
@@ -36,16 +36,6 @@ export const MobileImageViewModal = ({
 }: MobileImageViewModalProps) => {
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
   
-  // Use a local state to track the work order to prevent unmounting
-  const [localWorkOrder, setLocalWorkOrder] = useState<WorkOrder | null>(workOrder);
-  
-  // Update local work order when prop changes and modal is open
-  useEffect(() => {
-    if (isOpen && workOrder) {
-      setLocalWorkOrder(workOrder);
-    }
-  }, [workOrder, isOpen]);
-  
   const {
     currentWorkOrder,
     currentIndex: navIndex,
@@ -57,42 +47,20 @@ export const MobileImageViewModal = ({
     handleSetOrder
   } = useWorkOrderNavigation({
     workOrders,
-    initialWorkOrderId: localWorkOrder?.id || null,
+    initialWorkOrderId: workOrder?.id || null,
     isOpen,
     onClose,
     onPageBoundary
   });
   
-  // Use local work order instead of currentWorkOrder to prevent unmounting
-  const modalWorkOrder = localWorkOrder || currentWorkOrder;
-  
-  // Early return if no work order is available
-  if (!modalWorkOrder) return null;
-
-  // Create a wrapper for status updates to update local state
-  const handleStatusUpdate = (workOrderId: string, status: string) => {
-    console.log("MobileImageViewModal: Updating status", workOrderId, status);
-    
-    // Update our local work order immediately
-    if (localWorkOrder && localWorkOrder.id === workOrderId) {
-      setLocalWorkOrder({
-        ...localWorkOrder,
-        status
-      });
-    }
-    
-    // Call the parent's handler
-    if (onStatusUpdate) {
-      onStatusUpdate(workOrderId, status);
-    }
-  };
+  if (!currentWorkOrder) return null;
 
   // Get images from the work order's completion_response
-  const completionData = modalWorkOrder?.completion_response?.orders?.[0]?.data;
+  const completionData = currentWorkOrder?.completion_response?.orders?.[0]?.data;
   const images = completionData?.form?.images || [];
   
   // Status color for border
-  const statusBorderColor = getStatusBorderColor(modalWorkOrder.status || "pending_review");
+  const statusBorderColor = getStatusBorderColor(currentWorkOrder.status || "pending_review");
 
   // Sync navigation with parent component
   const handleNavigate = (index: number) => {
@@ -111,7 +79,7 @@ export const MobileImageViewModal = ({
           // Show image viewer when in image mode
           <>
             <MobileImageViewer
-              workOrderId={modalWorkOrder.id}
+              workOrderId={currentWorkOrder.id}
               images={images}
               currentImageIndex={currentImageIndex}
               setCurrentImageIndex={setCurrentImageIndex}
@@ -123,15 +91,15 @@ export const MobileImageViewModal = ({
           // Show main content when not in image mode
           <>
             <MobileModalHeader 
-              workOrder={modalWorkOrder} 
+              workOrder={currentWorkOrder} 
               onClose={onClose} 
             />
             
             <MobileModalContent
-              workOrder={modalWorkOrder}
+              workOrder={currentWorkOrder}
               images={images}
               onViewImages={openImageViewer}
-              onStatusUpdate={handleStatusUpdate}
+              onStatusUpdate={onStatusUpdate}
               onDownloadAll={onDownloadAll}
               onResolveFlag={onResolveFlag}
             />
