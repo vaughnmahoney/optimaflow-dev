@@ -91,20 +91,29 @@ export const OrderDetails = ({
     <div className="flex-1 flex flex-col overflow-hidden">
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="w-full h-12 bg-white grid grid-cols-3 rounded-none">
-            <TabsTrigger value="details" className="rounded-none data-[state=active]:bg-gray-50 data-[state=active]:border-b-2 data-[state=active]:border-gray-700">
+          <TabsList className="w-full h-12 bg-white grid grid-cols-3 rounded-none border-b border-gray-200">
+            <TabsTrigger 
+              value="details" 
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-b-2 data-[state=active]:border-gray-700 data-[state=active]:bg-transparent"
+            >
               <div className="flex items-center gap-2">
                 <FileText className="h-4 w-4 text-gray-600" />
                 <span className="text-sm hidden sm:inline font-medium">Details</span>
               </div>
             </TabsTrigger>
-            <TabsTrigger value="notes" className="rounded-none data-[state=active]:bg-gray-50 data-[state=active]:border-b-2 data-[state=active]:border-gray-700">
+            <TabsTrigger 
+              value="notes" 
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-b-2 data-[state=active]:border-gray-700 data-[state=active]:bg-transparent"
+            >
               <div className="flex items-center gap-2">
                 <MessageSquare className="h-4 w-4 text-gray-600" />
                 <span className="text-sm hidden sm:inline font-medium">Notes</span>
               </div>
             </TabsTrigger>
-            <TabsTrigger value="signature" className="rounded-none data-[state=active]:bg-gray-50 data-[state=active]:border-b-2 data-[state=active]:border-gray-700">
+            <TabsTrigger 
+              value="signature" 
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-b-2 data-[state=active]:border-gray-700 data-[state=active]:bg-transparent"
+            >
               <div className="flex items-center gap-2">
                 <FileSignature className="h-4 w-4 text-gray-600" />
                 <span className="text-sm hidden sm:inline font-medium">Signature</span>

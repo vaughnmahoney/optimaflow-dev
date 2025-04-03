@@ -98,6 +98,15 @@
   }
 }
 
+/* Custom styling for sleek tabs */
+.sleek-tabs-trigger {
+  @apply border-b-2 border-transparent transition-all duration-200;
+}
+
+.sleek-tabs-trigger[data-state="active"] {
+  @apply border-b-2 border-gray-700 font-medium;
+}
+
 /* Custom scrollbar for the sidebar */
 .overflow-y-auto {
   scrollbar-width: thin;

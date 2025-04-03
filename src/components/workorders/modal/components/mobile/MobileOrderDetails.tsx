@@ -89,10 +89,25 @@ export const MobileOrderDetails = ({
     <div className="flex flex-col h-full overflow-hidden">
       {/* Tabs navigation */}
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full flex-shrink-0">
-        <TabsList className="grid grid-cols-3 w-full bg-gray-50 rounded-md p-1 sticky top-0 z-10">
-          <TabsTrigger value="details" className="text-sm">Details</TabsTrigger>
-          <TabsTrigger value="notes" className="text-sm">Notes</TabsTrigger>
-          <TabsTrigger value="signature" className="text-sm">Signature</TabsTrigger>
+        <TabsList className="grid grid-cols-3 w-full bg-white border-b border-gray-200 rounded-none p-0">
+          <TabsTrigger 
+            value="details" 
+            className="text-sm py-2 rounded-none border-b-2 border-transparent data-[state=active]:border-b-2 data-[state=active]:border-gray-700 data-[state=active]:bg-transparent"
+          >
+            Details
+          </TabsTrigger>
+          <TabsTrigger 
+            value="notes" 
+            className="text-sm py-2 rounded-none border-b-2 border-transparent data-[state=active]:border-b-2 data-[state=active]:border-gray-700 data-[state=active]:bg-transparent"
+          >
+            Notes
+          </TabsTrigger>
+          <TabsTrigger 
+            value="signature" 
+            className="text-sm py-2 rounded-none border-b-2 border-transparent data-[state=active]:border-b-2 data-[state=active]:border-gray-700 data-[state=active]:bg-transparent"
+          >
+            Signature
+          </TabsTrigger>
         </TabsList>
       </Tabs>
       
