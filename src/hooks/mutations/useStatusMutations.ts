@@ -26,7 +26,8 @@ export const useStatusMutations = () => {
       filters?: WorkOrderFilters, 
       workOrders?: WorkOrder[], 
       onAdvanceToNextOrder?: (nextOrderId: string) => void,
-      skipRefresh?: boolean // New option to skip refreshing queries
+      skipRefresh?: boolean, // Skip refreshing queries
+      updateLocal?: boolean // Update local data without full refresh
     }
   ) => {
     try {
@@ -123,6 +124,59 @@ export const useStatusMutations = () => {
           }
         }
       }
+
+      // If updateLocal is true but skipRefresh is true, we'll update the local cache data
+      // This provides instant visual feedback without triggering a re-fetch
+      if (options?.updateLocal === true && options?.skipRefresh === true) {
+        // Update the local cache data to reflect the status change
+        queryClient.setQueriesData(
+          { queryKey: ["workOrders"] },
+          (oldData: any) => {
+            // If there's no old data, we can't update it
+            if (!oldData) return oldData;
+            
+            // Map through the work orders and update the matching one
+            const newData = {
+              ...oldData,
+              data: oldData.data.map((wo: WorkOrder) => {
+                if (wo.id === workOrderId) {
+                  // Create a copy of the work order with the updated status
+                  return {
+                    ...wo,
+                    status: newStatus,
+                    // Add attribution data based on status
+                    ...(newStatus === "approved" && {
+                      approved_at: actionData.action_timestamp,
+                      approved_by: userId,
+                      approved_user: username
+                    }),
+                    ...(newStatus === "flagged" && {
+                      flagged_at: actionData.action_timestamp,
+                      flagged_by: userId,
+                      flagged_user: username
+                    }),
+                    ...(newStatus === "resolved" && {
+                      resolved_at: actionData.action_timestamp,
+                      resolved_by: userId,
+                      resolved_user: username
+                    }),
+                    ...(newStatus === "rejected" && {
+                      rejected_at: actionData.action_timestamp,
+                      rejected_by: userId,
+                      rejected_user: username
+                    }),
+                    last_action_at: actionData.action_timestamp,
+                    last_action_by: userId,
+                    last_action_user: username
+                  };
+                }
+                return wo;
+              })
+            };
+            return newData;
+          }
+        );
+      }
       
       // Only invalidate queries if skipRefresh is not true
       if (!options?.skipRefresh) {
@@ -145,7 +199,8 @@ export const useStatusMutations = () => {
       filters?: WorkOrderFilters, 
       workOrders?: WorkOrder[], 
       onAdvanceToNextOrder?: (nextOrderId: string) => void,
-      skipRefresh?: boolean // New option to skip refreshing queries
+      skipRefresh?: boolean, // Skip refreshing queries
+      updateLocal?: boolean // Update local data without full refresh
     }
   ) => {
     try {
@@ -197,6 +252,41 @@ export const useStatusMutations = () => {
             }
           }
         }
+      }
+
+      // If updateLocal is true but skipRefresh is true, we'll update the local cache data
+      // This provides instant visual feedback without triggering a re-fetch
+      if (options?.updateLocal === true && options?.skipRefresh === true) {
+        // Update the local cache data to reflect the status change
+        queryClient.setQueriesData(
+          { queryKey: ["workOrders"] },
+          (oldData: any) => {
+            // If there's no old data, we can't update it
+            if (!oldData) return oldData;
+            
+            // Map through the work orders and update the matching one
+            const newData = {
+              ...oldData,
+              data: oldData.data.map((wo: WorkOrder) => {
+                if (wo.id === workOrderId) {
+                  // Create a copy of the work order with the updated status
+                  return {
+                    ...wo,
+                    status: newStatus,
+                    resolved_at: timestamp,
+                    resolved_by: userId,
+                    resolved_user: username,
+                    last_action_at: timestamp,
+                    last_action_by: userId,
+                    last_action_user: username
+                  };
+                }
+                return wo;
+              })
+            };
+            return newData;
+          }
+        );
       }
       
       // Only invalidate queries if skipRefresh is not true

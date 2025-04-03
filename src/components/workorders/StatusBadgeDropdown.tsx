@@ -35,8 +35,10 @@ export const StatusBadgeDropdown = ({
 
   const handleStatusChange = (newStatus: string) => {
     // Include skipRefresh: true to prevent automatic filtering
+    // And updateLocal: true to update the UI status immediately
     const options = { 
       skipRefresh: true,
+      updateLocal: true,
       ...(filters && workOrders && onAdvanceToNextOrder ? { filters, workOrders, onAdvanceToNextOrder } : {})
     };
     

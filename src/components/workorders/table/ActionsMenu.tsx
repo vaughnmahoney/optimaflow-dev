@@ -50,9 +50,13 @@ export const ActionsMenu = ({
   };
   
   const handleStatusUpdate = (newStatus: string) => {
-    const options = filters && workOrders && onAdvanceToNextOrder
-      ? { filters, workOrders, onAdvanceToNextOrder }
-      : undefined;
+    const options = {
+      skipRefresh: true, // Skip refresh by default
+      updateLocal: true, // Update local UI state
+      ...(filters && workOrders && onAdvanceToNextOrder
+        ? { filters, workOrders, onAdvanceToNextOrder }
+        : {})
+    };
     
     onStatusUpdate(workOrder.id, newStatus, options);
   };

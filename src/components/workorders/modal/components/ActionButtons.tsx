@@ -33,7 +33,8 @@ export const ActionButtons = ({
       setIsUpdating(status);
       
       // Pass skipRefresh: true to prevent automatic filtering
-      await onStatusUpdate?.(workOrderId, status, { skipRefresh: true });
+      // But also include updateLocal: true to update the UI status
+      await onStatusUpdate?.(workOrderId, status, { skipRefresh: true, updateLocal: true });
       
       // Update badge count separately to keep the sidebar accurate
       // This won't affect the current filtered list

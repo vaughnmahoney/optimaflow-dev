@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { WorkOrderListProps } from "./types";
 import { StatusFilterCards } from "./filters/StatusFilterCards";
@@ -46,31 +45,25 @@ export const WorkOrderList = ({
     return <LoadingSkeleton />;
   }
 
-  // Get the current work order and its index
   const currentWorkOrder = workOrders.find(wo => wo.id === selectedWorkOrder) || null;
   const currentIndex = currentWorkOrder ? workOrders.findIndex(wo => wo.id === currentWorkOrder.id) : -1;
 
-  // Handle the image view click
   const handleImageView = (workOrderId: string) => {
     setSelectedWorkOrder(workOrderId);
     setIsImageModalOpen(true);
-    // Also call the passed onImageView function if needed
     if (onImageView) onImageView(workOrderId);
   };
 
-  // Handle navigation between work orders in the modal
   const handleNavigate = (index: number) => {
     if (index >= 0 && index < workOrders.length) {
       setSelectedWorkOrder(workOrders[index].id);
     }
   };
-  
-  // Handle advancement to next order when current order is filtered out
+
   const handleAdvanceToNextOrder = (nextOrderId: string) => {
     setSelectedWorkOrder(nextOrderId);
   };
-  
-  // Handle navigation between pages from the modal
+
   const handlePageBoundary = (direction: 'next' | 'previous') => {
     if (!pagination || !onPageChange) return;
     
@@ -78,31 +71,23 @@ export const WorkOrderList = ({
       ? pagination.page + 1 
       : Math.max(1, pagination.page - 1);
     
-    // Only navigate if we have more pages
     if (direction === 'next' && pagination.page < Math.ceil(pagination.total / pagination.pageSize)) {
       onPageChange(newPage);
-      
-      // We use setTimeout to ensure this runs after the new data is loaded
       setTimeout(() => {
         if (workOrders.length > 0) {
-          // Select the first order when going to the next page
           setSelectedWorkOrder(workOrders[0].id);
         }
       }, 100);
     } else if (direction === 'previous' && pagination.page > 1) {
       onPageChange(newPage);
-      
-      // We use setTimeout to ensure this runs after the new data is loaded
       setTimeout(() => {
         if (workOrders.length > 0) {
-          // Select the last order when going to the previous page
           setSelectedWorkOrder(workOrders[workOrders.length - 1].id);
         }
       }, 100);
     }
   };
 
-  // Handle status filter change
   const handleStatusFilterChange = (status: string | null) => {
     onFiltersChange({
       ...filters,
@@ -110,28 +95,23 @@ export const WorkOrderList = ({
     });
   };
 
-  // Handle sort change
   const handleSortChange = (field: SortField, direction: SortDirection) => {
     if (onSort) {
       onSort(field, direction);
     }
   };
-  
-  // Manual refresh function
+
   const handleManualRefresh = async () => {
     if (isRefreshing) return;
     
     setIsRefreshing(true);
     try {
-      // Close modal if it's open
       if (isImageModalOpen) {
         setIsImageModalOpen(false);
       }
       
-      // Clear selected work order
       setSelectedWorkOrder(null);
       
-      // Call the refetch function from props
       if (refetch) {
         await refetch();
         toast.success("Work orders refreshed successfully");
@@ -143,24 +123,24 @@ export const WorkOrderList = ({
       setIsRefreshing(false);
     }
   };
-  
-  // Wrap the status update function to include the skipRefresh option
+
   const handleStatusUpdate = (workOrderId: string, newStatus: string, options?: any) => {
     const updatedOptions = {
       ...options,
-      skipRefresh: true, // Always skip refresh by default
+      skipRefresh: true,
+      updateLocal: true
     };
     
     if (onStatusUpdate) {
       onStatusUpdate(workOrderId, newStatus, updatedOptions);
     }
   };
-  
-  // Wrap the resolve flag function to include the skipRefresh option
+
   const handleResolveFlag = (workOrderId: string, resolution: string, options?: any) => {
     const updatedOptions = {
       ...options,
-      skipRefresh: true, // Always skip refresh by default
+      skipRefresh: true,
+      updateLocal: true
     };
     
     if (onResolveFlag) {
@@ -170,7 +150,6 @@ export const WorkOrderList = ({
 
   return (
     <div className="space-y-4">
-      {/* Status filter cards with integrated filter button */}
       <div className="flex justify-between items-center">
         <StatusFilterCards 
           statusFilter={filters.status}
@@ -191,8 +170,6 @@ export const WorkOrderList = ({
           sortDirection={sortDirection}
           onSort={handleSortChange}
         />
-        
-        {/* Manual refresh button */}
         <Button 
           onClick={handleManualRefresh}
           variant="outline"
@@ -240,7 +217,6 @@ export const WorkOrderList = ({
           onResolveFlag={handleResolveFlag}
           filters={filters}
           onDownloadAll={() => {
-            // Placeholder for download all functionality
             console.log("Download all images for:", currentWorkOrder.id);
           }}
         />

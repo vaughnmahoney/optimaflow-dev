@@ -22,7 +22,8 @@ export const MobileStatusButton = ({
   const handleStatusChange = (newStatus: string) => {
     if (onStatusUpdate) {
       // Pass skipRefresh: true to prevent automatic filtering
-      onStatusUpdate(workOrderId, newStatus, { skipRefresh: true });
+      // And updateLocal: true to update the UI status immediately
+      onStatusUpdate(workOrderId, newStatus, { skipRefresh: true, updateLocal: true });
     }
   };
 
