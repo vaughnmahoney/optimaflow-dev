@@ -8,7 +8,7 @@ export const countActiveFilters = (filters: WorkOrderFilters): number => {
   if (filters.orderNo) count++;
   if (filters.driver) count++;
   if (filters.location) count++;
-  if (filters.dateRange.from || filters.dateRange.to) count++;
+  // Date range is excluded from the count
   if (filters.optimoRouteStatus) count++;
   return count;
 };
