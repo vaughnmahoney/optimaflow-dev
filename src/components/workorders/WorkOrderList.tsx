@@ -8,7 +8,6 @@ import { FiltersSection } from "./list-components/FiltersSection";
 import { TopPagination } from "./list-components/TopPagination";
 import { WorkOrderImageModal } from "./list-components/WorkOrderImageModal";
 import { useWorkOrderListState } from "./list-components/useWorkOrderListState";
-import { format } from "date-fns";
 
 export const WorkOrderList = ({ 
   workOrders, 
@@ -54,14 +53,6 @@ export const WorkOrderList = ({
     return <LoadingSkeleton />;
   }
 
-  // Check if showing today's data
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const isShowingToday = filters.dateRange.from && 
-    filters.dateRange.to && 
-    format(filters.dateRange.from, 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd') &&
-    format(filters.dateRange.to, 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd');
-
   // Handle image view, update both local state and inform parent
   const handleImageViewWithCallback = (workOrderId: string) => {
     handleImageView(workOrderId);
@@ -91,13 +82,12 @@ export const WorkOrderList = ({
         transformedData={transformedData}
       />
 
-      {/* Top pagination indicator with refresh button and today indicator */}
+      {/* Top pagination indicator with refresh button */}
       <TopPagination 
         pagination={pagination}
         onPageChange={onPageChange}
         onRefresh={refetch}
         isRefreshing={isRefreshing}
-        isShowingToday={isShowingToday}
       />
 
       <WorkOrderTable 
