@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { SortField, SortDirection, PaginationState, WorkOrderFilters } from "@/components/workorders/types";
 import { useWorkOrderFetch } from "./useWorkOrderFetch";
 import { useWorkOrderStatusCounts } from "./useWorkOrderStatusCounts";
@@ -6,13 +7,17 @@ import { useWorkOrderMutations } from "./useWorkOrderMutations";
 import { useWorkOrderImport } from "./useWorkOrderImport";
 
 export const useWorkOrderData = () => {
+  // Get today's date and set it as the default filter
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
   const [filters, setFilters] = useState<WorkOrderFilters>({
     status: null,
-    dateRange: { from: null, to: null },
+    dateRange: { from: today, to: today }, // Default to today's date
     driver: null,
     location: null,
     orderNo: null,
-    optimoRouteStatus: null // Ensure this field is initialized
+    optimoRouteStatus: null
   });
   
   const [sortField, setSortField] = useState<SortField>('end_time');
@@ -63,7 +68,7 @@ export const useWorkOrderData = () => {
         case 'status':
           newFilters.status = value;
           break;
-        case 'optimoroute_status': // Ensure this case is handled
+        case 'optimoroute_status':
           newFilters.optimoRouteStatus = value;
           break;
       }
@@ -108,11 +113,11 @@ export const useWorkOrderData = () => {
   const clearAllFilters = () => {
     setFilters({
       status: null,
-      dateRange: { from: null, to: null },
+      dateRange: { from: today, to: today }, // Reset to today instead of null
       driver: null,
       location: null,
       orderNo: null,
-      optimoRouteStatus: null // Ensure this field is reset
+      optimoRouteStatus: null
     });
     
     handlePageChange(1);

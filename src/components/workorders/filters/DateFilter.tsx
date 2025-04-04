@@ -8,23 +8,36 @@ import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 
 export const DateFilter = ({ column, value, onChange, onClear }: ColumnFilterProps) => {
+  // Default to today if no date is selected
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
   const [dateRange, setDateRange] = useState({
-    from: value?.from || null,
-    to: value?.to || null
+    from: value?.from || today,
+    to: value?.to || today
   });
   
   // Update local state when value prop changes
   useEffect(() => {
     setDateRange({
-      from: value?.from || null,
-      to: value?.to || null
+      from: value?.from || today,
+      to: value?.to || today
     });
   }, [value]);
   
   const handleClear = () => {
-    setDateRange({ from: null, to: null });
-    onClear();
+    const todayDate = new Date();
+    todayDate.setHours(0, 0, 0, 0);
+    // Reset to today instead of null
+    const todayRange = { from: todayDate, to: todayDate };
+    setDateRange(todayRange);
+    onChange(todayRange);
   };
+  
+  const isToday = dateRange.from && 
+    format(dateRange.from, 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd') &&
+    dateRange.to && 
+    format(dateRange.to, 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd');
   
   // Stop clicks from propagating to the table header
   const handlePopoverClick = (e: React.MouseEvent) => {
@@ -38,15 +51,19 @@ export const DateFilter = ({ column, value, onChange, onClear }: ColumnFilterPro
           <Button
             variant="outline"
             size="sm"
-            className="justify-start text-left font-normal h-8"
+            className={`justify-start text-left font-normal h-8 ${isToday ? 'text-primary border-primary/30 bg-primary/5' : ''}`}
             onClick={(e) => e.stopPropagation()}
           >
-            <CalendarIcon className="mr-2 h-4 w-4" />
+            <CalendarIcon className={`mr-2 h-4 w-4 ${isToday ? 'text-primary' : ''}`} />
             {dateRange.from ? (
               dateRange.to ? (
-                <span>
-                  {format(dateRange.from, "LLL dd, y")} - {format(dateRange.to, "LLL dd, y")}
-                </span>
+                isToday ? (
+                  <span className="font-medium">Today: {format(dateRange.from, "LLL dd, y")}</span>
+                ) : (
+                  <span>
+                    {format(dateRange.from, "LLL dd, y")} - {format(dateRange.to, "LLL dd, y")}
+                  </span>
+                )
               ) : (
                 format(dateRange.from, "LLL dd, y")
               )
@@ -69,8 +86,8 @@ export const DateFilter = ({ column, value, onChange, onClear }: ColumnFilterPro
             onSelect={(range) => {
               if (range) {
                 const newRange = {
-                  from: range.from || null,
-                  to: range.to || null
+                  from: range.from || today,
+                  to: range.to || today
                 };
                 setDateRange(newRange);
                 // Update parent state but don't apply filter immediately
@@ -83,7 +100,8 @@ export const DateFilter = ({ column, value, onChange, onClear }: ColumnFilterPro
         </PopoverContent>
       </Popover>
       
-      {(dateRange.from || dateRange.to) && (
+      {/* Change the reset button text when not showing today */}
+      {!isToday && (
         <Button 
           variant="ghost" 
           size="sm" 
@@ -93,7 +111,7 @@ export const DateFilter = ({ column, value, onChange, onClear }: ColumnFilterPro
           }}
           className="h-7 text-xs"
         >
-          Clear dates
+          Show today
         </Button>
       )}
     </div>
