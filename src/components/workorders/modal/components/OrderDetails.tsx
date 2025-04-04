@@ -89,7 +89,7 @@ export const OrderDetails = ({
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-10 shadow-sm">
+      <div className="bg-white border-b border-gray-100 sticky top-0 z-20 shadow-sm">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="w-full h-12 bg-white grid grid-cols-3 rounded-none border-b border-gray-200">
             <TabsTrigger 

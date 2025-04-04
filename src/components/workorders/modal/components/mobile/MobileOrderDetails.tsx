@@ -87,8 +87,8 @@ export const MobileOrderDetails = ({
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* Tabs navigation - Now enhanced with sticky positioning and z-index */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm">
+      {/* Tabs navigation - With fixed positioning at the top */}
+      <div className="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="grid grid-cols-3 w-full bg-white rounded-none p-0">
             <TabsTrigger 
