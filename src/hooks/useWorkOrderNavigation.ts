@@ -1,6 +1,6 @@
 
-import { useState, useEffect } from 'react';
-import { WorkOrder } from '@/components/workorders/types';
+import { useState, useEffect } from "react";
+import { WorkOrder } from "@/components/workorders/types";
 
 interface UseWorkOrderNavigationProps {
   workOrders: WorkOrder[];
@@ -8,110 +8,138 @@ interface UseWorkOrderNavigationProps {
   isOpen: boolean;
   onClose: () => void;
   onPageBoundary?: (direction: 'next' | 'previous') => void;
-  isNavigatingPages?: boolean;
 }
 
-export function useWorkOrderNavigation({
+export const useWorkOrderNavigation = ({
   workOrders,
   initialWorkOrderId,
   isOpen,
   onClose,
-  onPageBoundary,
-  isNavigatingPages = false
-}: UseWorkOrderNavigationProps) {
+  onPageBoundary
+}: UseWorkOrderNavigationProps) => {
   const [currentWorkOrderId, setCurrentWorkOrderId] = useState<string | null>(initialWorkOrderId);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [localIsNavigatingPages, setIsNavigatingPages] = useState(isNavigatingPages);
+  const [isNavigatingPages, setIsNavigatingPages] = useState(false);
   
-  // Find current work order and its index
-  const currentIndex = currentWorkOrderId 
-    ? workOrders.findIndex(wo => wo.id === currentWorkOrderId) 
-    : -1;
+  // Reset state when modal opens/closes
+  useEffect(() => {
+    if (isOpen && initialWorkOrderId) {
+      setCurrentWorkOrderId(initialWorkOrderId);
+      setCurrentImageIndex(0);
+      setIsNavigatingPages(false);
+    }
+  }, [isOpen, initialWorkOrderId]);
   
-  const currentWorkOrder = currentIndex !== -1 
-    ? workOrders[currentIndex] 
-    : null;
-
+  // Get the current work order and its index
+  const currentWorkOrder = workOrders.find(wo => wo.id === currentWorkOrderId) || null;
+  const currentIndex = currentWorkOrder ? workOrders.findIndex(wo => wo.id === currentWorkOrder.id) : -1;
+  
   // Reset image index when work order changes
   useEffect(() => {
     setCurrentImageIndex(0);
   }, [currentWorkOrderId]);
 
-  // Sync with external work order ID when it changes
+  // Reset isNavigatingPages when workOrders change (meaning new page has been loaded)
   useEffect(() => {
-    if (initialWorkOrderId !== currentWorkOrderId && initialWorkOrderId !== null) {
-      setCurrentWorkOrderId(initialWorkOrderId);
+    if (isNavigatingPages) {
+      setIsNavigatingPages(false);
     }
-  }, [initialWorkOrderId, currentWorkOrderId]);
-
-  // Sync with external navigating state
+  }, [workOrders]);
+  
+  // Add keyboard navigation
   useEffect(() => {
-    if (isNavigatingPages !== localIsNavigatingPages) {
-      setIsNavigatingPages(isNavigatingPages);
-    }
-  }, [isNavigatingPages, localIsNavigatingPages]);
-
-  // Reset state when modal closes
-  useEffect(() => {
-    if (!isOpen) {
-      setCurrentImageIndex(0);
-    }
-  }, [isOpen]);
-
-  // Navigate to previous order
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isOpen) return;
+      
+      switch (e.key) {
+        case "ArrowLeft":
+          if (e.altKey) {
+            handlePreviousOrder();
+          } else {
+            handlePreviousImage();
+          }
+          break;
+        case "ArrowRight":
+          if (e.altKey) {
+            handleNextOrder();
+          } else {
+            handleNextImage();
+          }
+          break;
+        case "Escape":
+          onClose();
+          break;
+      }
+    };
+    
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, currentImageIndex, currentIndex, currentWorkOrderId]);
+  
   const handlePreviousOrder = () => {
-    // On the first order and have page boundary handler?
-    if (currentIndex === 0 && onPageBoundary) {
-      console.log("At first work order, navigating to previous page");
-      setIsNavigatingPages(true); // Enter navigation state
-      onPageBoundary('previous');
-      return;
-    }
-    
-    // Not on the first order, just move to previous
     if (currentIndex > 0) {
-      const prevOrderId = workOrders[currentIndex - 1].id;
-      console.log("Moving to previous order:", prevOrderId);
-      setCurrentWorkOrderId(prevOrderId);
+      setCurrentWorkOrderId(workOrders[currentIndex - 1].id);
+      setCurrentImageIndex(0);
+    } else if (onPageBoundary && currentIndex === 0) {
+      // We're at the first order of the current page
+      setIsNavigatingPages(true);
+      onPageBoundary('previous');
     }
   };
 
-  // Navigate to next order
   const handleNextOrder = () => {
-    // On the last order and have page boundary handler?
-    if (currentIndex === workOrders.length - 1 && onPageBoundary) {
-      console.log("At last work order, navigating to next page");
-      setIsNavigatingPages(true); // Enter navigation state
-      onPageBoundary('next');
-      return;
-    }
-    
-    // Not on the last order, just move to next
     if (currentIndex < workOrders.length - 1) {
-      const nextOrderId = workOrders[currentIndex + 1].id;
-      console.log("Moving to next order:", nextOrderId);
-      setCurrentWorkOrderId(nextOrderId);
+      setCurrentWorkOrderId(workOrders[currentIndex + 1].id);
+      setCurrentImageIndex(0);
+    } else if (onPageBoundary && currentIndex === workOrders.length - 1) {
+      // We're at the last order of the current page
+      setIsNavigatingPages(true);
+      onPageBoundary('next');
     }
   };
 
-  // Set to specific order by index
   const handleSetOrder = (index: number) => {
     if (index >= 0 && index < workOrders.length) {
       setCurrentWorkOrderId(workOrders[index].id);
+      setCurrentImageIndex(0);
+    }
+  };
+  
+  const handlePreviousImage = () => {
+    if (!currentWorkOrder) return;
+    
+    const images = currentWorkOrder?.completion_response?.orders?.[0]?.data?.form?.images || [];
+    
+    if (currentImageIndex > 0) {
+      setCurrentImageIndex(prev => prev - 1);
+    } else if (images.length > 0) {
+      setCurrentImageIndex(images.length - 1);
+    }
+  };
+  
+  const handleNextImage = () => {
+    if (!currentWorkOrder) return;
+    
+    const images = currentWorkOrder?.completion_response?.orders?.[0]?.data?.form?.images || [];
+    
+    if (currentImageIndex < images.length - 1) {
+      setCurrentImageIndex(prev => prev + 1);
+    } else if (images.length > 0) {
+      setCurrentImageIndex(0);
     }
   };
 
   return {
     currentWorkOrder,
-    currentWorkOrderId,
     currentIndex,
     currentImageIndex,
-    isNavigatingPages: localIsNavigatingPages,
-    setCurrentWorkOrderId,
+    isNavigatingPages,
     setCurrentImageIndex,
     setIsNavigatingPages,
     handlePreviousOrder,
     handleNextOrder,
-    handleSetOrder
+    handleSetOrder,
+    handlePreviousImage,
+    handleNextImage
   };
-}
+};
