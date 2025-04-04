@@ -106,11 +106,11 @@ export const DisabledStatusItem = ({ status, user, timestamp }: DisabledStatusIt
       {(user || timestamp) && (
         <div className="pl-6 mt-1 text-xs text-muted-foreground opacity-80">
           {user && timestamp ? (
-            `${label} by ${user} on ${new Date(timestamp).toLocaleString()}`
+            `${label} by ${user} ${new Date(timestamp).toLocaleString()}`
           ) : user ? (
             `${label} by ${user}`
           ) : timestamp ? (
-            `${label} on ${new Date(timestamp).toLocaleString()}`
+            `${label} ${new Date(timestamp).toLocaleString()}`
           ) : null}
         </div>
       )}
