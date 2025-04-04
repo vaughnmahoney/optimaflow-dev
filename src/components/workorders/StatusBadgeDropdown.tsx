@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { 
@@ -10,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { useWorkOrderMutations } from "@/hooks/useWorkOrderMutations";
 import { StatusMenuItems } from "./dropdown/StatusMenuItems";
 import { useQueryClient } from "@tanstack/react-query";
+import { WorkOrder } from "./types";
 
 interface StatusBadgeDropdownProps {
   workOrderId: string;
@@ -19,6 +21,7 @@ interface StatusBadgeDropdownProps {
   filters?: any;
   workOrders?: any[];
   onAdvanceToNextOrder?: (nextOrderId: string) => void;
+  workOrder?: WorkOrder;
 }
 
 export const StatusBadgeDropdown = ({ 
@@ -28,7 +31,8 @@ export const StatusBadgeDropdown = ({
   className,
   filters,
   workOrders,
-  onAdvanceToNextOrder
+  onAdvanceToNextOrder,
+  workOrder
 }: StatusBadgeDropdownProps) => {
   const { updateWorkOrderStatus } = useWorkOrderMutations();
   const [isOpen, setIsOpen] = useState(false);
@@ -75,6 +79,7 @@ export const StatusBadgeDropdown = ({
         <StatusMenuItems 
           currentStatus={currentStatus}
           onStatusChange={handleStatusChange}
+          workOrder={workOrder}
         />
       </DropdownMenuContent>
     </DropdownMenu>

@@ -9,17 +9,20 @@ import {
 import { StatusMenuItems } from "../../../dropdown/StatusMenuItems";
 import { useQueryClient } from "@tanstack/react-query";
 import { getStatusBorderColor, getStatusBgColor } from "../../utils/modalUtils";
+import { WorkOrder } from "../../../types";
 
 interface MobileStatusButtonProps {
   workOrderId: string;
   currentStatus: string;
   onStatusUpdate?: (workOrderId: string, newStatus: string, options?: any) => void;
+  workOrder?: WorkOrder;
 }
 
 export const MobileStatusButton = ({
   workOrderId,
   currentStatus,
-  onStatusUpdate
+  onStatusUpdate,
+  workOrder
 }: MobileStatusButtonProps) => {
   const queryClient = useQueryClient();
   
@@ -63,6 +66,7 @@ export const MobileStatusButton = ({
         <StatusMenuItems 
           currentStatus={currentStatus}
           onStatusChange={(newStatus) => handleStatusChange(newStatus)}
+          workOrder={workOrder}
         />
       </DropdownMenuContent>
     </DropdownMenu>

@@ -45,6 +45,7 @@ export const ModalHeader = ({
               filters={filters}
               workOrders={workOrders}
               onAdvanceToNextOrder={onAdvanceToNextOrder}
+              workOrder={workOrder}
             />
           </div>
           <p className="text-sm text-muted-foreground">
