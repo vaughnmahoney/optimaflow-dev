@@ -19,7 +19,7 @@ export const PaginationIndicator = ({
   isRefreshing = false
 }: PaginationIndicatorProps) => {
   const { page, pageSize, total } = pagination;
-  const totalPages = Math.ceil(total / pageSize);
+  const totalPages = Math.ceil(total / pageSize) || 1; // Ensure at least 1 page
   const isMobile = useIsMobile();
   const { runAutoImport, isImporting } = useAutoImport();
   
@@ -36,24 +36,24 @@ export const PaginationIndicator = ({
     await runAutoImport();
   };
   
-  if (total === 0) {
-    return null;
-  }
-
-  // Calculate the range of items being shown
-  const startItem = (page - 1) * pageSize + 1;
-  const endItem = Math.min(page * pageSize, total);
+  // Calculate the range of items being shown (only when there are items)
+  const startItem = total > 0 ? (page - 1) * pageSize + 1 : 0;
+  const endItem = total > 0 ? Math.min(page * pageSize, total) : 0;
 
   return (
     <div className="flex flex-col justify-between gap-2 py-2 px-3 mb-4 bg-white">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          {isMobile ? (
-            // Simplified display for mobile
-            <span>{startItem}-{endItem} of {total}</span>
+          {total > 0 ? (
+            // Show item count when we have items
+            isMobile ? (
+              <span>{startItem}-{endItem} of {total}</span>
+            ) : (
+              <span>Showing {startItem} - {endItem} of {total} orders</span>
+            )
           ) : (
-            // Full text for desktop
-            <span>Showing {startItem} - {endItem} of {total} orders</span>
+            // Show "No orders" when empty
+            <span>{isMobile ? "No orders" : "No orders to display"}</span>
           )}
           
           {onRefresh && (
@@ -77,33 +77,35 @@ export const PaginationIndicator = ({
           )}
         </div>
 
-        <div className="flex items-center">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-7 w-7"
-            disabled={page <= 1}
-            onClick={() => onPageChange(page - 1)}
-          >
-            <ChevronLeft className="h-3.5 w-3.5" />
-            <span className="sr-only">Previous page</span>
-          </Button>
-          
-          <span className="text-xs px-2 py-1.5 bg-gray-50 rounded-md min-w-16 text-center mx-2">
-            {page} / {totalPages}
-          </span>
-          
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-7 w-7"
-            disabled={page >= totalPages}
-            onClick={() => onPageChange(page + 1)}
-          >
-            <ChevronRight className="h-3.5 w-3.5" />
-            <span className="sr-only">Next page</span>
-          </Button>
-        </div>
+        {total > 0 && (
+          <div className="flex items-center">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-7 w-7"
+              disabled={page <= 1}
+              onClick={() => onPageChange(page - 1)}
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+              <span className="sr-only">Previous page</span>
+            </Button>
+            
+            <span className="text-xs px-2 py-1.5 bg-gray-50 rounded-md min-w-16 text-center mx-2">
+              {page} / {totalPages}
+            </span>
+            
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-7 w-7"
+              disabled={page >= totalPages}
+              onClick={() => onPageChange(page + 1)}
+            >
+              <ChevronRight className="h-3.5 w-3.5" />
+              <span className="sr-only">Next page</span>
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
