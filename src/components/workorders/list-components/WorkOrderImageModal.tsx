@@ -12,6 +12,7 @@ interface WorkOrderImageModalProps {
   filters: any;
   onClose: () => void;
   isOpen: boolean;
+  onPageBoundary?: (direction: 'next' | 'previous') => void;
 }
 
 export const WorkOrderImageModal = ({
@@ -22,7 +23,8 @@ export const WorkOrderImageModal = ({
   onResolveFlag,
   filters,
   onClose,
-  isOpen
+  isOpen,
+  onPageBoundary
 }: WorkOrderImageModalProps) => {
   const currentWorkOrder = workOrders.find(wo => wo.id === selectedWorkOrder) || null;
   const currentIndex = currentWorkOrder ? workOrders.findIndex(wo => wo.id === currentWorkOrder.id) : -1;
@@ -31,13 +33,6 @@ export const WorkOrderImageModal = ({
     if (index >= 0 && index < workOrders.length) {
       if (onImageView) onImageView(workOrders[index].id);
     }
-  };
-
-  // This function will be called when we reach the boundary of the current page
-  const handlePageBoundary = (direction: 'next' | 'previous') => {
-    console.log(`Page boundary reached: ${direction}, but not implemented in this component`);
-    // This is intentionally empty as it's implemented in the parent WorkOrderList component
-    // through the handlePageBoundary utility function
   };
 
   const handleStatusUpdate = (workOrderId: string, newStatus: string, options?: any) => {
@@ -73,7 +68,7 @@ export const WorkOrderImageModal = ({
       onClose={onClose}
       onStatusUpdate={handleStatusUpdate}
       onNavigate={handleNavigate}
-      onPageBoundary={handlePageBoundary}
+      onPageBoundary={onPageBoundary}
       onResolveFlag={handleResolveFlag}
       filters={filters}
       onDownloadAll={() => {

@@ -117,7 +117,7 @@ export const WorkOrderList = ({
         filters={filters}
         onClose={handleCloseImageModal}
         isOpen={isImageModalOpen}
-        // Pass the page boundary handler here
+        onPageBoundary={pageBoundaryHandler}
       />
     </div>
   );
