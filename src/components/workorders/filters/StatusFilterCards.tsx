@@ -100,7 +100,10 @@ export const StatusFilterCards = ({
     return (
       <>
         {/* Today Date Button first */}
-        <TodayDateButton />
+        <TodayDateButton 
+          filters={filters} 
+          onDateChange={(dateRange) => onColumnFilterChange('service_date', dateRange)} 
+        />
         
         {/* Filter button */}
         <FilterSortButton 
