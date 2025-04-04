@@ -30,10 +30,10 @@ export const MobileNavigationControls = ({
         className="flex items-center gap-1"
         disabled={currentIndex <= 0 && !hasPreviousPage}
       >
-        {isNavigatingPages && currentIndex === 0 && hasPreviousPage ? (
+        {isNavigatingPages && currentIndex === 0 ? (
           <>
             <Loader2 className="h-3 w-3 animate-spin" />
-            <span>Loading</span>
+            <span>Previous</span>
           </>
         ) : (
           <>
@@ -54,9 +54,9 @@ export const MobileNavigationControls = ({
         className="flex items-center gap-1"
         disabled={currentIndex >= totalOrders - 1 && !hasNextPage}
       >
-        {isNavigatingPages && currentIndex === totalOrders - 1 && hasNextPage ? (
+        {isNavigatingPages && currentIndex >= totalOrders - 1 ? (
           <>
-            <span>Loading</span>
+            <span>Next</span>
             <Loader2 className="h-3 w-3 animate-spin" />
           </>
         ) : (

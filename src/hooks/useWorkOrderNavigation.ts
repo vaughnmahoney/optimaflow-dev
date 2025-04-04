@@ -8,6 +8,7 @@ interface UseWorkOrderNavigationProps {
   isOpen: boolean;
   onClose: () => void;
   onPageBoundary?: (direction: 'next' | 'previous') => void;
+  isNavigatingPages?: boolean;
 }
 
 export const useWorkOrderNavigation = ({
@@ -15,18 +16,17 @@ export const useWorkOrderNavigation = ({
   initialWorkOrderId,
   isOpen,
   onClose,
-  onPageBoundary
+  onPageBoundary,
+  isNavigatingPages = false
 }: UseWorkOrderNavigationProps) => {
   const [currentWorkOrderId, setCurrentWorkOrderId] = useState<string | null>(initialWorkOrderId);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isNavigatingPages, setIsNavigatingPages] = useState(false);
   
   // Reset state when modal opens/closes
   useEffect(() => {
     if (isOpen && initialWorkOrderId) {
       setCurrentWorkOrderId(initialWorkOrderId);
       setCurrentImageIndex(0);
-      setIsNavigatingPages(false);
     }
   }, [isOpen, initialWorkOrderId]);
   
@@ -38,13 +38,6 @@ export const useWorkOrderNavigation = ({
   useEffect(() => {
     setCurrentImageIndex(0);
   }, [currentWorkOrderId]);
-
-  // Reset isNavigatingPages when workOrders change (meaning new page has been loaded)
-  useEffect(() => {
-    if (isNavigatingPages) {
-      setIsNavigatingPages(false);
-    }
-  }, [workOrders]);
   
   // Add keyboard navigation
   useEffect(() => {
@@ -82,7 +75,6 @@ export const useWorkOrderNavigation = ({
       setCurrentImageIndex(0);
     } else if (onPageBoundary && currentIndex === 0) {
       // We're at the first order of the current page
-      setIsNavigatingPages(true);
       onPageBoundary('previous');
     }
   };
@@ -93,7 +85,6 @@ export const useWorkOrderNavigation = ({
       setCurrentImageIndex(0);
     } else if (onPageBoundary && currentIndex === workOrders.length - 1) {
       // We're at the last order of the current page
-      setIsNavigatingPages(true);
       onPageBoundary('next');
     }
   };
@@ -135,7 +126,6 @@ export const useWorkOrderNavigation = ({
     currentImageIndex,
     isNavigatingPages,
     setCurrentImageIndex,
-    setIsNavigatingPages,
     handlePreviousOrder,
     handleNextOrder,
     handleSetOrder,

@@ -7,7 +7,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { FiltersSection } from "./list-components/FiltersSection";
 import { TopPagination } from "./list-components/TopPagination";
 import { WorkOrderImageModal } from "./list-components/WorkOrderImageModal";
-import { useWorkOrderListState } from "./list-components/useWorkOrderListState";
+import { useWorkOrderListState } from "./hooks/useWorkOrderListState";
 
 export const WorkOrderList = ({ 
   workOrders, 

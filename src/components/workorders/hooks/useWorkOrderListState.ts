@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { SortDirection, SortField } from "../components/workorders/types";
+import { SortDirection, SortField } from "../types";
 
 export const useWorkOrderListState = () => {
   const [searchResponse, setSearchResponse] = useState<any>(null);
@@ -59,10 +59,10 @@ export const useWorkOrderListState = () => {
       // Change the page - this will trigger a data refetch
       onPageChange(newPage);
       
-      // Reset navigation state after a short delay
+      // Reset the navigation state after a short delay
       setTimeout(() => {
         setIsNavigatingPages(false);
-      }, 1000);
+      }, 800);
     } else {
       console.log(`Cannot navigate ${direction}: at the ${direction === 'next' ? 'last' : 'first'} page`);
     }

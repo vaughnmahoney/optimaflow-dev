@@ -32,10 +32,10 @@ export const NavigationControls = ({
             onClick={onPreviousOrder}
             disabled={currentIndex <= 0 && !hasPreviousPage}
           >
-            {isNavigatingPages && currentIndex === 0 && hasPreviousPage ? (
+            {isNavigatingPages && currentIndex === 0 ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Loading Previous
+                Previous Order
               </>
             ) : (
               <>
@@ -55,9 +55,9 @@ export const NavigationControls = ({
             onClick={onNextOrder}
             disabled={currentIndex >= totalOrders - 1 && !hasNextPage}
           >
-            {isNavigatingPages && currentIndex === totalOrders - 1 && hasNextPage ? (
+            {isNavigatingPages && currentIndex >= totalOrders - 1 ? (
               <>
-                Loading Next
+                Next Order
                 <Loader2 className="h-4 w-4 animate-spin" />
               </>
             ) : (
