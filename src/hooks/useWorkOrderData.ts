@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { SortField, SortDirection, PaginationState, WorkOrderFilters } from "@/components/workorders/types";
 import { useWorkOrderFetch } from "./useWorkOrderFetch";
@@ -46,7 +47,8 @@ export const useWorkOrderData = () => {
     setPagination(prev => ({ ...prev, total }));
   }
   
-  const statusCounts = useWorkOrderStatusCounts(workOrders, filters.status);
+  // Pass filters to useWorkOrderStatusCounts to filter by date range
+  const statusCounts = useWorkOrderStatusCounts(workOrders, filters.status, filters);
   
   const { searchOptimoRoute } = useWorkOrderImport();
   const { updateWorkOrderStatus, deleteWorkOrder } = useWorkOrderMutations();
