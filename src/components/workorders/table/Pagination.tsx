@@ -27,7 +27,7 @@ export const Pagination = ({ pagination, onPageChange, onPageSizeChange }: Pagin
           <div className="flex items-center space-x-2 text-xs text-muted-foreground">
             <span>Rows:</span>
             <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
-              <SelectTrigger className="h-7 w-14 text-xs shadow-sm">
+              <SelectTrigger className="h-7 w-14 text-xs">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -42,9 +42,9 @@ export const Pagination = ({ pagination, onPageChange, onPageSizeChange }: Pagin
           
           <div className="flex items-center">
             <Button 
-              variant="outline" 
+              variant="ghost" 
               size="icon" 
-              className="h-7 w-7 shadow-sm"
+              className="h-7 w-7"
               disabled={page <= 1}
               onClick={() => onPageChange(1)}
             >
@@ -53,9 +53,9 @@ export const Pagination = ({ pagination, onPageChange, onPageSizeChange }: Pagin
             </Button>
             
             <Button 
-              variant="outline" 
+              variant="ghost" 
               size="icon" 
-              className="h-7 w-7 shadow-sm ml-1"
+              className="h-7 w-7"
               disabled={page <= 1}
               onClick={() => onPageChange(page - 1)}
             >
@@ -63,14 +63,14 @@ export const Pagination = ({ pagination, onPageChange, onPageSizeChange }: Pagin
               <span className="sr-only">Previous page</span>
             </Button>
             
-            <span className="text-xs px-2 py-1.5 bg-gray-100 rounded-md min-w-16 text-center mx-2">
+            <span className="text-xs px-2 py-1.5 bg-gray-50 rounded-md min-w-16 text-center mx-2">
               {page} / {totalPages}
             </span>
             
             <Button 
-              variant="outline" 
+              variant="ghost" 
               size="icon" 
-              className="h-7 w-7 shadow-sm mr-1"
+              className="h-7 w-7"
               disabled={page >= totalPages}
               onClick={() => onPageChange(page + 1)}
             >
@@ -79,9 +79,9 @@ export const Pagination = ({ pagination, onPageChange, onPageSizeChange }: Pagin
             </Button>
             
             <Button 
-              variant="outline" 
+              variant="ghost" 
               size="icon" 
-              className="h-7 w-7 shadow-sm"
+              className="h-7 w-7"
               disabled={page >= totalPages}
               onClick={() => onPageChange(totalPages)}
             >

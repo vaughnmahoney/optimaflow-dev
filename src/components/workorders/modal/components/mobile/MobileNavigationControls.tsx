@@ -24,7 +24,7 @@ export const MobileNavigationControls = ({
   return (
     <div className="px-4 py-3 flex items-center justify-between border-t bg-white">
       <Button
-        variant="outline"
+        variant="ghost"
         size="sm"
         onClick={onPreviousOrder}
         className="flex items-center gap-1"
@@ -48,7 +48,7 @@ export const MobileNavigationControls = ({
       </span>
       
       <Button
-        variant="outline"
+        variant="ghost"
         size="sm"
         onClick={onNextOrder}
         className="flex items-center gap-1"
