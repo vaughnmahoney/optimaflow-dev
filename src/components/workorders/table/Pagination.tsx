@@ -14,6 +14,7 @@ interface PaginationProps {
 export const Pagination = ({ pagination, onPageChange, onPageSizeChange }: PaginationProps) => {
   const { page, pageSize, total } = pagination;
   const totalPages = Math.ceil(total / pageSize);
+  const isMobile = useIsMobile();
   
   const handlePageSizeChange = (value: string) => {
     onPageSizeChange(Number(value));
@@ -41,16 +42,18 @@ export const Pagination = ({ pagination, onPageChange, onPageSizeChange }: Pagin
           </div>
           
           <div className="flex items-center">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-7 w-7"
-              disabled={page <= 1}
-              onClick={() => onPageChange(1)}
-            >
-              <ChevronsLeft className="h-3.5 w-3.5" />
-              <span className="sr-only">First page</span>
-            </Button>
+            {!isMobile && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-7 w-7"
+                disabled={page <= 1}
+                onClick={() => onPageChange(1)}
+              >
+                <ChevronsLeft className="h-3.5 w-3.5" />
+                <span className="sr-only">First page</span>
+              </Button>
+            )}
             
             <Button 
               variant="ghost" 
@@ -78,16 +81,18 @@ export const Pagination = ({ pagination, onPageChange, onPageSizeChange }: Pagin
               <span className="sr-only">Next page</span>
             </Button>
             
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-7 w-7"
-              disabled={page >= totalPages}
-              onClick={() => onPageChange(totalPages)}
-            >
-              <ChevronsRight className="h-3.5 w-3.5" />
-              <span className="sr-only">Last page</span>
-            </Button>
+            {!isMobile && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-7 w-7"
+                disabled={page >= totalPages}
+                onClick={() => onPageChange(totalPages)}
+              >
+                <ChevronsRight className="h-3.5 w-3.5" />
+                <span className="sr-only">Last page</span>
+              </Button>
+            )}
           </div>
         </div>
       </div>

@@ -27,7 +27,7 @@ export const MobileNavigationControls = ({
         variant="ghost"
         size="sm"
         onClick={onPreviousOrder}
-        className="flex items-center gap-1"
+        className="flex items-center gap-1 h-8 text-sm"
         disabled={currentIndex <= 0 && !hasPreviousPage}
       >
         {isNavigatingPages && currentIndex === 0 && hasPreviousPage ? (
@@ -43,15 +43,15 @@ export const MobileNavigationControls = ({
         )}
       </Button>
       
-      <span className="text-sm bg-gray-50 px-3 py-1 rounded-md font-medium">
-        <span className="font-bold">{currentIndex + 1}</span> of <span className="font-bold">{totalOrders}</span>
+      <span className="text-sm bg-gray-50 px-3 py-1 rounded-md">
+        <span className="font-semibold">{currentIndex + 1}</span>/<span className="font-semibold">{totalOrders}</span>
       </span>
       
       <Button
         variant="ghost"
         size="sm"
         onClick={onNextOrder}
-        className="flex items-center gap-1"
+        className="flex items-center gap-1 h-8 text-sm"
         disabled={currentIndex >= totalOrders - 1 && !hasNextPage}
       >
         {isNavigatingPages && currentIndex === totalOrders - 1 && hasNextPage ? (

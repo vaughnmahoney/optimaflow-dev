@@ -48,7 +48,13 @@ export const PaginationIndicator = ({
     <div className="flex flex-col justify-between gap-2 py-2 px-3 mb-4 bg-white">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span>Showing {startItem} - {endItem} of {total} orders</span>
+          {isMobile ? (
+            // Simplified display for mobile
+            <span>{startItem}-{endItem} of {total}</span>
+          ) : (
+            // Full text for desktop
+            <span>Showing {startItem} - {endItem} of {total} orders</span>
+          )}
           
           {onRefresh && (
             <Button 
@@ -66,7 +72,7 @@ export const PaginationIndicator = ({
           {/* Display "Please wait" message when importing - updated styling */}
           {isImporting && (
             <div className="text-xs font-medium text-muted-foreground">
-              <span>Please wait...</span>
+              {isMobile ? <span>Wait...</span> : <span>Please wait...</span>}
             </div>
           )}
         </div>
