@@ -1,59 +1,137 @@
 
-import { MobileStatusButton } from "./MobileStatusButton";
 import { WorkOrder } from "../../../types";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { MobileDetailsTab } from "./tabs/MobileDetailsTab";
+import { MobileNotesTab } from "./tabs/MobileNotesTab";
+import { MobileSignatureTab } from "./tabs/MobileSignatureTab";
+import { useRef, useState, useEffect } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface MobileOrderDetailsProps {
   workOrder: WorkOrder;
-  onStatusUpdate?: (workOrderId: string, newStatus: string) => void;
 }
 
 export const MobileOrderDetails = ({
-  workOrder,
-  onStatusUpdate
+  workOrder
 }: MobileOrderDetailsProps) => {
-  // Extracting location and service date information with safer property access
-  const location = workOrder.location?.name || 
-                  (workOrder.search_response?.data?.location?.name) || 
-                  'Unknown Location';
+  // State to track the active tab
+  const [activeTab, setActiveTab] = useState("details");
   
-  const serviceDate = workOrder.service_date || 
-                     (workOrder.search_response?.data?.date) || 
-                     'Unknown Date';
+  // Create refs for each section to scroll to
+  const detailsSectionRef = useRef<HTMLDivElement>(null);
+  const notesSectionRef = useRef<HTMLDivElement>(null);
+  const signatureSectionRef = useRef<HTMLDivElement>(null);
   
-  // If there's a completion response, get driver information
-  const driver = workOrder.driver?.name || 
-                (workOrder.search_response?.scheduleInformation?.driverName) || 
-                'No Driver Assigned';
-  
+  // Handle scrolling to the appropriate section when a tab is clicked
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    
+    switch (value) {
+      case "details":
+        detailsSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+        break;
+      case "notes":
+        notesSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+        break;
+      case "signature":
+        signatureSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+        break;
+    }
+  };
+
+  // Set up intersection observers for each section
+  useEffect(() => {
+    const options = {
+      root: null, // Use the viewport as the root
+      rootMargin: "0px",
+      threshold: 0.3 // Trigger when 30% of the element is visible
+    };
+
+    const handleIntersect = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach(entry => {
+        // Only process elements that are intersecting (visible)
+        if (entry.isIntersecting) {
+          const id = entry.target.id;
+          
+          // Update the active tab based on which section is visible
+          if (id === "mobile-details-section") {
+            setActiveTab("details");
+          } else if (id === "mobile-notes-section") {
+            setActiveTab("notes");
+          } else if (id === "mobile-signature-section") {
+            setActiveTab("signature");
+          }
+        }
+      });
+    };
+
+    // Create the observer
+    const observer = new IntersectionObserver(handleIntersect, options);
+    
+    // Observe all three sections
+    if (detailsSectionRef.current) {
+      observer.observe(detailsSectionRef.current);
+    }
+    if (notesSectionRef.current) {
+      observer.observe(notesSectionRef.current);
+    }
+    if (signatureSectionRef.current) {
+      observer.observe(signatureSectionRef.current);
+    }
+
+    // Clean up the observer on component unmount
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
   return (
-    <div className="space-y-3 p-4">
-      <div className="space-y-1">
-        <div className="flex justify-between">
-          <h3 className="text-sm font-medium text-gray-500">Order #</h3>
-          <span className="text-sm font-medium">{workOrder.order_no}</span>
-        </div>
-        <div className="flex justify-between">
-          <h3 className="text-sm font-medium text-gray-500">Location</h3>
-          <span className="text-sm font-medium">{location}</span>
-        </div>
-        <div className="flex justify-between">
-          <h3 className="text-sm font-medium text-gray-500">Date</h3>
-          <span className="text-sm font-medium">{serviceDate}</span>
-        </div>
-        <div className="flex justify-between">
-          <h3 className="text-sm font-medium text-gray-500">Technician</h3>
-          <span className="text-sm font-medium">{driver}</span>
-        </div>
-        <div className="flex justify-between items-center pt-1">
-          <h3 className="text-sm font-medium text-gray-500">Status</h3>
-          <MobileStatusButton 
-            workOrderId={workOrder.id}
-            currentStatus={workOrder.status || "pending_review"}
-            onStatusUpdate={onStatusUpdate}
-            workOrder={workOrder}
-          />
-        </div>
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Tabs navigation - With fixed positioning at the top */}
+      <div className="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+          <TabsList className="grid grid-cols-3 w-full bg-white rounded-none p-0">
+            <TabsTrigger 
+              value="details" 
+              className="text-sm py-2.5 rounded-none border-b-2 border-transparent data-[state=active]:border-b-2 data-[state=active]:border-gray-700 data-[state=active]:bg-transparent"
+            >
+              Details
+            </TabsTrigger>
+            <TabsTrigger 
+              value="notes" 
+              className="text-sm py-2.5 rounded-none border-b-2 border-transparent data-[state=active]:border-b-2 data-[state=active]:border-gray-700 data-[state=active]:bg-transparent"
+            >
+              Notes
+            </TabsTrigger>
+            <TabsTrigger 
+              value="signature" 
+              className="text-sm py-2.5 rounded-none border-b-2 border-transparent data-[state=active]:border-b-2 data-[state=active]:border-gray-700 data-[state=active]:bg-transparent"
+            >
+              Signature
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
+      
+      {/* Scrollable content with all sections */}
+      <ScrollArea className="flex-1 overflow-auto scrollbar-none">
+        <div className="space-y-4 py-2">
+          {/* Details Section */}
+          <div id="mobile-details-section" ref={detailsSectionRef} className="scroll-m-16">
+            <MobileDetailsTab workOrder={workOrder} />
+          </div>
+          
+          {/* Notes Section */}
+          <div id="mobile-notes-section" ref={notesSectionRef} className="scroll-m-16">
+            <MobileNotesTab workOrder={workOrder} />
+          </div>
+          
+          {/* Signature Section */}
+          <div id="mobile-signature-section" ref={signatureSectionRef} className="scroll-m-16">
+            <MobileSignatureTab workOrder={workOrder} />
+          </div>
+        </div>
+      </ScrollArea>
     </div>
   );
 };

@@ -7,18 +7,15 @@ import {
   RejectMenuItem,
   DisabledStatusItem
 } from "./StatusMenuItem";
-import { WorkOrder } from "../types";
 
 interface StatusMenuItemsProps {
   currentStatus: string;
   onStatusChange: (status: string) => void;
-  workOrder?: WorkOrder;
 }
 
 export const StatusMenuItems = ({ 
   currentStatus, 
-  onStatusChange,
-  workOrder
+  onStatusChange 
 }: StatusMenuItemsProps) => {
   
   switch (currentStatus) {
@@ -34,7 +31,7 @@ export const StatusMenuItems = ({
     case "flagged_followup":
       return (
         <>
-          <DisabledStatusItem status={currentStatus} workOrder={workOrder} />
+          <DisabledStatusItem status={currentStatus} />
           <ApproveMenuItem onClick={() => onStatusChange("approved")} />
           <ResolveMenuItem onClick={() => onStatusChange("resolved")} />
           <RejectMenuItem onClick={() => onStatusChange("rejected")} />
@@ -44,7 +41,7 @@ export const StatusMenuItems = ({
     case "approved":
       return (
         <>
-          <DisabledStatusItem status={currentStatus} workOrder={workOrder} />
+          <DisabledStatusItem status={currentStatus} />
           <PendingMenuItem onClick={() => onStatusChange("pending_review")} />
           <FlagMenuItem onClick={() => onStatusChange("flagged")} />
         </>
@@ -53,7 +50,7 @@ export const StatusMenuItems = ({
     case "resolved":
       return (
         <>
-          <DisabledStatusItem status={currentStatus} workOrder={workOrder} />
+          <DisabledStatusItem status={currentStatus} />
           <ApproveMenuItem onClick={() => onStatusChange("approved")} />
           <FlagMenuItem onClick={() => onStatusChange("flagged")} />
         </>
@@ -62,7 +59,7 @@ export const StatusMenuItems = ({
     case "rejected":
       return (
         <>
-          <DisabledStatusItem status={currentStatus} workOrder={workOrder} />
+          <DisabledStatusItem status={currentStatus} />
           <PendingMenuItem 
             onClick={() => onStatusChange("pending_review")} 
             label="Reopen"

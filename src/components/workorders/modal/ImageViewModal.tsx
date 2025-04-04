@@ -1,16 +1,14 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogOverlay } from "@/components/ui/dialog";
 import { WorkOrder } from "../types";
-import { useWorkOrderNavigation } from "@/hooks/useWorkOrderNavigation";
-import { Loader2 } from "lucide-react";
-import { useMobile } from "@/hooks/use-mobile";
-import { MobileImageViewModal } from "./MobileImageViewModal";
 import { ModalHeader } from "./components/ModalHeader";
 import { ModalContent } from "./components/ModalContent";
 import { ModalFooter } from "./components/ModalFooter";
 import { NavigationControls } from "./components/NavigationControls";
 import { getStatusBorderColor } from "./utils/modalUtils";
+import { useWorkOrderNavigation } from "@/hooks/useWorkOrderNavigation";
+import { MobileImageViewModal } from "./MobileImageViewModal";
+import { useMobile } from "@/hooks/use-mobile";
 
 interface ImageViewModalProps {
   workOrder: WorkOrder | null;
@@ -60,6 +58,7 @@ export const ImageViewModal = ({
     onPageBoundary
   });
   
+  // Early return with mobile version, but AFTER all hooks have been called
   if (isMobile && currentWorkOrder) {
     return (
       <MobileImageViewModal 
@@ -78,6 +77,8 @@ export const ImageViewModal = ({
     );
   }
   
+  // If we're navigating pages and don't have a current work order, 
+  // show a loading state but keep the modal open
   if (isNavigatingPages && !currentWorkOrder) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -105,17 +106,21 @@ export const ImageViewModal = ({
     );
   }
   
+  // Return null if no work order, but AFTER all hooks have been called
   if (!currentWorkOrder) return null;
 
   const toggleImageExpand = () => {
     setIsImageExpanded(!isImageExpanded);
   };
 
+  // Get images from the work order's completion_response
   const completionData = currentWorkOrder?.completion_response?.orders?.[0]?.data;
   const images = completionData?.form?.images || [];
   
+  // Status color for border
   const statusBorderColor = getStatusBorderColor(currentWorkOrder.status || "pending_review");
   
+  // Map the border color class to actual color hex values
   const getBorderColor = () => {
     switch (statusBorderColor) {
       case "border-green-500":
@@ -133,12 +138,15 @@ export const ImageViewModal = ({
     }
   };
 
+  // Sync navigation with parent component
   const handleNavigate = (index: number) => {
     handleSetOrder(index);
     onNavigate(index);
   };
   
+  // Handle advancement to next order when current order is filtered out
   const handleAdvanceToNextOrder = (nextOrderId: string) => {
+    // Find the index of the next order
     const nextIndex = workOrders.findIndex(wo => wo.id === nextOrderId);
     if (nextIndex !== -1) {
       handleNavigate(nextIndex);
