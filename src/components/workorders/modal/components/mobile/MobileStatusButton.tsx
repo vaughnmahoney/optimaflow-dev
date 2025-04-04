@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { StatusMenuItems } from "../../../dropdown/StatusMenuItems";
 import { useQueryClient } from "@tanstack/react-query";
-import { getStatusBorderColor, getStatusBgColor } from "../../utils/modalUtils";
 
 interface MobileStatusButtonProps {
   workOrderId: string;
@@ -27,9 +26,51 @@ export const MobileStatusButton = ({
 }: MobileStatusButtonProps) => {
   const queryClient = useQueryClient();
   
+  // Helper function to get status-based styling
+  const getStatusStyling = () => {
+    switch (currentStatus) {
+      case "approved":
+        return { 
+          borderColor: "border-green-300",
+          bgColor: "bg-green-50",
+          textColor: "text-green-700"
+        };
+      case "pending_review":
+        return { 
+          borderColor: "border-yellow-300",
+          bgColor: "bg-yellow-50",
+          textColor: "text-yellow-700"
+        };
+      case "flagged":
+      case "flagged_followup":
+        return { 
+          borderColor: "border-red-300",
+          bgColor: "bg-red-50",
+          textColor: "text-red-700" 
+        };
+      case "resolved":
+        return { 
+          borderColor: "border-blue-300",
+          bgColor: "bg-blue-50",
+          textColor: "text-blue-700"
+        };
+      case "rejected":
+        return { 
+          borderColor: "border-orange-300",
+          bgColor: "bg-orange-50",
+          textColor: "text-orange-700"
+        };
+      default:
+        return { 
+          borderColor: "border-gray-300",
+          bgColor: "bg-gray-50",
+          textColor: "text-gray-700"
+        };
+    }
+  };
+
   // Get status-based styling
-  const borderColorClass = getStatusBorderColor(currentStatus);
-  const bgColorClass = getStatusBgColor(currentStatus);
+  const { borderColor, bgColor, textColor } = getStatusStyling();
 
   const handleStatusChange = (newStatus: string) => {
     if (onStatusUpdate) {
@@ -54,10 +95,10 @@ export const MobileStatusButton = ({
         <Button 
           variant="outline" 
           size="sm" 
-          className={`gap-1 px-2 py-1 h-7 rounded-md ${borderColorClass} ${bgColorClass}`}
+          className={`gap-1 px-2 py-1 h-7 rounded-md border ${borderColor} ${bgColor} ${textColor}`}
         >
           <span className="text-xs font-medium">Status</span>
-          <ChevronDown className="h-3.5 w-3.5" />
+          <ChevronDown className={`h-3.5 w-3.5 ${textColor}`} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent 

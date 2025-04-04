@@ -46,50 +46,60 @@ export const StatusFilterCards = ({
       label: "Pending", 
       value: "pending_review", 
       icon: Clock, 
-      color: "bg-yellow-500",
-      ringColor: "ring-yellow-500",
-      hoverColor: "hover:bg-yellow-600",
-      textColor: "text-yellow-500",
+      color: "bg-yellow-100",
+      textColor: "text-yellow-700",
+      activeTextColor: "text-yellow-800",
+      hoverColor: "hover:bg-yellow-200",
+      borderColor: "border-yellow-200",
+      activeBorderColor: "border-yellow-300",
       lightBg: "bg-yellow-50"
     },
     { 
       label: "Flagged", 
       value: "flagged", 
       icon: Flag, 
-      color: "bg-red-500",
-      ringColor: "ring-red-500",
-      hoverColor: "hover:bg-red-600",
-      textColor: "text-red-500",
+      color: "bg-red-100",
+      textColor: "text-red-700",
+      activeTextColor: "text-red-800",
+      hoverColor: "hover:bg-red-200",
+      borderColor: "border-red-200",
+      activeBorderColor: "border-red-300",
       lightBg: "bg-red-50"
     },
     { 
       label: "Approved", 
       value: "approved", 
       icon: Check, 
-      color: "bg-green-500",
-      ringColor: "ring-green-500",
-      hoverColor: "hover:bg-green-600",
-      textColor: "text-green-500",
+      color: "bg-green-100",
+      textColor: "text-green-700",
+      activeTextColor: "text-green-800",
+      hoverColor: "hover:bg-green-200",
+      borderColor: "border-green-200",
+      activeBorderColor: "border-green-300",
       lightBg: "bg-green-50"
     },
     { 
       label: "Resolved", 
       value: "resolved", 
       icon: CheckCheck, 
-      color: "bg-blue-500",
-      ringColor: "ring-blue-500",
-      hoverColor: "hover:bg-blue-600",
-      textColor: "text-blue-500",
+      color: "bg-blue-100",
+      textColor: "text-blue-700",
+      activeTextColor: "text-blue-800",
+      hoverColor: "hover:bg-blue-200",
+      borderColor: "border-blue-200",
+      activeBorderColor: "border-blue-300",
       lightBg: "bg-blue-50"
     },
     { 
       label: "Rejected", 
       value: "rejected", 
       icon: AlertTriangle, 
-      color: "bg-orange-500",
-      ringColor: "ring-orange-500",
-      hoverColor: "hover:bg-orange-600",
-      textColor: "text-orange-500",
+      color: "bg-orange-100",
+      textColor: "text-orange-700",
+      activeTextColor: "text-orange-800",
+      hoverColor: "hover:bg-orange-200",
+      borderColor: "border-orange-200",
+      activeBorderColor: "border-orange-300",
       lightBg: "bg-orange-50"
     },
   ];
@@ -121,19 +131,19 @@ export const StatusFilterCards = ({
                 statusFilter === status.value ? null : status.value
               )}
               className={cn(
-                "flex items-center space-x-1.5 py-1 px-2.5 rounded-full transition-all shrink-0",
+                "flex items-center space-x-1.5 py-1 px-2.5 rounded-full transition-all shrink-0 border",
                 isActive 
-                  ? `${status.color} text-white shadow-sm`
-                  : `bg-white border border-gray-200 hover:border-gray-300 shadow-sm`
+                  ? `${status.color} ${status.activeTextColor} ${status.activeBorderColor} shadow-sm`
+                  : `bg-white ${status.textColor} border-gray-200 hover:border-gray-300 shadow-sm ${status.hoverColor}`
               )}
             >
               <div className={cn(
                 "flex items-center justify-center w-4 h-4 rounded-full",
-                isActive ? "bg-white/20" : status.color
+                isActive ? status.lightBg : status.color
               )}>
                 <status.icon 
                   size={12}
-                  className={isActive ? "text-white" : "text-white"} 
+                  className={isActive ? status.activeTextColor : "text-white"} 
                 />
               </div>
               <span className="text-xs font-medium">{status.label}</span>
@@ -141,7 +151,7 @@ export const StatusFilterCards = ({
                 <span className={cn(
                   "inline-flex items-center justify-center text-xs font-medium rounded-full px-1.5 py-0.5 min-w-[18px] h-[18px]",
                   isActive 
-                    ? "bg-white/20 text-white" 
+                    ? "bg-white/80 text-gray-700" 
                     : "bg-gray-100 text-gray-700"
                 )}>
                   {count}

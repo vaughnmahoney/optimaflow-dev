@@ -62,6 +62,27 @@ export const StatusBadgeDropdown = ({
     e.preventDefault();
   };
 
+  // Get the color for the dropdown chevron based on status
+  const getChevronColor = () => {
+    switch (currentStatus) {
+      case "approved":
+        return "text-green-700";
+      case "pending_review":
+        return "text-yellow-700";
+      case "flagged":
+      case "flagged_followup":
+        return "text-red-700";
+      case "resolved":
+        return "text-blue-700";
+      case "rejected":
+        return "text-orange-700";
+      default:
+        return "text-gray-700";
+    }
+  };
+
+  const chevronColorClass = getChevronColor();
+
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild onClick={handleDropdownClick}>
@@ -70,7 +91,7 @@ export const StatusBadgeDropdown = ({
             status={currentStatus} 
             completionStatus={completionStatus} 
           />
-          <ChevronDown className="h-3 w-3 text-white" />
+          <ChevronDown className={`h-3 w-3 ${chevronColorClass}`} />
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent 

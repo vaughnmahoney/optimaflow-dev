@@ -12,18 +12,42 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
   const getQcStyling = () => {
     switch (status) {
       case "approved":
-        return { icon: <Check className="h-3 w-3" />, bgColor: "bg-green-500 hover:bg-green-600" };
+        return { 
+          icon: <Check className="h-3 w-3" />, 
+          bgColor: "bg-green-100 hover:bg-green-200", 
+          textColor: "text-green-700"
+        };
       case "pending_review":
-        return { icon: <Clock className="h-3 w-3" />, bgColor: "bg-yellow-500 hover:bg-yellow-600" };
+        return { 
+          icon: <Clock className="h-3 w-3" />, 
+          bgColor: "bg-yellow-100 hover:bg-yellow-200",
+          textColor: "text-yellow-700"
+        };
       case "flagged":
       case "flagged_followup":
-        return { icon: <Flag className="h-3 w-3" />, bgColor: "bg-red-500 hover:bg-red-600" };
+        return { 
+          icon: <Flag className="h-3 w-3" />, 
+          bgColor: "bg-red-100 hover:bg-red-200",
+          textColor: "text-red-700"
+        };
       case "resolved":
-        return { icon: <CheckCheck className="h-3 w-3" />, bgColor: "bg-blue-500 hover:bg-blue-600" };
+        return { 
+          icon: <CheckCheck className="h-3 w-3" />, 
+          bgColor: "bg-blue-100 hover:bg-blue-200",
+          textColor: "text-blue-700"
+        };
       case "rejected":
-        return { icon: <AlertTriangle className="h-3 w-3" />, bgColor: "bg-orange-500 hover:bg-orange-600" };
+        return { 
+          icon: <AlertTriangle className="h-3 w-3" />, 
+          bgColor: "bg-orange-100 hover:bg-orange-200",
+          textColor: "text-orange-700"
+        };
       default:
-        return { icon: <XCircle className="h-3 w-3" />, bgColor: "bg-gray-500 hover:bg-gray-600" };
+        return { 
+          icon: <XCircle className="h-3 w-3" />, 
+          bgColor: "bg-gray-100 hover:bg-gray-200",
+          textColor: "text-gray-700"
+        };
     }
   };
 
@@ -53,14 +77,14 @@ export const StatusBadge = ({ status, completionStatus }: StatusBadgeProps) => {
   };
 
   // Get the QC status styling
-  const { icon, bgColor } = getQcStyling();
+  const { icon, bgColor, textColor } = getQcStyling();
 
   return (
     <Badge 
-      className={`text-white font-semibold px-2.5 py-1.5 transition-colors ${bgColor} inline-flex items-center gap-1.5 rounded-full shadow-sm hover:shadow`}
+      className={`font-semibold px-2.5 py-1.5 transition-colors ${bgColor} ${textColor} inline-flex items-center gap-1.5 rounded-full shadow-sm border border-transparent hover:shadow`}
       title={`QC Status: ${status.replace(/_/g, " ").toUpperCase()}`}
     >
-      {icon}
+      <span className={textColor}>{icon}</span>
       {getStatusLabel()}
     </Badge>
   );
