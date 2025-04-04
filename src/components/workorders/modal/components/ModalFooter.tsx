@@ -1,10 +1,11 @@
 
 import { Button } from "@/components/ui/button";
-import { Download, StickyNote, PenLine } from "lucide-react";
+import { Download } from "lucide-react";
 import { useEffect } from "react";
 import { QcNotesSheet } from "./QcNotesSheet";
 import { ResolutionNotesSheet } from "./ResolutionNotesSheet";
 import { MobileStatusButton } from "./mobile/MobileStatusButton";
+import { WorkOrder } from "../../types";
 
 interface ModalFooterProps {
   workOrderId: string;
@@ -13,7 +14,7 @@ interface ModalFooterProps {
   hasImages: boolean;
   status?: string;
   onResolveFlag?: (workOrderId: string, resolution: string) => void;
-  workOrder?: any; // Make workOrder optional
+  workOrder?: WorkOrder; 
 }
 
 export const ModalFooter = ({
@@ -22,7 +23,7 @@ export const ModalFooter = ({
   onDownloadAll,
   hasImages,
   status,
-  workOrder = {} // Provide default empty object
+  workOrder = {} as WorkOrder
 }: ModalFooterProps) => {
   // Debug logging to see what data we're receiving
   useEffect(() => {
@@ -41,7 +42,43 @@ export const ModalFooter = ({
     }
   }, [workOrder]);
   
-  // Get user action information with direct access and null checks
+  // Determine which attribution data to show based on current status
+  const getStatusAttributionInfo = (workOrder: WorkOrder) => {
+    const status = workOrder.status;
+    
+    if (status === "approved" && workOrder.approved_user && workOrder.approved_at) {
+      return {
+        user: workOrder.approved_user,
+        timestamp: workOrder.approved_at
+      };
+    } else if ((status === "flagged" || status === "flagged_followup") && workOrder.flagged_user && workOrder.flagged_at) {
+      return {
+        user: workOrder.flagged_user,
+        timestamp: workOrder.flagged_at
+      };
+    } else if (status === "resolved" && workOrder.resolved_user && workOrder.resolved_at) {
+      return {
+        user: workOrder.resolved_user,
+        timestamp: workOrder.resolved_at
+      };
+    } else if (status === "rejected" && workOrder.rejected_user && workOrder.rejected_at) {
+      return {
+        user: workOrder.rejected_user,
+        timestamp: workOrder.rejected_at
+      };
+    } else if (workOrder.last_action_user && workOrder.last_action_at) {
+      return {
+        user: workOrder.last_action_user,
+        timestamp: workOrder.last_action_at
+      };
+    }
+    
+    return { user: undefined, timestamp: undefined };
+  };
+  
+  const attributionInfo = getStatusAttributionInfo(workOrder);
+  
+  // Get user action information for display
   const getUserActionInfo = () => {
     const isApproved = status === "approved";
     const isFlagged = status === "flagged" || status === "flagged_followup";
@@ -92,11 +129,13 @@ export const ModalFooter = ({
         <QcNotesSheet workOrder={workOrder} />
         <ResolutionNotesSheet workOrder={workOrder} />
         
-        {/* Status button - added from mobile view */}
+        {/* Status button with attribution data */}
         <MobileStatusButton 
           workOrderId={workOrderId}
           currentStatus={status || "pending_review"}
           onStatusUpdate={onStatusUpdate}
+          statusUser={attributionInfo.user}
+          statusTimestamp={attributionInfo.timestamp}
         />
         
         {/* User attribution information */}

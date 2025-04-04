@@ -63,7 +63,6 @@ export const DisabledStatusItem = ({ status, user, timestamp }: DisabledStatusIt
   let icon;
   let label;
   let className;
-  let attributionText = "";
   
   switch (status) {
     case "approved":
@@ -107,11 +106,11 @@ export const DisabledStatusItem = ({ status, user, timestamp }: DisabledStatusIt
       {(user || timestamp) && (
         <div className="pl-6 mt-1 text-xs text-muted-foreground opacity-80">
           {user && timestamp ? (
-            `Set by ${user} on ${new Date(timestamp).toLocaleString()}`
+            `${label} by ${user} on ${new Date(timestamp).toLocaleString()}`
           ) : user ? (
-            `Set by ${user}`
+            `${label} by ${user}`
           ) : timestamp ? (
-            `Set on ${new Date(timestamp).toLocaleString()}`
+            `${label} on ${new Date(timestamp).toLocaleString()}`
           ) : null}
         </div>
       )}

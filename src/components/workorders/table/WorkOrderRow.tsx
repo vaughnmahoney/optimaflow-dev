@@ -73,6 +73,42 @@ export const WorkOrderRow = ({ workOrder, onStatusUpdate, onImageView, onDelete 
     return "N/A";
   };
 
+  // Determine which attribution data to show based on current status
+  const getStatusAttributionInfo = (workOrder: WorkOrder) => {
+    const status = workOrder.status;
+    
+    if (status === "approved" && workOrder.approved_user && workOrder.approved_at) {
+      return {
+        user: workOrder.approved_user,
+        timestamp: workOrder.approved_at
+      };
+    } else if ((status === "flagged" || status === "flagged_followup") && workOrder.flagged_user && workOrder.flagged_at) {
+      return {
+        user: workOrder.flagged_user,
+        timestamp: workOrder.flagged_at
+      };
+    } else if (status === "resolved" && workOrder.resolved_user && workOrder.resolved_at) {
+      return {
+        user: workOrder.resolved_user,
+        timestamp: workOrder.resolved_at
+      };
+    } else if (status === "rejected" && workOrder.rejected_user && workOrder.rejected_at) {
+      return {
+        user: workOrder.rejected_user,
+        timestamp: workOrder.rejected_at
+      };
+    } else if (workOrder.last_action_user && workOrder.last_action_at) {
+      return {
+        user: workOrder.last_action_user,
+        timestamp: workOrder.last_action_at
+      };
+    }
+    
+    return { user: undefined, timestamp: undefined };
+  };
+
+  const attributionInfo = getStatusAttributionInfo(workOrder);
+
   return (
     <TableRow 
       className="group cursor-pointer"
@@ -93,6 +129,8 @@ export const WorkOrderRow = ({ workOrder, onStatusUpdate, onImageView, onDelete 
           workOrderId={workOrder.id}
           currentStatus={workOrder.status || 'pending_review'}
           completionStatus={getCompletionStatus(workOrder)}
+          statusUser={attributionInfo.user}
+          statusTimestamp={attributionInfo.timestamp}
         />
       </TableCell>
       <TableCell onClick={(e) => e.stopPropagation()} className="transition-opacity">
