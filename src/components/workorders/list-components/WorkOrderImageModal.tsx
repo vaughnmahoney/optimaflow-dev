@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { WorkOrder } from "../types";
 import { ImageViewModal } from "../modal/ImageViewModal";
 
@@ -57,9 +58,7 @@ export const WorkOrderImageModal = ({
     onResolveFlag(workOrderId, resolution, updatedOptions);
   };
 
-  const shouldShowModal = isOpen && (currentWorkOrder || isNavigatingPages);
-
-  if (!shouldShowModal) return null;
+  if (!currentWorkOrder && !isNavigatingPages) return null;
 
   return (
     <ImageViewModal
