@@ -1,14 +1,16 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogOverlay } from "@/components/ui/dialog";
 import { WorkOrder } from "../types";
 import { useWorkOrderNavigation } from "@/hooks/useWorkOrderNavigation";
 import { Loader2 } from "lucide-react";
-import { isMobile } from "@/hooks/use-mobile";
+import { useMobile } from "@/hooks/use-mobile";
 import { MobileImageViewModal } from "./MobileImageViewModal";
 import { ModalHeader } from "./components/ModalHeader";
 import { ModalContent } from "./components/ModalContent";
 import { ModalFooter } from "./components/ModalFooter";
 import { NavigationControls } from "./components/NavigationControls";
+import { getStatusBorderColor } from "./utils/modalUtils";
 
 interface ImageViewModalProps {
   workOrder: WorkOrder | null;

@@ -11,12 +11,19 @@ export const MobileOrderDetails = ({
   workOrder,
   onStatusUpdate
 }: MobileOrderDetailsProps) => {
-  // Extracting location and service date information
-  const location = workOrder.location?.name || workOrder.search_response?.scheduleInformation?.locationName || 'Unknown Location';
-  const serviceDate = workOrder.service_date || workOrder.search_response?.scheduleInformation?.serviceDate || 'Unknown Date';
+  // Extracting location and service date information with safer property access
+  const location = workOrder.location?.name || 
+                  (workOrder.search_response?.data?.location?.name) || 
+                  'Unknown Location';
+  
+  const serviceDate = workOrder.service_date || 
+                     (workOrder.search_response?.data?.date) || 
+                     'Unknown Date';
   
   // If there's a completion response, get driver information
-  const driver = workOrder.driver?.name || workOrder.search_response?.scheduleInformation?.driverName || 'No Driver Assigned';
+  const driver = workOrder.driver?.name || 
+                (workOrder.search_response?.scheduleInformation?.driverName) || 
+                'No Driver Assigned';
   
   return (
     <div className="space-y-3 p-4">
