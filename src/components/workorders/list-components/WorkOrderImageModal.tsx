@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { WorkOrder } from "../types";
 import { ImageViewModal } from "../modal/ImageViewModal";
@@ -12,7 +13,6 @@ interface WorkOrderImageModalProps {
   onClose: () => void;
   isOpen: boolean;
   onPageBoundary?: (direction: 'next' | 'previous') => void;
-  isNavigatingPages?: boolean;
 }
 
 export const WorkOrderImageModal = ({
@@ -24,8 +24,7 @@ export const WorkOrderImageModal = ({
   filters,
   onClose,
   isOpen,
-  onPageBoundary,
-  isNavigatingPages = false
+  onPageBoundary
 }: WorkOrderImageModalProps) => {
   const currentWorkOrder = workOrders.find(wo => wo.id === selectedWorkOrder) || null;
   const currentIndex = currentWorkOrder ? workOrders.findIndex(wo => wo.id === currentWorkOrder.id) : -1;
@@ -58,7 +57,7 @@ export const WorkOrderImageModal = ({
     onResolveFlag(workOrderId, resolution, updatedOptions);
   };
 
-  if (!currentWorkOrder && !isNavigatingPages) return null;
+  if (!currentWorkOrder) return null;
 
   return (
     <ImageViewModal
@@ -72,9 +71,8 @@ export const WorkOrderImageModal = ({
       onPageBoundary={onPageBoundary}
       onResolveFlag={handleResolveFlag}
       filters={filters}
-      isNavigatingPages={isNavigatingPages}
       onDownloadAll={() => {
-        console.log("Download all images for:", currentWorkOrder?.id);
+        console.log("Download all images for:", currentWorkOrder.id);
       }}
     />
   );

@@ -46,8 +46,7 @@ export const WorkOrderList = ({
     handleImageView,
     handleCloseImageModal,
     handleSortChange,
-    handlePageBoundary,
-    isNavigatingPages
+    handlePageBoundary
   } = useWorkOrderListState();
 
   if (isLoading) {
@@ -119,7 +118,6 @@ export const WorkOrderList = ({
         onClose={handleCloseImageModal}
         isOpen={isImageModalOpen}
         onPageBoundary={pageBoundaryHandler}
-        isNavigatingPages={isNavigatingPages}
       />
     </div>
   );
