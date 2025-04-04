@@ -88,7 +88,7 @@ export const ImageViewer = ({
       className="relative flex items-center justify-center bg-gray-100 dark:bg-gray-800 overflow-hidden h-full w-full"
     >
       <div 
-        className="max-h-full max-w-full overflow-hidden flex items-center justify-center"
+        className="h-full w-full flex items-center justify-center"
         style={{ 
           width: "100%", 
           height: "100%",

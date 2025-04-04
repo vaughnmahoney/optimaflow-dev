@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogOverlay } from "@/components/ui/dialog";
 import { WorkOrder } from "../types";
@@ -156,14 +157,16 @@ export const ImageViewModal = ({
           onAdvanceToNextOrder={handleAdvanceToNextOrder}
         />
         
-        <ModalContent
-          workOrder={currentWorkOrder}
-          images={images}
-          currentImageIndex={currentImageIndex}
-          setCurrentImageIndex={setCurrentImageIndex}
-          isImageExpanded={isImageExpanded}
-          toggleImageExpand={toggleImageExpand}
-        />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <ModalContent
+            workOrder={currentWorkOrder}
+            images={images}
+            currentImageIndex={currentImageIndex}
+            setCurrentImageIndex={setCurrentImageIndex}
+            isImageExpanded={isImageExpanded}
+            toggleImageExpand={toggleImageExpand}
+          />
+        </div>
         
         <ModalFooter 
           workOrderId={currentWorkOrder.id} 

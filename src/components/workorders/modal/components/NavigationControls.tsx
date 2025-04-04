@@ -27,7 +27,7 @@ export const NavigationControls = ({
   
   return (
     <TooltipProvider>
-      <div className="p-4 border-t bg-white dark:bg-gray-950">
+      <div className="py-3 px-4 border-t bg-white dark:bg-gray-950">
         <div className="flex justify-between items-center">
           <Button
             variant="ghost"

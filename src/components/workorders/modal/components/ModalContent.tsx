@@ -23,11 +23,11 @@ export const ModalContent = ({
   toggleImageExpand,
 }: ModalContentProps) => {
   return (
-    <div className="flex flex-col md:flex-row h-full overflow-hidden">
+    <div className="flex flex-col md:flex-row flex-1 h-full overflow-hidden">
       {/* Left side: Image viewer */}
-      <div className="w-full md:w-2/3 flex flex-col">
+      <div className="flex-1 md:w-2/3 flex flex-col h-full">
         <ImageContent 
-          workOrderId={workOrder.id} // Pass workOrderId from the work order
+          workOrderId={workOrder.id}
           images={images}
           currentImageIndex={currentImageIndex}
           setCurrentImageIndex={setCurrentImageIndex}
