@@ -82,7 +82,7 @@ export const WorkOrderList = ({
         transformedData={transformedData}
       />
 
-      {/* Top pagination indicator with refresh button - always visible */}
+      {/* Top pagination indicator with refresh button */}
       <TopPagination 
         pagination={pagination}
         onPageChange={onPageChange}
@@ -105,8 +105,6 @@ export const WorkOrderList = ({
         onColumnFilterChange={onColumnFilterChange}
         onColumnFilterClear={clearColumnFilter}
         onClearAllFilters={clearAllFilters}
-        onRefresh={refetch}
-        isRefreshing={isRefreshing}
       />
 
       {/* Image modal */}

@@ -13,7 +13,6 @@ import { Pagination } from "./Pagination";
 import { Button } from "@/components/ui/button";
 import { FilterX } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { PaginationIndicator } from "./PaginationIndicator";
 
 interface WorkOrderTableProps {
   workOrders: WorkOrder[];
@@ -30,8 +29,6 @@ interface WorkOrderTableProps {
   onColumnFilterChange: (column: string, value: any) => void;
   onColumnFilterClear: (column: string) => void;
   onClearAllFilters: () => void;
-  onRefresh?: () => void;
-  isRefreshing?: boolean;
 }
 
 export const WorkOrderTable = ({ 
@@ -48,9 +45,7 @@ export const WorkOrderTable = ({
   filters,
   onColumnFilterChange,
   onColumnFilterClear,
-  onClearAllFilters,
-  onRefresh,
-  isRefreshing
+  onClearAllFilters
 }: WorkOrderTableProps) => {
   const isMobile = useIsMobile();
   
@@ -77,16 +72,6 @@ export const WorkOrderTable = ({
 
   return (
     <div className="space-y-2">
-      {/* Always show pagination indicator with refresh/import button */}
-      {pagination && onPageChange && (
-        <PaginationIndicator 
-          pagination={pagination}
-          onPageChange={onPageChange}
-          onRefresh={onRefresh}
-          isRefreshing={isRefreshing}
-        />
-      )}
-
       {/* Active filters indicator */}
       {hasActiveFilters && (
         <div className="flex items-center justify-between mb-2 px-2">
