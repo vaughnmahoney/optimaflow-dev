@@ -8,6 +8,7 @@ import { FiltersSection } from "./list-components/FiltersSection";
 import { TopPagination } from "./list-components/TopPagination";
 import { WorkOrderImageModal } from "./list-components/WorkOrderImageModal";
 import { useWorkOrderListState } from "./hooks/useWorkOrderListState";
+import { useEffect } from "react";
 
 export const WorkOrderList = ({ 
   workOrders, 
@@ -47,8 +48,20 @@ export const WorkOrderList = ({
     handleCloseImageModal,
     handleSortChange,
     handlePageBoundary,
-    isNavigatingPages
+    isNavigatingPages,
+    setIsNavigatingPages
   } = useWorkOrderListState();
+
+  // Effect to select the first work order on new page if navigating pages
+  useEffect(() => {
+    if (isNavigatingPages && workOrders.length > 0) {
+      // Select the first item on the new page
+      setTimeout(() => {
+        setSelectedWorkOrder(workOrders[0]?.id || null);
+        setIsNavigatingPages(false);
+      }, 100);
+    }
+  }, [workOrders, isNavigatingPages, setSelectedWorkOrder, setIsNavigatingPages]);
 
   if (isLoading) {
     return <LoadingSkeleton />;

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { SortDirection, SortField } from "../types";
 
@@ -9,6 +9,7 @@ export const useWorkOrderListState = () => {
   const [selectedWorkOrder, setSelectedWorkOrder] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isNavigatingPages, setIsNavigatingPages] = useState(false);
+  const [pendingPage, setPendingPage] = useState<number | null>(null);
   const queryClient = useQueryClient();
 
   const handleImageView = (workOrderId: string) => {
@@ -19,6 +20,8 @@ export const useWorkOrderListState = () => {
 
   const handleCloseImageModal = () => {
     setIsImageModalOpen(false);
+    setIsNavigatingPages(false);
+    setPendingPage(null);
   };
 
   const handleSortChange = (onSort: ((field: SortField, direction: SortDirection) => void) | undefined) => 
@@ -56,17 +59,28 @@ export const useWorkOrderListState = () => {
       // Set navigation in progress
       setIsNavigatingPages(true);
       
+      // Store the target page number
+      setPendingPage(newPage);
+      
       // Change the page - this will trigger a data refetch
       onPageChange(newPage);
-      
-      // Reset the navigation state after a short delay
-      setTimeout(() => {
-        setIsNavigatingPages(false);
-      }, 800);
     } else {
       console.log(`Cannot navigate ${direction}: at the ${direction === 'next' ? 'last' : 'first'} page`);
     }
   };
+
+  // Effect to handle selecting the first/last work order after page navigation
+  useEffect(() => {
+    if (isNavigatingPages && pendingPage !== null) {
+      // Wait a short delay to let the data load
+      const timeoutId = setTimeout(() => {
+        setIsNavigatingPages(false);
+        setPendingPage(null);
+      }, 300);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isNavigatingPages, pendingPage]);
 
   return {
     searchResponse,
@@ -78,6 +92,7 @@ export const useWorkOrderListState = () => {
     isImageModalOpen,
     setIsImageModalOpen,
     isNavigatingPages,
+    setIsNavigatingPages,
     handleImageView,
     handleCloseImageModal,
     handleSortChange,

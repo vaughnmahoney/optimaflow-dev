@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { WorkOrder } from "@/components/workorders/types";
 
@@ -17,106 +16,86 @@ export const useWorkOrderNavigation = ({
   isOpen,
   onClose,
   onPageBoundary,
-  isNavigatingPages = false
+  isNavigatingPages: initialIsNavigatingPages = false
 }: UseWorkOrderNavigationProps) => {
   const [currentWorkOrderId, setCurrentWorkOrderId] = useState<string | null>(initialWorkOrderId);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  
-  // Reset state when modal opens/closes
-  useEffect(() => {
-    if (isOpen && initialWorkOrderId) {
-      setCurrentWorkOrderId(initialWorkOrderId);
-      setCurrentImageIndex(0);
-    }
-  }, [isOpen, initialWorkOrderId]);
-  
-  // Get the current work order and its index
+  const [isNavigatingPages, setIsNavigatingPages] = useState(initialIsNavigatingPages);
+
+  // Find the current work order in the array
   const currentWorkOrder = workOrders.find(wo => wo.id === currentWorkOrderId) || null;
+  
+  // Find the index of the current work order in the array
   const currentIndex = currentWorkOrder ? workOrders.findIndex(wo => wo.id === currentWorkOrder.id) : -1;
-  
-  // Reset image index when work order changes
-  useEffect(() => {
-    setCurrentImageIndex(0);
-  }, [currentWorkOrderId]);
-  
-  // Add keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isOpen) return;
-      
-      switch (e.key) {
-        case "ArrowLeft":
-          if (e.altKey) {
-            handlePreviousOrder();
-          } else {
-            handlePreviousImage();
-          }
-          break;
-        case "ArrowRight":
-          if (e.altKey) {
-            handleNextOrder();
-          } else {
-            handleNextImage();
-          }
-          break;
-        case "Escape":
-          onClose();
-          break;
-      }
-    };
-    
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, currentImageIndex, currentIndex, currentWorkOrderId]);
-  
-  const handlePreviousOrder = () => {
-    if (currentIndex > 0) {
-      setCurrentWorkOrderId(workOrders[currentIndex - 1].id);
-      setCurrentImageIndex(0);
-    } else if (onPageBoundary && currentIndex === 0) {
-      // We're at the first order of the current page
-      onPageBoundary('previous');
-    }
-  };
 
-  const handleNextOrder = () => {
-    if (currentIndex < workOrders.length - 1) {
-      setCurrentWorkOrderId(workOrders[currentIndex + 1].id);
-      setCurrentImageIndex(0);
-    } else if (onPageBoundary && currentIndex === workOrders.length - 1) {
-      // We're at the last order of the current page
-      onPageBoundary('next');
+  // When the initialWorkOrderId changes, update our internal state
+  useEffect(() => {
+    if (initialWorkOrderId !== currentWorkOrderId) {
+      setCurrentWorkOrderId(initialWorkOrderId);
+      setCurrentImageIndex(0); // Reset image index when switching work orders
     }
-  };
+  }, [initialWorkOrderId, currentWorkOrderId]);
 
+  // When modal closes, reset navigation state
+  useEffect(() => {
+    if (!isOpen) {
+      setIsNavigatingPages(false);
+    }
+  }, [isOpen]);
+
+  // Function to handle setting the order directly by index
   const handleSetOrder = (index: number) => {
     if (index >= 0 && index < workOrders.length) {
-      setCurrentWorkOrderId(workOrders[index].id);
-      setCurrentImageIndex(0);
+      const newWorkOrderId = workOrders[index].id;
+      setCurrentWorkOrderId(newWorkOrderId);
+      setCurrentImageIndex(0); // Reset image index when changing orders
     }
   };
-  
-  const handlePreviousImage = () => {
-    if (!currentWorkOrder) return;
-    
-    const images = currentWorkOrder?.completion_response?.orders?.[0]?.data?.form?.images || [];
-    
-    if (currentImageIndex > 0) {
-      setCurrentImageIndex(prev => prev - 1);
-    } else if (images.length > 0) {
-      setCurrentImageIndex(images.length - 1);
+
+  // Function to handle navigation to the previous order
+  const handlePreviousOrder = () => {
+    // If at the first work order and pagination boundary handler exists
+    if (currentIndex === 0 && onPageBoundary) {
+      setIsNavigatingPages(true);
+      onPageBoundary('previous');
+    } 
+    // Otherwise navigate within the current page
+    else if (currentIndex > 0) {
+      handleSetOrder(currentIndex - 1);
     }
   };
-  
+
+  // Function to handle navigation to the next order
+  const handleNextOrder = () => {
+    // If at the last work order and pagination boundary handler exists
+    if (currentIndex === workOrders.length - 1 && onPageBoundary) {
+      setIsNavigatingPages(true);
+      onPageBoundary('next');
+    } 
+    // Otherwise navigate within the current page
+    else if (currentIndex < workOrders.length - 1) {
+      handleSetOrder(currentIndex + 1);
+    }
+  };
+
+  // Function to handle navigation to the next image
   const handleNextImage = () => {
-    if (!currentWorkOrder) return;
-    
-    const images = currentWorkOrder?.completion_response?.orders?.[0]?.data?.form?.images || [];
+    const completionData = currentWorkOrder?.completion_response?.orders?.[0]?.data;
+    const images = completionData?.form?.images || [];
     
     if (currentImageIndex < images.length - 1) {
-      setCurrentImageIndex(prev => prev + 1);
-    } else if (images.length > 0) {
-      setCurrentImageIndex(0);
+      setCurrentImageIndex(currentImageIndex + 1);
+    } else {
+      handleNextOrder();
+    }
+  };
+
+  // Function to handle navigation to the previous image
+  const handlePreviousImage = () => {
+    if (currentImageIndex > 0) {
+      setCurrentImageIndex(currentImageIndex - 1);
+    } else {
+      handlePreviousOrder();
     }
   };
 
@@ -126,9 +105,10 @@ export const useWorkOrderNavigation = ({
     currentImageIndex,
     isNavigatingPages,
     setCurrentImageIndex,
+    setIsNavigatingPages,
+    handleSetOrder,
     handlePreviousOrder,
     handleNextOrder,
-    handleSetOrder,
     handlePreviousImage,
     handleNextImage
   };
