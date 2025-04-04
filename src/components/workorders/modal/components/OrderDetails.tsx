@@ -89,7 +89,7 @@ export const OrderDetails = ({
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
+      <div className="bg-white border-b border-gray-100 sticky top-0 z-10 shadow-sm">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="w-full h-12 bg-white grid grid-cols-3 rounded-none border-b border-gray-200">
             <TabsTrigger 
@@ -126,17 +126,17 @@ export const OrderDetails = ({
       <ScrollArea className="flex-1 overflow-auto scrollbar-none">
         <div className="space-y-0">
           {/* Order Details Section */}
-          <div id="details-section" ref={detailsSectionRef} className="scroll-m-12">
+          <div id="details-section" ref={detailsSectionRef} className="scroll-m-16">
             <OrderDetailsTab workOrder={workOrder} />
           </div>
           
           {/* Notes Section */}
-          <div id="notes-section" ref={notesSectionRef} className="scroll-m-12">
+          <div id="notes-section" ref={notesSectionRef} className="scroll-m-16">
             <NotesTab workOrder={workOrder} />
           </div>
           
           {/* Signature Section */}
-          <div id="signature-section" ref={signatureSectionRef} className="scroll-m-12">
+          <div id="signature-section" ref={signatureSectionRef} className="scroll-m-16">
             <SignatureTab workOrder={workOrder} />
           </div>
         </div>

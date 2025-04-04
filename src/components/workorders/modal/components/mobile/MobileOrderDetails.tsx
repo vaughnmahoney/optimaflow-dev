@@ -87,25 +87,25 @@ export const MobileOrderDetails = ({
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* Tabs navigation - Now has sticky positioning */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200">
+      {/* Tabs navigation - Now enhanced with sticky positioning and z-index */}
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="grid grid-cols-3 w-full bg-white rounded-none p-0">
             <TabsTrigger 
               value="details" 
-              className="text-sm py-2 rounded-none border-b-2 border-transparent data-[state=active]:border-b-2 data-[state=active]:border-gray-700 data-[state=active]:bg-transparent"
+              className="text-sm py-2.5 rounded-none border-b-2 border-transparent data-[state=active]:border-b-2 data-[state=active]:border-gray-700 data-[state=active]:bg-transparent"
             >
               Details
             </TabsTrigger>
             <TabsTrigger 
               value="notes" 
-              className="text-sm py-2 rounded-none border-b-2 border-transparent data-[state=active]:border-b-2 data-[state=active]:border-gray-700 data-[state=active]:bg-transparent"
+              className="text-sm py-2.5 rounded-none border-b-2 border-transparent data-[state=active]:border-b-2 data-[state=active]:border-gray-700 data-[state=active]:bg-transparent"
             >
               Notes
             </TabsTrigger>
             <TabsTrigger 
               value="signature" 
-              className="text-sm py-2 rounded-none border-b-2 border-transparent data-[state=active]:border-b-2 data-[state=active]:border-gray-700 data-[state=active]:bg-transparent"
+              className="text-sm py-2.5 rounded-none border-b-2 border-transparent data-[state=active]:border-b-2 data-[state=active]:border-gray-700 data-[state=active]:bg-transparent"
             >
               Signature
             </TabsTrigger>
@@ -117,17 +117,17 @@ export const MobileOrderDetails = ({
       <ScrollArea className="flex-1 overflow-auto scrollbar-none">
         <div className="space-y-4 py-2">
           {/* Details Section */}
-          <div id="mobile-details-section" ref={detailsSectionRef} className="scroll-m-12">
+          <div id="mobile-details-section" ref={detailsSectionRef} className="scroll-m-16">
             <MobileDetailsTab workOrder={workOrder} />
           </div>
           
           {/* Notes Section */}
-          <div id="mobile-notes-section" ref={notesSectionRef} className="scroll-m-12">
+          <div id="mobile-notes-section" ref={notesSectionRef} className="scroll-m-16">
             <MobileNotesTab workOrder={workOrder} />
           </div>
           
           {/* Signature Section */}
-          <div id="mobile-signature-section" ref={signatureSectionRef} className="scroll-m-12">
+          <div id="mobile-signature-section" ref={signatureSectionRef} className="scroll-m-16">
             <MobileSignatureTab workOrder={workOrder} />
           </div>
         </div>
