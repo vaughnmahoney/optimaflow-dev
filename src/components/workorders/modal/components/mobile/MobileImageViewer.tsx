@@ -7,7 +7,7 @@ import { useImagePreloading } from "@/hooks/useImagePreloading";
 import { useTouchGestures } from "@/hooks/useTouchGestures";
 import { MobileImageHeader } from "./MobileImageHeader";
 import { MobileThumbnails } from "./MobileThumbnails";
-import { Download } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download } from "lucide-react";
 
 interface MobileImageViewerProps {
   workOrderId: string;
@@ -15,7 +15,7 @@ interface MobileImageViewerProps {
   currentImageIndex: number;
   setCurrentImageIndex: (index: number) => void;
   onClose: () => void;
-  onDownloadAll?: () => void; // Added onDownloadAll prop
+  onDownloadAll?: () => void;
 }
 
 export const MobileImageViewer = ({
@@ -24,7 +24,7 @@ export const MobileImageViewer = ({
   currentImageIndex,
   setCurrentImageIndex,
   onClose,
-  onDownloadAll, // Added onDownloadAll prop
+  onDownloadAll,
 }: MobileImageViewerProps) => {
   const { toggleImageFlag } = useWorkOrderMutations();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -93,7 +93,7 @@ export const MobileImageViewer = ({
       
       <div 
         ref={containerRef}
-        className="flex-1 flex items-center justify-center bg-gray-100 overflow-hidden"
+        className="flex-1 flex items-center justify-center bg-gray-100 overflow-hidden relative"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -111,6 +111,32 @@ export const MobileImageViewer = ({
           onLoad={handleImageLoad}
           draggable="false"
         />
+
+        {/* Left navigation arrow */}
+        <div className="absolute left-2 inset-y-0 flex items-center">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-9 w-9 rounded-full bg-white/70 hover:bg-white shadow-md text-gray-700"
+            onClick={handlePrevious}
+            aria-label="Previous image"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+        </div>
+
+        {/* Right navigation arrow */}
+        <div className="absolute right-2 inset-y-0 flex items-center">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-9 w-9 rounded-full bg-white/70 hover:bg-white shadow-md text-gray-700"
+            onClick={handleNext}
+            aria-label="Next image"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </Button>
+        </div>
       </div>
       
       <MobileThumbnails
