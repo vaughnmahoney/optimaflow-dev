@@ -35,14 +35,10 @@ export const ImageThumbnails = ({
   if (images.length === 0) return null;
   
   return (
-    <div className="w-20 h-full border-r overflow-hidden bg-gray-50 dark:bg-gray-900/50 flex flex-col">
-      <div className="text-center text-gray-400 py-1 text-xs">
-        {currentImageIndex > 0 && <div className="animate-bounce">↑</div>}
-      </div>
-      
+    <div className="w-20 h-full border-r overflow-hidden bg-gray-50 dark:bg-gray-900/50 flex flex-col">      
       <div 
         ref={thumbnailsContainerRef} 
-        className="flex-1 overflow-y-auto scrollbar-none px-2 space-y-2"
+        className="flex-1 overflow-y-auto scrollbar-none px-2 space-y-2 py-2"
       >
         {images.map((image, idx) => (
           <div 
@@ -75,10 +71,6 @@ export const ImageThumbnails = ({
             </div>
           </div>
         ))}
-      </div>
-      
-      <div className="text-center text-gray-400 py-1 text-xs">
-        {currentImageIndex < images.length - 1 && <div className="animate-bounce">↓</div>}
       </div>
     </div>
   );
