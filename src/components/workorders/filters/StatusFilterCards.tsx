@@ -6,6 +6,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { FilterSortButton } from "./FilterSortButton";
 import { WorkOrderFilters, SortDirection, SortField } from "../types";
+import { TodayDateButton } from "./TodayDateButton";
 
 interface StatusFilterCardsProps {
   statusFilter: string | null;
@@ -98,7 +99,10 @@ export const StatusFilterCards = ({
   const renderStatusButtons = () => {
     return (
       <>
-        {/* Filter button first */}
+        {/* Today Date Button first */}
+        <TodayDateButton />
+        
+        {/* Filter button */}
         <FilterSortButton 
           filters={filters}
           onColumnFilterChange={onColumnFilterChange}
