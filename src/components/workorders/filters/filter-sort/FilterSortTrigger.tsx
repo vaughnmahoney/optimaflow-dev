@@ -23,15 +23,10 @@ export const FilterSortTrigger = ({ filters }: FilterSortTriggerProps) => {
           hasActiveFilters ? 'bg-primary/10 border-primary/20' : ''
         )}
       >
-        <div className={cn(
-          "flex items-center justify-center w-4 h-4 rounded-full",
-          "bg-gray-200"
-        )}>
-          <SlidersHorizontal 
-            size={12}
-            className="text-gray-700" 
-          />
-        </div>
+        <SlidersHorizontal 
+          size={14}
+          className="text-gray-700" 
+        />
         <span className="text-xs font-medium">Filters</span>
         {hasActiveFilters && (
           <span className="inline-flex items-center justify-center text-xs font-medium rounded-full px-1.5 py-0.5 min-w-[18px] h-[18px] bg-primary text-white">
