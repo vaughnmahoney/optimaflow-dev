@@ -22,6 +22,11 @@ export const useWorkOrderListState = () => {
 
   const handleCloseImageModal = () => {
     setIsImageModalOpen(false);
+    // Also reset navigation state when modal is manually closed
+    if (isNavigatingPages) {
+      setIsNavigatingPages(false);
+      setPendingNavigation(null);
+    }
   };
 
   const handleSortChange = (onSort: ((field: SortField, direction: SortDirection) => void) | undefined) => 
@@ -35,17 +40,15 @@ export const useWorkOrderListState = () => {
 
   // Effect to handle work order selection after data has loaded from a page change
   useEffect(() => {
-    if (isNavigatingPages && pendingNavigation && transformedData) {
-      // Use a slightly longer timeout to ensure data is fully loaded
-      const timer = setTimeout(() => {
+    if (isNavigatingPages && pendingNavigation) {
+      // Get the latest work orders data from the query cache
+      const workOrdersData = queryClient.getQueryData<any>(["workOrders"]);
+      
+      if (workOrdersData?.data?.length > 0) {
+        console.log("Data loaded after page navigation:", workOrdersData.data.length, "work orders");
+        
         const { direction } = pendingNavigation;
-        
-        // Get the latest work orders data from the component props
-        const workOrdersData = queryClient.getQueryData<any>(["workOrders"]);
-        const workOrders = workOrdersData?.data || [];
-        
-        console.log(`Data loaded after page navigation, opening modal for direction: ${direction}`);
-        console.log(`Available work orders: ${workOrders.length}`);
+        const workOrders = workOrdersData.data || [];
         
         if (workOrders.length > 0) {
           const indexToSelect = direction === 'next' ? 0 : workOrders.length - 1;
@@ -54,6 +57,7 @@ export const useWorkOrderListState = () => {
           if (selectedId) {
             console.log(`Selecting work order at index ${indexToSelect}: ${selectedId}`);
             setSelectedWorkOrder(selectedId);
+            // Keep modal open with the new work order
             setIsImageModalOpen(true);
           }
         }
@@ -61,11 +65,9 @@ export const useWorkOrderListState = () => {
         // Reset navigation state
         setIsNavigatingPages(false);
         setPendingNavigation(null);
-      }, 500); // Longer timeout to ensure data is fully loaded
-      
-      return () => clearTimeout(timer);
+      }
     }
-  }, [isNavigatingPages, pendingNavigation, transformedData, queryClient]);
+  }, [isNavigatingPages, pendingNavigation, queryClient]);
 
   const handlePageBoundary = (
     pagination: any,
@@ -90,12 +92,9 @@ export const useWorkOrderListState = () => {
     if (hasMorePages) {
       console.log(`Navigating to page ${newPage}`);
       
-      // Set navigation in progress
+      // Set navigation in progress and keep the modal open
       setIsNavigatingPages(true);
       setPendingNavigation({ direction, page: newPage });
-      
-      // Keep the modal open during transition
-      // setIsImageModalOpen(true);
       
       // Change the page - this will trigger a data refetch
       onPageChange(newPage);
