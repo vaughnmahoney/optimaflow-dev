@@ -34,26 +34,36 @@ export const useWorkOrderListState = () => {
     onPageChange: ((page: number) => void) | undefined,
     workOrders: any[]
   ) => (direction: 'next' | 'previous') => {
-    if (!pagination || !onPageChange) return;
+    if (!pagination || !onPageChange) {
+      console.log("Cannot handle page boundary: pagination or onPageChange is undefined");
+      return;
+    }
+    
+    console.log(`Handling page boundary: ${direction}, current page: ${pagination.page}`);
     
     const newPage = direction === 'next' 
       ? pagination.page + 1 
       : Math.max(1, pagination.page - 1);
     
-    if (direction === 'next' && pagination.page < Math.ceil(pagination.total / pagination.pageSize)) {
+    const hasMorePages = direction === 'next' 
+      ? pagination.page < Math.ceil(pagination.total / pagination.pageSize)
+      : pagination.page > 1;
+    
+    if (hasMorePages) {
+      console.log(`Navigating to page ${newPage}`);
       onPageChange(newPage);
+      // After page is changed, select the first or last item on the new page
       setTimeout(() => {
         if (workOrders.length > 0) {
-          setSelectedWorkOrder(workOrders[0].id);
+          const indexToSelect = direction === 'next' ? 0 : workOrders.length - 1;
+          console.log(`Selecting work order at index ${indexToSelect}`);
+          setSelectedWorkOrder(workOrders[indexToSelect]?.id || null);
+        } else {
+          console.log("No work orders to select on new page");
         }
       }, 100);
-    } else if (direction === 'previous' && pagination.page > 1) {
-      onPageChange(newPage);
-      setTimeout(() => {
-        if (workOrders.length > 0) {
-          setSelectedWorkOrder(workOrders[workOrders.length - 1].id);
-        }
-      }, 100);
+    } else {
+      console.log(`Cannot navigate ${direction}: at the ${direction === 'next' ? 'last' : 'first'} page`);
     }
   };
 

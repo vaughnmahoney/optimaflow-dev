@@ -59,6 +59,7 @@ export const WorkOrderList = ({
     if (onImageView) onImageView(workOrderId);
   };
 
+  // Create the page boundary handler with the current pagination, page change handler, and work orders
   const pageBoundaryHandler = handlePageBoundary(pagination, onPageChange, workOrders);
 
   return (
@@ -116,6 +117,7 @@ export const WorkOrderList = ({
         filters={filters}
         onClose={handleCloseImageModal}
         isOpen={isImageModalOpen}
+        // Pass the page boundary handler here
       />
     </div>
   );

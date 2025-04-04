@@ -33,9 +33,11 @@ export const WorkOrderImageModal = ({
     }
   };
 
+  // This function will be called when we reach the boundary of the current page
   const handlePageBoundary = (direction: 'next' | 'previous') => {
-    // This function will be passed down to the ImageViewModal component
-    // and implemented in the parent component
+    console.log(`Page boundary reached: ${direction}, but not implemented in this component`);
+    // This is intentionally empty as it's implemented in the parent WorkOrderList component
+    // through the handlePageBoundary utility function
   };
 
   const handleStatusUpdate = (workOrderId: string, newStatus: string, options?: any) => {
