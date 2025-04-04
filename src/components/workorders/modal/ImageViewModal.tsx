@@ -23,6 +23,7 @@ interface ImageViewModalProps {
   onDownloadAll?: () => void;
   onResolveFlag?: (workOrderId: string, resolution: string) => void;
   filters?: any;
+  isNavigatingPages?: boolean;
 }
 
 export const ImageViewModal = ({
@@ -36,7 +37,8 @@ export const ImageViewModal = ({
   onPageBoundary,
   onDownloadAll,
   onResolveFlag,
-  filters
+  filters,
+  isNavigatingPages = false
 }: ImageViewModalProps) => {
   const isMobile = useMobile();
   const [isImageExpanded, setIsImageExpanded] = useState(false);
@@ -45,9 +47,9 @@ export const ImageViewModal = ({
     currentWorkOrder,
     currentIndex: navIndex,
     currentImageIndex,
-    isNavigatingPages,
+    isNavigatingPages: navIsNavigatingPages,
     setCurrentImageIndex,
-    setIsNavigatingPages,
+    setIsNavigatingPages: setNavIsNavigatingPages,
     handlePreviousOrder,
     handleNextOrder,
     handleSetOrder
@@ -56,11 +58,12 @@ export const ImageViewModal = ({
     initialWorkOrderId: workOrder?.id || null,
     isOpen,
     onClose,
-    onPageBoundary
+    onPageBoundary,
+    isNavigatingPages
   });
   
   // Early return with mobile version, but AFTER all hooks have been called
-  if (isMobile && currentWorkOrder) {
+  if (isMobile && (currentWorkOrder || isNavigatingPages)) {
     return (
       <MobileImageViewModal 
         workOrder={currentWorkOrder}
@@ -78,8 +81,8 @@ export const ImageViewModal = ({
     );
   }
   
-  // Return null if no work order, but AFTER all hooks have been called
-  if (!currentWorkOrder) return null;
+  // If we're navigating pages, show a loading state instead of closing the modal
+  if (!currentWorkOrder && !isNavigatingPages) return null;
 
   const toggleImageExpand = () => {
     setIsImageExpanded(!isImageExpanded);
@@ -90,7 +93,7 @@ export const ImageViewModal = ({
   const images = completionData?.form?.images || [];
   
   // Status color for border
-  const statusBorderColor = getStatusBorderColor(currentWorkOrder.status || "pending_review");
+  const statusBorderColor = getStatusBorderColor(currentWorkOrder?.status || "pending_review");
   
   // Map the border color class to actual color hex values
   const getBorderColor = () => {
@@ -125,6 +128,21 @@ export const ImageViewModal = ({
     }
   };
 
+  // Loading state during page navigation
+  if (isNavigatingPages && !currentWorkOrder) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogOverlay />
+        <DialogContent className="max-w-6xl p-0 h-[90vh] flex flex-col items-center justify-center rounded-lg overflow-hidden border-t-4 bg-white shadow-xl w-[95%] m-0">
+          <div className="text-center space-y-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+            <p className="text-lg font-medium">Loading next page...</p>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogOverlay />
@@ -147,11 +165,11 @@ export const ImageViewModal = ({
         />
         
         <ModalFooter 
-          workOrderId={currentWorkOrder.id} 
+          workOrderId={currentWorkOrder?.id || ""} 
           onStatusUpdate={onStatusUpdate} 
           onDownloadAll={onDownloadAll}
           hasImages={images.length > 0}
-          status={currentWorkOrder.status}
+          status={currentWorkOrder?.status}
           onResolveFlag={onResolveFlag}
           workOrder={currentWorkOrder}
         />
@@ -161,7 +179,7 @@ export const ImageViewModal = ({
           totalOrders={workOrders.length}
           onPreviousOrder={handlePreviousOrder}
           onNextOrder={handleNextOrder}
-          isNavigatingPages={isNavigatingPages}
+          isNavigatingPages={navIsNavigatingPages || isNavigatingPages}
           hasPreviousPage={onPageBoundary !== undefined && navIndex === 0}
           hasNextPage={onPageBoundary !== undefined && navIndex === workOrders.length - 1}
         />
