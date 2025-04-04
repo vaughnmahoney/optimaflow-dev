@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { 
@@ -19,6 +20,8 @@ interface StatusBadgeDropdownProps {
   filters?: any;
   workOrders?: any[];
   onAdvanceToNextOrder?: (nextOrderId: string) => void;
+  statusUser?: string;
+  statusTimestamp?: string;
 }
 
 export const StatusBadgeDropdown = ({ 
@@ -28,7 +31,9 @@ export const StatusBadgeDropdown = ({
   className,
   filters,
   workOrders,
-  onAdvanceToNextOrder
+  onAdvanceToNextOrder,
+  statusUser,
+  statusTimestamp
 }: StatusBadgeDropdownProps) => {
   const { updateWorkOrderStatus } = useWorkOrderMutations();
   const [isOpen, setIsOpen] = useState(false);
@@ -75,6 +80,8 @@ export const StatusBadgeDropdown = ({
         <StatusMenuItems 
           currentStatus={currentStatus}
           onStatusChange={handleStatusChange}
+          statusUser={statusUser}
+          statusTimestamp={statusTimestamp}
         />
       </DropdownMenuContent>
     </DropdownMenu>

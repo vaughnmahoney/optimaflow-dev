@@ -13,12 +13,16 @@ import { getStatusBorderColor, getStatusBgColor } from "../../utils/modalUtils";
 interface MobileStatusButtonProps {
   workOrderId: string;
   currentStatus: string;
+  statusUser?: string;
+  statusTimestamp?: string;
   onStatusUpdate?: (workOrderId: string, newStatus: string, options?: any) => void;
 }
 
 export const MobileStatusButton = ({
   workOrderId,
   currentStatus,
+  statusUser,
+  statusTimestamp,
   onStatusUpdate
 }: MobileStatusButtonProps) => {
   const queryClient = useQueryClient();
@@ -63,6 +67,8 @@ export const MobileStatusButton = ({
         <StatusMenuItems 
           currentStatus={currentStatus}
           onStatusChange={(newStatus) => handleStatusChange(newStatus)}
+          statusUser={statusUser}
+          statusTimestamp={statusTimestamp}
         />
       </DropdownMenuContent>
     </DropdownMenu>

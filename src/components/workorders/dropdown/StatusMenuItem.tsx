@@ -1,6 +1,7 @@
 
 import { Check, Flag, Clock, XCircle, CheckCircle2, AlertTriangle } from "lucide-react";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { formatDistanceToNow } from "date-fns";
 
 interface StatusMenuItemProps {
   onClick: () => void;
@@ -52,10 +53,17 @@ export const RejectMenuItem = ({ onClick, label = "Reject" }: StatusMenuItemProp
   );
 };
 
-export const DisabledStatusItem = ({ status }: { status: string }) => {
+interface DisabledStatusItemProps {
+  status: string;
+  user?: string;
+  timestamp?: string;
+}
+
+export const DisabledStatusItem = ({ status, user, timestamp }: DisabledStatusItemProps) => {
   let icon;
   let label;
   let className;
+  let attributionText = "";
   
   switch (status) {
     case "approved":
@@ -91,9 +99,22 @@ export const DisabledStatusItem = ({ status }: { status: string }) => {
   }
   
   return (
-    <DropdownMenuItem disabled className={`${className} cursor-default font-medium opacity-100`}>
-      {icon}
-      Current: {label}
+    <DropdownMenuItem disabled className={`${className} cursor-default font-medium opacity-100 flex flex-col items-start`}>
+      <div className="flex items-center w-full">
+        {icon}
+        Current: {label}
+      </div>
+      {(user || timestamp) && (
+        <div className="pl-6 mt-1 text-xs text-muted-foreground opacity-80">
+          {user && timestamp ? (
+            `Set by ${user} on ${new Date(timestamp).toLocaleString()}`
+          ) : user ? (
+            `Set by ${user}`
+          ) : timestamp ? (
+            `Set on ${new Date(timestamp).toLocaleString()}`
+          ) : null}
+        </div>
+      )}
     </DropdownMenuItem>
   );
 };

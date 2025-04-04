@@ -27,6 +27,42 @@ export const MobileModalHeader = ({
            (order.search_response?.scheduleInformation?.status);
   };
 
+  // Determine which attribution data to show based on current status
+  const getStatusAttributionInfo = (workOrder: WorkOrder) => {
+    const status = workOrder.status;
+    
+    if (status === "approved" && workOrder.approved_user && workOrder.approved_at) {
+      return {
+        user: workOrder.approved_user,
+        timestamp: workOrder.approved_at
+      };
+    } else if ((status === "flagged" || status === "flagged_followup") && workOrder.flagged_user && workOrder.flagged_at) {
+      return {
+        user: workOrder.flagged_user,
+        timestamp: workOrder.flagged_at
+      };
+    } else if (status === "resolved" && workOrder.resolved_user && workOrder.resolved_at) {
+      return {
+        user: workOrder.resolved_user,
+        timestamp: workOrder.resolved_at
+      };
+    } else if (status === "rejected" && workOrder.rejected_user && workOrder.rejected_at) {
+      return {
+        user: workOrder.rejected_user,
+        timestamp: workOrder.rejected_at
+      };
+    } else if (workOrder.last_action_user && workOrder.last_action_at) {
+      return {
+        user: workOrder.last_action_user,
+        timestamp: workOrder.last_action_at
+      };
+    }
+    
+    return { user: undefined, timestamp: undefined };
+  };
+
+  const attributionInfo = getStatusAttributionInfo(workOrder);
+
   return (
     <div className="flex justify-between items-center px-4 py-3 bg-white dark:bg-gray-950 border-b">
       <div className="flex items-center">
@@ -40,6 +76,8 @@ export const MobileModalHeader = ({
               filters={filters}
               workOrders={workOrders}
               onAdvanceToNextOrder={onAdvanceToNextOrder}
+              statusUser={attributionInfo.user}
+              statusTimestamp={attributionInfo.timestamp}
             />
           </div>
         </div>
