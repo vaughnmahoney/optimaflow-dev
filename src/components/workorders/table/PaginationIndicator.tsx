@@ -40,11 +40,15 @@ export const PaginationIndicator = ({
     return null;
   }
 
+  // Calculate the range of items being shown
+  const startItem = (page - 1) * pageSize + 1;
+  const endItem = Math.min(page * pageSize, total);
+
   return (
     <div className="flex flex-col justify-between gap-2 py-2 px-3 mb-4 bg-white">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span>{total} {total === 1 ? 'order' : 'orders'}</span>
+          <span>Showing {startItem} - {endItem} of {total} orders</span>
           
           {onRefresh && (
             <Button 
