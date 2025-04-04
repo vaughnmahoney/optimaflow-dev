@@ -57,6 +57,14 @@ export const WorkOrderImageModal = ({
     onResolveFlag(workOrderId, resolution, updatedOptions);
   };
 
+  if (!currentWorkOrder && workOrders.length > 0 && isOpen) {
+    // When navigating pages and there's no current work order selected yet,
+    // select the first one in the new page
+    if (onImageView) {
+      onImageView(workOrders[0].id);
+    }
+  }
+
   if (!currentWorkOrder) return null;
 
   return (

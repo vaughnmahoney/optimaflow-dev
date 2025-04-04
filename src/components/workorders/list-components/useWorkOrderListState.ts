@@ -51,17 +51,12 @@ export const useWorkOrderListState = () => {
     
     if (hasMorePages) {
       console.log(`Navigating to page ${newPage}`);
+      
+      // Just change the page, don't select any work order
       onPageChange(newPage);
-      // After page is changed, select the first or last item on the new page
-      setTimeout(() => {
-        if (workOrders.length > 0) {
-          const indexToSelect = direction === 'next' ? 0 : workOrders.length - 1;
-          console.log(`Selecting work order at index ${indexToSelect}`);
-          setSelectedWorkOrder(workOrders[indexToSelect]?.id || null);
-        } else {
-          console.log("No work orders to select on new page");
-        }
-      }, 100);
+      
+      // We intentionally don't select a work order here, as per the user's request
+      // The modal will stay open and wait for the new page data
     } else {
       console.log(`Cannot navigate ${direction}: at the ${direction === 'next' ? 'last' : 'first'} page`);
     }

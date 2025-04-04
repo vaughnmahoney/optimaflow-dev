@@ -39,12 +39,14 @@ export const useWorkOrderNavigation = ({
     setCurrentImageIndex(0);
   }, [currentWorkOrderId]);
 
-  // Reset isNavigatingPages when workOrders change (meaning new page has been loaded)
+  // If we're navigating pages and the workOrders array changes (meaning new page data has arrived),
+  // and we don't have a current work order selected, select the first one in the new page
   useEffect(() => {
-    if (isNavigatingPages) {
+    if (isNavigatingPages && workOrders.length > 0 && !currentWorkOrder) {
+      setCurrentWorkOrderId(workOrders[0].id);
       setIsNavigatingPages(false);
     }
-  }, [workOrders]);
+  }, [workOrders, currentWorkOrder, isNavigatingPages]);
   
   // Add keyboard navigation
   useEffect(() => {
@@ -93,8 +95,10 @@ export const useWorkOrderNavigation = ({
       setCurrentImageIndex(0);
     } else if (onPageBoundary && currentIndex === workOrders.length - 1) {
       // We're at the last order of the current page
+      // Just trigger the page boundary event without trying to select the first order
       setIsNavigatingPages(true);
       onPageBoundary('next');
+      // Don't attempt to select any work order - we'll wait for the new page data
     }
   };
 

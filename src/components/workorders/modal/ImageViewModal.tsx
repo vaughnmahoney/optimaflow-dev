@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogOverlay } from "@/components/ui/dialog";
 import { WorkOrder } from "../types";
@@ -75,6 +74,35 @@ export const ImageViewModal = ({
         onResolveFlag={onResolveFlag}
         filters={filters}
       />
+    );
+  }
+  
+  // If we're navigating pages and don't have a current work order, 
+  // show a loading state but keep the modal open
+  if (isNavigatingPages && !currentWorkOrder) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogOverlay />
+        <DialogContent className="max-w-6xl p-0 h-[90vh] flex flex-col rounded-lg overflow-hidden border-t-4 bg-white shadow-xl w-[95%] m-0">
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center p-6">
+              <div className="mb-4 flex justify-center">
+                <Loader2 className="h-10 w-10 animate-spin text-gray-500" />
+              </div>
+              <p className="text-lg font-medium text-gray-600">Loading work orders...</p>
+            </div>
+          </div>
+          <NavigationControls
+            currentIndex={navIndex >= 0 ? navIndex : 0}
+            totalOrders={workOrders.length}
+            onPreviousOrder={handlePreviousOrder}
+            onNextOrder={handleNextOrder}
+            isNavigatingPages={isNavigatingPages}
+            hasPreviousPage={onPageBoundary !== undefined && navIndex === 0}
+            hasNextPage={onPageBoundary !== undefined && navIndex === workOrders.length - 1}
+          />
+        </DialogContent>
+      </Dialog>
     );
   }
   
