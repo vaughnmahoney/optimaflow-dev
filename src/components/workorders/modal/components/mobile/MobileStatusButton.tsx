@@ -48,12 +48,12 @@ export const MobileStatusButton = ({
     <DropdownMenu>
       <DropdownMenuTrigger asChild onClick={handleDropdownClick}>
         <Button 
-          variant="ghost"
-          size="sm"
-          className={`h-8 px-3 text-xs flex items-center justify-center gap-1 text-gray-600 hover:bg-gray-100 border ${borderColorClass} ${bgColorClass}`}
+          variant="outline" 
+          size="sm" 
+          className={`gap-1 px-2 py-1 h-7 rounded-md ${borderColorClass} ${bgColorClass}`}
         >
-          Status
-          <ChevronDown className="h-3 w-3" />
+          <span className="text-xs font-medium">Status</span>
+          <ChevronDown className="h-3.5 w-3.5" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent 
