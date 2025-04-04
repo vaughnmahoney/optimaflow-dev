@@ -19,12 +19,12 @@ export const MobileImageHeader = ({
       <div className="w-24 flex justify-start">
         <Button 
           variant="ghost" 
-          size="sm" 
+          size="icon" 
           onClick={onFlagToggle} 
-          className={`flex items-center gap-1 ${isFlagged ? "text-red-500" : ""}`}
+          className="rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+          title={isFlagged ? "Unflag image" : "Flag image"}
         >
-          <Flag className={`h-4 w-4 ${isFlagged ? "fill-red-500" : ""}`} />
-          <span>{isFlagged ? "Flagged" : "Flag"}</span>
+          <Flag className={`h-4 w-4 ${isFlagged ? "fill-red-500 text-red-500" : ""}`} />
         </Button>
       </div>
       
