@@ -8,6 +8,7 @@ import { FiltersSection } from "./list-components/FiltersSection";
 import { TopPagination } from "./list-components/TopPagination";
 import { WorkOrderImageModal } from "./list-components/WorkOrderImageModal";
 import { useWorkOrderListState } from "./list-components/useWorkOrderListState";
+import { SearchBar } from "./search/SearchBar";
 
 export const WorkOrderList = ({ 
   workOrders, 
@@ -64,6 +65,16 @@ export const WorkOrderList = ({
 
   return (
     <div className="space-y-3">
+      {/* Header section with work title and search */}
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-xl font-bold">Work Orders</h1>
+        <SearchBar 
+          initialValue={filters.searchText || ""} 
+          onSearch={onSearchChange || (() => {})}
+          placeholder="Search orders, drivers, locations..." 
+        />
+      </div>
+
       {/* Filters section */}
       <div className="flex flex-col space-y-2">
         <FiltersSection 
@@ -107,7 +118,6 @@ export const WorkOrderList = ({
         onColumnFilterChange={onColumnFilterChange}
         onColumnFilterClear={clearColumnFilter}
         onClearAllFilters={clearAllFilters}
-        onSearchChange={onSearchChange}
       />
 
       {/* Image modal */}

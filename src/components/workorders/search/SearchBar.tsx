@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, X } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SearchBarProps {
   initialValue?: string;
@@ -16,7 +17,8 @@ export const SearchBar = ({
   placeholder = "Search orders..." 
 }: SearchBarProps) => {
   const [searchValue, setSearchValue] = useState(initialValue);
-
+  const isMobile = useIsMobile();
+  
   // Sync with external value if it changes
   useEffect(() => {
     setSearchValue(initialValue);
@@ -43,7 +45,7 @@ export const SearchBar = ({
   };
 
   return (
-    <div className="relative flex w-full max-w-[400px]">
+    <div className="relative flex w-full max-w-xs">
       <Input
         type="text"
         placeholder={placeholder}

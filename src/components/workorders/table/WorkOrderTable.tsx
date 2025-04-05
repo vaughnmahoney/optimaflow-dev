@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { FilterX } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { checkHasActiveFilters } from "../filters/filter-sort/filterUtils";
-import { SearchBar } from "../search/SearchBar";
+import { PaginationIndicator } from "./PaginationIndicator";
 
 interface WorkOrderTableProps {
   workOrders: WorkOrder[];
@@ -31,7 +31,6 @@ interface WorkOrderTableProps {
   onColumnFilterChange: (column: string, value: any) => void;
   onColumnFilterClear: (column: string) => void;
   onClearAllFilters: () => void;
-  onSearchChange?: (searchText: string) => void;
 }
 
 export const WorkOrderTable = ({ 
@@ -49,7 +48,6 @@ export const WorkOrderTable = ({
   onColumnFilterChange,
   onColumnFilterClear,
   onClearAllFilters,
-  onSearchChange
 }: WorkOrderTableProps) => {
   const isMobile = useIsMobile();
   
@@ -68,24 +66,11 @@ export const WorkOrderTable = ({
   // Check if any non-date filter is active
   const hasActiveFilters = checkHasActiveFilters(filters, false);
 
-  // Handle search
-  const handleSearch = (value: string) => {
-    if (onSearchChange) {
-      onSearchChange(value);
-    }
-  };
-
   return (
     <div className="space-y-3">
-      {/* Search Bar and Clear Filters section */}
-      <div className="flex items-center justify-between gap-2 flex-wrap">
-        <SearchBar 
-          initialValue={filters.searchText || ""} 
-          onSearch={handleSearch}
-          placeholder="Search orders, drivers, locations..." 
-        />
-        
-        {hasActiveFilters && (
+      {/* Clear Filters button */}
+      {hasActiveFilters && (
+        <div className="flex justify-end">
           <Button
             variant="ghost"
             size="xs"
@@ -95,8 +80,8 @@ export const WorkOrderTable = ({
             <FilterX className="h-3 w-3 mr-1" />
             Clear filters
           </Button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Card grid layout for both mobile and desktop */}
       <div className="space-y-2">

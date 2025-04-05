@@ -86,11 +86,6 @@ const WorkOrders = () => {
       }
     >
       <div className="space-y-4 overflow-x-hidden">
-        {/* Page title - shown on all devices now */}
-        <div className="flex justify-between items-center">
-          <h1 className="text-xl font-bold">Work Orders</h1>
-        </div>
-        
         <WorkOrderContent 
           workOrders={workOrders}
           isLoading={isLoading}
