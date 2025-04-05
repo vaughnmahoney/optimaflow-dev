@@ -13,6 +13,7 @@ import { Pagination } from "./Pagination";
 import { Button } from "@/components/ui/button";
 import { FilterX } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { checkHasActiveFilters } from "../filters/filter-sort/filterUtils";
 
 interface WorkOrderTableProps {
   workOrders: WorkOrder[];
@@ -61,18 +62,12 @@ export const WorkOrderTable = ({
     externalOnSort
   );
 
-  // Check if any filter is active
-  const hasActiveFilters = 
-    filters.status !== null || 
-    filters.orderNo !== null || 
-    filters.driver !== null || 
-    filters.location !== null || 
-    filters.dateRange.from !== null || 
-    filters.dateRange.to !== null;
+  // Check if any non-date filter is active
+  const hasActiveFilters = checkHasActiveFilters(filters, false);
 
   return (
     <div className="space-y-2">
-      {/* Active filters indicator */}
+      {/* Active filters indicator - only show when filters other than date range are active */}
       {hasActiveFilters && (
         <div className="flex items-center justify-between mb-2 px-2">
           <div className="text-sm text-muted-foreground">

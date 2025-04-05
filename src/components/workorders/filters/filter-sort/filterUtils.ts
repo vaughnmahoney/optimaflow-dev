@@ -1,4 +1,3 @@
-
 import { WorkOrderFilters } from "../../types";
 
 // Helper function to count active filters
@@ -13,14 +12,17 @@ export const countActiveFilters = (filters: WorkOrderFilters): number => {
   return count;
 };
 
-export const checkHasActiveFilters = (filters: WorkOrderFilters): boolean => {
-  return (
+export const checkHasActiveFilters = (filters: WorkOrderFilters, includeDateRange: boolean = true): boolean => {
+  const hasNonDateFilters = 
     filters.status !== null || 
     filters.orderNo !== null || 
     filters.driver !== null || 
-    filters.location !== null || 
-    filters.dateRange.from !== null || 
-    filters.dateRange.to !== null ||
-    filters.optimoRouteStatus !== null
-  );
+    filters.location !== null ||
+    filters.optimoRouteStatus !== null;
+    
+  // If we have non-date filters, return true immediately
+  if (hasNonDateFilters) return true;
+  
+  // Otherwise, check date range only if we're including it in our check
+  return includeDateRange && (filters.dateRange.from !== null || filters.dateRange.to !== null);
 };
