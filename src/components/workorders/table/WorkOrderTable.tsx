@@ -83,14 +83,16 @@ export const WorkOrderTable = ({
   return (
     <div className="space-y-3">
       {/* Search Bar and Pagination in same row */}
-      <div className="flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex-1 max-w-[400px]">
-          <SearchBar 
-            initialValue={filters.searchText || ""} 
-            onSearch={handleSearch}
-            placeholder="Search orders, drivers, locations..." 
-          />
-        </div>
+      <div className={`flex items-center ${isMobile ? "justify-end" : "justify-between"} gap-2 flex-wrap`}>
+        {!isMobile && (
+          <div className="flex-1 max-w-[400px]">
+            <SearchBar 
+              initialValue={filters.searchText || ""} 
+              onSearch={handleSearch}
+              placeholder="Search orders, drivers, locations..." 
+            />
+          </div>
+        )}
         
         <div className="flex items-center gap-2">
           {pagination && onPageChange && (
@@ -117,6 +119,19 @@ export const WorkOrderTable = ({
           )}
         </div>
       </div>
+
+      {/* Mobile search bar at top right */}
+      {isMobile && (
+        <div className="flex justify-end mb-2">
+          <div className="w-full max-w-[200px]">
+            <SearchBar 
+              initialValue={filters.searchText || ""} 
+              onSearch={handleSearch}
+              placeholder="Search..." 
+            />
+          </div>
+        </div>
+      )}
 
       {/* Card grid layout for both mobile and desktop */}
       <div className="space-y-2">
