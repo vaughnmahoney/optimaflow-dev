@@ -71,7 +71,7 @@ export const WorkOrderList = ({
         <SearchBar 
           initialValue={filters.searchText || ""} 
           onSearch={onSearchChange || (() => {})}
-          placeholder="Search orders, drivers, locations..." 
+          placeholder={isMobile ? "Search..." : "Search orders, drivers, locations..."} 
         />
       </div>
 
