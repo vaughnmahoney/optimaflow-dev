@@ -46,7 +46,7 @@ export const PaginationIndicator = ({
   };
 
   return (
-    <div className="flex items-center justify-between gap-2 py-1 text-sm text-muted-foreground">
+    <div className="flex items-center justify-end gap-2 py-1 text-sm text-muted-foreground">
       <span className="text-xs whitespace-nowrap">
         Showing {start} - {end} of {total} orders
       </span>
