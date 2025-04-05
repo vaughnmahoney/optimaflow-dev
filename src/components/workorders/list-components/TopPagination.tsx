@@ -18,11 +18,13 @@ export const TopPagination = ({
   if (!pagination || !onPageChange) return null;
   
   return (
-    <PaginationIndicator 
-      pagination={pagination}
-      onPageChange={onPageChange}
-      onRefresh={onRefresh}
-      isRefreshing={isRefreshing}
-    />
+    <div className="flex justify-between items-center">
+      <PaginationIndicator 
+        pagination={pagination}
+        onPageChange={onPageChange}
+        onRefresh={onRefresh}
+        isRefreshing={isRefreshing}
+      />
+    </div>
   );
 };

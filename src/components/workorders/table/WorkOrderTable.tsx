@@ -32,8 +32,6 @@ interface WorkOrderTableProps {
   onColumnFilterClear: (column: string) => void;
   onClearAllFilters: () => void;
   onSearchChange?: (searchText: string) => void;
-  onRefresh?: () => void;
-  isRefreshing?: boolean;
 }
 
 export const WorkOrderTable = ({ 
@@ -51,9 +49,7 @@ export const WorkOrderTable = ({
   onColumnFilterChange,
   onColumnFilterClear,
   onClearAllFilters,
-  onSearchChange,
-  onRefresh,
-  isRefreshing
+  onSearchChange
 }: WorkOrderTableProps) => {
   const isMobile = useIsMobile();
   
@@ -81,40 +77,25 @@ export const WorkOrderTable = ({
 
   return (
     <div className="space-y-3">
-      {/* Search Bar and Pagination in same row */}
+      {/* Search Bar and Clear Filters section */}
       <div className="flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex-1 max-w-[400px]">
-          <SearchBar 
-            initialValue={filters.searchText || ""} 
-            onSearch={handleSearch}
-            placeholder="Search orders, drivers, locations..." 
-          />
-        </div>
+        <SearchBar 
+          initialValue={filters.searchText || ""} 
+          onSearch={handleSearch}
+          placeholder="Search orders, drivers, locations..." 
+        />
         
-        <div className="flex items-center gap-2">
-          {pagination && onPageChange && (
-            <div className="flex-shrink-0">
-              <PaginationIndicator 
-                pagination={pagination}
-                onPageChange={onPageChange}
-                onRefresh={onRefresh}
-                isRefreshing={isRefreshing}
-              />
-            </div>
-          )}
-          
-          {hasActiveFilters && (
-            <Button
-              variant="ghost"
-              size="xs"
-              onClick={onClearAllFilters}
-              className="h-7 flex-shrink-0"
-            >
-              <FilterX className="h-3 w-3 mr-1" />
-              Clear filters
-            </Button>
-          )}
-        </div>
+        {hasActiveFilters && (
+          <Button
+            variant="ghost"
+            size="xs"
+            onClick={onClearAllFilters}
+            className="h-7"
+          >
+            <FilterX className="h-3 w-3 mr-1" />
+            Clear filters
+          </Button>
+        )}
       </div>
 
       {/* Card grid layout for both mobile and desktop */}
