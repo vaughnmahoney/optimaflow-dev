@@ -77,14 +77,6 @@ export const WorkOrderList = ({
           sortDirection={sortDirection}
           onSort={handleSortChange(onSort)}
         />
-        
-        {/* Top pagination indicator with refresh button */}
-        <TopPagination 
-          pagination={pagination}
-          onPageChange={onPageChange}
-          onRefresh={refetch}
-          isRefreshing={isRefreshing}
-        />
       </div>
 
       <DebugDataDisplay 
@@ -108,6 +100,8 @@ export const WorkOrderList = ({
         onColumnFilterClear={clearColumnFilter}
         onClearAllFilters={clearAllFilters}
         onSearchChange={onSearchChange}
+        onRefresh={refetch}
+        isRefreshing={isRefreshing}
       />
 
       {/* Image modal */}

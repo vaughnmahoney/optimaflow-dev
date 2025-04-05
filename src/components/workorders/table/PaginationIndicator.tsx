@@ -46,9 +46,9 @@ export const PaginationIndicator = ({
   };
 
   return (
-    <div className="flex items-center justify-between gap-2 py-1 text-sm text-muted-foreground">
-      <span className="text-xs whitespace-nowrap">
-        Showing {start} - {end} of {total} orders
+    <div className="flex items-center gap-2 py-1 text-xs text-muted-foreground">
+      <span className="whitespace-nowrap hidden sm:inline">
+        {start}-{end} of {total}
       </span>
       
       <div className="flex items-center gap-1">
@@ -76,8 +76,8 @@ export const PaginationIndicator = ({
           <span className="sr-only">Previous</span>
         </Button>
         
-        <span className="text-xs font-medium">
-          {page} / {Math.ceil(total / pageSize)}
+        <span className="font-medium">
+          {page}/{Math.ceil(total / pageSize)}
         </span>
         
         <Button 
