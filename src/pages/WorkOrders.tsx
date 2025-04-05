@@ -37,7 +37,7 @@ const WorkOrders = () => {
     handlePageChange,
     handlePageSizeChange,
     refetch,
-    handleSearchChange // Add this from the hook
+    handleSearchChange
   } = useWorkOrderData();
 
   useEffect(() => {
@@ -85,10 +85,10 @@ const WorkOrders = () => {
         <WorkOrderHeader />
       }
     >
-      <div className="space-y-6 overflow-x-hidden">
+      <div className="space-y-4 overflow-x-hidden">
         {/* Page title - shown on all devices now */}
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Work Orders</h1>
+          <h1 className="text-xl font-bold">Work Orders</h1>
         </div>
         
         <WorkOrderContent 
@@ -99,7 +99,7 @@ const WorkOrders = () => {
           onStatusUpdate={handleStatusUpdate}
           onImageView={openImageViewer}
           onDelete={deleteWorkOrder}
-          onSearchChange={handleSearchChange} // Pass the new handler here
+          onSearchChange={handleSearchChange}
           onOptimoRouteSearch={searchOptimoRoute}
           statusCounts={statusCounts}
           sortField={sortField}

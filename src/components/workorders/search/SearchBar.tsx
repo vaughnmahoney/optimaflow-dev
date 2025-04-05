@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 
 interface SearchBarProps {
   initialValue?: string;
@@ -50,24 +50,25 @@ export const SearchBar = ({
         value={searchValue}
         onChange={handleChange}
         onKeyPress={handleKeyPress}
-        className="pr-16"
+        className="pr-16 h-9"
       />
       {searchValue && (
         <Button 
           variant="ghost" 
-          size="sm" 
-          className="absolute right-12 top-1/2 -translate-y-1/2 h-6 px-2"
+          size="icon"
+          className="absolute right-8 top-1/2 -translate-y-1/2 h-full w-8"
           onClick={handleClear}
         >
-          Clear
+          <X className="h-3.5 w-3.5" />
+          <span className="sr-only">Clear</span>
         </Button>
       )}
       <Button 
-        size="sm" 
-        className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
+        size="icon" 
+        className="absolute right-0 top-0 h-full w-8 rounded-l-none"
         onClick={handleSearch}
       >
-        <Search className="h-4 w-4" />
+        <Search className="h-3.5 w-3.5" />
         <span className="sr-only">Search</span>
       </Button>
     </div>

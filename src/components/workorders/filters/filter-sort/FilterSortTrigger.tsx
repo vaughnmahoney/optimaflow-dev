@@ -18,13 +18,13 @@ export const FilterSortTrigger = ({ filters }: FilterSortTriggerProps) => {
     <SheetTrigger asChild>
       <button
         className={cn(
-          "flex items-center space-x-1.5 py-1 px-2.5 rounded-full transition-all shrink-0",
+          "flex items-center space-x-1 py-1 px-2 rounded-full transition-all shrink-0 h-8",
           "bg-white border border-gray-200 hover:border-gray-300 shadow-sm",
           hasActiveFilters ? 'bg-primary/10 border-primary/20' : ''
         )}
       >
         <SlidersHorizontal 
-          size={14}
+          size={13}
           className="text-gray-700" 
         />
         <span className="text-xs font-medium">Filters</span>

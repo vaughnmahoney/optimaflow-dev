@@ -63,31 +63,33 @@ export const WorkOrderList = ({
   const pageBoundaryHandler = handlePageBoundary(pagination, onPageChange, workOrders);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Filters section */}
-      <FiltersSection 
-        filters={filters}
-        onFiltersChange={onFiltersChange}
-        statusCounts={statusCounts}
-        onColumnFilterChange={onColumnFilterChange}
-        clearColumnFilter={clearColumnFilter}
-        clearAllFilters={clearAllFilters}
-        sortField={sortField}
-        sortDirection={sortDirection}
-        onSort={handleSortChange(onSort)}
-      />
+      <div className="flex flex-col space-y-2">
+        <FiltersSection 
+          filters={filters}
+          onFiltersChange={onFiltersChange}
+          statusCounts={statusCounts}
+          onColumnFilterChange={onColumnFilterChange}
+          clearColumnFilter={clearColumnFilter}
+          clearAllFilters={clearAllFilters}
+          sortField={sortField}
+          sortDirection={sortDirection}
+          onSort={handleSortChange(onSort)}
+        />
+        
+        {/* Top pagination indicator with refresh button */}
+        <TopPagination 
+          pagination={pagination}
+          onPageChange={onPageChange}
+          onRefresh={refetch}
+          isRefreshing={isRefreshing}
+        />
+      </div>
 
       <DebugDataDisplay 
         searchResponse={searchResponse}
         transformedData={transformedData}
-      />
-
-      {/* Top pagination indicator with refresh button */}
-      <TopPagination 
-        pagination={pagination}
-        onPageChange={onPageChange}
-        onRefresh={refetch}
-        isRefreshing={isRefreshing}
       />
 
       <WorkOrderTable 
@@ -105,7 +107,7 @@ export const WorkOrderList = ({
         onColumnFilterChange={onColumnFilterChange}
         onColumnFilterClear={clearColumnFilter}
         onClearAllFilters={clearAllFilters}
-        onSearchChange={onSearchChange} // Pass the search handler
+        onSearchChange={onSearchChange}
       />
 
       {/* Image modal */}

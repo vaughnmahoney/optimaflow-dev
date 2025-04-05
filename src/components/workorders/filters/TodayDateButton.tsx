@@ -37,7 +37,7 @@ export const TodayDateButton = ({
   let displayText;
   if (from && to) {
     if (from.toDateString() === today.toDateString() && to.toDateString() === today.toDateString()) {
-      displayText = `Today: ${format(today, "MMM d")}`;
+      displayText = `Today`;
     } else if (from.toDateString() === to.toDateString()) {
       displayText = format(from, "MMM d");
     } else {
@@ -45,10 +45,10 @@ export const TodayDateButton = ({
     }
   } else if (from) {
     displayText = from.toDateString() === today.toDateString() 
-      ? `Today: ${format(today, "MMM d")}` 
+      ? `Today` 
       : format(from, "MMM d");
   } else {
-    displayText = `Today: ${format(today, "MMM d")}`;
+    displayText = `Today`;
   }
   
   return (
@@ -58,9 +58,9 @@ export const TodayDateButton = ({
           variant="outline"
           size="sm"
           className={cn(
-            "flex items-center space-x-1.5 py-1 px-2 rounded-full transition-all shrink-0",
+            "flex items-center space-x-1 py-1 px-2 rounded-full transition-all shrink-0",
             "bg-white border border-gray-200 hover:border-gray-300 shadow-sm",
-            "text-xs font-medium h-auto",
+            "text-xs font-medium h-8",
             className
           )}
         >

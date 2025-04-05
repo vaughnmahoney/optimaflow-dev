@@ -76,9 +76,9 @@ export const WorkOrderTable = ({
   };
 
   return (
-    <div className="space-y-4">
-      {/* Search Bar */}
-      <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
+    <div className="space-y-3">
+      {/* Search Bar and Clear Filters section */}
+      <div className="flex items-center justify-between gap-2 flex-wrap">
         <SearchBar 
           initialValue={filters.searchText || ""} 
           onSearch={handleSearch}
@@ -88,31 +88,22 @@ export const WorkOrderTable = ({
         {hasActiveFilters && (
           <Button
             variant="ghost"
-            size="sm"
+            size="xs"
             onClick={onClearAllFilters}
-            className="h-8 text-xs"
+            className="h-7"
           >
             <FilterX className="h-3 w-3 mr-1" />
-            Clear all filters
+            Clear filters
           </Button>
         )}
       </div>
-
-      {/* Active filters indicator - only show when filters other than date range are active */}
-      {hasActiveFilters && (
-        <div className="flex items-center justify-between mb-2 px-2">
-          <div className="text-sm text-muted-foreground">
-            Active filters applied
-          </div>
-        </div>
-      )}
 
       {/* Card grid layout for both mobile and desktop */}
       <div className="space-y-2">
         {workOrders.length === 0 ? (
           <EmptyState />
         ) : (
-          <div className={`grid gap-3 ${isMobile ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"}`}>
+          <div className={`grid gap-2 ${isMobile ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"}`}>
             {workOrders.map((workOrder) => (
               <WorkOrderCard
                 key={workOrder.id}

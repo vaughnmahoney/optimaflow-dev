@@ -103,6 +103,7 @@ export const StatusFilterCards = ({
         <TodayDateButton 
           filters={filters} 
           onDateChange={(dateRange) => onColumnFilterChange('service_date', dateRange)} 
+          className="h-8"
         />
         
         {/* Filter button */}
@@ -128,14 +129,14 @@ export const StatusFilterCards = ({
                 statusFilter === status.value ? null : status.value
               )}
               className={cn(
-                "flex items-center space-x-1.5 py-1 px-2.5 rounded-full transition-all shrink-0 border",
+                "flex items-center space-x-1 py-1 px-2 rounded-full transition-all shrink-0 border",
                 isActive 
                   ? `${status.bgColor} ${status.color} ${status.activeBorderColor} shadow-sm`
                   : `bg-white border-gray-200 hover:border-gray-300 shadow-sm ${status.hoverColor}`
               )}
             >
               <status.icon 
-                size={14}
+                size={13}
                 className={status.color}
               />
               <span className="text-xs font-medium">{status.label}</span>
@@ -156,11 +157,10 @@ export const StatusFilterCards = ({
     );
   };
 
-  // Updated to maintain scroll functionality but hide the scrollbar
   return (
     <div className="mb-0 overflow-hidden w-full">
       <ScrollArea className="w-full scrollbar-none">
-        <div className="flex space-x-1.5 pb-1.5 min-w-max">
+        <div className="flex space-x-1 py-1 min-w-max">
           {renderStatusButtons()}
         </div>
         <ScrollBar orientation="horizontal" className="hidden" />

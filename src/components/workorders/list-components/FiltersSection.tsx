@@ -46,19 +46,17 @@ export const FiltersSection = ({
   };
 
   return (
-    <div className="flex justify-between items-center">
-      <StatusFilterCards 
-        statusFilter={filters.status}
-        onStatusFilterChange={handleStatusFilterChange}
-        statusCounts={statusCounts}
-        filters={filters}
-        onColumnFilterChange={onColumnFilterChange}
-        clearColumnFilter={clearColumnFilter}
-        clearAllFilters={clearAllFilters}
-        sortField={sortField}
-        sortDirection={sortDirection}
-        onSort={onSort}
-      />
-    </div>
+    <StatusFilterCards 
+      statusFilter={filters.status}
+      onStatusFilterChange={handleStatusFilterChange}
+      statusCounts={statusCounts}
+      filters={filters}
+      onColumnFilterChange={onColumnFilterChange}
+      clearColumnFilter={clearColumnFilter}
+      clearAllFilters={clearAllFilters}
+      sortField={sortField}
+      sortDirection={sortDirection}
+      onSort={onSort}
+    />
   );
 };
