@@ -1,9 +1,11 @@
+
 import { useState, useEffect } from "react";
 import { SortField, SortDirection, PaginationState, WorkOrderFilters } from "@/components/workorders/types";
 import { useWorkOrderFetch } from "./useWorkOrderFetch";
 import { useWorkOrderStatusCounts } from "./useWorkOrderStatusCounts";
 import { useWorkOrderMutations } from "./useWorkOrderMutations";
 import { useWorkOrderImport } from "./useWorkOrderImport";
+import { useAutoImport } from "./useAutoImport";
 
 export const useWorkOrderData = () => {
   // Get today's date
@@ -40,6 +42,8 @@ export const useWorkOrderData = () => {
     sortDirection
   );
   
+  const { runAutoImport } = useAutoImport();
+  
   const workOrders = workOrdersData.data;
   const total = workOrdersData.total;
   
@@ -52,6 +56,12 @@ export const useWorkOrderData = () => {
   
   const { searchOptimoRoute } = useWorkOrderImport();
   const { updateWorkOrderStatus, deleteWorkOrder } = useWorkOrderMutations();
+
+  // This combined function will handle both refetch and auto-import
+  const handleRefreshWithAutoImport = async () => {
+    await refetch();
+    await runAutoImport();
+  };
 
   const handleColumnFilterChange = (column: string, value: any) => {
     setFilters(prev => {
@@ -186,7 +196,7 @@ export const useWorkOrderData = () => {
     },
     handlePageChange,
     handlePageSizeChange,
-    refetch,
+    refetch: handleRefreshWithAutoImport,
     handleSearchChange
   };
 };
