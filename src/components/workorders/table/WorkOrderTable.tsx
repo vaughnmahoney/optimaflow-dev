@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { FilterX } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { checkHasActiveFilters } from "../filters/filter-sort/filterUtils";
+import { SearchBar } from "../search/SearchBar";
 
 interface WorkOrderTableProps {
   workOrders: WorkOrder[];
@@ -30,6 +31,7 @@ interface WorkOrderTableProps {
   onColumnFilterChange: (column: string, value: any) => void;
   onColumnFilterClear: (column: string) => void;
   onClearAllFilters: () => void;
+  onSearchChange?: (searchText: string) => void;
 }
 
 export const WorkOrderTable = ({ 
@@ -46,7 +48,8 @@ export const WorkOrderTable = ({
   filters,
   onColumnFilterChange,
   onColumnFilterClear,
-  onClearAllFilters
+  onClearAllFilters,
+  onSearchChange
 }: WorkOrderTableProps) => {
   const isMobile = useIsMobile();
   
@@ -65,14 +68,24 @@ export const WorkOrderTable = ({
   // Check if any non-date filter is active
   const hasActiveFilters = checkHasActiveFilters(filters, false);
 
+  // Handle search
+  const handleSearch = (value: string) => {
+    if (onSearchChange) {
+      onSearchChange(value);
+    }
+  };
+
   return (
-    <div className="space-y-2">
-      {/* Active filters indicator - only show when filters other than date range are active */}
-      {hasActiveFilters && (
-        <div className="flex items-center justify-between mb-2 px-2">
-          <div className="text-sm text-muted-foreground">
-            Active filters applied
-          </div>
+    <div className="space-y-4">
+      {/* Search Bar */}
+      <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
+        <SearchBar 
+          initialValue={filters.searchText || ""} 
+          onSearch={handleSearch}
+          placeholder="Search orders, drivers, locations..." 
+        />
+        
+        {hasActiveFilters && (
           <Button
             variant="ghost"
             size="sm"
@@ -82,6 +95,15 @@ export const WorkOrderTable = ({
             <FilterX className="h-3 w-3 mr-1" />
             Clear all filters
           </Button>
+        )}
+      </div>
+
+      {/* Active filters indicator - only show when filters other than date range are active */}
+      {hasActiveFilters && (
+        <div className="flex items-center justify-between mb-2 px-2">
+          <div className="text-sm text-muted-foreground">
+            Active filters applied
+          </div>
         </div>
       )}
 

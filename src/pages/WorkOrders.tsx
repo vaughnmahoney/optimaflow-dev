@@ -36,7 +36,8 @@ const WorkOrders = () => {
     pagination,
     handlePageChange,
     handlePageSizeChange,
-    refetch
+    refetch,
+    handleSearchChange // Add this from the hook
   } = useWorkOrderData();
 
   useEffect(() => {
@@ -98,6 +99,7 @@ const WorkOrders = () => {
           onStatusUpdate={handleStatusUpdate}
           onImageView={openImageViewer}
           onDelete={deleteWorkOrder}
+          onSearchChange={handleSearchChange} // Pass the new handler here
           onOptimoRouteSearch={searchOptimoRoute}
           statusCounts={statusCounts}
           sortField={sortField}

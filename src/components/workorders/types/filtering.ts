@@ -13,6 +13,7 @@ export interface WorkOrderFilters {
   orderNo: string | null;
   searchQuery?: string; // Keeping for backward compatibility but will deprecate
   optimoRouteStatus: string | null; // Required field with null as allowed value
+  searchText?: string | null; // Global search text for filtering
 }
 
 export interface ColumnFilterProps {

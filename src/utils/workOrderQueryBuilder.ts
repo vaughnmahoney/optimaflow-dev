@@ -71,6 +71,15 @@ export const applyAllFilters = (filters: WorkOrderFilters, countQuery: any, data
     dataQuery = dataQuery.eq('optimoroute_status', filters.optimoRouteStatus);
   }
   
+  // Apply global search text if present
+  if (filters.searchText) {
+    const searchTerm = `%${filters.searchText}%`;
+    
+    // Use Supabase's or() to search across multiple columns
+    countQuery = countQuery.or(`order_no.ilike.${searchTerm},driver_name.ilike.${searchTerm},location_name.ilike.${searchTerm}`);
+    dataQuery = dataQuery.or(`order_no.ilike.${searchTerm},driver_name.ilike.${searchTerm},location_name.ilike.${searchTerm}`);
+  }
+  
   return { countQuery, dataQuery };
 };
 

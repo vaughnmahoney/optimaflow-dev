@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { SortField, SortDirection, PaginationState, WorkOrderFilters } from "@/components/workorders/types";
 import { useWorkOrderFetch } from "./useWorkOrderFetch";
@@ -21,7 +20,8 @@ export const useWorkOrderData = () => {
     driver: null,
     location: null,
     orderNo: null,
-    optimoRouteStatus: null
+    optimoRouteStatus: null,
+    searchText: null // Add this for the global search
   });
   
   const [sortField, setSortField] = useState<SortField>('end_time');
@@ -76,6 +76,9 @@ export const useWorkOrderData = () => {
         case 'optimoroute_status':
           newFilters.optimoRouteStatus = value;
           break;
+        case 'search':
+          newFilters.searchText = value;
+          break;
       }
       
       return newFilters;
@@ -107,6 +110,9 @@ export const useWorkOrderData = () => {
         case 'optimoroute_status':
           newFilters.optimoRouteStatus = null;
           break;
+        case 'search':
+          newFilters.searchText = null;
+          break;
       }
       
       return newFilters;
@@ -122,7 +128,8 @@ export const useWorkOrderData = () => {
       driver: null,
       location: null,
       orderNo: null,
-      optimoRouteStatus: null
+      optimoRouteStatus: null,
+      searchText: null // Clear search text too
     });
     
     handlePageChange(1);
@@ -152,6 +159,10 @@ export const useWorkOrderData = () => {
     handlePageChange(1);
   };
 
+  const handleSearchChange = (searchText: string) => {
+    handleColumnFilterChange('search', searchText || null);
+  };
+
   return {
     data: workOrders,
     isLoading,
@@ -175,6 +186,7 @@ export const useWorkOrderData = () => {
     },
     handlePageChange,
     handlePageSizeChange,
-    refetch
+    refetch,
+    handleSearchChange
   };
 };
