@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, X } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SearchBarProps {
   initialValue?: string;
@@ -17,7 +16,6 @@ export const SearchBar = ({
   placeholder = "Search orders..." 
 }: SearchBarProps) => {
   const [searchValue, setSearchValue] = useState(initialValue);
-  const isMobile = useIsMobile();
 
   // Sync with external value if it changes
   useEffect(() => {
@@ -45,32 +43,32 @@ export const SearchBar = ({
   };
 
   return (
-    <div className="relative flex w-full">
+    <div className="relative flex w-full max-w-[400px]">
       <Input
         type="text"
         placeholder={placeholder}
         value={searchValue}
         onChange={handleChange}
         onKeyPress={handleKeyPress}
-        className={`pr-16 ${isMobile ? "h-8 text-sm" : "h-9"}`}
+        className="pr-16 h-9"
       />
       {searchValue && (
         <Button 
           variant="ghost" 
           size="icon"
-          className={`absolute right-8 top-1/2 -translate-y-1/2 ${isMobile ? "h-full w-6" : "h-full w-8"}`}
+          className="absolute right-8 top-1/2 -translate-y-1/2 h-full w-8"
           onClick={handleClear}
         >
-          <X className={`${isMobile ? "h-3 w-3" : "h-3.5 w-3.5"}`} />
+          <X className="h-3.5 w-3.5" />
           <span className="sr-only">Clear</span>
         </Button>
       )}
       <Button 
         size="icon" 
-        className={`absolute right-0 top-0 rounded-l-none ${isMobile ? "h-full w-6" : "h-full w-8"}`}
+        className="absolute right-0 top-0 h-full w-8 rounded-l-none"
         onClick={handleSearch}
       >
-        <Search className={`${isMobile ? "h-3 w-3" : "h-3.5 w-3.5"}`} />
+        <Search className="h-3.5 w-3.5" />
         <span className="sr-only">Search</span>
       </Button>
     </div>
