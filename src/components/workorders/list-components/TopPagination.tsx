@@ -23,7 +23,7 @@ export const TopPagination = ({
   if (!pagination || !onPageChange) return null;
   
   return (
-    <div className="flex justify-between items-center">
+    <div className="flex justify-end items-center w-full">
       <PaginationIndicator 
         pagination={pagination}
         onPageChange={onPageChange}
