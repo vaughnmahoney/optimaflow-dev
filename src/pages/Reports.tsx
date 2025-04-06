@@ -10,6 +10,7 @@ import { format } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const Reports = () => {
   const { fetchReports, isLoading, results } = useFetchReports();
@@ -65,20 +66,31 @@ const Reports = () => {
                 </Popover>
               </div>
               
-              <Button 
-                onClick={handleFetchReports} 
-                disabled={isLoading || !selectedDate}
-                className="w-fit"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Fetching Reports...
-                  </>
-                ) : (
-                  `Fetch Reports for ${formattedDate}`
-                )}
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div>
+                      <Button 
+                        onClick={handleFetchReports} 
+                        disabled={isLoading || !selectedDate}
+                        className="w-fit"
+                      >
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Fetching Reports...
+                          </>
+                        ) : (
+                          `Fetch Reports for ${formattedDate}`
+                        )}
+                      </Button>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Fetch reports from OptimoRoute for the selected date</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               
               {results && (
                 <div className="mt-4">

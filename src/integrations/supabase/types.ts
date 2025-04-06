@@ -250,7 +250,7 @@ export type Database = {
           id: number
           optimoroute_status: string | null
           order_no: string
-          org_id: number
+          org_id: string
           region: string | null
           scheduled_time: string | null
           status: string | null
@@ -264,7 +264,7 @@ export type Database = {
           id?: number
           optimoroute_status?: string | null
           order_no: string
-          org_id: number
+          org_id: string
           region?: string | null
           scheduled_time?: string | null
           status?: string | null
@@ -278,7 +278,7 @@ export type Database = {
           id?: number
           optimoroute_status?: string | null
           order_no?: string
-          org_id?: number
+          org_id?: string
           region?: string | null
           scheduled_time?: string | null
           status?: string | null
