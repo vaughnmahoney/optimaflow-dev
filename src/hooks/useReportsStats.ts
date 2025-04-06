@@ -26,14 +26,38 @@ export const useReportsStats = () => {
     setStats(prev => ({ ...prev, isLoading: true }));
     
     try {
-      // Query without any limit to get all reports
-      const { data, error } = await supabase
-        .from('reports')
-        .select('optimoroute_status');
+      let allReports: any[] = [];
+      let page = 0;
+      const pageSize = 10000; // Fetch in large chunks
+      let hasMore = true;
       
-      if (error) {
-        throw error;
+      // Paginate through all results to get everything
+      while (hasMore) {
+        console.log(`Fetching reports page ${page + 1}`);
+        
+        const { data, error } = await supabase
+          .from('reports')
+          .select('optimoroute_status')
+          .range(page * pageSize, (page + 1) * pageSize - 1);
+        
+        if (error) {
+          throw error;
+        }
+        
+        if (data && data.length > 0) {
+          allReports = [...allReports, ...data];
+          page++;
+          
+          // If we got less than the page size, we've reached the end
+          if (data.length < pageSize) {
+            hasMore = false;
+          }
+        } else {
+          hasMore = false;
+        }
       }
+      
+      console.log(`Total reports fetched: ${allReports.length}`);
       
       // Count statuses by category
       const statusCounts = {
@@ -42,7 +66,7 @@ export const useReportsStats = () => {
         scheduled: 0   // scheduled, servicing, on_route, planned
       };
       
-      data.forEach(report => {
+      allReports.forEach(report => {
         const status = report.optimoroute_status?.toLowerCase() || 'unknown';
         
         if (status === 'success') {
