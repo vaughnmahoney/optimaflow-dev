@@ -28,7 +28,7 @@ export const useReportsStats = () => {
     try {
       let allReports: any[] = [];
       let page = 0;
-      const pageSize = 10000; // Fetch in large chunks
+      const pageSize = 1000; // Use 1000 which is Supabase's limit
       let hasMore = true;
       
       // Paginate through all results to get everything
@@ -46,10 +46,14 @@ export const useReportsStats = () => {
         
         if (data && data.length > 0) {
           allReports = [...allReports, ...data];
-          page++;
+          console.log(`Received ${data.length} records in page ${page + 1}, total so far: ${allReports.length}`);
           
-          // If we got less than the page size, we've reached the end
-          if (data.length < pageSize) {
+          // If we got exactly the page size, there might be more data
+          if (data.length === pageSize) {
+            page++;
+            hasMore = true;
+          } else {
+            // If we got less than the page size, we've reached the end
             hasMore = false;
           }
         } else {
