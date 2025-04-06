@@ -1,6 +1,7 @@
+
 import { corsHeaders } from '../_shared/cors.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.33.1';
-import { format, getDay, startOfWeek, isAfter } from 'https://esm.sh/date-fns@2.30.0';
+import { format, getDay, startOfWeek, isAfter, addDays } from 'https://esm.sh/date-fns@2.30.0';
 
 // Create a Supabase client with the admin role
 const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
@@ -22,9 +23,13 @@ function getMondayOfCurrentWeek(): Date {
   return startOfWeek(now, { weekStartsOn: 1 });
 }
 
-// Get the current date
-function getCurrentDate(): Date {
-  return new Date();
+// Get the date that is 14 days after the start date
+function getEndDateForTwoWeeks(startDate: Date): Date {
+  // Create a new date object to avoid modifying the original
+  const endDate = new Date(startDate);
+  // Add 13 days (to make it 14 days total, inclusive of the start date)
+  endDate.setDate(startDate.getDate() + 13);
+  return endDate;
 }
 
 // Fetch orders with completion details for a specific date range
@@ -326,15 +331,15 @@ Deno.serve(async (req) => {
   }
   
   try {
-    // Get the date range for the current week
+    // Get the date range for two weeks starting from Monday of current week
     const startDate = getMondayOfCurrentWeek();
-    const endDate = getCurrentDate();
+    const endDate = getEndDateForTwoWeeks(startDate);
     
     // Format dates for API calls
     const formattedStartDate = format(startDate, 'yyyy-MM-dd');
     const formattedEndDate = format(endDate, 'yyyy-MM-dd');
     
-    console.log(`Starting automated import for current week (${formattedStartDate} to ${formattedEndDate})`);
+    console.log(`Starting automated import for two weeks (${formattedStartDate} to ${formattedEndDate})`);
     
     // Check if start date is after end date (should never happen, but just in case)
     if (isAfter(startDate, endDate)) {
