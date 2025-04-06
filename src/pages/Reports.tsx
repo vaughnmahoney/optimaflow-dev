@@ -7,7 +7,10 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useFetchReports } from "@/hooks/useFetchReports";
 import { useReportsStats } from "@/hooks/useReportsStats";
 import { ReportsStatusChart } from "@/components/reports/ReportsStatusChart";
-import { Loader2, AlertCircle, CheckCircle2, Calendar, Search } from "lucide-react";
+import { TechnicianPerformanceChart } from "@/components/reports/TechnicianPerformanceChart";
+import { CustomerGroupChart } from "@/components/reports/CustomerGroupChart";
+import { ServiceDurationCard } from "@/components/reports/ServiceDurationCard";
+import { Loader2, AlertCircle, CheckCircle2, Calendar, Search, BarChart } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -17,7 +20,15 @@ import { Input } from "@/components/ui/input";
 
 const Reports = () => {
   const { fetchReports, isLoading, results } = useFetchReports();
-  const { statusCategories, total, isLoading: statsLoading, refresh: refreshStats } = useReportsStats();
+  const { 
+    statusCategories, 
+    technicianPerformance,
+    customerGroupMetrics,
+    total, 
+    avgServiceDuration,
+    isLoading: statsLoading, 
+    refresh: refreshStats 
+  } = useReportsStats();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date(2025, 2, 31)); // March 31, 2025 (month is 0-indexed)
   const [searchDate, setSearchDate] = useState<string>("");
   
@@ -60,6 +71,62 @@ const Reports = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold tracking-tight">Reports</h1>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={refreshStats} 
+            disabled={statsLoading}
+          >
+            {statsLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Refreshing...
+              </>
+            ) : (
+              <>
+                <BarChart className="mr-2 h-4 w-4" />
+                Refresh Analytics
+              </>
+            )}
+          </Button>
+        </div>
+        
+        {/* Stats Summary Cards */}
+        <div className="grid gap-4 md:grid-cols-3">
+          <ServiceDurationCard 
+            avgDuration={avgServiceDuration} 
+            isLoading={statsLoading} 
+          />
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Total Jobs</CardTitle>
+              <CardDescription>
+                All jobs in the database
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {statsLoading ? "Loading..." : total.toLocaleString()}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
+              <CardDescription>
+                Percentage of completed jobs
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {statsLoading ? "Loading..." : (
+                  total > 0 
+                    ? `${Math.round((statusCategories.find(s => s.name === 'Completed')?.value || 0) / total * 100)}%` 
+                    : "No data"
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
         
         <div className="grid gap-6 md:grid-cols-2">
@@ -177,6 +244,18 @@ const Reports = () => {
             isLoading={statsLoading}
           />
         </div>
+        
+        {/* Technician Performance Chart */}
+        <TechnicianPerformanceChart 
+          technicianData={technicianPerformance}
+          isLoading={statsLoading}
+        />
+        
+        {/* Customer Group Chart */}
+        <CustomerGroupChart 
+          customerData={customerGroupMetrics}
+          isLoading={statsLoading}
+        />
       </div>
     </Layout>
   );
