@@ -14,7 +14,8 @@ export const useFetchReports = () => {
     try {
       // Call the fetch-reports edge function
       const { data, error } = await supabase.functions.invoke('fetch-reports', {
-        body: {}
+        body: {},
+        method: 'POST',
       });
       
       if (error) {

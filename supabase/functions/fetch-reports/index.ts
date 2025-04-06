@@ -1,5 +1,7 @@
+
 import { serve } from "https://deno.land/std@0.170.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { corsHeaders, createErrorResponse, createSuccessResponse } from "../_shared/cors.ts";
 
 // Supabase client with service role (for DB insert permission)
 const supabase = createClient(
@@ -23,7 +25,14 @@ interface ReportEntry {
   fetched_at: string;     // When we fetched this data
 }
 
-serve(async (_req) => {
+serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === "OPTIONS") {
+    return new Response(null, {
+      headers: corsHeaders
+    });
+  }
+
   // 1. Fetch routes for today from OptimoRoute API
   const today = new Date().toISOString().slice(0, 10);  // YYYY-MM-DD
   const now = new Date().toISOString();  // Current timestamp for fetched_at
@@ -167,7 +176,10 @@ serve(async (_req) => {
     
     // 3. Upsert into the reports table
     if (reportsPayload.length === 0) {
-      return new Response("No reports to update", { status: 200 });
+      return new Response("No reports to update", { 
+        status: 200,
+        headers: corsHeaders
+      });
     }
     
     const { error } = await supabase
@@ -179,13 +191,22 @@ serve(async (_req) => {
       
     if (error) {
       console.error("Upsert error:", error);
-      return new Response(`Error updating reports: ${error.message}`, { status: 500 });
+      return new Response(`Error updating reports: ${error.message}`, { 
+        status: 500,
+        headers: corsHeaders
+      });
     }
     
-    return new Response(`Successfully updated ${reportsPayload.length} reports`, { status: 200 });
+    return new Response(`Successfully updated ${reportsPayload.length} reports`, { 
+      status: 200,
+      headers: corsHeaders
+    });
     
   } catch (error) {
     console.error("Error fetching or processing OptimoRoute data:", error);
-    return new Response(`Error: ${error.message}`, { status: 500 });
+    return new Response(`Error: ${error.message}`, { 
+      status: 500,
+      headers: corsHeaders
+    });
   }
 });
