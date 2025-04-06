@@ -282,8 +282,12 @@ function getNextScheduledRunTime(): string {
 }
 
 Deno.serve(async (req) => {
+  const execTime = new Date().toISOString();
+  console.log(`[${execTime}] Auto-import-orders function invoked`);
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
+    console.log(`[${execTime}] Handling OPTIONS request for auto-import-orders`);
     return new Response(null, { headers: corsHeaders });
   }
   
@@ -292,11 +296,12 @@ Deno.serve(async (req) => {
   const path = url.pathname;
   const isStatusRequest = path.endsWith('/status');
   
-  console.log(`Request received for path: ${path}, status request: ${isStatusRequest}`);
+  console.log(`[${execTime}] Request received for path: ${path}, status request: ${isStatusRequest}`);
   
   // Check if this is a status request
   if (isStatusRequest) {
     try {
+      console.log(`[${execTime}] Processing status request`);
       // Get the latest execution log
       const latestLog = await getLatestExecutionLog();
       
@@ -309,18 +314,22 @@ Deno.serve(async (req) => {
         lastRun: latestLog.success ? latestLog.data : null,
         nextScheduledRun: nextRun,
         scheduledInterval: 'Hourly',
+        currentServerTime: execTime
       };
+      
+      console.log(`[${execTime}] Returning status response:`, statusResponse);
       
       return new Response(
         JSON.stringify(statusResponse),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     } catch (error) {
-      console.error('Error in status endpoint:', error);
+      console.error(`[${execTime}] Error in status endpoint:`, error);
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: error instanceof Error ? error.message : String(error) 
+          error: error instanceof Error ? error.message : String(error),
+          timestamp: execTime
         }),
         { 
           status: 500, 
@@ -331,6 +340,8 @@ Deno.serve(async (req) => {
   }
   
   try {
+    console.log(`[${execTime}] Starting main import process`);
+    
     // Get the date range for two weeks starting from Monday of current week
     const startDate = getMondayOfCurrentWeek();
     const endDate = getEndDateForTwoWeeks(startDate);
@@ -339,7 +350,7 @@ Deno.serve(async (req) => {
     const formattedStartDate = format(startDate, 'yyyy-MM-dd');
     const formattedEndDate = format(endDate, 'yyyy-MM-dd');
     
-    console.log(`Starting automated import for two weeks (${formattedStartDate} to ${formattedEndDate})`);
+    console.log(`[${execTime}] Starting automated import for two weeks (${formattedStartDate} to ${formattedEndDate})`);
     
     // Check if start date is after end date (should never happen, but just in case)
     if (isAfter(startDate, endDate)) {
@@ -347,6 +358,7 @@ Deno.serve(async (req) => {
     }
     
     // Use the progressive loading function to fetch and import orders
+    console.log(`[${execTime}] Calling progressivelyLoadOrders`);
     const result = await progressivelyLoadOrders(formattedStartDate, formattedEndDate);
     
     // Prepare the final response
@@ -362,8 +374,10 @@ Deno.serve(async (req) => {
       errors: result.totalErrors,
       batchesProcessed: result.batchesProcessed,
       errorDetails: result.errorDetails,
-      timestamp: new Date().toISOString()
+      timestamp: execTime
     };
+    
+    console.log(`[${execTime}] Import process completed with result:`, finalResult);
     
     // Log the execution result
     await logExecution(finalResult);
@@ -375,12 +389,12 @@ Deno.serve(async (req) => {
     );
     
   } catch (error) {
-    console.error('Unhandled error in auto-import-orders:', error);
+    console.error(`[${execTime}] Unhandled error in auto-import-orders:`, error);
     
     const errorResult = { 
       success: false, 
       error: error instanceof Error ? error.message : String(error),
-      timestamp: new Date().toISOString()
+      timestamp: execTime
     };
     
     await logExecution(errorResult);
