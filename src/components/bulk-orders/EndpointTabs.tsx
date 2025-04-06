@@ -13,7 +13,6 @@ export const EndpointTabs = ({ activeTab, onTabChange }: EndpointTabsProps) => {
         <TabsTrigger value="with-completion">With Completion</TabsTrigger>
         <TabsTrigger value="search-only">Search Only</TabsTrigger>
       </TabsList>
-      {/* TabsContent components are implemented in the parent component */}
     </Tabs>
   );
 };
