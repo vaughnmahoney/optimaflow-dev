@@ -139,36 +139,56 @@ serve(async (req) => {
       }
     }
     
-    // Query existing work orders to get their status
+    // Query existing work orders status in smaller batches to avoid URL length limitations
     console.log(`Looking up statuses for ${orderNumbers.length} order numbers from work_orders table`);
-    const { data: existingWorkOrders, error: workOrdersError } = await supabase
-      .from('work_orders')
-      .select('order_no, status')
-      .in('order_no', orderNumbers);
+    const workOrderStatusMap = new Map();
+    const STATUS_BATCH_SIZE = 50; // Smaller batch size to avoid URL length issues
     
-    if (workOrdersError) {
-      console.error("Error fetching work orders status:", workOrdersError);
+    for (let i = 0; i < orderNumbers.length; i += STATUS_BATCH_SIZE) {
+      const batch = orderNumbers.slice(i, i + STATUS_BATCH_SIZE);
+      console.log(`Processing status batch ${Math.floor(i/STATUS_BATCH_SIZE) + 1}/${Math.ceil(orderNumbers.length/STATUS_BATCH_SIZE)}, size: ${batch.length}`);
+      
+      try {
+        const { data: batchWorkOrders, error: batchError } = await supabase
+          .from('work_orders')
+          .select('order_no, status')
+          .in('order_no', batch);
+          
+        if (batchError) {
+          console.error(`Error fetching batch work orders status (batch ${Math.floor(i/STATUS_BATCH_SIZE) + 1}):`, batchError);
+          continue; // Continue with next batch even if this one fails
+        }
+        
+        if (batchWorkOrders && batchWorkOrders.length > 0) {
+          console.log(`Found ${batchWorkOrders.length} existing work orders with status in batch ${Math.floor(i/STATUS_BATCH_SIZE) + 1}`);
+          batchWorkOrders.forEach(order => {
+            if (order.order_no && order.status) {
+              workOrderStatusMap.set(order.order_no, order.status);
+            }
+          });
+        }
+        
+        // Add a small delay between database queries to avoid rate limiting
+        if (i + STATUS_BATCH_SIZE < orderNumbers.length) {
+          await new Promise(resolve => setTimeout(resolve, 300));
+        }
+      } catch (error) {
+        console.error(`Exception when processing status batch ${Math.floor(i/STATUS_BATCH_SIZE) + 1}:`, error);
+        // Continue with next batch even if this one fails
+      }
     }
     
-    // Create a map for quick lookup of existing work order statuses
-    const workOrderStatusMap = new Map();
-    if (existingWorkOrders && existingWorkOrders.length > 0) {
-      console.log(`Found ${existingWorkOrders.length} existing work orders with status`);
-      existingWorkOrders.forEach(order => {
-        if (order.order_no && order.status) {
-          workOrderStatusMap.set(order.order_no, order.status);
-        }
-      });
-      console.log(`Work order status map has ${workOrderStatusMap.size} entries`);
-      
-      // Log a few sample entries
-      let count = 0;
-      for (const [key, value] of workOrderStatusMap.entries()) {
-        console.log(`Sample status mapping: order_no "${key}" -> status "${value}"`);
-        if (++count >= 5) break;
-      }
-    } else {
-      console.log('No existing work orders found with matching order numbers');
+    console.log(`Work order status map has ${workOrderStatusMap.size} entries after all batches`);
+    
+    // Log a few sample entries
+    let sampleCount = 0;
+    for (const [key, value] of workOrderStatusMap.entries()) {
+      console.log(`Sample status mapping: order_no "${key}" -> status "${value}"`);
+      if (++sampleCount >= 5) break;
+    }
+    
+    if (workOrderStatusMap.size === 0) {
+      console.log('No existing work orders found with matching order numbers after all batches');
     }
     
     // Now process routes and stops with status information
