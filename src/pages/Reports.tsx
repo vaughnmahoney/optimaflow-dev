@@ -82,23 +82,15 @@ const Reports = () => {
               
               {results && (
                 <div className="mt-4">
-                  {typeof results === 'string' ? (
-                    <Alert variant={results.includes('Successfully') ? "default" : "destructive"}>
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertTitle>Function Response</AlertTitle>
-                      <AlertDescription>{results}</AlertDescription>
-                    </Alert>
-                  ) : (
-                    <Alert variant={results.success ? "default" : "destructive"}>
-                      {results.success ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
-                      <AlertTitle>{results.success ? "Success" : "Error"}</AlertTitle>
-                      <AlertDescription>
-                        {results.success 
-                          ? `Successfully updated ${results.count || 'multiple'} reports` 
-                          : `Error: ${results.error || 'Unknown error'}`}
-                      </AlertDescription>
-                    </Alert>
-                  )}
+                  <Alert variant={results.success ? "default" : "destructive"}>
+                    {results.success ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+                    <AlertTitle>{results.success ? "Success" : "Error"}</AlertTitle>
+                    <AlertDescription>
+                      {results.success 
+                        ? (results.message || `Successfully updated ${results.count || 'multiple'} reports`)
+                        : (results.error || 'Unknown error')}
+                    </AlertDescription>
+                  </Alert>
                 </div>
               )}
             </div>

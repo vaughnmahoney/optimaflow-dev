@@ -3,9 +3,16 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+interface FetchReportsResult {
+  success: boolean;
+  count?: number;
+  message?: string;
+  error?: string;
+}
+
 export const useFetchReports = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [results, setResults] = useState<any>(null);
+  const [results, setResults] = useState<FetchReportsResult | null>(null);
   
   const fetchReports = async (date?: string) => {
     setIsLoading(true);
@@ -29,16 +36,16 @@ export const useFetchReports = () => {
         return;
       }
       
+      console.log("Response from fetch-reports:", data);
+      
       // Set results
       setResults(data);
       
       // Display success/error message
-      if (data && typeof data === 'string' && data.includes('Successfully updated')) {
-        toast.success(data);
-      } else if (data && data.success) {
-        toast.success("Reports fetched successfully");
+      if (data && data.success) {
+        toast.success(data.message || `Successfully fetched ${data.count || 0} reports`);
       } else {
-        toast.warning(data || "No response from edge function");
+        toast.error(data?.error || "Error fetching reports");
       }
       
     } catch (error: any) {

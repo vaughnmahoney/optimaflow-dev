@@ -183,9 +183,15 @@ serve(async (req) => {
     
     // 3. Upsert into the reports table
     if (reportsPayload.length === 0) {
-      return new Response(`No reports found for date: ${requestDate}`, { 
+      return new Response(JSON.stringify({
+        success: false,
+        message: `No reports found for date: ${requestDate}`
+      }), { 
         status: 200,
-        headers: corsHeaders
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders
+        }
       });
     }
     
@@ -198,22 +204,41 @@ serve(async (req) => {
       
     if (error) {
       console.error("Upsert error:", error);
-      return new Response(`Error updating reports: ${error.message}`, { 
+      return new Response(JSON.stringify({
+        success: false,
+        error: `Error updating reports: ${error.message}`
+      }), { 
         status: 500,
-        headers: corsHeaders
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders
+        }
       });
     }
     
-    return new Response(`Successfully updated ${reportsPayload.length} reports for date: ${requestDate}`, { 
+    return new Response(JSON.stringify({
+      success: true,
+      count: reportsPayload.length,
+      message: `Successfully updated ${reportsPayload.length} reports for date: ${requestDate}`
+    }), { 
       status: 200,
-      headers: corsHeaders
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders
+      }
     });
     
   } catch (error) {
     console.error("Error fetching or processing OptimoRoute data:", error);
-    return new Response(`Error: ${error.message}`, { 
+    return new Response(JSON.stringify({
+      success: false,
+      error: error.message || 'An unexpected error occurred'
+    }), { 
       status: 500,
-      headers: corsHeaders
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders
+      }
     });
   }
 });
