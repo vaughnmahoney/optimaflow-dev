@@ -5,22 +5,47 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useFetchReports } from "@/hooks/useFetchReports";
-import { Loader2, AlertCircle, CheckCircle2, Calendar } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle2, Calendar, Search } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Input } from "@/components/ui/input";
 
 const Reports = () => {
   const { fetchReports, isLoading, results } = useFetchReports();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date(2025, 2, 31)); // March 31, 2025 (month is 0-indexed)
+  const [searchDate, setSearchDate] = useState<string>("");
   
   // Format date as YYYY-MM-DD
   const formattedDate = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
   
   const handleFetchReports = () => {
     fetchReports(formattedDate);
+  };
+
+  const handleSearchDate = () => {
+    // Check if searchDate is in a valid format (YYYY-MM-DD)
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (dateRegex.test(searchDate)) {
+      // Parse searchDate to create a Date object
+      const [year, month, day] = searchDate.split('-').map(Number);
+      // Adjust month index (subtract 1 as JS months are 0-indexed)
+      const date = new Date(year, month - 1, day);
+      
+      // Verify the date is valid
+      if (!isNaN(date.getTime())) {
+        setSelectedDate(date);
+        fetchReports(searchDate);
+      } else {
+        // Alert for invalid date
+        alert("Invalid date. Please use YYYY-MM-DD format.");
+      }
+    } else {
+      // Alert for incorrect format
+      alert("Please enter date in YYYY-MM-DD format (e.g., 2025-03-31)");
+    }
   };
   
   return (
@@ -41,29 +66,52 @@ const Reports = () => {
             <div className="flex flex-col space-y-4">
               <div className="grid gap-2">
                 <label className="text-sm font-medium">Report Date</label>
-                <Popover>
-                  <PopoverTrigger asChild>
+                <div className="flex flex-col md:flex-row gap-4">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-[240px] justify-start text-left font-normal",
+                          !selectedDate && "text-muted-foreground"
+                        )}
+                      >
+                        <Calendar className="mr-2 h-4 w-4" />
+                        {selectedDate ? format(selectedDate, 'PPP') : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={setSelectedDate}
+                        initialFocus
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  
+                  <div className="flex flex-col md:flex-row gap-2">
+                    <div className="relative flex items-center">
+                      <Input
+                        type="text"
+                        placeholder="YYYY-MM-DD"
+                        value={searchDate}
+                        onChange={(e) => setSearchDate(e.target.value)}
+                        className="w-full md:w-[190px]"
+                      />
+                    </div>
                     <Button
                       variant="outline"
-                      className={cn(
-                        "w-[240px] justify-start text-left font-normal",
-                        !selectedDate && "text-muted-foreground"
-                      )}
+                      onClick={handleSearchDate}
+                      className="flex-shrink-0"
+                      disabled={isLoading || !searchDate}
                     >
-                      <Calendar className="mr-2 h-4 w-4" />
-                      {selectedDate ? format(selectedDate, 'PPP') : <span>Pick a date</span>}
+                      <Search className="h-4 w-4 mr-2" />
+                      Search Date
                     </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <CalendarComponent
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={setSelectedDate}
-                      initialFocus
-                      className={cn("p-3 pointer-events-auto")}
-                    />
-                  </PopoverContent>
-                </Popover>
+                  </div>
+                </div>
               </div>
               
               <TooltipProvider>
