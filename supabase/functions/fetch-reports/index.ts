@@ -182,7 +182,7 @@ serve(async (req) => {
           scheduled_time: stop.scheduledAtDt || null,
           end_time: endTime, 
           cust_name: custName,
-          cust_group: custGroup,
+          cust_group: custGroup || custName, // Use custName as fallback when custGroup is null
           tech_name: techName,
           region: region,
           fetched_at: now
