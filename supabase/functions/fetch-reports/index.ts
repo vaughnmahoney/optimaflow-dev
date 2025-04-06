@@ -190,7 +190,7 @@ serve(async (req) => {
       }
     }
     
-    // 3. Upsert into the reports table
+    // 3. Insert into the reports table
     if (reportsPayload.length === 0) {
       return new Response(JSON.stringify({
         success: false,
@@ -204,7 +204,12 @@ serve(async (req) => {
       });
     }
     
-    // Remove existing records for this date before inserting new ones
+    // First, clean up any existing reports for the fetched date
+    const dateToDelete = requestDate;
+    console.log(`Deleting existing reports for date: ${dateToDelete}`);
+    
+    // Delete any reports with service dates matching the request date
+    // Use a different timestamp to avoid overlapping with the new reports
     const { error: deleteError } = await supabase
       .from('reports')
       .delete()
@@ -215,31 +220,61 @@ serve(async (req) => {
       // Continue with insert even if delete fails
     }
     
-    // Insert records in batches to avoid potential conflicts
-    const UPSERT_BATCH_SIZE = 100;
+    // Insert reports in smaller batches to avoid hitting payload size limits
+    const UPSERT_BATCH_SIZE = 50; // Reduce batch size to avoid issues
     let successCount = 0;
     let errorCount = 0;
     
     for (let i = 0; i < reportsPayload.length; i += UPSERT_BATCH_SIZE) {
       const batch = reportsPayload.slice(i, i + UPSERT_BATCH_SIZE);
-      const { error, count } = await supabase
-        .from('reports')
-        .insert(batch)
-        .select('count');
-        
-      if (error) {
-        console.error(`Batch insert error for batch ${i/UPSERT_BATCH_SIZE + 1}:`, error);
+      console.log(`Inserting batch ${Math.floor(i/UPSERT_BATCH_SIZE) + 1}/${Math.ceil(reportsPayload.length/UPSERT_BATCH_SIZE)}, size: ${batch.length}`);
+      
+      try {
+        const { error } = await supabase
+          .from('reports')
+          .insert(batch);
+          
+        if (error) {
+          console.error(`Batch insert error for batch ${Math.floor(i/UPSERT_BATCH_SIZE) + 1}:`, error);
+          errorCount += batch.length;
+        } else {
+          successCount += batch.length;
+          console.log(`Successfully inserted batch ${Math.floor(i/UPSERT_BATCH_SIZE) + 1}, records: ${batch.length}`);
+        }
+      } catch (error) {
+        console.error(`Exception in batch ${Math.floor(i/UPSERT_BATCH_SIZE) + 1}:`, error);
         errorCount += batch.length;
-      } else {
-        successCount += batch.length;
+      }
+      
+      // Add a small delay between batches to avoid overwhelming the database
+      if (i + UPSERT_BATCH_SIZE < reportsPayload.length) {
+        await new Promise(resolve => setTimeout(resolve, 300));
       }
     }
     
-    if (errorCount > 0) {
+    const isPartialSuccess = successCount > 0 && errorCount > 0;
+    const isCompleteSuccess = successCount > 0 && errorCount === 0;
+    const isCompleteFailure = successCount === 0 && errorCount > 0;
+    
+    if (isCompleteFailure) {
       return new Response(JSON.stringify({
-        success: successCount > 0,
+        success: false,
+        count: 0,
+        message: `Failed to insert all ${errorCount} reports for date: ${requestDate}`
+      }), { 
+        status: 200, // Use 200 to ensure the client gets the error message
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders
+        }
+      });
+    }
+    
+    if (isPartialSuccess) {
+      return new Response(JSON.stringify({
+        success: true,
         count: successCount,
-        message: `Successfully inserted ${successCount} reports, but failed to insert ${errorCount} reports for date: ${requestDate}`
+        message: `Successfully inserted ${successCount} reports, with ${errorCount} failures for date: ${requestDate}`
       }), { 
         status: 200,
         headers: {
@@ -249,6 +284,7 @@ serve(async (req) => {
       });
     }
     
+    // Complete success case
     return new Response(JSON.stringify({
       success: true,
       count: successCount,
