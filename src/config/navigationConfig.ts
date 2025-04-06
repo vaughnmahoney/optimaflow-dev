@@ -22,7 +22,8 @@ import {
   Receipt,
   CreditCard,
   Link,
-  LogOut
+  LogOut,
+  BarChart2
 } from "lucide-react";
 
 export type NavigationItem = {
@@ -102,6 +103,11 @@ export const NavigationConfig = [
     items: [
       { title: "Payment Tracking", url: "/receipts/tracking", icon: CreditCard },
     ],
+  },
+  {
+    title: "Reports",
+    url: "/reports",
+    icon: BarChart2,
   },
   {
     title: "3rd Party Apps",

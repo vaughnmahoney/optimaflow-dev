@@ -104,33 +104,72 @@ export type Database = {
         }
         Relationships: []
       }
-      customers: {
+      custMast: {
         Row: {
-          billing_address: Json | null
-          contact_info: Json | null
+          address: string | null
+          city: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
           created_at: string | null
-          id: string
-          name: string
-          type: string
+          cust_group: string
+          cust_name: string
+          default_service_frequency: string | null
+          id: number
+          last_service_date: string | null
+          notes: string | null
+          org_id: string
+          pricing_tier: string | null
+          region: string | null
+          service_type: string | null
+          state: string | null
+          store_id: string | null
           updated_at: string | null
+          zip_code: string | null
         }
         Insert: {
-          billing_address?: Json | null
-          contact_info?: Json | null
+          address?: string | null
+          city?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
           created_at?: string | null
-          id?: string
-          name: string
-          type: string
+          cust_group: string
+          cust_name: string
+          default_service_frequency?: string | null
+          id?: number
+          last_service_date?: string | null
+          notes?: string | null
+          org_id: string
+          pricing_tier?: string | null
+          region?: string | null
+          service_type?: string | null
+          state?: string | null
+          store_id?: string | null
           updated_at?: string | null
+          zip_code?: string | null
         }
         Update: {
-          billing_address?: Json | null
-          contact_info?: Json | null
+          address?: string | null
+          city?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
           created_at?: string | null
-          id?: string
-          name?: string
-          type?: string
+          cust_group?: string
+          cust_name?: string
+          default_service_frequency?: string | null
+          id?: number
+          last_service_date?: string | null
+          notes?: string | null
+          org_id?: string
+          pricing_tier?: string | null
+          region?: string | null
+          service_type?: string | null
+          state?: string | null
+          store_id?: string | null
           updated_at?: string | null
+          zip_code?: string | null
         }
         Relationships: []
       }
@@ -202,46 +241,92 @@ export type Database = {
         }
         Relationships: []
       }
-      stores: {
+      reports: {
         Row: {
-          address: Json | null
-          contact_info: Json | null
+          cust_group: string | null
+          cust_name: string | null
+          end_time: string | null
+          fetched_at: string | null
+          id: number
+          optimoroute_status: string | null
+          order_no: string
+          org_id: number
+          region: string | null
+          scheduled_time: string | null
+          status: string | null
+          tech_name: string | null
+        }
+        Insert: {
+          cust_group?: string | null
+          cust_name?: string | null
+          end_time?: string | null
+          fetched_at?: string | null
+          id?: number
+          optimoroute_status?: string | null
+          order_no: string
+          org_id: number
+          region?: string | null
+          scheduled_time?: string | null
+          status?: string | null
+          tech_name?: string | null
+        }
+        Update: {
+          cust_group?: string | null
+          cust_name?: string | null
+          end_time?: string | null
+          fetched_at?: string | null
+          id?: number
+          optimoroute_status?: string | null
+          order_no?: string
+          org_id?: number
+          region?: string | null
+          scheduled_time?: string | null
+          status?: string | null
+          tech_name?: string | null
+        }
+        Relationships: []
+      }
+      techMast: {
+        Row: {
+          address: string | null
           created_at: string | null
-          customer_id: string
-          id: string
-          name: string
-          store_number: string | null
+          email: string
+          id: number
+          notes: string | null
+          phone: string | null
+          region: string | null
+          status: string | null
+          storage_location: string | null
+          tech_name: string
           updated_at: string | null
         }
         Insert: {
-          address?: Json | null
-          contact_info?: Json | null
+          address?: string | null
           created_at?: string | null
-          customer_id: string
-          id?: string
-          name: string
-          store_number?: string | null
+          email: string
+          id?: number
+          notes?: string | null
+          phone?: string | null
+          region?: string | null
+          status?: string | null
+          storage_location?: string | null
+          tech_name: string
           updated_at?: string | null
         }
         Update: {
-          address?: Json | null
-          contact_info?: Json | null
+          address?: string | null
           created_at?: string | null
-          customer_id?: string
-          id?: string
-          name?: string
-          store_number?: string | null
+          email?: string
+          id?: number
+          notes?: string | null
+          phone?: string | null
+          region?: string | null
+          status?: string | null
+          storage_location?: string | null
+          tech_name?: string
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "stores_customer_id_fkey"
-            columns: ["customer_id"]
-            isOneToOne: false
-            referencedRelation: "customers"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       technicians: {
         Row: {
