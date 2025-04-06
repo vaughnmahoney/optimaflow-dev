@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.170.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
@@ -139,6 +138,26 @@ serve(async (req) => {
       }
     }
     
+    // Query existing work orders to get their status
+    const { data: existingWorkOrders, error: workOrdersError } = await supabase
+      .from('work_orders')
+      .select('order_no, status')
+      .in('order_no', orderNumbers);
+    
+    if (workOrdersError) {
+      console.error("Error fetching work orders status:", workOrdersError);
+    }
+    
+    // Create a map for quick lookup of existing work order statuses
+    const workOrderStatusMap = new Map();
+    if (existingWorkOrders && existingWorkOrders.length > 0) {
+      existingWorkOrders.forEach(order => {
+        if (order.order_no && order.status) {
+          workOrderStatusMap.set(order.order_no, order.status);
+        }
+      });
+    }
+    
     // Now process routes and stops with status information
     const processedOrderNos = new Set(); // Track already processed order numbers
     
@@ -171,14 +190,17 @@ serve(async (req) => {
         
         // Get status and end_time from completion details if available, otherwise use defaults
         const completionDetail = completionDetailsMap.get(orderNo);
-        const status = completionDetail ? completionDetail.status : "Scheduled";
+        const optimorouteStatus = completionDetail ? completionDetail.status : "Planned";
         const endTime = completionDetail && completionDetail.endTime ? completionDetail.endTime.utcTime : null;
+        
+        // Use existing work order status if available, otherwise default to "Scheduled"
+        const workOrderStatus = workOrderStatusMap.get(orderNo) || "Scheduled";
         
         reportsPayload.push({
           org_id: orgId,
           order_no: orderNo,
-          status: status, // Status from completion details
-          optimoroute_status: "Planned", // Default status from OptimoRoute for planned stops
+          status: workOrderStatus, // Status from work_orders table with fallback to "Scheduled"
+          optimoroute_status: optimorouteStatus, // Status from completion details
           scheduled_time: stop.scheduledAtDt || null,
           end_time: endTime, 
           cust_name: custName,
