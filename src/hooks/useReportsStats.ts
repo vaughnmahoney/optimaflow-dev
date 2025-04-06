@@ -13,6 +13,7 @@ export interface TechnicianMetric {
   name: string;
   jobCount: number;
   avgDuration?: number; // in minutes
+  completionRate?: number; // percentage
 }
 
 export interface TimeMetric {
@@ -21,10 +22,31 @@ export interface TimeMetric {
   count: number;
 }
 
+export interface TimeSeriesDataPoint {
+  date: string;
+  completed: number;
+  failed: number;
+  scheduled: number;
+  avgDuration: number;
+}
+
+export interface CustomerMetric {
+  name: string;
+  serviceCount: number;
+  avgDuration: number;
+  completionRate: number;
+}
+
 export interface ReportStats {
   statusCategories: StatusCategory[];
   technicianPerformance: TechnicianMetric[];
   customerGroupMetrics: TimeMetric[];
+  timeSeriesData: TimeSeriesDataPoint[];
+  topCustomers: CustomerMetric[];
+  techPerformanceComparison: {
+    efficiency: TechnicianMetric[];
+    quality: TechnicianMetric[];
+  };
   total: number;
   avgServiceDuration: number; // in minutes
   isLoading: boolean;
@@ -35,6 +57,12 @@ export const useReportsStats = () => {
     statusCategories: [],
     technicianPerformance: [],
     customerGroupMetrics: [],
+    timeSeriesData: [],
+    topCustomers: [],
+    techPerformanceComparison: {
+      efficiency: [],
+      quality: []
+    },
     total: 0,
     avgServiceDuration: 0,
     isLoading: true
@@ -55,7 +83,7 @@ export const useReportsStats = () => {
         
         const { data, error } = await supabase
           .from('reports')
-          .select('optimoroute_status, scheduled_time, end_time, tech_name, cust_group')
+          .select('optimoroute_status, scheduled_time, end_time, tech_name, cust_group, cust_name, status, fetched_at')
           .range(page * pageSize, (page + 1) * pageSize - 1);
         
         if (error) {
@@ -89,13 +117,18 @@ export const useReportsStats = () => {
       };
       
       // Calculate service durations and collect metrics by technician and customer group
-      const techMetrics: { [key: string]: { jobCount: number, totalDuration: number } } = {};
-      const custGroupMetrics: { [key: string]: { jobCount: number, totalDuration: number } } = {};
+      const techMetrics: { [key: string]: { jobCount: number, totalDuration: number, completed: number, total: number } } = {};
+      const custGroupMetrics: { [key: string]: { jobCount: number, totalDuration: number, completed: number, total: number } } = {};
+      const specificCustomers: { [key: string]: { jobCount: number, totalDuration: number, completed: number, total: number } } = {};
+      const timeSeriesByDate: { [key: string]: { completed: number, failed: number, scheduled: number, totalDuration: number, durationCount: number } } = {};
+      
       let totalDuration = 0;
       let durationCount = 0;
       
       allReports.forEach(report => {
         const status = report.optimoroute_status?.toLowerCase() || 'unknown';
+        const internalStatus = report.status?.toLowerCase() || 'unknown';
+        const isCompleted = status === 'success' || internalStatus === 'approved';
         
         // Process status counts
         if (status === 'success') {
@@ -104,6 +137,40 @@ export const useReportsStats = () => {
           statusCounts.failed++;
         } else if (['scheduled', 'servicing', 'on_route', 'planned'].includes(status)) {
           statusCounts.scheduled++;
+        }
+        
+        // Extract date for time series
+        let reportDate = "Unknown";
+        if (report.scheduled_time) {
+          const date = new Date(report.scheduled_time);
+          if (!isNaN(date.getTime())) {
+            reportDate = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+          }
+        } else if (report.fetched_at) {
+          const date = new Date(report.fetched_at);
+          if (!isNaN(date.getTime())) {
+            reportDate = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+          }
+        }
+        
+        // Initialize time series entry if needed
+        if (!timeSeriesByDate[reportDate]) {
+          timeSeriesByDate[reportDate] = {
+            completed: 0,
+            failed: 0,
+            scheduled: 0,
+            totalDuration: 0,
+            durationCount: 0
+          };
+        }
+        
+        // Update time series counts
+        if (status === 'success') {
+          timeSeriesByDate[reportDate].completed++;
+        } else if (status === 'failed' || status === 'rejected') {
+          timeSeriesByDate[reportDate].failed++;
+        } else if (['scheduled', 'servicing', 'on_route', 'planned'].includes(status)) {
+          timeSeriesByDate[reportDate].scheduled++;
         }
         
         // Process service durations when we have both timestamps
@@ -120,22 +187,47 @@ export const useReportsStats = () => {
               totalDuration += durationMinutes;
               durationCount++;
               
+              // Add to time series
+              timeSeriesByDate[reportDate].totalDuration += durationMinutes;
+              timeSeriesByDate[reportDate].durationCount++;
+              
               // Group by technician
               if (report.tech_name) {
                 if (!techMetrics[report.tech_name]) {
-                  techMetrics[report.tech_name] = { jobCount: 0, totalDuration: 0 };
+                  techMetrics[report.tech_name] = { jobCount: 0, totalDuration: 0, completed: 0, total: 0 };
                 }
                 techMetrics[report.tech_name].jobCount++;
                 techMetrics[report.tech_name].totalDuration += durationMinutes;
+                techMetrics[report.tech_name].total++;
+                if (isCompleted) {
+                  techMetrics[report.tech_name].completed++;
+                }
               }
               
               // Group by customer group
               if (report.cust_group) {
                 if (!custGroupMetrics[report.cust_group]) {
-                  custGroupMetrics[report.cust_group] = { jobCount: 0, totalDuration: 0 };
+                  custGroupMetrics[report.cust_group] = { jobCount: 0, totalDuration: 0, completed: 0, total: 0 };
                 }
                 custGroupMetrics[report.cust_group].jobCount++;
                 custGroupMetrics[report.cust_group].totalDuration += durationMinutes;
+                custGroupMetrics[report.cust_group].total++;
+                if (isCompleted) {
+                  custGroupMetrics[report.cust_group].completed++;
+                }
+              }
+              
+              // Track specific customer performance
+              if (report.cust_name) {
+                if (!specificCustomers[report.cust_name]) {
+                  specificCustomers[report.cust_name] = { jobCount: 0, totalDuration: 0, completed: 0, total: 0 };
+                }
+                specificCustomers[report.cust_name].jobCount++;
+                specificCustomers[report.cust_name].totalDuration += durationMinutes;
+                specificCustomers[report.cust_name].total++;
+                if (isCompleted) {
+                  specificCustomers[report.cust_name].completed++;
+                }
               }
             }
           }
@@ -158,7 +250,8 @@ export const useReportsStats = () => {
         .map(([name, metrics]) => ({
           name,
           jobCount: metrics.jobCount,
-          avgDuration: metrics.jobCount > 0 ? Math.round(metrics.totalDuration / metrics.jobCount) : undefined
+          avgDuration: metrics.jobCount > 0 ? Math.round(metrics.totalDuration / metrics.jobCount) : undefined,
+          completionRate: metrics.total > 0 ? Math.round((metrics.completed / metrics.total) * 100) : undefined
         }))
         .sort((a, b) => b.jobCount - a.jobCount) // Sort by job count
         .slice(0, 10); // Top 10 technicians
@@ -173,6 +266,48 @@ export const useReportsStats = () => {
         .sort((a, b) => b.count - a.count) // Sort by job count
         .slice(0, 5); // Top 5 customer groups
       
+      // 4. Time series data
+      const timeSeriesData: TimeSeriesDataPoint[] = Object.entries(timeSeriesByDate)
+        .map(([date, metrics]) => ({
+          date,
+          completed: metrics.completed,
+          failed: metrics.failed,
+          scheduled: metrics.scheduled,
+          avgDuration: metrics.durationCount > 0 ? Math.round(metrics.totalDuration / metrics.durationCount) : 0
+        }))
+        .sort((a, b) => a.date.localeCompare(b.date)); // Sort by date ascending
+      
+      // 5. Top customers by service count
+      const topCustomers: CustomerMetric[] = Object.entries(specificCustomers)
+        .map(([name, metrics]) => ({
+          name,
+          serviceCount: metrics.jobCount,
+          avgDuration: metrics.jobCount > 0 ? Math.round(metrics.totalDuration / metrics.jobCount) : 0,
+          completionRate: metrics.total > 0 ? Math.round((metrics.completed / metrics.total) * 100) : 0
+        }))
+        .sort((a, b) => b.serviceCount - a.serviceCount) // Sort by service count
+        .slice(0, 5); // Top 5 customers
+      
+      // 6. Technician performance comparisons
+      const efficiency = Object.entries(techMetrics)
+        .map(([name, metrics]) => ({
+          name,
+          jobCount: metrics.jobCount,
+          avgDuration: metrics.jobCount > 0 ? Math.round(metrics.totalDuration / metrics.jobCount) : 0
+        }))
+        .sort((a, b) => (a.avgDuration || 0) - (b.avgDuration || 0)) // Sort by duration (ascending = more efficient)
+        .slice(0, 5); // Top 5 most efficient technicians
+      
+      const quality = Object.entries(techMetrics)
+        .filter(([_, metrics]) => metrics.total >= 5) // Only include techs with at least 5 jobs
+        .map(([name, metrics]) => ({
+          name,
+          jobCount: metrics.total,
+          completionRate: metrics.total > 0 ? Math.round((metrics.completed / metrics.total) * 100) : 0
+        }))
+        .sort((a, b) => (b.completionRate || 0) - (a.completionRate || 0)) // Sort by completion rate (descending)
+        .slice(0, 5); // Top 5 highest quality technicians
+      
       // Calculate overall average service duration
       const avgServiceDuration = durationCount > 0 ? Math.round(totalDuration / durationCount) : 0;
       
@@ -180,6 +315,12 @@ export const useReportsStats = () => {
         statusCategories,
         technicianPerformance,
         customerGroupMetrics,
+        timeSeriesData,
+        topCustomers,
+        techPerformanceComparison: {
+          efficiency,
+          quality
+        },
         total,
         avgServiceDuration,
         isLoading: false
