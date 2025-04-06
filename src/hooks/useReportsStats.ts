@@ -26,6 +26,7 @@ export const useReportsStats = () => {
     setStats(prev => ({ ...prev, isLoading: true }));
     
     try {
+      // Query without any limit to get all reports
       const { data, error } = await supabase
         .from('reports')
         .select('optimoroute_status');
