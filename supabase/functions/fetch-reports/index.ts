@@ -33,18 +33,25 @@ serve(async (req) => {
     });
   }
 
-  // 1. Fetch routes for today from OptimoRoute API
-  const today = new Date().toISOString().slice(0, 10);  // YYYY-MM-DD
-  const now = new Date().toISOString();  // Current timestamp for fetched_at
-  const apiKey = Deno.env.get('OPTIMOROUTE_API_KEY');
-  
-  // Default organization ID - in a real implementation, you might
-  // fetch different data for different organizations
-  const orgId = Deno.env.get('DEFAULT_ORG_ID') || 'default';
-  
-  const routesUrl = `https://api.optimoroute.com/v1/get_routes?key=${apiKey}&date=${today}`;
-  
   try {
+    // Parse the request body to get the date parameter if provided
+    const requestData = await req.json().catch(() => ({}));
+    
+    // Get date from request or use today's date as default
+    const requestDate = requestData.date || new Date().toISOString().slice(0, 10);
+    console.log(`Fetching reports for date: ${requestDate}`);
+    
+    const apiKey = Deno.env.get('OPTIMOROUTE_API_KEY');
+    
+    // Default organization ID - in a real implementation, you might
+    // fetch different data for different organizations
+    const orgId = Deno.env.get('DEFAULT_ORG_ID') || 'default';
+    
+    const now = new Date().toISOString();  // Current timestamp for fetched_at
+    
+    // Construct API URL with the requested date
+    const routesUrl = `https://api.optimoroute.com/v1/get_routes?key=${apiKey}&date=${requestDate}`;
+    
     const response = await fetch(routesUrl);
     if (!response.ok) {
       throw new Error(`API returned status ${response.status}`);
@@ -176,7 +183,7 @@ serve(async (req) => {
     
     // 3. Upsert into the reports table
     if (reportsPayload.length === 0) {
-      return new Response("No reports to update", { 
+      return new Response(`No reports found for date: ${requestDate}`, { 
         status: 200,
         headers: corsHeaders
       });
@@ -197,7 +204,7 @@ serve(async (req) => {
       });
     }
     
-    return new Response(`Successfully updated ${reportsPayload.length} reports`, { 
+    return new Response(`Successfully updated ${reportsPayload.length} reports for date: ${requestDate}`, { 
       status: 200,
       headers: corsHeaders
     });

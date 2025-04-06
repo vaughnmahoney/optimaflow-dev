@@ -7,14 +7,18 @@ export const useFetchReports = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<any>(null);
   
-  const fetchReports = async () => {
+  const fetchReports = async (date?: string) => {
     setIsLoading(true);
     setResults(null);
     
     try {
+      // Use the provided date or default to today
+      const reportDate = date || new Date().toISOString().slice(0, 10);
+      console.log(`Fetching reports for date: ${reportDate}`);
+      
       // Call the fetch-reports edge function
       const { data, error } = await supabase.functions.invoke('fetch-reports', {
-        body: {},
+        body: { date: reportDate },
         method: 'POST',
       });
       

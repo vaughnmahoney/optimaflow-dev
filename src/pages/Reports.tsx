@@ -5,10 +5,22 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useFetchReports } from "@/hooks/useFetchReports";
-import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle2, Calendar } from "lucide-react";
+import { format } from "date-fns";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 const Reports = () => {
   const { fetchReports, isLoading, results } = useFetchReports();
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date(2025, 2, 31)); // March 31, 2025 (month is 0-indexed)
+  
+  // Format date as YYYY-MM-DD
+  const formattedDate = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
+  
+  const handleFetchReports = () => {
+    fetchReports(formattedDate);
+  };
   
   return (
     <Layout title="Reports">
@@ -21,15 +33,41 @@ const Reports = () => {
           <CardHeader>
             <CardTitle>Fetch Reports from OptimoRoute</CardTitle>
             <CardDescription>
-              Manually trigger the fetch-reports edge function to retrieve data from OptimoRoute
-              and store it in the reports table.
+              Retrieve data from OptimoRoute for a specific date and store it in the reports table.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col space-y-4">
+              <div className="grid gap-2">
+                <label className="text-sm font-medium">Report Date</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-[240px] justify-start text-left font-normal",
+                        !selectedDate && "text-muted-foreground"
+                      )}
+                    >
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {selectedDate ? format(selectedDate, 'PPP') : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={setSelectedDate}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              
               <Button 
-                onClick={fetchReports} 
-                disabled={isLoading}
+                onClick={handleFetchReports} 
+                disabled={isLoading || !selectedDate}
                 className="w-fit"
               >
                 {isLoading ? (
@@ -38,7 +76,7 @@ const Reports = () => {
                     Fetching Reports...
                   </>
                 ) : (
-                  "Fetch Reports Now"
+                  `Fetch Reports for ${formattedDate}`
                 )}
               </Button>
               
@@ -67,7 +105,7 @@ const Reports = () => {
           </CardContent>
           <CardFooter className="flex justify-between text-sm text-muted-foreground">
             <p>
-              This function calls the OptimoRoute API to fetch route data for today and updates the reports table.
+              This function calls the OptimoRoute API to fetch route data for the selected date and updates the reports table.
             </p>
           </CardFooter>
         </Card>
