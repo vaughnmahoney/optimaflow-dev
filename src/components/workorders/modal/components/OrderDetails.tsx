@@ -7,7 +7,7 @@ import { FileText, MessageSquare, FileSignature } from "lucide-react";
 import { QcNotesSheet } from "./QcNotesSheet";
 import { ResolutionNotesSheet } from "./ResolutionNotesSheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { OrderDetailsTab } from "../tabs/OrderDetailsTab";
 
 interface OrderDetailsProps {
@@ -120,6 +120,11 @@ export const OrderDetails = ({
               </div>
             </TabsTrigger>
           </TabsList>
+          
+          {/* Add hidden TabsContent components to properly connect the Tabs context */}
+          <TabsContent value="details" className="hidden"></TabsContent>
+          <TabsContent value="notes" className="hidden"></TabsContent>
+          <TabsContent value="signature" className="hidden"></TabsContent>
         </Tabs>
       </div>
 

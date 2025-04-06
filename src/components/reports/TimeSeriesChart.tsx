@@ -4,9 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { Loader2 } from "lucide-react";
 
-interface DataPoint {
+export interface DataPoint {
   date: string;
-  value: number;
   [key: string]: string | number; // For additional series
 }
 

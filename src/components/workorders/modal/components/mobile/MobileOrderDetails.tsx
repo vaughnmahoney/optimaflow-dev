@@ -110,6 +110,11 @@ export const MobileOrderDetails = ({
               Signature
             </TabsTrigger>
           </TabsList>
+          
+          {/* Add hidden TabsContent components to properly connect the Tabs context */}
+          <TabsContent value="details" className="hidden"></TabsContent>
+          <TabsContent value="notes" className="hidden"></TabsContent>
+          <TabsContent value="signature" className="hidden"></TabsContent>
         </Tabs>
       </div>
       
