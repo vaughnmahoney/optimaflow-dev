@@ -230,6 +230,7 @@ serve(async (req) => {
       console.log(`Inserting batch ${Math.floor(i/UPSERT_BATCH_SIZE) + 1}/${Math.ceil(reportsPayload.length/UPSERT_BATCH_SIZE)}, size: ${batch.length}`);
       
       try {
+        // Remove the .select('count') which was causing the aggregate function error
         const { error } = await supabase
           .from('reports')
           .insert(batch);
