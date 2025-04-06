@@ -28,6 +28,7 @@ export interface TimeSeriesDataPoint {
   failed: number;
   scheduled: number;
   avgDuration: number;
+  [key: string]: string | number; // Add index signature for compatibility with DataPoint
 }
 
 export interface CustomerMetric {
