@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.170.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
@@ -139,6 +140,7 @@ serve(async (req) => {
     }
     
     // Query existing work orders to get their status
+    console.log(`Looking up statuses for ${orderNumbers.length} order numbers from work_orders table`);
     const { data: existingWorkOrders, error: workOrdersError } = await supabase
       .from('work_orders')
       .select('order_no, status')
@@ -151,11 +153,22 @@ serve(async (req) => {
     // Create a map for quick lookup of existing work order statuses
     const workOrderStatusMap = new Map();
     if (existingWorkOrders && existingWorkOrders.length > 0) {
+      console.log(`Found ${existingWorkOrders.length} existing work orders with status`);
       existingWorkOrders.forEach(order => {
         if (order.order_no && order.status) {
           workOrderStatusMap.set(order.order_no, order.status);
         }
       });
+      console.log(`Work order status map has ${workOrderStatusMap.size} entries`);
+      
+      // Log a few sample entries
+      let count = 0;
+      for (const [key, value] of workOrderStatusMap.entries()) {
+        console.log(`Sample status mapping: order_no "${key}" -> status "${value}"`);
+        if (++count >= 5) break;
+      }
+    } else {
+      console.log('No existing work orders found with matching order numbers');
     }
     
     // Now process routes and stops with status information
