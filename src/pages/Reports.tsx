@@ -10,13 +10,15 @@ import { ReportsStatusChart } from "@/components/reports/ReportsStatusChart";
 import { TechnicianPerformanceChart } from "@/components/reports/TechnicianPerformanceChart";
 import { CustomerGroupChart } from "@/components/reports/CustomerGroupChart";
 import { ServiceDurationCard } from "@/components/reports/ServiceDurationCard";
-import { Loader2, AlertCircle, CheckCircle2, Calendar, Search, BarChart } from "lucide-react";
+import { RejectionLeadersCard } from "@/components/reports/RejectionLeadersCard";
+import { Loader2, AlertCircle, CheckCircle2, Calendar, Search, BarChart, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
+import { EndpointTabs } from "@/components/bulk-orders/EndpointTabs";
 
 const Reports = () => {
   const { fetchReports, isLoading, results } = useFetchReports();
@@ -24,13 +26,16 @@ const Reports = () => {
     statusCategories, 
     technicianPerformance,
     customerGroupMetrics,
+    rejectionLeaders,
     total, 
+    totalRejected,
     avgServiceDuration,
     isLoading: statsLoading, 
     refresh: refreshStats 
   } = useReportsStats();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date(2025, 2, 31)); // March 31, 2025 (month is 0-indexed)
   const [searchDate, setSearchDate] = useState<string>("");
+  const [activeTab, setActiveTab] = useState<string>("with-completion");
   
   // Format date as YYYY-MM-DD
   const formattedDate = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
@@ -64,6 +69,10 @@ const Reports = () => {
       // Alert for incorrect format
       alert("Please enter date in YYYY-MM-DD format (e.g., 2025-03-31)");
     }
+  };
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
   };
   
   return (
@@ -112,17 +121,23 @@ const Reports = () => {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
+              <CardTitle className="text-sm font-medium flex items-center">
+                <AlertTriangle className="h-4 w-4 text-amber-500 mr-1" />
+                Rejected Jobs
+              </CardTitle>
               <CardDescription>
-                Percentage of completed jobs
+                Failed, rejected by driver or QC
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-2xl font-bold text-amber-600">
                 {statsLoading ? "Loading..." : (
-                  total > 0 
-                    ? `${Math.round((statusCategories.find(s => s.name === 'Completed')?.value || 0) / total * 100)}%` 
-                    : "No data"
+                  <div className="flex flex-col">
+                    <span>{totalRejected.toLocaleString()}</span>
+                    <span className="text-sm font-normal text-muted-foreground">
+                      ({total > 0 ? Math.round((totalRejected / total) * 100) : 0}% of total)
+                    </span>
+                  </div>
                 )}
               </div>
             </CardContent>
@@ -139,6 +154,10 @@ const Reports = () => {
             </CardHeader>
             <CardContent>
               <div className="flex flex-col space-y-4">
+                <div className="flex items-center space-x-2">
+                  <EndpointTabs activeTab={activeTab} onTabChange={handleTabChange} />
+                </div>
+                
                 <div className="grid gap-2">
                   <label className="text-sm font-medium">Report Date</label>
                   <div className="flex flex-col md:flex-row gap-4">
@@ -244,6 +263,12 @@ const Reports = () => {
             isLoading={statsLoading}
           />
         </div>
+        
+        {/* Rejection Leaders Chart */}
+        <RejectionLeadersCard 
+          rejectionData={rejectionLeaders}
+          isLoading={statsLoading}
+        />
         
         {/* Technician Performance Chart */}
         <TechnicianPerformanceChart 

@@ -13,6 +13,7 @@ export interface TechnicianMetric {
   name: string;
   jobCount: number;
   avgDuration?: number; // in minutes
+  rejectedCount?: number; // Added for rejected jobs count
 }
 
 export interface TimeMetric {
@@ -25,7 +26,9 @@ export interface ReportStats {
   statusCategories: StatusCategory[];
   technicianPerformance: TechnicianMetric[];
   customerGroupMetrics: TimeMetric[];
+  rejectionLeaders: TechnicianMetric[]; // Added for tracking who rejects the most
   total: number;
+  totalRejected: number; // Added for total rejected count
   avgServiceDuration: number; // in minutes
   isLoading: boolean;
 }
@@ -35,7 +38,9 @@ export const useReportsStats = () => {
     statusCategories: [],
     technicianPerformance: [],
     customerGroupMetrics: [],
+    rejectionLeaders: [],
     total: 0,
+    totalRejected: 0,
     avgServiceDuration: 0,
     isLoading: true
   });
@@ -55,7 +60,7 @@ export const useReportsStats = () => {
         
         const { data, error } = await supabase
           .from('reports')
-          .select('optimoroute_status, scheduled_time, end_time, tech_name, cust_group')
+          .select('optimoroute_status, scheduled_time, end_time, tech_name, cust_group, status')
           .range(page * pageSize, (page + 1) * pageSize - 1);
         
         if (error) {
@@ -84,25 +89,36 @@ export const useReportsStats = () => {
       // Count statuses by category
       const statusCounts = {
         completed: 0,  // success
-        failed: 0,     // failed, rejected
+        failed: 0,     // failed, rejected (from optimoroute) OR rejected (from app status)
         scheduled: 0   // scheduled, servicing, on_route, planned
       };
       
       // Calculate service durations and collect metrics by technician and customer group
-      const techMetrics: { [key: string]: { jobCount: number, totalDuration: number } } = {};
+      const techMetrics: { [key: string]: { jobCount: number, totalDuration: number, rejectedCount: number } } = {};
       const custGroupMetrics: { [key: string]: { jobCount: number, totalDuration: number } } = {};
       let totalDuration = 0;
       let durationCount = 0;
+      let totalRejected = 0;
       
       allReports.forEach(report => {
-        const status = report.optimoroute_status?.toLowerCase() || 'unknown';
+        const optimorouteStatus = report.optimoroute_status?.toLowerCase() || 'unknown';
+        const appStatus = report.status?.toLowerCase() || 'unknown';
+        
+        // A job is considered "rejected" if:
+        // 1. Its OptimRoute status is 'failed' or 'rejected' OR
+        // 2. Its app status is 'rejected'
+        const isRejected = 
+          optimorouteStatus === 'failed' || 
+          optimorouteStatus === 'rejected' ||
+          appStatus === 'rejected';
         
         // Process status counts
-        if (status === 'success') {
+        if (optimorouteStatus === 'success' && appStatus !== 'rejected') {
           statusCounts.completed++;
-        } else if (status === 'failed' || status === 'rejected') {
+        } else if (isRejected) {
           statusCounts.failed++;
-        } else if (['scheduled', 'servicing', 'on_route', 'planned'].includes(status)) {
+          totalRejected++;
+        } else if (['scheduled', 'servicing', 'on_route', 'planned'].includes(optimorouteStatus)) {
           statusCounts.scheduled++;
         }
         
@@ -123,10 +139,15 @@ export const useReportsStats = () => {
               // Group by technician
               if (report.tech_name) {
                 if (!techMetrics[report.tech_name]) {
-                  techMetrics[report.tech_name] = { jobCount: 0, totalDuration: 0 };
+                  techMetrics[report.tech_name] = { jobCount: 0, totalDuration: 0, rejectedCount: 0 };
                 }
                 techMetrics[report.tech_name].jobCount++;
                 techMetrics[report.tech_name].totalDuration += durationMinutes;
+                
+                // Track rejected jobs by technician
+                if (isRejected) {
+                  techMetrics[report.tech_name].rejectedCount++;
+                }
               }
               
               // Group by customer group
@@ -139,6 +160,12 @@ export const useReportsStats = () => {
               }
             }
           }
+        } else if (isRejected && report.tech_name) {
+          // Even without duration data, we still want to track rejected jobs by technician
+          if (!techMetrics[report.tech_name]) {
+            techMetrics[report.tech_name] = { jobCount: 0, totalDuration: 0, rejectedCount: 0 };
+          }
+          techMetrics[report.tech_name].rejectedCount++;
         }
       });
       
@@ -158,12 +185,25 @@ export const useReportsStats = () => {
         .map(([name, metrics]) => ({
           name,
           jobCount: metrics.jobCount,
+          rejectedCount: metrics.rejectedCount,
           avgDuration: metrics.jobCount > 0 ? Math.round(metrics.totalDuration / metrics.jobCount) : undefined
         }))
         .sort((a, b) => b.jobCount - a.jobCount) // Sort by job count
         .slice(0, 10); // Top 10 technicians
+
+      // 3. Rejection leaders (technicians with most rejected jobs)
+      const rejectionLeaders: TechnicianMetric[] = Object.entries(techMetrics)
+        .map(([name, metrics]) => ({
+          name,
+          jobCount: metrics.jobCount,
+          rejectedCount: metrics.rejectedCount,
+          avgDuration: metrics.jobCount > 0 ? Math.round(metrics.totalDuration / metrics.jobCount) : undefined
+        }))
+        .filter(tech => tech.rejectedCount > 0) // Only include techs with rejections
+        .sort((a, b) => (b.rejectedCount || 0) - (a.rejectedCount || 0)) // Sort by rejection count
+        .slice(0, 5); // Top 5 technicians with most rejections
       
-      // 3. Customer group metrics
+      // 4. Customer group metrics
       const customerGroupMetrics: TimeMetric[] = Object.entries(custGroupMetrics)
         .map(([category, metrics]) => ({
           category,
@@ -180,7 +220,9 @@ export const useReportsStats = () => {
         statusCategories,
         technicianPerformance,
         customerGroupMetrics,
+        rejectionLeaders,
         total,
+        totalRejected,
         avgServiceDuration,
         isLoading: false
       });
