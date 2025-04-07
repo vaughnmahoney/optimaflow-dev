@@ -41,12 +41,12 @@ export const useJobsCompletedStats = (initialTimeRange: TimeRange = "week") => {
       console.log(`Current period: ${currentStart} to ${currentEnd}`);
       console.log(`Previous period: ${previousStart} to ${previousEnd}`);
       
-      // Fetch current period data
+      // Fetch current period data - using scheduled_time instead of scheduled_date
       const { data: currentData, error: currentError } = await supabase
         .from('reports')
-        .select('id, tech_name, optimoroute_status, scheduled_date')
-        .gte('scheduled_date', currentStart)
-        .lte('scheduled_date', currentEnd)
+        .select('id, tech_name, optimoroute_status, scheduled_time')
+        .gte('scheduled_time', currentStart)
+        .lte('scheduled_time', currentEnd)
         .eq('optimoroute_status', 'success');
       
       if (currentError) throw currentError;
@@ -55,8 +55,8 @@ export const useJobsCompletedStats = (initialTimeRange: TimeRange = "week") => {
       const { data: previousData, error: previousError } = await supabase
         .from('reports')
         .select('id')
-        .gte('scheduled_date', previousStart)
-        .lte('scheduled_date', previousEnd)
+        .gte('scheduled_time', previousStart)
+        .lte('scheduled_time', previousEnd)
         .eq('optimoroute_status', 'success');
       
       if (previousError) throw previousError;
@@ -65,8 +65,8 @@ export const useJobsCompletedStats = (initialTimeRange: TimeRange = "week") => {
       const { data: totalAssignedData, error: totalAssignedError } = await supabase
         .from('reports')
         .select('id')
-        .gte('scheduled_date', currentStart)
-        .lte('scheduled_date', currentEnd);
+        .gte('scheduled_time', currentStart)
+        .lte('scheduled_time', currentEnd);
       
       if (totalAssignedError) throw totalAssignedError;
       
@@ -193,7 +193,7 @@ export const useJobsCompletedStats = (initialTimeRange: TimeRange = "week") => {
   
   // Helper function to get counts by day for sparkline
   const getDailyCounts = (
-    data: { scheduled_date: string }[], 
+    data: { scheduled_time: string }[], 
     startDateStr: string, 
     endDateStr: string
   ) => {
@@ -204,8 +204,8 @@ export const useJobsCompletedStats = (initialTimeRange: TimeRange = "week") => {
     // Create map of dates to counts
     const countsByDate: Record<string, number> = {};
     data.forEach(item => {
-      if (item.scheduled_date) {
-        const dateStr = item.scheduled_date.split('T')[0];
+      if (item.scheduled_time) {
+        const dateStr = item.scheduled_time.split('T')[0];
         countsByDate[dateStr] = (countsByDate[dateStr] || 0) + 1;
       }
     });
