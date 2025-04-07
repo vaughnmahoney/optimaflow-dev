@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
 import { EndpointTabs } from "@/components/bulk-orders/EndpointTabs";
+import { JobsCompletedCard } from "@/components/reports/JobsCompletedCard";
 
 const Reports = () => {
   const { fetchReports, isLoading, results } = useFetchReports();
@@ -59,6 +60,11 @@ const Reports = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold tracking-tight">Reports</h1>
+        </div>
+        
+        {/* KPI Section */}
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
+          <JobsCompletedCard />
         </div>
         
         <div className="grid gap-6">
