@@ -11,7 +11,6 @@ import { TechnicianPerformanceChart } from "@/components/reports/TechnicianPerfo
 import { CustomerGroupChart } from "@/components/reports/CustomerGroupChart";
 import { ServiceDurationCard } from "@/components/reports/ServiceDurationCard";
 import { RejectionLeadersCard } from "@/components/reports/RejectionLeadersCard";
-import { JobsCompletedCard } from "@/components/reports/JobsCompletedCard";
 import { Loader2, AlertCircle, CheckCircle2, Calendar, Search, BarChart, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
@@ -102,8 +101,7 @@ const Reports = () => {
         </div>
         
         {/* Stats Summary Cards */}
-        <div className="grid gap-4 md:grid-cols-4">
-          <JobsCompletedCard />
+        <div className="grid gap-4 md:grid-cols-3">
           <ServiceDurationCard 
             avgDuration={avgServiceDuration} 
             isLoading={statsLoading} 
