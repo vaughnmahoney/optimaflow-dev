@@ -245,7 +245,7 @@ serve(async (req) => {
       }
     }
     
-    // 3. Insert into the reports table
+    // 3. Insert or update reports in the table
     if (reportsPayload.length === 0) {
       return new Response(JSON.stringify({
         success: false,
@@ -259,43 +259,36 @@ serve(async (req) => {
       });
     }
     
-    // First, clean up any existing reports for the fetched date
-    const dateToDelete = requestDate;
-    console.log(`Deleting existing reports for date: ${dateToDelete}`);
+    console.log(`Preparing to upsert ${reportsPayload.length} reports for date: ${requestDate}`);
     
-    // Delete any reports with service dates matching the request date
-    // Use a different timestamp to avoid overlapping with the new reports
-    const { error: deleteError } = await supabase
-      .from('reports')
-      .delete()
-      .eq('fetched_at', now);
-      
-    if (deleteError) {
-      console.error("Delete error:", deleteError);
-      // Continue with insert even if delete fails
-    }
+    // Changed: instead of deleting existing reports, we'll use upsert
+    // This will insert new records and update existing ones
     
-    // Insert reports in smaller batches to avoid hitting payload size limits
+    // Insert/update reports in smaller batches to avoid hitting payload size limits
     const UPSERT_BATCH_SIZE = 50; // Reduce batch size to avoid issues
     let successCount = 0;
     let errorCount = 0;
     
     for (let i = 0; i < reportsPayload.length; i += UPSERT_BATCH_SIZE) {
       const batch = reportsPayload.slice(i, i + UPSERT_BATCH_SIZE);
-      console.log(`Inserting batch ${Math.floor(i/UPSERT_BATCH_SIZE) + 1}/${Math.ceil(reportsPayload.length/UPSERT_BATCH_SIZE)}, size: ${batch.length}`);
+      console.log(`Upserting batch ${Math.floor(i/UPSERT_BATCH_SIZE) + 1}/${Math.ceil(reportsPayload.length/UPSERT_BATCH_SIZE)}, size: ${batch.length}`);
       
       try {
-        // Remove the .select('count') which was causing the aggregate function error
+        // CHANGED: Use upsert instead of insert
+        // This will insert new records and update existing ones based on the unique constraint
         const { error } = await supabase
           .from('reports')
-          .insert(batch);
+          .upsert(batch, { 
+            onConflict: 'order_no', // Assuming order_no is unique
+            ignoreDuplicates: false // We want to update existing records
+          });
           
         if (error) {
-          console.error(`Batch insert error for batch ${Math.floor(i/UPSERT_BATCH_SIZE) + 1}:`, error);
+          console.error(`Batch upsert error for batch ${Math.floor(i/UPSERT_BATCH_SIZE) + 1}:`, error);
           errorCount += batch.length;
         } else {
           successCount += batch.length;
-          console.log(`Successfully inserted batch ${Math.floor(i/UPSERT_BATCH_SIZE) + 1}, records: ${batch.length}`);
+          console.log(`Successfully upserted batch ${Math.floor(i/UPSERT_BATCH_SIZE) + 1}, records: ${batch.length}`);
         }
       } catch (error) {
         console.error(`Exception in batch ${Math.floor(i/UPSERT_BATCH_SIZE) + 1}:`, error);
@@ -316,7 +309,7 @@ serve(async (req) => {
       return new Response(JSON.stringify({
         success: false,
         count: 0,
-        message: `Failed to insert all ${errorCount} reports for date: ${requestDate}`
+        message: `Failed to update all ${errorCount} reports for date: ${requestDate}`
       }), { 
         status: 200, // Use 200 to ensure the client gets the error message
         headers: {
@@ -330,7 +323,7 @@ serve(async (req) => {
       return new Response(JSON.stringify({
         success: true,
         count: successCount,
-        message: `Successfully inserted ${successCount} reports, with ${errorCount} failures for date: ${requestDate}`
+        message: `Successfully updated ${successCount} reports, with ${errorCount} failures for date: ${requestDate}`
       }), { 
         status: 200,
         headers: {

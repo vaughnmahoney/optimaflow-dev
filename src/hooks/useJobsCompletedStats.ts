@@ -49,7 +49,7 @@ export function useJobsCompletedStats(): JobsStatsData {
         const { data: statusValues, error: statusError } = await supabase
           .from('reports')
           .select('optimoroute_status')
-          .is('optimoroute_status', 'not.null')
+          .not('optimoroute_status', 'is', null)
           .limit(100);
           
         if (statusError) {
