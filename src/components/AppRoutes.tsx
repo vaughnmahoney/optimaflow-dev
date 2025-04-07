@@ -1,26 +1,119 @@
+import React, { Suspense } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import LoadingSpinner from './LoadingSpinner';
 
-import React from "react";
-import { Routes, Route, BrowserRouter } from "react-router-dom";
-import Index from "@/pages/Index";
-import WorkOrders from "@/pages/WorkOrders";
-import BulkOrdersTest from "@/pages/BulkOrdersTest";
-import BulkOrdersProgressive from "@/pages/BulkOrdersProgressive";
-import MaterialRequirements from "@/pages/MaterialRequirements";
-import Login from "@/pages/Login";
-import Users from "@/pages/Users";
-import Reports from "@/pages/Reports";
+const LoginPage = React.lazy(() => import('@/pages/Login'));
+const DashboardPage = React.lazy(() => import('@/pages/Dashboard'));
+const WorkOrders = React.lazy(() => import('@/pages/WorkOrders'));
+const MaterialsRequirements = React.lazy(() => import('@/pages/MaterialsRequirements'));
+const ReportsPage = React.lazy(() => import('@/pages/Reports'));
+const BulkOrdersProgressiveForm = React.lazy(() => import('@/components/bulk-orders/BulkOrdersProgressiveForm'));
 
-const AppRoutes = () => {
+const DiagnosticPage = React.lazy(() => import('@/pages/DiagnosticPage'));
+
+const AppRoutes: React.FC = () => {
+  const { isLoggedIn } = useAuth();
+
   return (
     <Routes>
-      <Route path="/" element={<Login />} />
-      <Route path="login" element={<Login />} />
-      <Route path="work-orders" element={<WorkOrders />} />
-      <Route path="bulk-orders" element={<BulkOrdersTest />} />
-      <Route path="material-requirements" element={<MaterialRequirements />} />
-      <Route path="bulk-orders-progressive" element={<BulkOrdersProgressive />} />
-      <Route path="users" element={<Users />} />
-      <Route path="reports" element={<Reports />} />
+      <Route
+        path="/"
+        element={
+          isLoggedIn ? (
+            <Suspense fallback={<LoadingSpinner />}>
+              <DashboardPage />
+            </Suspense>
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/login"
+        element={
+          !isLoggedIn ? (
+            <Suspense fallback={<LoadingSpinner />}>
+              <LoginPage />
+            </Suspense>
+          ) : (
+            <Navigate to="/" />
+          )
+        }
+      />
+      <Route
+        path="/dashboard"
+        element={
+          isLoggedIn ? (
+            <Suspense fallback={<LoadingSpinner />}>
+              <DashboardPage />
+            </Suspense>
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/work-orders"
+        element={
+          isLoggedIn ? (
+            <Suspense fallback={<LoadingSpinner />}>
+              <WorkOrders />
+            </Suspense>
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/materials"
+        element={
+          isLoggedIn ? (
+            <Suspense fallback={<LoadingSpinner />}>
+              <MaterialsRequirements />
+            </Suspense>
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/reports"
+        element={
+          isLoggedIn ? (
+            <Suspense fallback={<LoadingSpinner />}>
+              <ReportsPage />
+            </Suspense>
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/bulk-orders"
+        element={
+          isLoggedIn ? (
+            <Suspense fallback={<LoadingSpinner />}>
+              <BulkOrdersProgressiveForm />
+            </Suspense>
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/diagnostics"
+        element={
+          isLoggedIn ? (
+            <Suspense fallback={<LoadingSpinner />}>
+              <DiagnosticPage />
+            </Suspense>
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );
 };
