@@ -44,7 +44,38 @@ export function useJobsCompletedStats(): JobsStatsData {
         console.log(`Fetching jobs data for current week: ${currentStart} to ${currentEnd}`);
         console.log(`Fetching jobs data for previous week: ${prevStart} to ${prevEnd}`);
         
-        // Fetch current week data - using lowercase "success" instead of "Success"
+        // Fetch current week data - first checking which status values exist in the database
+        console.log("Checking for optimoroute_status values in the database...");
+        const { data: statusValues, error: statusError } = await supabase
+          .from('reports')
+          .select('optimoroute_status')
+          .is('optimoroute_status', 'not.null')
+          .limit(100);
+          
+        if (statusError) {
+          console.error("Error fetching status values:", statusError);
+        } else {
+          // Log unique status values to understand what's actually in the database
+          const uniqueStatuses = Array.from(new Set(statusValues.map(item => item.optimoroute_status)));
+          console.log("Available optimoroute_status values in the database:", uniqueStatuses);
+        }
+        
+        // Fetch current week data - trying without status filter first to see if any data exists
+        const { data: anyWeekData, error: anyWeekError } = await supabase
+          .from('reports')
+          .select('end_time, optimoroute_status')
+          .gte('end_time', currentStart)
+          .lte('end_time', currentEnd)
+          .limit(100);
+          
+        if (anyWeekError) {
+          console.error("Error fetching any week data:", anyWeekError);
+        } else {
+          console.log(`Found ${anyWeekData.length} total records for current week (no status filter)`);
+          console.log("Sample data:", anyWeekData.slice(0, 5));
+        }
+        
+        // Now try with lowercase 'success' filter
         const { data: currentWeekData, error: currentWeekError } = await supabase
           .from('reports')
           .select('end_time, optimoroute_status')
@@ -52,9 +83,14 @@ export function useJobsCompletedStats(): JobsStatsData {
           .lte('end_time', currentEnd)
           .eq('optimoroute_status', 'success');
         
-        if (currentWeekError) throw new Error(currentWeekError.message);
+        if (currentWeekError) {
+          console.error("Error fetching current week data:", currentWeekError);
+          throw new Error(currentWeekError.message);
+        }
         
-        // Fetch previous week data - using lowercase "success" instead of "Success"
+        console.log(`Found ${currentWeekData.length} 'success' records for current week`);
+        
+        // Fetch previous week data
         const { data: previousWeekData, error: previousWeekError } = await supabase
           .from('reports')
           .select('end_time, optimoroute_status')
@@ -62,7 +98,12 @@ export function useJobsCompletedStats(): JobsStatsData {
           .lte('end_time', prevEnd)
           .eq('optimoroute_status', 'success');
         
-        if (previousWeekError) throw new Error(previousWeekError.message);
+        if (previousWeekError) {
+          console.error("Error fetching previous week data:", previousWeekError);
+          throw new Error(previousWeekError.message);
+        }
+        
+        console.log(`Found ${previousWeekData.length} 'success' records for previous week`);
         
         // Process daily counts for current week
         const dailyCountsMap: Record<string, number> = {};
@@ -82,6 +123,8 @@ export function useJobsCompletedStats(): JobsStatsData {
           }
         });
         
+        console.log("Daily counts map:", dailyCountsMap);
+        
         // Convert to array format for chart
         const dailyCounts = Object.entries(dailyCountsMap).map(([day, count]) => ({
           day,
@@ -92,6 +135,8 @@ export function useJobsCompletedStats(): JobsStatsData {
         dailyCounts.sort((a, b) => {
           return dayNames.indexOf(a.day) - dayNames.indexOf(b.day);
         });
+        
+        console.log("Final dailyCounts array for chart:", dailyCounts);
         
         // Calculate totals and percentage change
         const currentWeekTotal = currentWeekData.length;
@@ -104,6 +149,9 @@ export function useJobsCompletedStats(): JobsStatsData {
         } else if (currentWeekTotal > 0) {
           percentageChange = 100; // If previous week was 0, but current week has jobs
         }
+        
+        console.log(`Current week total: ${currentWeekTotal}, Previous week total: ${previousWeekTotal}`);
+        console.log(`Percentage change: ${percentageChange.toFixed(1)}%`);
         
         setData({
           currentWeekTotal,
