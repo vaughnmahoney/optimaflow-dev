@@ -13,15 +13,6 @@ interface JobsStatsData {
   }[];
   isLoading: boolean;
   error: string | null;
-  // Added diagnostic data
-  diagnosticData: {
-    totalRecords: number;
-    recordsWithStatus: number;
-    recordsWithEndTime: number;
-    recordsWithValidDates: number;
-    processedRecords: number;
-    statuses: Record<string, number>;
-  };
 }
 
 export function useJobsCompletedStats(): JobsStatsData {
@@ -32,14 +23,6 @@ export function useJobsCompletedStats(): JobsStatsData {
     dailyCounts: [],
     isLoading: true,
     error: null,
-    diagnosticData: {
-      totalRecords: 0,
-      recordsWithStatus: 0,
-      recordsWithEndTime: 0,
-      recordsWithValidDates: 0, 
-      processedRecords: 0,
-      statuses: {}
-    }
   });
 
   useEffect(() => {
@@ -61,58 +44,38 @@ export function useJobsCompletedStats(): JobsStatsData {
         console.log(`Fetching jobs data for current week: ${currentStart} to ${currentEnd}`);
         console.log(`Fetching jobs data for previous week: ${prevStart} to ${prevEnd}`);
         
-        // Diagnostic: Fetch all records first to get total count
-        const { data: allWeekData, error: anyWeekError } = await supabase
+        // Fetch current week data - first checking which status values exist in the database
+        console.log("Checking for optimoroute_status values in the database...");
+        const { data: statusValues, error: statusError } = await supabase
+          .from('reports')
+          .select('optimoroute_status')
+          .not('optimoroute_status', 'is', null)
+          .limit(100);
+          
+        if (statusError) {
+          console.error("Error fetching status values:", statusError);
+        } else {
+          // Log unique status values to understand what's actually in the database
+          const uniqueStatuses = Array.from(new Set(statusValues.map(item => item.optimoroute_status)));
+          console.log("Available optimoroute_status values in the database:", uniqueStatuses);
+        }
+        
+        // Fetch current week data - trying without status filter first to see if any data exists
+        const { data: anyWeekData, error: anyWeekError } = await supabase
           .from('reports')
           .select('end_time, optimoroute_status')
           .gte('end_time', currentStart)
-          .lte('end_time', currentEnd);
+          .lte('end_time', currentEnd)
+          .limit(100);
           
         if (anyWeekError) {
-          console.error("Error fetching all week data:", anyWeekError);
+          console.error("Error fetching any week data:", anyWeekError);
+        } else {
+          console.log(`Found ${anyWeekData.length} total records for current week (no status filter)`);
+          console.log("Sample data:", anyWeekData.slice(0, 5));
         }
         
-        // Diagnostic data collection
-        const diagnosticData = {
-          totalRecords: allWeekData?.length || 0,
-          recordsWithStatus: 0,
-          recordsWithEndTime: 0,
-          recordsWithValidDates: 0,
-          processedRecords: 0,
-          statuses: {} as Record<string, number>
-        };
-        
-        // Count records with various properties
-        if (allWeekData) {
-          // Count status distribution
-          allWeekData.forEach(record => {
-            // Count records with optimoroute_status
-            if (record.optimoroute_status) {
-              diagnosticData.recordsWithStatus++;
-              
-              // Count by status type
-              const status = record.optimoroute_status.toLowerCase();
-              diagnosticData.statuses[status] = (diagnosticData.statuses[status] || 0) + 1;
-            }
-            
-            // Count records with end_time
-            if (record.end_time) {
-              diagnosticData.recordsWithEndTime++;
-              
-              // Count records with valid end_time that can be parsed
-              try {
-                parseISO(record.end_time);
-                diagnosticData.recordsWithValidDates++;
-              } catch (error) {
-                // Invalid date format
-              }
-            }
-          });
-        }
-        
-        console.log("Status distribution in database:", diagnosticData.statuses);
-        
-        // Fetch current week data with 'success' status
+        // Now try with lowercase 'success' filter
         const { data: currentWeekData, error: currentWeekError } = await supabase
           .from('reports')
           .select('end_time, optimoroute_status')
@@ -125,7 +88,6 @@ export function useJobsCompletedStats(): JobsStatsData {
           throw new Error(currentWeekError.message);
         }
         
-        diagnosticData.processedRecords = currentWeekData.length;
         console.log(`Found ${currentWeekData.length} 'success' records for current week`);
         
         // Fetch previous week data
@@ -202,8 +164,7 @@ export function useJobsCompletedStats(): JobsStatsData {
           percentageChange,
           dailyCounts,
           isLoading: false,
-          error: null,
-          diagnosticData
+          error: null
         });
         
       } catch (error) {
