@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.170.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
@@ -262,7 +261,22 @@ serve(async (req) => {
         // Get status and end_time from completion details if available, otherwise use defaults
         const completionDetail = completionDetailsMap.get(orderNo);
         const optimorouteStatus = completionDetail ? completionDetail.status : "Planned";
-        const endTime = completionDetail && completionDetail.endTime ? completionDetail.endTime.utcTime : null;
+        
+        // UPDATED: Properly handle the timezone for endTime
+        let endTime = null;
+        if (completionDetail && completionDetail.endTime) {
+          // First try to use localTime which should be in the driver's timezone
+          if (completionDetail.endTime.localTime) {
+            // Keep the original timestamp with timezone information
+            endTime = completionDetail.endTime.localTime;
+            console.log(`Using localTime for ${orderNo}: ${endTime}`);
+          } 
+          // Fall back to UTC time if local time is not available
+          else if (completionDetail.endTime.utcTime) {
+            endTime = completionDetail.endTime.utcTime;
+            console.log(`Using utcTime for ${orderNo}: ${endTime}`);
+          }
+        }
         
         // Use existing work order status if available, otherwise default to "Scheduled"
         const workOrderStatus = workOrderStatusMap.get(orderNo) || "Scheduled";

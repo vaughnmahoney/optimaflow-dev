@@ -124,41 +124,45 @@ export const useReportsStats = () => {
         
         // Process service durations when we have both timestamps
         if (report.scheduled_time && report.end_time) {
-          const startTime = new Date(report.scheduled_time);
-          const endTime = new Date(report.end_time);
-          
-          // Only calculate if both dates are valid
-          if (!isNaN(startTime.getTime()) && !isNaN(endTime.getTime())) {
-            const durationMinutes = (endTime.getTime() - startTime.getTime()) / (1000 * 60);
+          try {
+            const startTime = new Date(report.scheduled_time);
+            const endTime = new Date(report.end_time);
             
-            // Only count positive durations that are reasonably within service time (less than 24 hours)
-            if (durationMinutes > 0 && durationMinutes < 24 * 60) {
-              totalDuration += durationMinutes;
-              durationCount++;
+            // Only calculate if both dates are valid
+            if (!isNaN(startTime.getTime()) && !isNaN(endTime.getTime())) {
+              const durationMinutes = (endTime.getTime() - startTime.getTime()) / (1000 * 60);
               
-              // Group by technician
-              if (report.tech_name) {
-                if (!techMetrics[report.tech_name]) {
-                  techMetrics[report.tech_name] = { jobCount: 0, totalDuration: 0, rejectedCount: 0 };
-                }
-                techMetrics[report.tech_name].jobCount++;
-                techMetrics[report.tech_name].totalDuration += durationMinutes;
+              // Only count positive durations that are reasonably within service time (less than 24 hours)
+              if (durationMinutes > 0 && durationMinutes < 24 * 60) {
+                totalDuration += durationMinutes;
+                durationCount++;
                 
-                // Track rejected jobs by technician
-                if (isRejected) {
-                  techMetrics[report.tech_name].rejectedCount++;
+                // Group by technician
+                if (report.tech_name) {
+                  if (!techMetrics[report.tech_name]) {
+                    techMetrics[report.tech_name] = { jobCount: 0, totalDuration: 0, rejectedCount: 0 };
+                  }
+                  techMetrics[report.tech_name].jobCount++;
+                  techMetrics[report.tech_name].totalDuration += durationMinutes;
+                  
+                  // Track rejected jobs by technician
+                  if (isRejected) {
+                    techMetrics[report.tech_name].rejectedCount++;
+                  }
                 }
-              }
-              
-              // Group by customer group
-              if (report.cust_group) {
-                if (!custGroupMetrics[report.cust_group]) {
-                  custGroupMetrics[report.cust_group] = { jobCount: 0, totalDuration: 0 };
+                
+                // Group by customer group
+                if (report.cust_group) {
+                  if (!custGroupMetrics[report.cust_group]) {
+                    custGroupMetrics[report.cust_group] = { jobCount: 0, totalDuration: 0 };
+                  }
+                  custGroupMetrics[report.cust_group].jobCount++;
+                  custGroupMetrics[report.cust_group].totalDuration += durationMinutes;
                 }
-                custGroupMetrics[report.cust_group].jobCount++;
-                custGroupMetrics[report.cust_group].totalDuration += durationMinutes;
               }
             }
+          } catch (error) {
+            console.error("Error calculating duration:", error, report);
           }
         } else if (isRejected && report.tech_name) {
           // Even without duration data, we still want to track rejected jobs by technician

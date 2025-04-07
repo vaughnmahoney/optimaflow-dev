@@ -117,9 +117,14 @@ export function useJobsCompletedStats(): JobsStatsData {
         // Count jobs by day
         currentWeekData.forEach(job => {
           if (job.end_time) {
-            const date = parseISO(job.end_time);
-            const dayName = format(date, 'EEEE'); // Full day name
-            dailyCountsMap[dayName] = (dailyCountsMap[dayName] || 0) + 1;
+            try {
+              // Parse the date including timezone information if present
+              const date = parseISO(job.end_time);
+              const dayName = format(date, 'EEEE'); // Full day name
+              dailyCountsMap[dayName] = (dailyCountsMap[dayName] || 0) + 1;
+            } catch (error) {
+              console.error(`Error parsing date: ${job.end_time}`, error);
+            }
           }
         });
         
