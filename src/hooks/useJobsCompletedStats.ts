@@ -44,23 +44,23 @@ export function useJobsCompletedStats(): JobsStatsData {
         console.log(`Fetching jobs data for current week: ${currentStart} to ${currentEnd}`);
         console.log(`Fetching jobs data for previous week: ${prevStart} to ${prevEnd}`);
         
-        // Fetch current week data
+        // Fetch current week data - using lowercase "success" instead of "Success"
         const { data: currentWeekData, error: currentWeekError } = await supabase
           .from('reports')
           .select('end_time, optimoroute_status')
           .gte('end_time', currentStart)
           .lte('end_time', currentEnd)
-          .eq('optimoroute_status', 'Success');
+          .eq('optimoroute_status', 'success');
         
         if (currentWeekError) throw new Error(currentWeekError.message);
         
-        // Fetch previous week data
+        // Fetch previous week data - using lowercase "success" instead of "Success"
         const { data: previousWeekData, error: previousWeekError } = await supabase
           .from('reports')
           .select('end_time, optimoroute_status')
           .gte('end_time', prevStart)
           .lte('end_time', prevEnd)
-          .eq('optimoroute_status', 'Success');
+          .eq('optimoroute_status', 'success');
         
         if (previousWeekError) throw new Error(previousWeekError.message);
         
