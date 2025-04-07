@@ -5,7 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useFetchReports } from "@/hooks/useFetchReports";
-import { Loader2, AlertCircle, CheckCircle2, Calendar, Search } from "lucide-react";
+import { useReportsStats } from "@/hooks/useReportsStats";
+import { ReportsStatusChart } from "@/components/reports/ReportsStatusChart";
+import { TechnicianPerformanceChart } from "@/components/reports/TechnicianPerformanceChart";
+import { CustomerGroupChart } from "@/components/reports/CustomerGroupChart";
+import { ServiceDurationCard } from "@/components/reports/ServiceDurationCard";
+import { RejectionLeadersCard } from "@/components/reports/RejectionLeadersCard";
+import { Loader2, AlertCircle, CheckCircle2, Calendar, Search, BarChart, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -16,6 +22,17 @@ import { EndpointTabs } from "@/components/bulk-orders/EndpointTabs";
 
 const Reports = () => {
   const { fetchReports, isLoading, results } = useFetchReports();
+  const { 
+    statusCategories, 
+    technicianPerformance,
+    customerGroupMetrics,
+    rejectionLeaders,
+    total, 
+    totalRejected,
+    avgServiceDuration,
+    isLoading: statsLoading, 
+    refresh: refreshStats 
+  } = useReportsStats();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date(2025, 2, 31)); // March 31, 2025 (month is 0-indexed)
   const [searchDate, setSearchDate] = useState<string>("");
   const [activeTab, setActiveTab] = useState<string>("with-completion");
@@ -25,6 +42,8 @@ const Reports = () => {
   
   const handleFetchReports = async () => {
     await fetchReports(formattedDate);
+    // Refresh stats after fetching new reports
+    refreshStats();
   };
 
   const handleSearchDate = async () => {
@@ -40,6 +59,8 @@ const Reports = () => {
       if (!isNaN(date.getTime())) {
         setSelectedDate(date);
         await fetchReports(searchDate);
+        // Refresh stats after fetching new reports
+        refreshStats();
       } else {
         // Alert for invalid date
         alert("Invalid date. Please use YYYY-MM-DD format.");
@@ -59,9 +80,71 @@ const Reports = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold tracking-tight">Reports</h1>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={refreshStats} 
+            disabled={statsLoading}
+          >
+            {statsLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Refreshing...
+              </>
+            ) : (
+              <>
+                <BarChart className="mr-2 h-4 w-4" />
+                Refresh Analytics
+              </>
+            )}
+          </Button>
         </div>
         
-        <div className="grid gap-6">
+        {/* Stats Summary Cards */}
+        <div className="grid gap-4 md:grid-cols-3">
+          <ServiceDurationCard 
+            avgDuration={avgServiceDuration} 
+            isLoading={statsLoading} 
+          />
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Total Jobs</CardTitle>
+              <CardDescription>
+                All jobs in the database
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {statsLoading ? "Loading..." : total.toLocaleString()}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center">
+                <AlertTriangle className="h-4 w-4 text-amber-500 mr-1" />
+                Rejected Jobs
+              </CardTitle>
+              <CardDescription>
+                Failed, rejected by driver or QC
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-amber-600">
+                {statsLoading ? "Loading..." : (
+                  <div className="flex flex-col">
+                    <span>{totalRejected.toLocaleString()}</span>
+                    <span className="text-sm font-normal text-muted-foreground">
+                      ({total > 0 ? Math.round((totalRejected / total) * 100) : 0}% of total)
+                    </span>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        
+        <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
               <CardTitle>Fetch Reports from OptimoRoute</CardTitle>
@@ -172,7 +255,32 @@ const Reports = () => {
               </p>
             </CardFooter>
           </Card>
+
+          {/* Status distribution chart */}
+          <ReportsStatusChart 
+            statusCategories={statusCategories}
+            total={total}
+            isLoading={statsLoading}
+          />
         </div>
+        
+        {/* Rejection Leaders Chart */}
+        <RejectionLeadersCard 
+          rejectionData={rejectionLeaders}
+          isLoading={statsLoading}
+        />
+        
+        {/* Technician Performance Chart */}
+        <TechnicianPerformanceChart 
+          technicianData={technicianPerformance}
+          isLoading={statsLoading}
+        />
+        
+        {/* Customer Group Chart */}
+        <CustomerGroupChart 
+          customerData={customerGroupMetrics}
+          isLoading={statsLoading}
+        />
       </div>
     </Layout>
   );
