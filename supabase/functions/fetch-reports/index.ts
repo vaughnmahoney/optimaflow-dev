@@ -49,27 +49,65 @@ serve(async (req) => {
     
     const now = new Date().toISOString();  // Current timestamp for fetched_at
     
-    // Construct API URL with the requested date
-    const routesUrl = `https://api.optimoroute.com/v1/get_routes?key=${apiKey}&date=${requestDate}`;
+    // Initialize all collected reports and pagination state
+    const allRoutes = [];
+    let afterTag = null;
+    let hasMorePages = true;
+    let pageCount = 0;
     
-    const response = await fetch(routesUrl);
-    if (!response.ok) {
-      throw new Error(`API returned status ${response.status}`);
+    // Fetch all routes with pagination
+    while (hasMorePages) {
+      pageCount++;
+      console.log(`Fetching routes page ${pageCount}${afterTag ? ' with afterTag' : ''}`);
+      
+      // Construct API URL with the requested date and pagination token if available
+      let routesUrl = `https://api.optimoroute.com/v1/get_routes?key=${apiKey}&date=${requestDate}`;
+      if (afterTag) {
+        routesUrl += `&afterTag=${afterTag}`;
+      }
+      
+      const response = await fetch(routesUrl);
+      if (!response.ok) {
+        throw new Error(`API returned status ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error('API reported unsuccessful operation');
+      }
+      
+      // Add routes from this page to our collection
+      if (data.routes && data.routes.length > 0) {
+        allRoutes.push(...data.routes);
+        console.log(`Received ${data.routes.length} routes in page ${pageCount}, total so far: ${allRoutes.length}`);
+      } else {
+        console.log(`No routes found in page ${pageCount}`);
+      }
+      
+      // Check if there are more pages
+      if (data.afterTag) {
+        afterTag = data.afterTag;
+        console.log(`More pages available, next afterTag: ${afterTag}`);
+        
+        // Add a small delay to avoid hitting rate limits
+        await new Promise(resolve => setTimeout(resolve, 300));
+      } else {
+        hasMorePages = false;
+        console.log(`No more pages, finished after ${pageCount} page(s)`);
+      }
     }
     
-    const data = await response.json();
+    console.log(`Finished fetching all ${allRoutes.length} routes across ${pageCount} page(s)`);
     
-    if (!data.success) {
-      throw new Error('API reported unsuccessful operation');
-    }
-    
+    // Process the collected routes
     // 2. Transform API data into our reports table structure
     const reportsPayload: ReportEntry[] = [];
     
     // First, collect all order numbers to query work_orders table in batch
     const orderNumbers: string[] = [];
     
-    for (const route of data.routes || []) {
+    for (const route of allRoutes || []) {
       for (const stop of route.stops) {
         if (!stop.id || stop.orderNo === "-") continue; // Skip non-order stops
         
@@ -194,7 +232,7 @@ serve(async (req) => {
     // Now process routes and stops with status information
     const processedOrderNos = new Set(); // Track already processed order numbers
     
-    for (const route of data.routes || []) {
+    for (const route of allRoutes || []) {
       const driverId = route.driverSerial || null;
       const techName = route.driverName || null;
       const region = null; // Could be determined from route data if available
