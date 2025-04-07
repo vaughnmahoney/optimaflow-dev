@@ -1,4 +1,3 @@
-
 import React, { Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -9,7 +8,8 @@ const DashboardPage = React.lazy(() => import('@/pages/Dashboard'));
 const WorkOrders = React.lazy(() => import('@/pages/WorkOrders'));
 const MaterialsRequirements = React.lazy(() => import('@/pages/MaterialsRequirements'));
 const ReportsPage = React.lazy(() => import('@/pages/Reports'));
-const BulkOrdersPage = React.lazy(() => import('@/pages/BulkOrdersProgressive'));
+const BulkOrdersProgressiveForm = React.lazy(() => import('@/components/bulk-orders/BulkOrdersProgressiveForm'));
+
 const DiagnosticPage = React.lazy(() => import('@/pages/DiagnosticPage'));
 
 const AppRoutes: React.FC = () => {
@@ -94,7 +94,7 @@ const AppRoutes: React.FC = () => {
         element={
           isLoggedIn ? (
             <Suspense fallback={<LoadingSpinner />}>
-              <BulkOrdersPage />
+              <BulkOrdersProgressiveForm />
             </Suspense>
           ) : (
             <Navigate to="/login" />
