@@ -1,6 +1,6 @@
 
-import { format } from "date-fns";
 import { WorkOrder } from "../../types";
+import { formatLocalTime } from "@/utils/dateUtils";
 
 interface QuickInfoProps {
   workOrder: WorkOrder;
@@ -17,21 +17,11 @@ export const QuickInfo = ({
   const endDate = completionData?.endTime?.localTime;
   
   const formatDisplayDate = (dateStr?: string) => {
-    if (!dateStr) return 'N/A';
-    try {
-      return format(new Date(dateStr), "MMM d, yyyy");
-    } catch {
-      return 'Invalid Date';
-    }
+    return formatLocalTime(dateStr, "MMM d, yyyy", 'N/A');
   };
 
   const formatDisplayTime = (dateStr?: string) => {
-    if (!dateStr) return 'N/A';
-    try {
-      return format(new Date(dateStr), "h:mm a");
-    } catch {
-      return 'Invalid Date';
-    }
+    return formatLocalTime(dateStr, "h:mm a", 'N/A');
   };
 
   return (

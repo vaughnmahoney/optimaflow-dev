@@ -1,5 +1,6 @@
 
 import { safelyParseJSON } from './jsonUtils';
+import { toLocalTime } from '../dateUtils';
 
 /**
  * Extract end_time from various possible sources in a work order
@@ -17,13 +18,13 @@ export const extractEndTimeFromWorkOrder = (order: any): string | null => {
         completionResponse.orders && 
         Array.isArray(completionResponse.orders) &&
         completionResponse.orders[0]?.data?.endTime?.localTime) {
-      return new Date(completionResponse.orders[0].data.endTime.localTime).toISOString();
+      return completionResponse.orders[0].data.endTime.localTime;
     }
   }
   
   // Fallback to service_date
   if (order.service_date) {
-    return new Date(`${order.service_date}T23:59:59Z`).toISOString();
+    return order.service_date;
   }
   
   // Last resort, use timestamp
@@ -32,4 +33,12 @@ export const extractEndTimeFromWorkOrder = (order: any): string | null => {
   }
   
   return null;
+};
+
+/**
+ * Extracts end time as a Date object in the user's local timezone
+ */
+export const getEndTimeAsLocalDate = (order: any): Date | null => {
+  const endTimeStr = extractEndTimeFromWorkOrder(order);
+  return toLocalTime(endTimeStr);
 };

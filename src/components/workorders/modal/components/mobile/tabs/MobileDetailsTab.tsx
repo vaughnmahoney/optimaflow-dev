@@ -2,7 +2,7 @@
 import { Card } from "@/components/ui/card";
 import { WorkOrder } from "../../../../types";
 import { Separator } from "@/components/ui/separator";
-import { format } from "date-fns";
+import { formatLocalTime } from "@/utils/dateUtils";
 
 interface MobileDetailsTabProps {
   workOrder: WorkOrder;
@@ -15,23 +15,13 @@ export const MobileDetailsTab = ({ workOrder }: MobileDetailsTabProps) => {
   // Driver info
   const driverName = workOrder.search_response?.scheduleInformation?.driverName || workOrder.driver?.name || 'No Driver Assigned';
   
-  // Format date function
-  const formatDate = (dateString: string | undefined) => {
-    if (!dateString) return "N/A";
-    try {
-      return format(new Date(dateString), "MMM d, yyyy h:mm a");
-    } catch (error) {
-      return "Invalid Date";
-    }
-  };
-
   // Get formatted start and end times
   const startTime = completionData?.startTime?.localTime 
-    ? formatDate(completionData.startTime.localTime) 
+    ? formatLocalTime(completionData.startTime.localTime) 
     : "Not recorded";
   
   const endTime = completionData?.endTime?.localTime 
-    ? formatDate(completionData.endTime.localTime) 
+    ? formatLocalTime(completionData.endTime.localTime) 
     : "Not recorded";
 
   // Location information

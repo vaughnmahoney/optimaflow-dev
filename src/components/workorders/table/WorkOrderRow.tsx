@@ -1,11 +1,10 @@
-
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
-import { format } from "date-fns";
 import { WorkOrder } from "../types";
 import { ActionsMenu } from "./ActionsMenu";
 import { StatusBadgeDropdown } from "../StatusBadgeDropdown";
+import { formatLocalTime } from "@/utils/dateUtils";
 
 interface WorkOrderRowProps {
   workOrder: WorkOrder;
@@ -49,25 +48,17 @@ export const WorkOrderRow = ({ workOrder, onStatusUpdate, onImageView, onDelete 
     const endTime = order.completion_response?.orders?.[0]?.data?.endTime?.localTime;
     
     if (endTime) {
-      try {
-        const date = new Date(endTime);
-        if (!isNaN(date.getTime())) {
-          return format(date, "MMM d, yyyy h:mmaaa");
-        }
-      } catch (error) {
-        // If date parsing fails, fall back to service_date
-        console.error("Error formatting end date:", error);
-      }
+      return formatLocalTime(endTime, "MMM d, yyyy h:mmaaa", "N/A");
     }
     
     // Fall back to service_date if end date is not available or invalid
     if (order.service_date) {
-      try {
-        return format(new Date(order.service_date), "MMM d, yyyy");
-      } catch (error) {
-        console.error("Error formatting service date:", error);
-        return "N/A";
-      }
+      return formatLocalTime(order.service_date, "MMM d, yyyy", "N/A");
+    }
+    
+    // Fall back to end_time if available
+    if (order.end_time) {
+      return formatLocalTime(order.end_time, "MMM d, yyyy h:mmaaa", "N/A");
     }
     
     return "N/A";

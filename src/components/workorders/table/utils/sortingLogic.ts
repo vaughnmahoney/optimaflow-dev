@@ -2,6 +2,7 @@
 import { WorkOrder, SortDirection, SortField } from "../../types";
 import { getServiceDateValue } from "./dateExtractor";
 import { getLocationName, getDriverName } from "./dataExtractor";
+import { toLocalTime } from "@/utils/dateUtils";
 
 /**
  * Sorts work orders based on specified field and direction

@@ -4,7 +4,7 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { WorkOrder } from "@/components/workorders/types";
 import { ExternalLink } from "lucide-react";
-import { format } from "date-fns";
+import { formatLocalTime } from "@/utils/dateUtils";
 
 interface OrderDetailsTabProps {
   workOrder: WorkOrder;
@@ -17,23 +17,13 @@ export const OrderDetailsTab = ({
   const searchData = workOrder.search_response?.data;
   const trackingUrl = completionData?.tracking_url;
   
-  // Format date function
-  const formatDate = (dateString: string | undefined) => {
-    if (!dateString) return "N/A";
-    try {
-      return format(new Date(dateString), "MMM d, yyyy h:mm a");
-    } catch (error) {
-      return "Invalid Date";
-    }
-  };
-
   // Get formatted start and end times
   const startTime = completionData?.startTime?.localTime 
-    ? formatDate(completionData.startTime.localTime) 
+    ? formatLocalTime(completionData.startTime.localTime) 
     : "Not recorded";
   
   const endTime = completionData?.endTime?.localTime 
-    ? formatDate(completionData.endTime.localTime) 
+    ? formatLocalTime(completionData.endTime.localTime) 
     : "Not recorded";
 
   // Location information

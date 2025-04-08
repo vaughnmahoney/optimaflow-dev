@@ -59,7 +59,7 @@ export const ResolutionNotesSheet = ({ workOrder }: ResolutionNotesSheetProps) =
           <span className={`text-xs font-medium ${hasNotes ? "text-blue-700" : "text-gray-700"}`}>Resolution Notes</span>
           {hasNotes && (
             <Badge 
-              variant="info" 
+              variant="primary" 
               className="w-2 h-2 p-0 absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-blue-500"
             />
           )}
