@@ -13,16 +13,6 @@ interface JobsStatsData {
   }[];
   isLoading: boolean;
   error: string | null;
-  apiCallData?: ApiCallDiagnosticData; // New diagnostic data
-}
-
-// New type for diagnostic data
-interface ApiCallDiagnosticData {
-  totalFetched: number;
-  filteredCount: number;
-  processedCount: number;
-  statusBreakdown: Record<string, number>;
-  fetchTimestamp?: string;
 }
 
 export function useJobsCompletedStats(): JobsStatsData {
@@ -68,26 +58,6 @@ export function useJobsCompletedStats(): JobsStatsData {
           // Log unique status values to understand what's actually in the database
           const uniqueStatuses = Array.from(new Set(statusValues.map(item => item.optimoroute_status)));
           console.log("Available optimoroute_status values in the database:", uniqueStatuses);
-        }
-        
-        // Fetch diagnostic data: all records from the past 7 days to analyze the pipeline
-        const { data: recentReports, error: recentReportsError } = await supabase
-          .from('reports')
-          .select('optimoroute_status')
-          .gte('fetched_at', format(subWeeks(now, 1), 'yyyy-MM-dd'));
-        
-        if (recentReportsError) {
-          console.error("Error fetching recent reports:", recentReportsError);
-        }
-        
-        // Get processed work orders count
-        const { count: processedOrdersCount, error: processedError } = await supabase
-          .from('work_orders')
-          .select('id', { count: 'exact' })
-          .gte('created_at', format(subWeeks(now, 1), 'yyyy-MM-dd'));
-          
-        if (processedError) {
-          console.error("Error fetching processed orders count:", processedError);
         }
         
         // Fetch current week data - trying without status filter first to see if any data exists
@@ -188,36 +158,13 @@ export function useJobsCompletedStats(): JobsStatsData {
         console.log(`Current week total: ${currentWeekTotal}, Previous week total: ${previousWeekTotal}`);
         console.log(`Percentage change: ${percentageChange.toFixed(1)}%`);
         
-        // Create status breakdown from recent reports
-        const statusCounts: Record<string, number> = {};
-        if (recentReports) {
-          recentReports.forEach(report => {
-            const status = report.optimoroute_status || 'unknown';
-            statusCounts[status] = (statusCounts[status] || 0) + 1;
-          });
-        }
-        
-        // Calculate diagnostic data
-        const apiCallDiagnosticData: ApiCallDiagnosticData = {
-          totalFetched: recentReports?.length || 0,
-          filteredCount: Object.entries(statusCounts)
-            .filter(([status]) => ['success', 'failed', 'rejected'].includes(status))
-            .reduce((sum, [_, count]) => sum + count, 0),
-          processedCount: processedOrdersCount || 0,
-          statusBreakdown: statusCounts,
-          fetchTimestamp: new Date().toISOString()
-        };
-        
-        console.log("Diagnostic data calculated:", apiCallDiagnosticData);
-        
         setData({
           currentWeekTotal,
           previousWeekTotal,
           percentageChange,
           dailyCounts,
           isLoading: false,
-          error: null,
-          apiCallData: apiCallDiagnosticData
+          error: null
         });
         
       } catch (error) {
