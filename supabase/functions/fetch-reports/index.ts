@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.170.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
@@ -149,6 +148,17 @@ serve(async (req) => {
           const sampleOrder = completionDetails.orders[0];
           console.log(`Sample order structure:`, JSON.stringify(sampleOrder, null, 2));
           console.log(`Sample order has startTime:`, !!sampleOrder.data?.startTime);
+          
+          if (sampleOrder.data?.form?.note) {
+            console.log(`Sample order has notes:`, sampleOrder.data.form.note.substring(0, 100));
+          } else {
+            console.log(`Sample order notes paths:`, {
+              hasForm: !!sampleOrder.data?.form,
+              hasDirectNote: !!sampleOrder.data?.note,
+              hasOrders: !!sampleOrder.orders && Array.isArray(sampleOrder.orders),
+              ordersLength: sampleOrder.orders?.length || 0
+            });
+          }
         }
         
         for (const order of completionDetails.orders) {
@@ -209,7 +219,6 @@ serve(async (req) => {
     }
     
     const processedOrderNos = new Set();
-    // Initialize reportsPayload array here
     const reportsPayload: ReportEntry[] = [];
     
     for (const route of allRoutes || []) {
@@ -242,7 +251,6 @@ serve(async (req) => {
         let notes = null;
         
         if (completionDetail) {
-          // Process endTime 
           if (completionDetail.endTime) {
             if (completionDetail.endTime.localTime) {
               endTime = completionDetail.endTime.localTime;
@@ -252,7 +260,6 @@ serve(async (req) => {
               console.log(`Direct UTC endTime for ${orderNo}: ${endTime}`);
             }
           }
-          // If no direct endTime, check in the data path
           else if (completionDetail.data && completionDetail.data.endTime) {
             if (completionDetail.data.endTime.localTime) {
               endTime = completionDetail.data.endTime.localTime;
@@ -263,7 +270,6 @@ serve(async (req) => {
             }
           }
           
-          // Debug the structure to find startTime
           if (orderNo.endsWith('1') || orderNo.endsWith('2') || orderNo.endsWith('3')) {
             console.log(`=== DETAILED DEBUG FOR ORDER ${orderNo} ===`);
             console.log(`completionDetail full structure:`, JSON.stringify(completionDetail, null, 2));
@@ -272,9 +278,16 @@ serve(async (req) => {
             if (completionDetail.data) {
               console.log(`completionDetail.data has startTime:`, !!completionDetail.data.startTime);
             }
+            
+            console.log(`Notes paths:`, {
+              hasFormDirect: !!completionDetail.form,
+              hasNote: !!completionDetail.note,
+              directNotePath: completionDetail.note ? 'completionDetail.note' : 'N/A',
+              hasDataForm: !!completionDetail.data?.form,
+              dataFormNotePath: completionDetail.data?.form?.note ? 'completionDetail.data.form.note' : 'N/A'
+            });
           }
           
-          // Process startTime - first check direct property
           if (completionDetail.startTime) {
             if (completionDetail.startTime.localTime) {
               startTime = completionDetail.startTime.localTime;
@@ -284,7 +297,6 @@ serve(async (req) => {
               console.log(`Direct UTC startTime for ${orderNo}: ${startTime}`);
             }
           }
-          // If no direct startTime, check in the data path
           else if (completionDetail.data && completionDetail.data.startTime) {
             if (completionDetail.data.startTime.localTime) {
               startTime = completionDetail.data.startTime.localTime;
@@ -295,9 +307,7 @@ serve(async (req) => {
             }
           }
           
-          // Try alternative paths for startTime
           if (!startTime) {
-            // Check in orders array
             if (completionDetail.orders && Array.isArray(completionDetail.orders) && completionDetail.orders.length > 0) {
               const firstOrder = completionDetail.orders[0];
               if (firstOrder.data && firstOrder.data.startTime) {
@@ -311,7 +321,6 @@ serve(async (req) => {
               }
             }
             
-            // Check in form data (sometimes the start time is saved there)
             if (!startTime && completionDetail.data && completionDetail.data.form && completionDetail.data.form.startTime) {
               const formStartTime = completionDetail.data.form.startTime;
               if (typeof formStartTime === 'string') {
@@ -327,7 +336,6 @@ serve(async (req) => {
             }
           }
           
-          // Calculate duration if both startTime and endTime exist
           if (startTime && endTime) {
             try {
               const startDate = new Date(startTime);
@@ -344,22 +352,36 @@ serve(async (req) => {
             }
           }
           
-          // Extract notes
-          if (completionDetail.data && completionDetail.data.form && completionDetail.data.form.note) {
+          if (completionDetail.data?.form?.note) {
             notes = completionDetail.data.form.note;
-            if (notes) {
-              console.log(`Extracted notes for ${orderNo}: ${notes.substring(0, 50)}${notes.length > 50 ? '...' : ''}`);
+            console.log(`Extracted notes from data.form.note for ${orderNo}: ${notes.substring(0, 50)}${notes.length > 50 ? '...' : ''}`);
+          }
+          else if (completionDetail.form?.note) {
+            notes = completionDetail.form.note;
+            console.log(`Extracted notes from direct form.note for ${orderNo}: ${notes.substring(0, 50)}${notes.length > 50 ? '...' : ''}`);
+          }
+          else if (completionDetail.note) {
+            notes = completionDetail.note;
+            console.log(`Extracted notes from direct note property for ${orderNo}: ${notes.substring(0, 50)}${notes.length > 50 ? '...' : ''}`);
+          }
+          else if (completionDetail.orders && Array.isArray(completionDetail.orders) && completionDetail.orders.length > 0) {
+            const firstOrder = completionDetail.orders[0];
+            if (firstOrder.data?.form?.note) {
+              notes = firstOrder.data.form.note;
+              console.log(`Extracted notes from orders array for ${orderNo}: ${notes.substring(0, 50)}${notes.length > 50 ? '...' : ''}`);
             }
+          }
+          
+          if (!notes && (orderNo.endsWith('1') || orderNo.endsWith('2') || orderNo.endsWith('3'))) {
+            console.log(`No notes found for ${orderNo} after trying all paths`);
           }
           
           const workOrderStatus = workOrderStatusMap.get(orderNo) || "Scheduled";
           
-          // UPDATED LOCATION DATA EXTRACTION: Direct properties access
           let address = stop.address || null;
           let latitude = stop.latitude || null;
           let longitude = stop.longitude || null;
           
-          // Debug location data extraction
           if (orderNo.endsWith('1') || orderNo.endsWith('2') || orderNo.endsWith('3')) {
             console.log(`=== LOCATION DEBUG FOR ORDER ${orderNo} ===`);
             console.log(`stop has address:`, !!stop.address);
@@ -370,7 +392,6 @@ serve(async (req) => {
             console.log(`Extracted longitude: ${longitude}`);
           }
           
-          // Add to reportsPayload
           reportsPayload.push({
             org_id: orgId,
             order_no: orderNo,
@@ -421,6 +442,11 @@ serve(async (req) => {
     console.log(`ADDRESS: ${reportsWithAddress} / ${reportsPayload.length}`);
     
     if (reportsPayload.length > 0) {
+      const sampleNotes = reportsPayload.filter(r => r.notes !== null).slice(0, 3).map(r => 
+        `${r.order_no}: ${r.notes!.substring(0, 50)}${r.notes!.length > 50 ? '...' : ''}`
+      );
+      console.log(`Sample notes (${sampleNotes.length}):`, sampleNotes);
+      
       console.log(`Sample report payload:`, JSON.stringify(reportsPayload[0], null, 2));
     }
     
@@ -491,6 +517,7 @@ serve(async (req) => {
       reportsWithStartTime: reportsPayload.filter(r => r.start_time !== null).length,
       reportsWithEndTime: reportsPayload.filter(r => r.end_time !== null).length,
       reportsWithAddress: reportsPayload.filter(r => r.address !== null).length,
+      reportsWithNotes: reportsPayload.filter(r => r.notes !== null).length,
       sampleReports: reportsPayload.slice(0, 3).map(r => ({
         order_no: r.order_no,
         start_time: r.start_time,
