@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -12,13 +13,8 @@ import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
 import { EndpointTabs } from "@/components/bulk-orders/EndpointTabs";
-import { StatusBreakdownChart } from "@/components/reports/StatusBreakdownChart";
-import { DriverFilter } from "@/components/reports/DriverFilter";
-import { CustomerGroupFilter } from "@/components/reports/CustomerGroupFilter";
-import { CustomerNameFilter } from "@/components/reports/CustomerNameFilter";
-import { KpiSection } from "@/components/reports/kpis/KpiSection";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ReportBuilder } from "@/components/reports/report-builder/ReportBuilder";
+import { ReportWizard } from "@/components/reports/report-wizard/ReportWizard";
 
 const Reports = () => {
   const { fetchReports, isLoading, results } = useFetchReports();
@@ -26,19 +22,11 @@ const Reports = () => {
   // Date for fetching reports from OptimoRoute
   const [fetchDate, setFetchDate] = useState<Date | undefined>(new Date(2025, 2, 31)); // March 31, 2025 (month is 0-indexed)
   
-  // Dedicated date for KPIs/analytics
-  const [kpiDate, setKpiDate] = useState<Date | undefined>(new Date(2025, 2, 31)); // March 31, 2025 (month is 0-indexed)
-  
   const [searchDate, setSearchDate] = useState<string>("");
   const [activeTab, setActiveTab] = useState<string>("with-completion");
   
-  // New state variables for global filters
-  const [selectedDrivers, setSelectedDrivers] = useState<string[]>([]);
-  const [selectedCustomerGroups, setSelectedCustomerGroups] = useState<string[]>([]);
-  const [selectedCustomerNames, setSelectedCustomerNames] = useState<string[]>([]);
-  
   // Active tab for the main reports view
-  const [activeReportTab, setActiveReportTab] = useState<string>("builder");
+  const [activeReportTab, setActiveReportTab] = useState<string>("report-wizard");
 
   // Format date as YYYY-MM-DD for fetching reports
   const formattedFetchDate = fetchDate ? format(fetchDate, 'yyyy-MM-dd') : '';
@@ -81,9 +69,9 @@ const Reports = () => {
           <h1 className="text-2xl font-bold tracking-tight">Reports</h1>
         </div>
         
-        <Tabs defaultValue="builder" value={activeReportTab} onValueChange={setActiveReportTab}>
+        <Tabs defaultValue="report-wizard" value={activeReportTab} onValueChange={setActiveReportTab}>
           <TabsList className="mb-4">
-            <TabsTrigger value="builder" className="flex items-center gap-2">
+            <TabsTrigger value="report-wizard" className="flex items-center gap-2">
               <FileBarChart className="h-4 w-4" />
               Report Builder
             </TabsTrigger>
@@ -93,17 +81,8 @@ const Reports = () => {
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="builder" className="space-y-6">
-            <ReportBuilder 
-              selectedDrivers={selectedDrivers}
-              setSelectedDrivers={setSelectedDrivers}
-              selectedCustomerGroups={selectedCustomerGroups} 
-              setSelectedCustomerGroups={setSelectedCustomerGroups}
-              selectedCustomerNames={selectedCustomerNames} 
-              setSelectedCustomerNames={setSelectedCustomerNames}
-              reportDate={kpiDate ? format(kpiDate, 'yyyy-MM-dd') : null}
-              setReportDate={setKpiDate}
-            />
+          <TabsContent value="report-wizard" className="space-y-6">
+            <ReportWizard />
           </TabsContent>
           
           <TabsContent value="data-import" className="space-y-6">
