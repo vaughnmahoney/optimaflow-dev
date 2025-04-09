@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.170.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
@@ -208,6 +209,8 @@ serve(async (req) => {
     }
     
     const processedOrderNos = new Set();
+    // Initialize reportsPayload array here
+    const reportsPayload: ReportEntry[] = [];
     
     for (const route of allRoutes || []) {
       const driverId = route.driverSerial || null;
@@ -239,75 +242,112 @@ serve(async (req) => {
         let notes = null;
         
         if (completionDetail) {
-          if (completionDetail.data && completionDetail.data.endTime) {
+          // Process endTime 
+          if (completionDetail.endTime) {
+            if (completionDetail.endTime.localTime) {
+              endTime = completionDetail.endTime.localTime;
+              console.log(`Direct endTime for ${orderNo}: ${endTime}`);
+            } else if (completionDetail.endTime.utcTime) {
+              endTime = completionDetail.endTime.utcTime;
+              console.log(`Direct UTC endTime for ${orderNo}: ${endTime}`);
+            }
+          }
+          // If no direct endTime, check in the data path
+          else if (completionDetail.data && completionDetail.data.endTime) {
             if (completionDetail.data.endTime.localTime) {
               endTime = completionDetail.data.endTime.localTime;
-              if (orderNo.endsWith('1') || orderNo.endsWith('2')) {
-                console.log(`Using localTime for endTime ${orderNo}: ${endTime}`);
-              }
+              console.log(`Using data.endTime.localTime for ${orderNo}: ${endTime}`);
             } else if (completionDetail.data.endTime.utcTime) {
               endTime = completionDetail.data.endTime.utcTime;
-              if (orderNo.endsWith('1') || orderNo.endsWith('2')) {
-                console.log(`Using utcTime for endTime ${orderNo}: ${endTime}`);
-              }
+              console.log(`Using data.endTime.utcTime for ${orderNo}: ${endTime}`);
             }
-            
-            if (orderNo.endsWith('1') || orderNo.endsWith('2')) {
-              console.log(`=== DETAILED DEBUG FOR ORDER ${orderNo} ===`);
-              console.log(`completionDetail has data:`, !!completionDetail?.data);
-              console.log(`completionDetail.data has startTime:`, !!completionDetail?.data?.startTime);
-              console.log(`completionDetail.data has endTime:`, !!completionDetail?.data?.endTime);
-              
-              if (completionDetail?.data?.startTime && completionDetail?.data?.endTime) {
-                console.log(`StartTime keys:`, Object.keys(completionDetail.data.startTime));
-                console.log(`EndTime keys:`, Object.keys(completionDetail.data.endTime));
-                console.log(`StartTime structure:`, JSON.stringify(completionDetail.data.startTime));
-                console.log(`EndTime structure:`, JSON.stringify(completionDetail.data.endTime));
-              }
+          }
+          
+          // Debug the structure to find startTime
+          if (orderNo.endsWith('1') || orderNo.endsWith('2') || orderNo.endsWith('3')) {
+            console.log(`=== DETAILED DEBUG FOR ORDER ${orderNo} ===`);
+            console.log(`completionDetail full structure:`, JSON.stringify(completionDetail, null, 2));
+            console.log(`completionDetail has startTime:`, !!completionDetail.startTime);
+            console.log(`completionDetail has data:`, !!completionDetail.data);
+            if (completionDetail.data) {
+              console.log(`completionDetail.data has startTime:`, !!completionDetail.data.startTime);
             }
-            
-            if (completionDetail.data && completionDetail.data.startTime) {
-              if (orderNo.endsWith('1') || orderNo.endsWith('2')) {
-                console.log(`startTime structure for ${orderNo}:`, JSON.stringify(completionDetail.data.startTime, null, 2));
-              }
-              
-              if (completionDetail.data.startTime.localTime) {
-                startTime = completionDetail.data.startTime.localTime;
-                if (orderNo.endsWith('1') || orderNo.endsWith('2')) {
-                  console.log(`Using localTime for startTime ${orderNo}: ${startTime}`);
+          }
+          
+          // Process startTime - first check direct property
+          if (completionDetail.startTime) {
+            if (completionDetail.startTime.localTime) {
+              startTime = completionDetail.startTime.localTime;
+              console.log(`Direct startTime for ${orderNo}: ${startTime}`);
+            } else if (completionDetail.startTime.utcTime) {
+              startTime = completionDetail.startTime.utcTime;
+              console.log(`Direct UTC startTime for ${orderNo}: ${startTime}`);
+            }
+          }
+          // If no direct startTime, check in the data path
+          else if (completionDetail.data && completionDetail.data.startTime) {
+            if (completionDetail.data.startTime.localTime) {
+              startTime = completionDetail.data.startTime.localTime;
+              console.log(`Using data.startTime.localTime for ${orderNo}: ${startTime}`);
+            } else if (completionDetail.data.startTime.utcTime) {
+              startTime = completionDetail.data.startTime.utcTime;
+              console.log(`Using data.startTime.utcTime for ${orderNo}: ${startTime}`);
+            }
+          }
+          
+          // Try alternative paths for startTime
+          if (!startTime) {
+            // Check in orders array
+            if (completionDetail.orders && Array.isArray(completionDetail.orders) && completionDetail.orders.length > 0) {
+              const firstOrder = completionDetail.orders[0];
+              if (firstOrder.data && firstOrder.data.startTime) {
+                if (firstOrder.data.startTime.localTime) {
+                  startTime = firstOrder.data.startTime.localTime;
+                  console.log(`Found startTime in orders array for ${orderNo}: ${startTime}`);
+                } else if (firstOrder.data.startTime.utcTime) {
+                  startTime = firstOrder.data.startTime.utcTime;
+                  console.log(`Found startTime (UTC) in orders array for ${orderNo}: ${startTime}`);
                 }
-              } else if (completionDetail.data.startTime.utcTime) {
-                startTime = completionDetail.data.startTime.utcTime;
-                if (orderNo.endsWith('1') || orderNo.endsWith('2')) {
-                  console.log(`Using utcTime for startTime ${orderNo}: ${startTime}`);
-                }
               }
             }
             
-            if (!startTime && completionDetail.orders && completionDetail.orders.length > 0 && 
-                completionDetail.orders[0].data && completionDetail.orders[0].data.startTime) {
-              const orderStartTime = completionDetail.orders[0].data.startTime;
-              if (orderStartTime.localTime) {
-                startTime = orderStartTime.localTime;
-                console.log(`Found startTime in alternate path for ${orderNo}: ${startTime}`);
-              } else if (orderStartTime.utcTime) {
-                startTime = orderStartTime.utcTime;
-                console.log(`Found startTime (UTC) in alternate path for ${orderNo}: ${startTime}`);
+            // Check in form data (sometimes the start time is saved there)
+            if (!startTime && completionDetail.data && completionDetail.data.form && completionDetail.data.form.startTime) {
+              const formStartTime = completionDetail.data.form.startTime;
+              if (typeof formStartTime === 'string') {
+                startTime = formStartTime;
+                console.log(`Found startTime in form data as string for ${orderNo}: ${startTime}`);
+              } else if (formStartTime.localTime) {
+                startTime = formStartTime.localTime;
+                console.log(`Found startTime in form data for ${orderNo}: ${startTime}`);
+              } else if (formStartTime.utcTime) {
+                startTime = formStartTime.utcTime;
+                console.log(`Found startTime (UTC) in form data for ${orderNo}: ${startTime}`);
               }
             }
-            
+          }
+          
+          // Calculate duration if both startTime and endTime exist
+          if (startTime && endTime) {
             try {
               const startDate = new Date(startTime);
               const endDate = new Date(endTime);
-              const durationMs = endDate.getTime() - startDate.getTime();
-              jobDuration = `PT${Math.floor(durationMs / (1000 * 60 * 60))}H${Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60))}M`;
-              console.log(`Calculated job duration for ${orderNo}: ${jobDuration}`);
+              if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+                const durationMs = endDate.getTime() - startDate.getTime();
+                jobDuration = `PT${Math.floor(durationMs / (1000 * 60 * 60))}H${Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60))}M`;
+                console.log(`Calculated job duration for ${orderNo}: ${jobDuration}`);
+              } else {
+                console.log(`Invalid date format for ${orderNo}: startTime=${startTime}, endTime=${endTime}`);
+              }
             } catch (error) {
               console.error(`Error calculating job duration for ${orderNo}:`, error);
             }
-            
-            if (completionDetail.data && completionDetail.data.form && completionDetail.data.form.note) {
-              notes = completionDetail.data.form.note;
+          }
+          
+          // Extract notes
+          if (completionDetail.data && completionDetail.data.form && completionDetail.data.form.note) {
+            notes = completionDetail.data.form.note;
+            if (notes) {
               console.log(`Extracted notes for ${orderNo}: ${notes.substring(0, 50)}${notes.length > 50 ? '...' : ''}`);
             }
           }
@@ -324,6 +364,7 @@ serve(async (req) => {
             longitude = stop.location.longitude || null;
           }
           
+          // Add to reportsPayload
           reportsPayload.push({
             org_id: orgId,
             order_no: orderNo,
