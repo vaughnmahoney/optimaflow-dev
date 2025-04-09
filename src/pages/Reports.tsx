@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -13,19 +12,34 @@ import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
 import { EndpointTabs } from "@/components/bulk-orders/EndpointTabs";
-import { JobsCompletedCard } from "@/components/reports/JobsCompletedCard";
+import { StatusBreakdownChart } from "@/components/reports/StatusBreakdownChart";
+import { DriverFilter } from "@/components/reports/DriverFilter";
+import { CustomerGroupFilter } from "@/components/reports/CustomerGroupFilter";
+import { CustomerNameFilter } from "@/components/reports/CustomerNameFilter";
+import { KpiSection } from "@/components/reports/kpis/KpiSection";
 
 const Reports = () => {
   const { fetchReports, isLoading, results } = useFetchReports();
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date(2025, 2, 31)); // March 31, 2025 (month is 0-indexed)
+  
+  // Date for fetching reports from OptimoRoute
+  const [fetchDate, setFetchDate] = useState<Date | undefined>(new Date(2025, 2, 31)); // March 31, 2025 (month is 0-indexed)
+  
+  // Dedicated date for KPIs/analytics
+  const [kpiDate, setKpiDate] = useState<Date | undefined>(new Date(2025, 2, 31)); // March 31, 2025 (month is 0-indexed)
+  
   const [searchDate, setSearchDate] = useState<string>("");
   const [activeTab, setActiveTab] = useState<string>("with-completion");
   
-  // Format date as YYYY-MM-DD
-  const formattedDate = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
+  // New state variables for global filters
+  const [selectedDrivers, setSelectedDrivers] = useState<string[]>([]);
+  const [selectedCustomerGroups, setSelectedCustomerGroups] = useState<string[]>([]);
+  const [selectedCustomerNames, setSelectedCustomerNames] = useState<string[]>([]);
+
+  // Format date as YYYY-MM-DD for fetching reports
+  const formattedFetchDate = fetchDate ? format(fetchDate, 'yyyy-MM-dd') : '';
   
   const handleFetchReports = async () => {
-    await fetchReports(formattedDate);
+    await fetchReports(formattedFetchDate);
   };
 
   const handleSearchDate = async () => {
@@ -39,7 +53,7 @@ const Reports = () => {
       
       // Verify the date is valid
       if (!isNaN(date.getTime())) {
-        setSelectedDate(date);
+        setFetchDate(date);
         await fetchReports(searchDate);
       } else {
         // Alert for invalid date
@@ -62,11 +76,6 @@ const Reports = () => {
           <h1 className="text-2xl font-bold tracking-tight">Reports</h1>
         </div>
         
-        {/* KPI Section */}
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
-          <JobsCompletedCard />
-        </div>
-        
         <div className="grid gap-6">
           <Card>
             <CardHeader>
@@ -81,54 +90,51 @@ const Reports = () => {
                   <EndpointTabs activeTab={activeTab} onTabChange={handleTabChange} />
                 </div>
                 
-                <div className="grid gap-2">
-                  <label className="text-sm font-medium">Report Date</label>
-                  <div className="flex flex-col md:flex-row gap-4">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-[240px] justify-start text-left font-normal",
-                            !selectedDate && "text-muted-foreground"
-                          )}
-                        >
-                          <Calendar className="mr-2 h-4 w-4" />
-                          {selectedDate ? format(selectedDate, 'PPP') : <span>Pick a date</span>}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <CalendarComponent
-                          mode="single"
-                          selected={selectedDate}
-                          onSelect={setSelectedDate}
-                          initialFocus
-                          className={cn("p-3 pointer-events-auto")}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    
-                    <div className="flex flex-col md:flex-row gap-2">
-                      <div className="relative flex items-center">
-                        <Input
-                          type="text"
-                          placeholder="YYYY-MM-DD"
-                          value={searchDate}
-                          onChange={(e) => setSearchDate(e.target.value)}
-                          className="w-full md:w-[190px]"
-                        />
-                      </div>
+                {/* Search Date Input & Report Date Picker */}
+                <div className="flex flex-col md:flex-row gap-2 ml-auto items-start">
+                  {/* Report Date Picker */}
+                  <Popover>
+                    <PopoverTrigger asChild>
                       <Button
                         variant="outline"
-                        onClick={handleSearchDate}
-                        className="flex-shrink-0"
-                        disabled={isLoading || !searchDate}
+                        className={cn(
+                          "w-full md:w-[240px] justify-start text-left font-normal",
+                          !fetchDate && "text-muted-foreground"
+                        )}
                       >
-                        <Search className="h-4 w-4 mr-2" />
-                        Search Date
+                        <Calendar className="mr-2 h-4 w-4" />
+                        {fetchDate ? format(fetchDate, 'PPP') : <span>Pick a date</span>}
                       </Button>
-                    </div>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={fetchDate}
+                        onSelect={setFetchDate}
+                        initialFocus
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  
+                  <div className="relative flex items-center">
+                    <Input
+                      type="text"
+                      placeholder="YYYY-MM-DD"
+                      value={searchDate}
+                      onChange={(e) => setSearchDate(e.target.value)}
+                      className="w-full md:w-[190px]"
+                    />
                   </div>
+                  <Button
+                    variant="outline"
+                    onClick={handleSearchDate}
+                    className="flex-shrink-0"
+                    disabled={isLoading || !searchDate}
+                  >
+                    <Search className="h-4 w-4 mr-2" />
+                    Search Date
+                  </Button>
                 </div>
                 
                 <TooltipProvider>
@@ -137,7 +143,7 @@ const Reports = () => {
                       <div>
                         <Button 
                           onClick={handleFetchReports} 
-                          disabled={isLoading || !selectedDate}
+                          disabled={isLoading || !fetchDate}
                           className="w-fit"
                         >
                           {isLoading ? (
@@ -146,7 +152,7 @@ const Reports = () => {
                               Fetching Reports...
                             </>
                           ) : (
-                            `Fetch Reports for ${formattedDate}`
+                            `Fetch Reports for ${formattedFetchDate}`
                           )}
                         </Button>
                       </div>
@@ -178,7 +184,81 @@ const Reports = () => {
               </p>
             </CardFooter>
           </Card>
+          
+          {/* Filter Controls Section */}
+          <div className="grid gap-2">
+            <label className="text-sm font-medium">Global Filters</label>
+            <div className="flex flex-col md:flex-row gap-4 items-start">
+              {/* Filter Placeholders */}
+              <div className="flex flex-col sm:flex-row gap-2 items-start">
+                <DriverFilter selectedDrivers={selectedDrivers} setSelectedDrivers={setSelectedDrivers} />
+                <CustomerGroupFilter selectedCustomerGroups={selectedCustomerGroups} setSelectedCustomerGroups={setSelectedCustomerGroups} />
+                <CustomerNameFilter selectedCustomerNames={selectedCustomerNames} setSelectedCustomerNames={setSelectedCustomerNames} />
+              </div>
+            </div>
+          </div>
         </div>
+
+        {/* KPI Controls Section */}
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>KPI Analytics</CardTitle>
+            <CardDescription>
+              View key performance indicators for the selected date.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col md:flex-row gap-4 items-start mb-4">
+              {/* Dedicated KPI Date Picker */}
+              <div className="flex flex-col space-y-1">
+                <label className="text-sm font-medium">KPI Date</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-[240px] justify-start text-left font-normal",
+                        !kpiDate && "text-muted-foreground"
+                      )}
+                    >
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {kpiDate ? format(kpiDate, "PPP") : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={kpiDate}
+                      onSelect={setKpiDate}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+
+            {/* KPI Cards Section */}
+            <div className="mt-6">
+              <KpiSection
+                reportDate={kpiDate ? format(kpiDate, 'yyyy-MM-dd') : null}
+                selectedDrivers={selectedDrivers}
+                selectedCustomerGroups={selectedCustomerGroups}
+                selectedCustomerNames={selectedCustomerNames}
+              />
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Status Breakdown Chart Section */}
+        <div className="mt-6">
+          <StatusBreakdownChart 
+            chartSelectedDate={kpiDate}
+            selectedDrivers={selectedDrivers}
+            selectedCustomerGroups={selectedCustomerGroups}
+            selectedCustomerNames={selectedCustomerNames} 
+          /> 
+        </div>
+
       </div>
     </Layout>
   );

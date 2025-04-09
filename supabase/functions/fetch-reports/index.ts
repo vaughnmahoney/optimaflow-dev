@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.170.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
-
 // Supabase client with service role (for DB insert permission)
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -16,7 +15,13 @@ interface ReportEntry {
   status: string;         // Status in our system
   optimoroute_status: string | null; // Status from OptimoRoute
   scheduled_time: string | null;
-  end_time: string | null;
+  start_time: string | null; // Added: When the job was started
+  end_time: string | null;   // When the job was completed
+  job_duration: string | null; // Added: Duration of the job
+  notes: string | null;     // Added: Notes from completion details
+  address: string | null;   // Added: Location address
+  latitude: number | null;  // Added: Location latitude
+  longitude: number | null; // Added: Location longitude
   cust_name: string | null;
   cust_group: string | null;
   tech_name: string | null;
@@ -158,13 +163,23 @@ serve(async (req) => {
     const BATCH_SIZE = 500;
     for (let i = 0; i < orderNumbers.length; i += BATCH_SIZE) {
       const batch = orderNumbers.slice(i, i + BATCH_SIZE);
-      console.log(`Processing batch ${i/BATCH_SIZE + 1}, size: ${batch.length}`);
+      // No batch logging to reduce noise
       
       const completionDetails = await getCompletionDetails(batch, apiKey);
       
       if (completionDetails && completionDetails.orders) {
+        console.log(`Received ${completionDetails.orders.length} orders in completion details`);
+        
+        // Log the first order as a sample
+        if (completionDetails.orders.length > 0) {
+          const sampleOrder = completionDetails.orders[0];
+          console.log(`Sample order structure:`, JSON.stringify(sampleOrder, null, 2));
+          console.log(`Sample order has startTime:`, !!sampleOrder.data?.startTime);
+        }
         for (const order of completionDetails.orders) {
           if (order.success && order.data) {
+            // Log what's being stored in the map
+            console.log(`Storing data for order ${order.orderNo || order.id}, has startTime:`, !!order.data.startTime);
             completionDetailsMap.set(order.orderNo || order.id, order.data);
           }
         }
@@ -183,7 +198,7 @@ serve(async (req) => {
     
     for (let i = 0; i < orderNumbers.length; i += STATUS_BATCH_SIZE) {
       const batch = orderNumbers.slice(i, i + STATUS_BATCH_SIZE);
-      console.log(`Processing status batch ${Math.floor(i/STATUS_BATCH_SIZE) + 1}/${Math.ceil(orderNumbers.length/STATUS_BATCH_SIZE)}, size: ${batch.length}`);
+      // No batch logging to reduce noise
       
       try {
         const { data: batchWorkOrders, error: batchError } = await supabase
@@ -197,7 +212,7 @@ serve(async (req) => {
         }
         
         if (batchWorkOrders && batchWorkOrders.length > 0) {
-          console.log(`Found ${batchWorkOrders.length} existing work orders with status in batch ${Math.floor(i/STATUS_BATCH_SIZE) + 1}`);
+          // No batch logging to reduce noise
           batchWorkOrders.forEach(order => {
             if (order.order_no && order.status) {
               workOrderStatusMap.set(order.order_no, order.status);
@@ -262,24 +277,110 @@ serve(async (req) => {
         const completionDetail = completionDetailsMap.get(orderNo);
         const optimorouteStatus = completionDetail ? completionDetail.status : "Planned";
         
-        // UPDATED: Properly handle the timezone for endTime
+        // Extract timestamps from completion details
         let endTime = null;
-        if (completionDetail && completionDetail.endTime) {
-          // First try to use localTime which should be in the driver's timezone
-          if (completionDetail.endTime.localTime) {
-            // Keep the original timestamp with timezone information
-            endTime = completionDetail.endTime.localTime;
-            console.log(`Using localTime for ${orderNo}: ${endTime}`);
-          } 
-          // Fall back to UTC time if local time is not available
-          else if (completionDetail.endTime.utcTime) {
-            endTime = completionDetail.endTime.utcTime;
-            console.log(`Using utcTime for ${orderNo}: ${endTime}`);
+        let startTime = null;
+        let jobDuration = null;
+        let notes = null;
+        
+        if (completionDetail) {
+          // Extract end time
+          if (completionDetail.data.endTime) {
+            // First try to use localTime which should be in the driver's timezone
+            if (completionDetail.data.endTime.localTime) {
+              // Keep the original timestamp with timezone information
+              endTime = completionDetail.data.endTime.localTime;
+              // Only log for a few sample orders to reduce noise
+          if (orderNo.endsWith('1') || orderNo.endsWith('2')) {
+            console.log(`Using localTime for endTime ${orderNo}: ${endTime}`);
+          }
+            } 
+            // Fall back to UTC time if local time is not available
+            else if (completionDetail.data.endTime.utcTime) {
+              endTime = completionDetail.data.endTime.utcTime;
+              // Only log for a few sample orders to reduce noise
+          if (orderNo.endsWith('1') || orderNo.endsWith('2')) {
+            console.log(`Using utcTime for endTime ${orderNo}: ${endTime}`);
+          }
+            }
+          }
+          
+          // Debug completionDetail structure - only for a few sample orders
+          if (orderNo.endsWith('1') || orderNo.endsWith('2')) {
+            console.log(`=== DETAILED DEBUG FOR ORDER ${orderNo} ===`);
+            console.log(`completionDetail has data:`, !!completionDetail?.data);
+            console.log(`completionDetail.data has startTime:`, !!completionDetail?.data?.startTime);
+            console.log(`completionDetail.data has endTime:`, !!completionDetail?.data?.endTime);
+            
+            // Compare startTime and endTime structures
+            if (completionDetail?.data?.startTime && completionDetail?.data?.endTime) {
+              console.log(`StartTime keys:`, Object.keys(completionDetail.data.startTime));
+              console.log(`EndTime keys:`, Object.keys(completionDetail.data.endTime));
+              console.log(`StartTime structure:`, JSON.stringify(completionDetail.data.startTime));
+              console.log(`EndTime structure:`, JSON.stringify(completionDetail.data.endTime));
+            }
+          }
+          
+          // Extract start time (similar logic to end time)
+          if (completionDetail.data.startTime) {
+            // Only log for a few sample orders
+            if (orderNo.endsWith('1') || orderNo.endsWith('2')) {
+              console.log(`startTime structure for ${orderNo}:`, JSON.stringify(completionDetail.data.startTime, null, 2));
+            }
+            // First try to use localTime which should be in the driver's timezone
+            if (completionDetail.data.startTime.localTime) {
+              startTime = completionDetail.data.startTime.localTime;
+              // Only log for a few sample orders
+              if (orderNo.endsWith('1') || orderNo.endsWith('2')) {
+                console.log(`Using localTime for startTime ${orderNo}: ${startTime}`);
+              }
+            } 
+            // Fall back to UTC time if local time is not available
+            else if (completionDetail.data.startTime.utcTime) {
+              startTime = completionDetail.data.startTime.utcTime;
+              // Only log for a few sample orders
+              if (orderNo.endsWith('1') || orderNo.endsWith('2')) {
+                console.log(`Using utcTime for startTime ${orderNo}: ${startTime}`);
+              }
+            }
+          }
+          
+          // Calculate job duration if both start and end times are available
+          if (startTime && endTime) {
+            try {
+              const startDate = new Date(startTime);
+              const endDate = new Date(endTime);
+              const durationMs = endDate.getTime() - startDate.getTime();
+              // Format as ISO duration string (PT1H30M format)
+              const hours = Math.floor(durationMs / (1000 * 60 * 60));
+              const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+              jobDuration = `PT${hours}H${minutes}M`;
+              console.log(`Calculated job duration for ${orderNo}: ${jobDuration}`);
+            } catch (error) {
+              console.error(`Error calculating job duration for ${orderNo}:`, error);
+            }
+          }
+          
+          // Extract notes from form data if available
+          if (completionDetail.data && completionDetail.data.form && completionDetail.data.form.note) {
+            notes = completionDetail.data.form.note;
+            console.log(`Extracted notes for ${orderNo}: ${notes.substring(0, 50)}${notes.length > 50 ? '...' : ''}`);
           }
         }
         
         // Use existing work order status if available, otherwise default to "Scheduled"
         const workOrderStatus = workOrderStatusMap.get(orderNo) || "Scheduled";
+        
+        // Extract location data from stop information if available
+        let address = null;
+        let latitude = null;
+        let longitude = null;
+        
+        if (stop.location) {
+          address = stop.location.address || null;
+          latitude = stop.location.latitude || null;
+          longitude = stop.location.longitude || null;
+        }
         
         reportsPayload.push({
           org_id: orgId,
@@ -287,7 +388,13 @@ serve(async (req) => {
           status: workOrderStatus, // Status from work_orders table with fallback to "Scheduled"
           optimoroute_status: optimorouteStatus, // Status from completion details
           scheduled_time: stop.scheduledAtDt || null,
-          end_time: endTime, 
+          start_time: startTime,
+          end_time: endTime,
+          job_duration: jobDuration,
+          notes: notes,
+          address: address,
+          latitude: latitude,
+          longitude: longitude,
           cust_name: custName,
           cust_group: custGroup || custName, // Use custName as fallback when custGroup is null
           tech_name: techName,
@@ -311,7 +418,24 @@ serve(async (req) => {
       });
     }
     
-    console.log(`Preparing to upsert ${reportsPayload.length} reports for date: ${requestDate}`);
+    console.log(`=== SUMMARY BEFORE UPSERT ===`);
+    
+    // Log summary of fields in the payload
+    const reportsWithStartTime = reportsPayload.filter(r => r.start_time !== null).length;
+    const reportsWithEndTime = reportsPayload.filter(r => r.end_time !== null).length;
+    const reportsWithNotes = reportsPayload.filter(r => r.notes !== null).length;
+    const reportsWithAddress = reportsPayload.filter(r => r.address !== null).length;
+    
+    console.log(`CRITICAL DATA FIELDS:`);
+    console.log(`START_TIME: ${reportsWithStartTime} / ${reportsPayload.length}`);
+    console.log(`END_TIME: ${reportsWithEndTime} / ${reportsPayload.length}`);
+    console.log(`NOTES: ${reportsWithNotes} / ${reportsPayload.length}`);
+    console.log(`ADDRESS: ${reportsWithAddress} / ${reportsPayload.length}`);
+    
+    // Log a sample report
+    if (reportsPayload.length > 0) {
+      console.log(`Sample report payload:`, JSON.stringify(reportsPayload[0], null, 2));
+    }
     
     // Changed: instead of deleting existing reports, we'll use upsert
     // This will insert new records and update existing ones
@@ -323,7 +447,7 @@ serve(async (req) => {
     
     for (let i = 0; i < reportsPayload.length; i += UPSERT_BATCH_SIZE) {
       const batch = reportsPayload.slice(i, i + UPSERT_BATCH_SIZE);
-      console.log(`Upserting batch ${Math.floor(i/UPSERT_BATCH_SIZE) + 1}/${Math.ceil(reportsPayload.length/UPSERT_BATCH_SIZE)}, size: ${batch.length}`);
+      // No batch logging to reduce noise
       
       try {
         // CHANGED: Use upsert instead of insert
@@ -340,7 +464,7 @@ serve(async (req) => {
           errorCount += batch.length;
         } else {
           successCount += batch.length;
-          console.log(`Successfully upserted batch ${Math.floor(i/UPSERT_BATCH_SIZE) + 1}, records: ${batch.length}`);
+          // No batch logging to reduce noise
         }
       } catch (error) {
         console.error(`Exception in batch ${Math.floor(i/UPSERT_BATCH_SIZE) + 1}:`, error);
@@ -385,11 +509,25 @@ serve(async (req) => {
       });
     }
     
+    // Collect debug information
+    const debugInfo = {
+      reportsWithStartTime: reportsPayload.filter(r => r.start_time !== null).length,
+      reportsWithEndTime: reportsPayload.filter(r => r.end_time !== null).length,
+      sampleReports: reportsPayload.slice(0, 3).map(r => ({
+        order_no: r.order_no,
+        start_time: r.start_time,
+        end_time: r.end_time,
+        job_duration: r.job_duration,
+        notes: r.notes ? r.notes.substring(0, 50) + (r.notes.length > 50 ? '...' : '') : null
+      }))
+    };
+
     // Complete success case
     return new Response(JSON.stringify({
       success: true,
       count: successCount,
-      message: `Successfully updated ${successCount} reports for date: ${requestDate}`
+      message: `Successfully updated ${successCount} reports for date: ${requestDate}`,
+      debug: debugInfo
     }), { 
       status: 200,
       headers: {
