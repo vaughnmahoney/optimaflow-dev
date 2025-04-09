@@ -61,7 +61,7 @@ export const FiltersStep: React.FC<FiltersStepProps> = ({
             Technicians
           </TabsTrigger>
           <TabsTrigger value="customers" className="flex items-center gap-2">
-            <Buildings className="h-4 w-4" />
+            <Building className="h-4 w-4" />
             Customers
           </TabsTrigger>
         </TabsList>
