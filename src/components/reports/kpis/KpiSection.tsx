@@ -1,6 +1,8 @@
+
 import React from 'react';
 import { CompletionRateCard } from './CompletionRateCard';
 import { TotalJobsCompletedCard } from './TotalJobsCompletedCard';
+import { AverageJobDurationCard } from './AverageJobDurationCard';
 
 interface KpiSectionProps {
   reportDate: string | null;
@@ -36,8 +38,15 @@ export const KpiSection: React.FC<KpiSectionProps> = ({
         selectedCustomerNames={selectedCustomerNames}
       />
       
+      {/* Average Job Duration KPI */}
+      <AverageJobDurationCard
+        reportDate={reportDate}
+        selectedDrivers={selectedDrivers}
+        selectedCustomerGroups={selectedCustomerGroups}
+        selectedCustomerNames={selectedCustomerNames}
+      />
+      
       {/* Add more KPI cards here as they are implemented */}
-      {/* Each KPI card will receive the same props for date and filters */}
     </div>
   );
 };

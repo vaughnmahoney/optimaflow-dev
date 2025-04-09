@@ -243,44 +243,62 @@ export type Database = {
       }
       reports: {
         Row: {
+          address: string | null
           cust_group: string | null
           cust_name: string | null
           end_time: string | null
           fetched_at: string | null
           id: number
+          job_duration: unknown | null
+          latitude: number | null
+          longitude: number | null
+          notes: string | null
           optimoroute_status: string | null
           order_no: string
           org_id: string
           region: string | null
           scheduled_time: string | null
+          start_time: string | null
           status: string | null
           tech_name: string | null
         }
         Insert: {
+          address?: string | null
           cust_group?: string | null
           cust_name?: string | null
           end_time?: string | null
           fetched_at?: string | null
           id?: number
+          job_duration?: unknown | null
+          latitude?: number | null
+          longitude?: number | null
+          notes?: string | null
           optimoroute_status?: string | null
           order_no: string
           org_id: string
           region?: string | null
           scheduled_time?: string | null
+          start_time?: string | null
           status?: string | null
           tech_name?: string | null
         }
         Update: {
+          address?: string | null
           cust_group?: string | null
           cust_name?: string | null
           end_time?: string | null
           fetched_at?: string | null
           id?: number
+          job_duration?: unknown | null
+          latitude?: number | null
+          longitude?: number | null
+          notes?: string | null
           optimoroute_status?: string | null
           order_no?: string
           org_id?: string
           region?: string | null
           scheduled_time?: string | null
+          start_time?: string | null
           status?: string | null
           tech_name?: string | null
         }
@@ -564,6 +582,14 @@ export type Database = {
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      safe_json_extract_text: {
+        Args: { json_data: Json; path: string }
+        Returns: string
+      }
+      safe_json_extract_timestamp: {
+        Args: { json_data: Json; path: string }
+        Returns: string
       }
       submit_attendance_to_history: {
         Args: { submission_date: string }
