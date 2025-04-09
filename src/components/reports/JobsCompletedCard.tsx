@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useJobsCompletedStats } from "@/hooks/useJobsCompletedStats";
 import { Bar, BarChart, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { Loader2, TrendingDown, TrendingUp, BarChart3, LineChart as LineChartIcon, Calendar, Info } from "lucide-react";
+import { Loader2, TrendingDown, TrendingUp, BarChart3, LineChart as LineChartIcon, Calendar, Info, MoveHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
@@ -11,6 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
 export const JobsCompletedCard = () => {
   const { 
@@ -25,6 +26,37 @@ export const JobsCompletedCard = () => {
   const [timeframe, setTimeframe] = useState<'week'>('week');
 
   const isPositiveChange = percentageChange >= 0;
+
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartX, setDragStartX] = useState(0);
+
+  // For future implementation - these could enable interactive scrolling
+  // through the data when we have more data
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setDragStartX(e.clientX);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    // Could implement scrolling logic here in the future
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  // Cleanup drag events
+  React.useEffect(() => {
+    const handleGlobalMouseUp = () => {
+      setIsDragging(false);
+    };
+    
+    document.addEventListener('mouseup', handleGlobalMouseUp);
+    return () => {
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, []);
 
   return (
     <Card className="col-span-3">
@@ -64,6 +96,13 @@ export const JobsCompletedCard = () => {
                     This chart shows the total number of jobs completed each day during the current week.
                     The trend indicator compares to the previous week's performance.
                   </p>
+                  <div className="mt-2 pt-2 border-t">
+                    <h5 className="text-sm font-medium mb-1">Interactive Features</h5>
+                    <div className="flex items-center text-sm text-muted-foreground gap-1">
+                      <MoveHorizontal className="h-4 w-4 text-muted-foreground" />
+                      <span>Hover over bars to see detailed counts</span>
+                    </div>
+                  </div>
                 </div>
               </PopoverContent>
             </Popover>
@@ -104,51 +143,82 @@ export const JobsCompletedCard = () => {
               </Tabs>
             </div>
             
-            <div className="mt-4 h-[200px]">
-              <ResponsiveContainer width="100%" height="100%">
-                {chartType === 'bar' ? (
-                  <BarChart data={dailyCounts}>
-                    <XAxis 
-                      dataKey="day" 
-                      tickFormatter={(value) => value.substring(0, 3)} 
-                      fontSize={12} 
-                    />
-                    <YAxis allowDecimals={false} />
-                    <Tooltip 
-                      formatter={(value) => [`${value} jobs`, 'Completed']}
-                      labelFormatter={(label) => label}
-                    />
-                    <Bar 
-                      dataKey="count" 
-                      name="Jobs Completed" 
-                      fill="#22c55e" 
-                      radius={[4, 4, 0, 0]} 
-                    />
-                  </BarChart>
-                ) : (
-                  <LineChart data={dailyCounts}>
-                    <XAxis 
-                      dataKey="day" 
-                      tickFormatter={(value) => value.substring(0, 3)} 
-                      fontSize={12} 
-                    />
-                    <YAxis allowDecimals={false} />
-                    <Tooltip 
-                      formatter={(value) => [`${value} jobs`, 'Completed']}
-                      labelFormatter={(label) => label}
-                    />
-                    <Line 
-                      type="monotone"
-                      dataKey="count" 
-                      name="Jobs Completed" 
-                      stroke="#22c55e"
-                      strokeWidth={2}
-                      dot={{ r: 4 }}
-                      activeDot={{ r: 6 }}
-                    />
-                  </LineChart>
-                )}
-              </ResponsiveContainer>
+            <div 
+              className="mt-4 h-[200px] select-none cursor-pointer"
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+            >
+              <ChartContainer
+                className="h-full"
+                config={{
+                  jobs: {
+                    label: "Jobs Completed",
+                    theme: {
+                      light: "#22c55e",
+                      dark: "#4ade80"
+                    }
+                  }
+                }}
+              >
+                <ResponsiveContainer width="100%" height="100%">
+                  {chartType === 'bar' ? (
+                    <BarChart data={dailyCounts}>
+                      <XAxis 
+                        dataKey="day" 
+                        tickFormatter={(value) => value.substring(0, 3)} 
+                        fontSize={12} 
+                      />
+                      <YAxis allowDecimals={false} />
+                      <ChartTooltip
+                        content={
+                          <ChartTooltipContent
+                            labelKey="day"
+                            nameKey="jobs"
+                          />
+                        }
+                      />
+                      <Bar 
+                        dataKey="count" 
+                        name="jobs"
+                        radius={[4, 4, 0, 0]} 
+                        className="stroke-background fill-[var(--color-jobs)]"
+                        // Add animation for consistency with the other chart
+                        animationDuration={1000}
+                      />
+                    </BarChart>
+                  ) : (
+                    <LineChart data={dailyCounts}>
+                      <XAxis 
+                        dataKey="day" 
+                        tickFormatter={(value) => value.substring(0, 3)} 
+                        fontSize={12} 
+                      />
+                      <YAxis allowDecimals={false} />
+                      <ChartTooltip
+                        content={
+                          <ChartTooltipContent
+                            labelKey="day"
+                            nameKey="jobs"
+                          />
+                        }
+                      />
+                      <Line 
+                        type="monotone"
+                        dataKey="count"
+                        name="jobs"
+                        strokeWidth={2}
+                        dot={{ r: 4 }}
+                        activeDot={{ r: 6 }}
+                        className="stroke-[var(--color-jobs)]"
+                        // Add animation for consistency
+                        animationDuration={1500}
+                      />
+                    </LineChart>
+                  )}
+                </ResponsiveContainer>
+              </ChartContainer>
             </div>
           </>
         )}
