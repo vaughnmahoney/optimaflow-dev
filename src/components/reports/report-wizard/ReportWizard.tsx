@@ -12,6 +12,7 @@ import { StatusBreakdownChart } from '../StatusBreakdownChart';
 import { ArrowLeft, ArrowRight, FileBarChart, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { DateRange } from 'react-day-picker';
 
 interface ReportWizardProps {
   onClose?: () => void;
@@ -28,7 +29,7 @@ export const ReportWizard: React.FC<ReportWizardProps> = ({ onClose }) => {
   // Wizard state
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedReportTypes, setSelectedReportTypes] = useState<string[]>([]);
-  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({ from: undefined, to: undefined });
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [selectedDrivers, setSelectedDrivers] = useState<string[]>([]);
   const [selectedCustomerGroups, setSelectedCustomerGroups] = useState<string[]>([]);
   const [selectedCustomerNames, setSelectedCustomerNames] = useState<string[]>([]);
@@ -44,7 +45,7 @@ export const ReportWizard: React.FC<ReportWizardProps> = ({ onClose }) => {
       return;
     }
     
-    if (currentStep === 1 && !dateRange.from) {
+    if (currentStep === 1 && !dateRange?.from) {
       toast.error("Please select a date range");
       return;
     }
@@ -97,14 +98,14 @@ export const ReportWizard: React.FC<ReportWizardProps> = ({ onClose }) => {
         
         <ReportResults>
           <KpiSection
-            reportDate={dateRange.from ? format(dateRange.from, 'yyyy-MM-dd') : null}
+            reportDate={dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : null}
             selectedDrivers={selectedDrivers}
             selectedCustomerGroups={selectedCustomerGroups}
             selectedCustomerNames={selectedCustomerNames}
           />
           
           <StatusBreakdownChart 
-            chartSelectedDate={dateRange.from}
+            chartSelectedDate={dateRange?.from}
             selectedDrivers={selectedDrivers}
             selectedCustomerGroups={selectedCustomerGroups}
             selectedCustomerNames={selectedCustomerNames} 

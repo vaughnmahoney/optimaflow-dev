@@ -3,13 +3,11 @@ import React from 'react';
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent } from "@/components/ui/card";
 import { format } from "date-fns";
+import { DateRange } from "react-day-picker";
 
 interface DateRangeStepProps {
-  dateRange: { from: Date | undefined; to: Date | undefined };
-  setDateRange: React.Dispatch<React.SetStateAction<{ 
-    from: Date | undefined; 
-    to: Date | undefined 
-  }>>;
+  dateRange: DateRange | undefined;
+  setDateRange: React.Dispatch<React.SetStateAction<DateRange | undefined>>;
 }
 
 export const DateRangeStep: React.FC<DateRangeStepProps> = ({
@@ -40,7 +38,7 @@ export const DateRangeStep: React.FC<DateRangeStepProps> = ({
           <Card className="bg-muted/50">
             <CardContent className="p-4">
               <h4 className="text-sm font-medium mb-2">Selected Range</h4>
-              {dateRange.from ? (
+              {dateRange?.from ? (
                 <div>
                   <p className="text-2xl font-bold">
                     {dateRange.from && format(dateRange.from, "MMMM d, yyyy")}

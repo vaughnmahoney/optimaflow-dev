@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Search, Users, Buildings, X } from 'lucide-react';
+import { Search, Users, Building, X } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
