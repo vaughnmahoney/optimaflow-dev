@@ -1,11 +1,10 @@
-
 import React, { useState, useRef } from 'react';
 import { useTotalCompletedJobs } from '@/hooks/kpis/useTotalCompletedJobs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Loader2, AlertCircle, CheckCircle, BarChart3, PieChart, 
   Table, Download, ArrowUpDown, Search, ZoomIn, ZoomOut,
-  ChevronLeft, ChevronRight, RefreshCw, Filter 
+  ChevronLeft, ChevronRight, RefreshCw, Filter, X
 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { 
@@ -51,21 +50,13 @@ export const TotalJobsCompletedCard: React.FC<TotalJobsCompletedCardProps> = ({
   selectedCustomerGroups,
   selectedCustomerNames
 }) => {
-  // Default to showing by driver
   const [activeTab, setActiveTab] = useState<string>('by-driver');
-  // View mode: chart (bar), pie, or table
   const [viewMode, setViewMode] = useState<'chart' | 'pie' | 'table'>('chart');
-  // Sort mode for data 
   const [sortMode, setSortMode] = useState<'count-desc' | 'count-asc' | 'name-asc' | 'name-desc'>('count-desc');
-  // Search term for filtering data
   const [searchTerm, setSearchTerm] = useState<string>('');
-  // Slider for controlling how many items to view (zoom level)
   const [itemsToShow, setItemsToShow] = useState<number>(10);
-  // Index for scrolling through data
   const [startIndex, setStartIndex] = useState<number>(0);
-  // Ref for chart container to handle drag
   const chartContainerRef = useRef<HTMLDivElement>(null);
-  // For drag tracking
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartX, setDragStartX] = useState(0);
   
@@ -76,12 +67,10 @@ export const TotalJobsCompletedCard: React.FC<TotalJobsCompletedCardProps> = ({
     selectedCustomerNames
   );
 
-  // Format the total with thousands separator
   const formattedTotal = data 
     ? data.totalCompleted.toLocaleString() 
     : '0';
 
-  // Filter data based on search term
   const filterData = (data: { name: string; count: number }[]) => {
     if (!searchTerm) return data;
     return data.filter(item => 
@@ -89,7 +78,6 @@ export const TotalJobsCompletedCard: React.FC<TotalJobsCompletedCardProps> = ({
     );
   };
 
-  // Sort data based on selected sort mode
   const getSortedData = (data: { name: string; count: number }[]) => {
     if (!data) return [];
     
@@ -109,7 +97,6 @@ export const TotalJobsCompletedCard: React.FC<TotalJobsCompletedCardProps> = ({
     }
   };
 
-  // Get the current data to display based on active tab, sorting, filtering and pagination
   const getCurrentData = () => {
     if (!data) return [];
     
@@ -117,13 +104,11 @@ export const TotalJobsCompletedCard: React.FC<TotalJobsCompletedCardProps> = ({
     const sortedData = getSortedData(baseData);
     const filteredData = filterData(sortedData);
     
-    // Calculate the end index for slicing, ensuring we don't go beyond array bounds
     const endIndex = Math.min(startIndex + itemsToShow, filteredData.length);
     
     return filteredData.slice(startIndex, endIndex);
   };
 
-  // Get the total count of items after filtering
   const getTotalItemCount = () => {
     if (!data) return 0;
     
@@ -131,7 +116,6 @@ export const TotalJobsCompletedCard: React.FC<TotalJobsCompletedCardProps> = ({
     return filterData(baseData).length;
   };
 
-  // Handlers for scrolling through data
   const handleNext = () => {
     const totalItems = getTotalItemCount();
     const newStartIndex = Math.min(startIndex + Math.floor(itemsToShow / 2), totalItems - itemsToShow);
@@ -143,21 +127,17 @@ export const TotalJobsCompletedCard: React.FC<TotalJobsCompletedCardProps> = ({
     setStartIndex(newStartIndex < 0 ? 0 : newStartIndex);
   };
 
-  // Reset index when changing tabs, search, or sort
   React.useEffect(() => {
     setStartIndex(0);
   }, [activeTab, searchTerm, sortMode]);
 
-  // Update itemsToShow when itemsToShow changes
   React.useEffect(() => {
-    // Make sure startIndex + itemsToShow doesn't exceed total items
     const totalItems = getTotalItemCount();
     if (startIndex + itemsToShow > totalItems) {
       setStartIndex(Math.max(0, totalItems - itemsToShow));
     }
   }, [itemsToShow]);
 
-  // Drag handlers for interactive scrolling
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
     setDragStartX(e.clientX);
@@ -167,7 +147,7 @@ export const TotalJobsCompletedCard: React.FC<TotalJobsCompletedCardProps> = ({
     if (!isDragging) return;
     
     const deltaX = e.clientX - dragStartX;
-    if (Math.abs(deltaX) > 10) { // Threshold to prevent tiny movements
+    if (Math.abs(deltaX) > 10) {
       if (deltaX > 0) {
         handlePrevious();
       } else {
@@ -181,7 +161,6 @@ export const TotalJobsCompletedCard: React.FC<TotalJobsCompletedCardProps> = ({
     setIsDragging(false);
   };
   
-  // Cleanup drag events
   React.useEffect(() => {
     const handleGlobalMouseUp = () => {
       setIsDragging(false);
@@ -193,7 +172,6 @@ export const TotalJobsCompletedCard: React.FC<TotalJobsCompletedCardProps> = ({
     };
   }, []);
 
-  // Handle exporting data to CSV
   const handleExportData = () => {
     if (!data) return;
     
@@ -254,7 +232,6 @@ export const TotalJobsCompletedCard: React.FC<TotalJobsCompletedCardProps> = ({
           </div>
         </div>
         
-        {/* View type and controls */}
         <div className="flex justify-between items-center">
           <div className="flex space-x-1">
             <Button 
@@ -283,7 +260,6 @@ export const TotalJobsCompletedCard: React.FC<TotalJobsCompletedCardProps> = ({
             </Button>
           </div>
           
-          {/* Search input for filtering */}
           <div className="flex space-x-2">
             <div className="relative">
               <Input
@@ -333,7 +309,6 @@ export const TotalJobsCompletedCard: React.FC<TotalJobsCompletedCardProps> = ({
           </div>
         </div>
 
-        {/* Interactive Controls for Chart */}
         {viewMode === 'chart' && (
           <div className="flex items-center space-x-2 pt-1">
             <Button 
@@ -506,15 +481,12 @@ export const TotalJobsCompletedCard: React.FC<TotalJobsCompletedCardProps> = ({
                     radius={[4, 4, 0, 0]} 
                     cursor="pointer"
                     className="stroke-background fill-[var(--color-jobs)]"
-                    // Add animation effect
                     animationDuration={1000}
-                    // Optional - add click handler
                     onClick={(data) => {
                       toast.info(`${data.name}: ${data.count} completed jobs`);
                     }}
                   />
                   
-                  {/* Add a reference line for the average */}
                   {items.length > 1 && (
                     <ReferenceLine 
                       y={Math.round(items.reduce((sum, item) => sum + item.count, 0) / items.length)} 
@@ -549,7 +521,6 @@ export const TotalJobsCompletedCard: React.FC<TotalJobsCompletedCardProps> = ({
                   dataKey="count"
                   nameKey="name"
                   label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  // Add animation effect
                   animationDuration={800}
                   animationBegin={0}
                 >
@@ -557,7 +528,6 @@ export const TotalJobsCompletedCard: React.FC<TotalJobsCompletedCardProps> = ({
                     <Cell 
                       key={`cell-${index}`} 
                       fill={COLORS[index % COLORS.length]} 
-                      // Optional - add click handling
                       onClick={() => {
                         toast.info(`${entry.name}: ${entry.count} completed jobs`);
                       }}
