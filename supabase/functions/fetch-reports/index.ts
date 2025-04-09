@@ -138,22 +138,12 @@ serve(async (req) => {
     const BATCH_SIZE = 500;
     for (let i = 0; i < orderNumbers.length; i += BATCH_SIZE) {
       const batch = orderNumbers.slice(i, i + BATCH_SIZE);
-<<<<<<< HEAD
-      // Process batch
-=======
->>>>>>> 7a1385b8c62e7f68996cb6ee79b6240e71c1b337
       
       const completionDetails = await getCompletionDetails(batch, apiKey);
       
       if (completionDetails && completionDetails.orders) {
         console.log(`Received ${completionDetails.orders.length} orders in completion details`);
         
-<<<<<<< HEAD
-        for (const order of completionDetails.orders) {
-          if (order.success && order.data) {
-            // Store the entire order object, not just the data property
-            completionDetailsMap.set(order.orderNo || order.id, order);
-=======
         if (completionDetails.orders.length > 0) {
           const sampleOrder = completionDetails.orders[0];
           console.log(`Sample order structure:`, JSON.stringify(sampleOrder, null, 2));
@@ -175,7 +165,6 @@ serve(async (req) => {
           if (order.success && order.data) {
             console.log(`Storing data for order ${order.orderNo || order.id}, has startTime:`, !!order.data.startTime);
             completionDetailsMap.set(order.orderNo || order.id, order.data);
->>>>>>> 7a1385b8c62e7f68996cb6ee79b6240e71c1b337
           }
         }
       }
@@ -189,10 +178,6 @@ serve(async (req) => {
     const STATUS_BATCH_SIZE = 50;
     for (let i = 0; i < orderNumbers.length; i += STATUS_BATCH_SIZE) {
       const batch = orderNumbers.slice(i, i + STATUS_BATCH_SIZE);
-<<<<<<< HEAD
-      // Process batch
-=======
->>>>>>> 7a1385b8c62e7f68996cb6ee79b6240e71c1b337
       
       try {
         const { data: batchWorkOrders, error: batchError } = await supabase
@@ -206,10 +191,6 @@ serve(async (req) => {
         }
         
         if (batchWorkOrders && batchWorkOrders.length > 0) {
-<<<<<<< HEAD
-          // Process batch
-=======
->>>>>>> 7a1385b8c62e7f68996cb6ee79b6240e71c1b337
           batchWorkOrders.forEach(order => {
             if (order.order_no && order.status) {
               workOrderStatusMap.set(order.order_no, order.status);
@@ -227,15 +208,11 @@ serve(async (req) => {
     
     console.log(`Work order status map has ${workOrderStatusMap.size} entries after all batches`);
     
-<<<<<<< HEAD
-    // Work order status map is ready
-=======
     let sampleCount = 0;
     for (const [key, value] of workOrderStatusMap.entries()) {
       console.log(`Sample status mapping: order_no "${key}" -> status "${value}"`);
       if (++sampleCount >= 5) break;
     }
->>>>>>> 7a1385b8c62e7f68996cb6ee79b6240e71c1b337
     
     if (workOrderStatusMap.size === 0) {
       console.log('No existing work orders found with matching order numbers after all batches');
@@ -266,7 +243,7 @@ serve(async (req) => {
         }
         
         const completionDetail = completionDetailsMap.get(orderNo);
-        const optimorouteStatus = completionDetail && completionDetail.data ? completionDetail.data.status : "Planned";
+        const optimorouteStatus = completionDetail ? completionDetail.status : "Planned";
         
         let endTime = null;
         let startTime = null;
@@ -274,11 +251,6 @@ serve(async (req) => {
         let notes = null;
         
         if (completionDetail) {
-<<<<<<< HEAD
-          // Extract end time
-          if (completionDetail.data && completionDetail.data.endTime) {
-            // First try to use localTime which should be in the driver's timezone
-=======
           if (completionDetail.endTime) {
             if (completionDetail.endTime.localTime) {
               endTime = completionDetail.endTime.localTime;
@@ -289,43 +261,8 @@ serve(async (req) => {
             }
           }
           else if (completionDetail.data && completionDetail.data.endTime) {
->>>>>>> 7a1385b8c62e7f68996cb6ee79b6240e71c1b337
             if (completionDetail.data.endTime.localTime) {
               endTime = completionDetail.data.endTime.localTime;
-<<<<<<< HEAD
-              // No logging needed now that everything is working
-            } 
-            // Fall back to UTC time if local time is not available
-            else if (completionDetail.data.endTime.utcTime) {
-              endTime = completionDetail.data.endTime.utcTime;
-              // No logging needed now that everything is working
-            }
-          }
-          
-          // No detailed debug logging needed now that everything is working
-          
-          // Try multiple paths to extract start time
-          // First check if we can get it from the data property
-          if (completionDetail.data && completionDetail.data.startTime) {
-            // First try to use localTime which should be in the driver's timezone
-            if (completionDetail.data.startTime.localTime) {
-              startTime = completionDetail.data.startTime.localTime;
-            } 
-            // Fall back to UTC time if local time is not available
-            else if (completionDetail.data.startTime.utcTime) {
-              startTime = completionDetail.data.startTime.utcTime;
-            }
-          }
-          
-          // If we couldn't find startTime in the data property, try the orders array
-          if (!startTime && completionDetail.orders && Array.isArray(completionDetail.orders) && completionDetail.orders.length > 0) {
-            const firstOrder = completionDetail.orders[0];
-            if (firstOrder.data && firstOrder.data.startTime) {
-              if (firstOrder.data.startTime.localTime) {
-                startTime = firstOrder.data.startTime.localTime;
-              } else if (firstOrder.data.startTime.utcTime) {
-                startTime = firstOrder.data.startTime.utcTime;
-=======
               console.log(`Using data.endTime.localTime for ${orderNo}: ${endTime}`);
             } else if (completionDetail.data.endTime.utcTime) {
               endTime = completionDetail.data.endTime.utcTime;
@@ -395,7 +332,6 @@ serve(async (req) => {
               } else if (formStartTime.utcTime) {
                 startTime = formStartTime.utcTime;
                 console.log(`Found startTime (UTC) in form data for ${orderNo}: ${startTime}`);
->>>>>>> 7a1385b8c62e7f68996cb6ee79b6240e71c1b337
               }
             }
           }
@@ -404,14 +340,6 @@ serve(async (req) => {
             try {
               const startDate = new Date(startTime);
               const endDate = new Date(endTime);
-<<<<<<< HEAD
-              const durationMs = endDate.getTime() - startDate.getTime();
-              // Format as ISO duration string (PT1H30M format)
-              const hours = Math.floor(durationMs / (1000 * 60 * 60));
-              const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
-              jobDuration = `PT${hours}H${minutes}M`;
-              // Job duration calculated successfully
-=======
               if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
                 const durationMs = endDate.getTime() - startDate.getTime();
                 jobDuration = `PT${Math.floor(durationMs / (1000 * 60 * 60))}H${Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60))}M`;
@@ -419,7 +347,6 @@ serve(async (req) => {
               } else {
                 console.log(`Invalid date format for ${orderNo}: startTime=${startTime}, endTime=${endTime}`);
               }
->>>>>>> 7a1385b8c62e7f68996cb6ee79b6240e71c1b337
             } catch (error) {
               console.error(`Error calculating job duration for ${orderNo}:`, error);
             }
@@ -427,11 +354,7 @@ serve(async (req) => {
           
           if (completionDetail.data?.form?.note) {
             notes = completionDetail.data.form.note;
-<<<<<<< HEAD
-            // Notes extracted successfully
-=======
             console.log(`Extracted notes from data.form.note for ${orderNo}: ${notes.substring(0, 50)}${notes.length > 50 ? '...' : ''}`);
->>>>>>> 7a1385b8c62e7f68996cb6ee79b6240e71c1b337
           }
           else if (completionDetail.form?.note) {
             notes = completionDetail.form.note;
@@ -489,89 +412,6 @@ serve(async (req) => {
             fetched_at: now
           });
         }
-<<<<<<< HEAD
-        
-        // Use existing work order status if available, otherwise default to "Scheduled"
-        const workOrderStatus = workOrderStatusMap.get(orderNo) || "Scheduled";
-        
-        // CRITICAL DEBUG: Log the actual stop object structure to understand available properties
-        if (orderNo.endsWith('1')) { // Only log for a few orders to reduce noise
-          console.log(`LOCATION DEBUG - Stop object for ${orderNo}:`, JSON.stringify(stop, null, 2));
-          console.log(`LOCATION DEBUG - Stop address exists:`, !!stop.address);
-          console.log(`LOCATION DEBUG - Stop latitude type:`, typeof stop.latitude);
-          console.log(`LOCATION DEBUG - Stop longitude type:`, typeof stop.longitude);
-          
-          // Check if location is a nested property
-          console.log(`LOCATION DEBUG - Stop has location property:`, !!stop.location);
-          if (stop.location) {
-            console.log(`LOCATION DEBUG - Stop location structure:`, JSON.stringify(stop.location, null, 2));
-          }
-        }
-        
-        // Extract location data using multiple paths
-        let address = null;
-        let latitude = null;
-        let longitude = null;
-        
-        // First try to get location data directly from the stop object
-        if (stop.address) {
-          address = stop.address;
-          if (orderNo.endsWith('1')) console.log(`LOCATION DEBUG - Found address directly on stop:`, address);
-        }
-        if (typeof stop.latitude === 'number') {
-          latitude = stop.latitude;
-          if (orderNo.endsWith('1')) console.log(`LOCATION DEBUG - Found latitude directly on stop:`, latitude);
-        }
-        if (typeof stop.longitude === 'number') {
-          longitude = stop.longitude;
-          if (orderNo.endsWith('1')) console.log(`LOCATION DEBUG - Found longitude directly on stop:`, longitude);
-        }
-        
-        // If not found, check if it's in a nested location property
-        if ((!address || !latitude || !longitude) && stop.location) {
-          if (!address && stop.location.address) {
-            address = stop.location.address;
-            if (orderNo.endsWith('1')) console.log(`LOCATION DEBUG - Found address in location property:`, address);
-          }
-          if (!latitude && typeof stop.location.latitude === 'number') {
-            latitude = stop.location.latitude;
-            if (orderNo.endsWith('1')) console.log(`LOCATION DEBUG - Found latitude in location property:`, latitude);
-          }
-          if (!longitude && typeof stop.location.longitude === 'number') {
-            longitude = stop.location.longitude;
-            if (orderNo.endsWith('1')) console.log(`LOCATION DEBUG - Found longitude in location property:`, longitude);
-          }
-        }
-        
-        // CRITICAL DEBUG: Log what we're actually using for the database
-        if (orderNo.endsWith('1')) {
-          console.log(`LOCATION DEBUG - Final values for ${orderNo}:`);
-          console.log(`  address: ${address || 'null'}`);
-          console.log(`  latitude: ${latitude || 'null'}`);
-          console.log(`  longitude: ${longitude || 'null'}`);
-        }
-        
-        reportsPayload.push({
-          org_id: orgId,
-          order_no: orderNo,
-          status: workOrderStatus, // Status from work_orders table with fallback to "Scheduled"
-          optimoroute_status: optimorouteStatus, // Status from completion details
-          scheduled_time: stop.scheduledAtDt || null,
-          start_time: startTime,
-          end_time: endTime,
-          job_duration: jobDuration,
-          notes: notes,
-          address: address,
-          latitude: latitude,
-          longitude: longitude,
-          cust_name: custName,
-          cust_group: custGroup || custName, // Use custName as fallback when custGroup is null
-          tech_name: techName,
-          region: region,
-          fetched_at: now
-        });
-=======
->>>>>>> 7a1385b8c62e7f68996cb6ee79b6240e71c1b337
       }
     }
     
@@ -588,24 +428,13 @@ serve(async (req) => {
       });
     }
     
-<<<<<<< HEAD
-    // Prepare summary for debug output
-=======
     console.log(`=== SUMMARY BEFORE UPSERT ===`);
     
->>>>>>> 7a1385b8c62e7f68996cb6ee79b6240e71c1b337
     const reportsWithStartTime = reportsPayload.filter(r => r.start_time !== null).length;
     const reportsWithEndTime = reportsPayload.filter(r => r.end_time !== null).length;
     const reportsWithNotes = reportsPayload.filter(r => r.notes !== null).length;
     const reportsWithAddress = reportsPayload.filter(r => r.address !== null).length;
     
-<<<<<<< HEAD
-    // Changed: instead of deleting existing reports, we'll use upsert
-    // This will insert new records and update existing ones
-    
-    // Insert/update reports in smaller batches to avoid hitting payload size limits
-    const UPSERT_BATCH_SIZE = 50; // Reduce batch size to avoid issues
-=======
     console.log(`CRITICAL DATA FIELDS:`);
     console.log(`START_TIME: ${reportsWithStartTime} / ${reportsPayload.length}`);
     console.log(`END_TIME: ${reportsWithEndTime} / ${reportsPayload.length}`);
@@ -622,16 +451,11 @@ serve(async (req) => {
     }
     
     const UPSERT_BATCH_SIZE = 50;
->>>>>>> 7a1385b8c62e7f68996cb6ee79b6240e71c1b337
     let successCount = 0;
     let errorCount = 0;
     
     for (let i = 0; i < reportsPayload.length; i += UPSERT_BATCH_SIZE) {
       const batch = reportsPayload.slice(i, i + UPSERT_BATCH_SIZE);
-<<<<<<< HEAD
-      // Process batch
-=======
->>>>>>> 7a1385b8c62e7f68996cb6ee79b6240e71c1b337
       
       try {
         const { error } = await supabase
@@ -646,10 +470,6 @@ serve(async (req) => {
           errorCount += batch.length;
         } else {
           successCount += batch.length;
-<<<<<<< HEAD
-          // Process batch
-=======
->>>>>>> 7a1385b8c62e7f68996cb6ee79b6240e71c1b337
         }
       } catch (error) {
         console.error(`Exception in batch ${Math.floor(i/UPSERT_BATCH_SIZE) + 1}:`, error);
@@ -693,100 +513,19 @@ serve(async (req) => {
       });
     }
     
-<<<<<<< HEAD
-    // Collect comprehensive debug data (raw API responses)
-    const debugData: any = {
-      routes: [],
-      stops: [],
-      completionDetails: [],
-      mappedOrders: []
-    };
-    
-    // Collect sample route data (up to 2 routes)
-    let routeCount = 0;
-    for (const route of allRoutes || []) {
-      if (routeCount < 2) {
-        // Use type assertion to avoid TypeScript errors
-        const routeData: any = route;
-        debugData.routes.push({
-          driverName: routeData.driverName || 'Unknown',
-          driverSerial: routeData.driverSerial || 'N/A',
-          stopCount: routeData.stops?.length || 0
-        });
-        routeCount++;
-      }
-      
-      // Collect sample stops (up to 5 total)
-      if (debugData.stops.length < 5) {
-        // Use type assertion to avoid TypeScript errors
-        const routeData: any = route;
-        for (const stop of routeData.stops || []) {
-          // Include both order and non-order stops for comparison
-          const isOrderStop = stop.orderNo && stop.orderNo !== '-';
-          debugData.stops.push({
-            ...stop,
-            isOrderStop: isOrderStop
-          });
-          
-          if (debugData.stops.length >= 5) break;
-        }
-      }
-    }
-    
-    // Collect sample completion details (up to 5)
-    let detailCount = 0;
-    for (const [orderNo, detail] of completionDetailsMap.entries()) {
-      if (detailCount < 5) {
-        debugData.completionDetails.push({
-          orderNo: orderNo,
-          data: detail
-        });
-        detailCount++;
-      }
-    }
-    
-    // Collect sample mapped orders (up to 5)
-    debugData.mappedOrders = reportsPayload.slice(0, 5).map(r => ({
-      order_no: r.order_no,
-      address: r.address,
-      latitude: r.latitude,
-      longitude: r.longitude,
-      start_time: r.start_time,
-      end_time: r.end_time
-    }));
-    
-    // Collect debug information
-    const debugInfo = {
-      summary: {
-        total: reportsPayload.length,
-        withStartTime: reportsWithStartTime,
-        withEndTime: reportsWithEndTime,
-        withNotes: reportsWithNotes,
-        withAddress: reportsWithAddress
-      },
-      // Basic sample data for regular response
-=======
     const debugInfo = {
       reportsWithStartTime: reportsPayload.filter(r => r.start_time !== null).length,
       reportsWithEndTime: reportsPayload.filter(r => r.end_time !== null).length,
       reportsWithAddress: reportsPayload.filter(r => r.address !== null).length,
       reportsWithNotes: reportsPayload.filter(r => r.notes !== null).length,
->>>>>>> 7a1385b8c62e7f68996cb6ee79b6240e71c1b337
       sampleReports: reportsPayload.slice(0, 3).map(r => ({
         order_no: r.order_no,
         start_time: r.start_time,
         end_time: r.end_time,
         job_duration: r.job_duration,
         address: r.address,
-<<<<<<< HEAD
-        latitude: r.latitude,
-        longitude: r.longitude,
-=======
->>>>>>> 7a1385b8c62e7f68996cb6ee79b6240e71c1b337
         notes: r.notes ? r.notes.substring(0, 50) + (r.notes.length > 50 ? '...' : '') : null
-      })),
-      // Comprehensive debug data for troubleshooting
-      rawApiData: debugData
+      }))
     };
     
     return new Response(JSON.stringify({
