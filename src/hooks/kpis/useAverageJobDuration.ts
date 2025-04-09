@@ -1,111 +1,117 @@
 
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
-interface AverageJobDurationData {
+interface AverageDurationResult {
   hours: number;
   minutes: number;
   jobCount: number;
-  totalMinutes: number;
 }
 
 export const useAverageJobDuration = (
   reportDate: string | null,
-  selectedDrivers: string[] = [],
-  selectedCustomerGroups: string[] = [],
-  selectedCustomerNames: string[] = []
+  selectedDrivers: string[],
+  selectedCustomerGroups: string[],
+  selectedCustomerNames: string[]
 ) => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<AverageJobDurationData | null>(null);
+  const [data, setData] = useState<AverageDurationResult | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!reportDate) {
-        return;
-      }
-
+    const fetchAverageDuration = async () => {
       setIsLoading(true);
       setError(null);
 
       try {
+        // Build the query with filters
         let query = supabase
           .from('reports')
-          .select('job_duration, order_no')
-          .eq('status', 'Completed')  // Only consider completed jobs
-          .not('job_duration', 'is', null) // Only jobs with duration data
-          .gte('end_time', `${reportDate}T00:00:00`)
-          .lt('end_time', `${reportDate}T23:59:59`);
+          .select('start_time, end_time')
+          .not('start_time', 'is', null)
+          .not('end_time', 'is', null);
 
-        // Apply driver filter if any drivers are selected
-        if (selectedDrivers.length > 0) {
+        // Apply date filter if provided
+        if (reportDate) {
+          const startOfDay = `${reportDate}T00:00:00`;
+          const endOfDay = `${reportDate}T23:59:59`;
+          
+          query = query
+            .gte('end_time', startOfDay)
+            .lte('end_time', endOfDay);
+        }
+
+        // Apply driver filter if provided
+        if (selectedDrivers && selectedDrivers.length > 0) {
           query = query.in('tech_name', selectedDrivers);
         }
 
-        // Apply customer group filter if any groups are selected
-        if (selectedCustomerGroups.length > 0) {
+        // Apply customer group filter if provided
+        if (selectedCustomerGroups && selectedCustomerGroups.length > 0) {
           query = query.in('cust_group', selectedCustomerGroups);
         }
 
-        // Apply customer name filter if any names are selected
-        if (selectedCustomerNames.length > 0) {
+        // Apply customer name filter if provided
+        if (selectedCustomerNames && selectedCustomerNames.length > 0) {
           query = query.in('cust_name', selectedCustomerNames);
         }
 
-        const { data: jobsWithDuration, error: fetchError } = await query;
+        const { data: jobsData, error: jobsError } = await query;
 
-        if (fetchError) {
-          throw new Error(fetchError.message);
+        if (jobsError) {
+          throw new Error(jobsError.message);
         }
 
-        if (!jobsWithDuration || jobsWithDuration.length === 0) {
-          setData({
-            hours: 0,
-            minutes: 0,
-            jobCount: 0,
-            totalMinutes: 0
+        // Calculate the average duration
+        if (jobsData && jobsData.length > 0) {
+          let totalMinutes = 0;
+          let validJobsCount = 0;
+
+          jobsData.forEach(job => {
+            if (job.start_time && job.end_time) {
+              const startTime = new Date(job.start_time);
+              const endTime = new Date(job.end_time);
+              
+              // Only calculate if both dates are valid
+              if (!isNaN(startTime.getTime()) && !isNaN(endTime.getTime())) {
+                const durationMinutes = (endTime.getTime() - startTime.getTime()) / (1000 * 60);
+                
+                // Only count positive durations that are reasonably within service time (less than 24 hours)
+                if (durationMinutes > 0 && durationMinutes < 24 * 60) {
+                  totalMinutes += durationMinutes;
+                  validJobsCount++;
+                }
+              }
+            }
           });
-          setIsLoading(false);
-          return;
-        }
 
-        // Process job_duration: 'PT1H30M' format
-        let totalMinutes = 0;
-        const jobCount = jobsWithDuration.length;
-
-        jobsWithDuration.forEach(job => {
-          if (job.job_duration) {
-            const durationStr = String(job.job_duration);
-            // Extract hours and minutes from PT0H0M format
-            const hoursMatch = durationStr.match(/(\d+)H/);
-            const minutesMatch = durationStr.match(/(\d+)M/);
+          if (validJobsCount > 0) {
+            const avgMinutes = totalMinutes / validJobsCount;
+            const hours = Math.floor(avgMinutes / 60);
+            const minutes = Math.round(avgMinutes % 60);
             
-            const hours = hoursMatch ? parseInt(hoursMatch[1], 10) : 0;
-            const minutes = minutesMatch ? parseInt(minutesMatch[1], 10) : 0;
-            
-            totalMinutes += hours * 60 + minutes;
+            setData({
+              hours,
+              minutes,
+              jobCount: validJobsCount
+            });
+          } else {
+            setData(null);
           }
-        });
-
-        const averageMinutes = jobCount > 0 ? totalMinutes / jobCount : 0;
-        const hours = Math.floor(averageMinutes / 60);
-        const minutes = Math.round(averageMinutes % 60);
-
-        setData({
-          hours,
-          minutes,
-          jobCount,
-          totalMinutes: Math.round(averageMinutes)
-        });
+        } else {
+          setData(null);
+        }
       } catch (err: any) {
-        console.error('Error fetching average job duration:', err);
-        setError(err.message || 'Failed to fetch average job duration');
+        console.error("Error fetching average job duration:", err);
+        setError(err.message || "Failed to fetch average job duration");
+        toast.error("Failed to load average job duration");
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchData();
+    fetchAverageDuration();
   }, [reportDate, selectedDrivers, selectedCustomerGroups, selectedCustomerNames]);
 
   return { isLoading, data, error };
