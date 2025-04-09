@@ -354,14 +354,20 @@ serve(async (req) => {
           
           const workOrderStatus = workOrderStatusMap.get(orderNo) || "Scheduled";
           
-          let address = null;
-          let latitude = null;
-          let longitude = null;
+          // UPDATED LOCATION DATA EXTRACTION: Direct properties access
+          let address = stop.address || null;
+          let latitude = stop.latitude || null;
+          let longitude = stop.longitude || null;
           
-          if (stop.location) {
-            address = stop.location.address || null;
-            latitude = stop.location.latitude || null;
-            longitude = stop.location.longitude || null;
+          // Debug location data extraction
+          if (orderNo.endsWith('1') || orderNo.endsWith('2') || orderNo.endsWith('3')) {
+            console.log(`=== LOCATION DEBUG FOR ORDER ${orderNo} ===`);
+            console.log(`stop has address:`, !!stop.address);
+            console.log(`stop has latitude:`, !!stop.latitude);
+            console.log(`stop has longitude:`, !!stop.longitude);
+            console.log(`Extracted address: ${address}`);
+            console.log(`Extracted latitude: ${latitude}`);
+            console.log(`Extracted longitude: ${longitude}`);
           }
           
           // Add to reportsPayload
@@ -484,11 +490,13 @@ serve(async (req) => {
     const debugInfo = {
       reportsWithStartTime: reportsPayload.filter(r => r.start_time !== null).length,
       reportsWithEndTime: reportsPayload.filter(r => r.end_time !== null).length,
+      reportsWithAddress: reportsPayload.filter(r => r.address !== null).length,
       sampleReports: reportsPayload.slice(0, 3).map(r => ({
         order_no: r.order_no,
         start_time: r.start_time,
         end_time: r.end_time,
         job_duration: r.job_duration,
+        address: r.address,
         notes: r.notes ? r.notes.substring(0, 50) + (r.notes.length > 50 ? '...' : '') : null
       }))
     };
