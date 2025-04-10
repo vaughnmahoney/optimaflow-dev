@@ -5,6 +5,7 @@ import { DateRange } from "react-day-picker";
 import { startOfMonth, endOfMonth } from "date-fns";
 import { FilterBar } from "@/components/reports/dashboard/FilterBar";
 import { Dashboard } from "@/components/reports/dashboard";
+import { ReportsFetchControl } from "@/components/reports/ReportsFetchControl";
 
 const Reports = () => {
   // Initialize with current month
@@ -25,6 +26,9 @@ const Reports = () => {
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold tracking-tight">Reports Dashboard</h1>
         </div>
+        
+        {/* Reports Fetch Control */}
+        <ReportsFetchControl />
         
         {/* Filter Bar */}
         <FilterBar 
