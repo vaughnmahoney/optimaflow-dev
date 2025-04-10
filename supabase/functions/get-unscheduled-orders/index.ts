@@ -22,6 +22,7 @@ serve(async (req) => {
       return createErrorResponse('Missing date parameters', 400);
     }
     
+    // Get API key from environment variables
     const apiKey = Deno.env.get('OPTIMOROUTE_API_KEY');
     if (!apiKey) {
       console.error('OptimoRoute API key not configured');
@@ -29,15 +30,15 @@ serve(async (req) => {
     }
     
     console.log(`Fetching orders for date range: ${startDate} to ${endDate}`);
+    console.log(`Using API key: ${apiKey ? 'FOUND (key exists)' : 'MISSING'}`);
     
     try {
       // Make request to OptimoRoute search_orders API
+      // According to OptimoRoute docs, we need to pass the key in the request body
       const response = await fetch('https://api.optimoroute.com/v1/search_orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // Using the key parameter in the request body instead of Authorization header
-          // See: https://api.optimoroute.com/v1/docs#search_orders
         },
         body: JSON.stringify({
           key: apiKey,
