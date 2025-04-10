@@ -36,11 +36,9 @@ serve(async (req) => {
       );
     }
     
-    // Log the environment for debugging
-    console.log("Available environment variables:", Object.keys(Deno.env.toObject()));
-    
+    // Get API key and validate it exists
     const apiKey = Deno.env.get('OPTIMOROUTE_API_KEY');
-    console.log("API Key available:", apiKey ? "Yes (length: " + apiKey.length + ")" : "No");
+    console.log("API Key check:", apiKey ? `Found (length: ${apiKey.length})` : "Not found");
     
     if (!apiKey) {
       return new Response(
@@ -88,6 +86,11 @@ serve(async (req) => {
         requestBody.afterTag = afterTag;
       }
       
+      // Log request details (but sanitize the API key for security)
+      const sanitizedRequestBody = { ...requestBody };
+      sanitizedRequestBody.key = `${apiKey.substring(0, 4)}...${apiKey.substring(apiKey.length - 4)}`;
+      console.log("Request to OptimoRoute:", JSON.stringify(sanitizedRequestBody));
+      
       try {
         // Call search_orders API
         const response = await fetch('https://api.optimoroute.com/v1/search_orders', {
@@ -98,9 +101,13 @@ serve(async (req) => {
           body: JSON.stringify(requestBody)
         });
         
+        // Log response status
+        console.log(`OptimoRoute API response status: ${response.status}`);
+        
+        // If not OK, get and log the error details
         if (!response.ok) {
           const errorText = await response.text();
-          console.error(`OptimoRoute API error: ${response.status} - ${errorText}`);
+          console.error(`OptimoRoute API error (${response.status}): ${errorText}`);
           return new Response(
             JSON.stringify({
               success: false,
@@ -118,17 +125,22 @@ serve(async (req) => {
         
         const data = await response.json();
         
+        // Validate response
         if (!data || typeof data !== 'object') {
+          console.error("Invalid response format from OptimoRoute API:", data);
           throw new Error('Invalid response from OptimoRoute API');
         }
         
         // Check for success field in response
         if (data.success !== true) {
-          throw new Error(`OptimoRoute API error: ${data.message || 'Unknown error'}`);
+          const errorMsg = data.message || 'Unknown error';
+          console.error(`OptimoRoute API error: ${errorMsg}`);
+          throw new Error(`OptimoRoute API error: ${errorMsg}`);
         }
         
         // Check for orders field in response
         if (!Array.isArray(data.orders)) {
+          console.error("Missing orders array in response:", data);
           throw new Error('OptimoRoute API response missing orders array');
         }
         
