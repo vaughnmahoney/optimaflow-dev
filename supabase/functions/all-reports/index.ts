@@ -90,10 +90,12 @@ serve(async (req) => {
       const sanitizedRequestBody = { ...requestBody };
       sanitizedRequestBody.key = `${apiKey.substring(0, 4)}...${apiKey.substring(apiKey.length - 4)}`;
       console.log("Request to OptimoRoute:", JSON.stringify(sanitizedRequestBody));
-      
+
+
+      const searchUrl = `https://api.optimoroute.com/v1/search_orders?key=${apiKey}`;
       try {
         // Call search_orders API
-        const response = await fetch('https://api.optimoroute.com/v1/search_orders?key=${apiKey}', {
+         const response = await fetch(searchUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
