@@ -36,9 +36,11 @@ serve(async (req) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
+          // Using the key parameter in the request body instead of Authorization header
+          // See: https://api.optimoroute.com/v1/docs#search_orders
         },
         body: JSON.stringify({
+          key: apiKey,
           dateRange: {
             from: startDate,
             to: endDate
@@ -64,7 +66,7 @@ serve(async (req) => {
       // Check for success field in response
       if (data.success !== true) {
         console.error('OptimoRoute API returned success: false', data);
-        return createErrorResponse('OptimoRoute API returned unsuccessful response', 500);
+        return createErrorResponse(`OptimoRoute API error: ${data.message || 'Unknown error'}`, 500);
       }
       
       // Check for orders field in response
