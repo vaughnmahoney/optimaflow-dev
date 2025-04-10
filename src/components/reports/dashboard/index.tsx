@@ -8,6 +8,8 @@ import { TechnicianPerformanceCard } from './TechnicianPerformanceCard';
 import { MostFlaggedTechniciansCard } from './MostFlaggedTechniciansCard';
 import { TopCustomersCard } from './TopCustomersCard';
 import { CustomerFlagBreakdownCard } from './CustomerFlagBreakdownCard';
+import { MapCard } from './MapCard';
+import { CompletionTrendCard } from './CompletionTrendCard';
 import { format } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 
@@ -31,6 +33,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Key Performance Indicators - Top Row */}
       <JobsCompletedCard />
       <AverageJobDurationCard 
         reportDate={reportDate}
@@ -39,6 +42,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
         selectedCustomerNames={selectedCustomerNames}
       />
       <FlagRateCard />
+      
+      {/* Map and Charts - Middle Row */}
+      <MapCard />
+      <CompletionTrendCard />
+      
+      {/* Additional Charts - Bottom Rows */}
       <TechnicianPerformanceCard />
       <MostFlaggedTechniciansCard />
       <TopCustomersCard />
