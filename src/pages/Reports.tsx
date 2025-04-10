@@ -7,6 +7,7 @@ import { FilterBar } from "@/components/reports/dashboard/FilterBar";
 import { Dashboard } from "@/components/reports/dashboard";
 import { ReportsFetchControl } from "@/components/reports/ReportsFetchControl";
 import { UnscheduledOrdersControl } from "@/components/reports/UnscheduledOrdersControl";
+import { AllReportsControl } from "@/components/reports/AllReportsControl";
 
 const Reports = () => {
   // Initialize with current month
@@ -28,11 +29,17 @@ const Reports = () => {
           <h1 className="text-2xl font-bold tracking-tight">Reports Dashboard</h1>
         </div>
         
-        {/* Reports Fetch Control */}
-        <ReportsFetchControl />
-        
-        {/* Unscheduled Orders Control */}
-        <UnscheduledOrdersControl />
+        {/* Data Fetch Controls */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Reports Fetch Control */}
+          <ReportsFetchControl />
+          
+          {/* Unscheduled Orders Control */}
+          <UnscheduledOrdersControl />
+          
+          {/* All Reports LDS Update Control */}
+          <AllReportsControl />
+        </div>
         
         {/* Filter Bar */}
         <FilterBar 
