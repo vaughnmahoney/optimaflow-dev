@@ -42,10 +42,16 @@ export const UnscheduledOrdersControl = () => {
       
       if (error) {
         console.error('Error fetching unscheduled orders:', error);
-        toast.error(`Error: ${error.message || 'Failed to fetch unscheduled orders'}`);
+        
+        let errorMessage = 'Failed to fetch unscheduled orders';
+        if (error.message) {
+          errorMessage = `Error: ${error.message}`;
+        }
+        
+        toast.error(errorMessage);
         setResults({
           success: false,
-          message: error.message || 'An error occurred while fetching unscheduled orders'
+          message: errorMessage
         });
         return;
       }
@@ -75,10 +81,14 @@ export const UnscheduledOrdersControl = () => {
       
     } catch (error) {
       console.error('Exception fetching unscheduled orders:', error);
+      
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      
       setResults({
         success: false,
-        message: error instanceof Error ? error.message : 'Unknown error occurred'
+        message: errorMessage
       });
+      
       toast.error('Failed to fetch unscheduled orders');
     } finally {
       setIsLoading(false);
