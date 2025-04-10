@@ -31,6 +31,8 @@ export const UnscheduledOrdersControl = () => {
       const formattedStartDate = format(dateRange.from, 'yyyy-MM-dd');
       const formattedEndDate = format(dateRange.to, 'yyyy-MM-dd');
       
+      console.log(`Fetching unscheduled orders for date range: ${formattedStartDate} to ${formattedEndDate}`);
+      
       const { data, error } = await supabase.functions.invoke('get-unscheduled-orders', {
         body: {
           startDate: formattedStartDate,
@@ -40,25 +42,36 @@ export const UnscheduledOrdersControl = () => {
       
       if (error) {
         console.error('Error fetching unscheduled orders:', error);
-        toast.error(`Error: ${error.message}`);
+        toast.error(`Error: ${error.message || 'Failed to fetch unscheduled orders'}`);
         setResults({
           success: false,
-          message: error.message
+          message: error.message || 'An error occurred while fetching unscheduled orders'
         });
         return;
       }
       
       console.log('Unscheduled orders response:', data);
       
+      if (!data || !data.success) {
+        const errorMessage = data?.error || 'Invalid response from server';
+        console.error('API error:', errorMessage);
+        toast.error(`Error: ${errorMessage}`);
+        setResults({
+          success: false,
+          message: errorMessage
+        });
+        return;
+      }
+      
       setResults({
         success: true,
-        totalOrders: data.totalOrders,
-        unscheduledOrders: data.unscheduledOrders,
-        insertedCount: data.insertResult?.count || 0,
-        message: `Found ${data.unscheduledOrders} unscheduled orders out of ${data.totalOrders} total orders.`
+        totalOrders: data.data.totalOrders,
+        unscheduledOrders: data.data.unscheduledOrders,
+        insertedCount: data.data.insertResult?.count || 0,
+        message: `Found ${data.data.unscheduledOrders} unscheduled orders out of ${data.data.totalOrders} total orders.`
       });
       
-      toast.success(`Found ${data.unscheduledOrders} unscheduled orders`);
+      toast.success(`Found ${data.data.unscheduledOrders} unscheduled orders`);
       
     } catch (error) {
       console.error('Exception fetching unscheduled orders:', error);

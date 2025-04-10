@@ -2,11 +2,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { corsHeaders, createErrorResponse, createSuccessResponse } from "../_shared/cors.ts";
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -23,19 +19,13 @@ serve(async (req) => {
     
     if (!startDate || !endDate) {
       console.error('Missing date parameters');
-      return new Response(
-        JSON.stringify({ error: 'Missing date parameters', success: false }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return createErrorResponse('Missing date parameters', 400);
     }
     
     const apiKey = Deno.env.get('OPTIMOROUTE_API_KEY');
     if (!apiKey) {
       console.error('OptimoRoute API key not configured');
-      return new Response(
-        JSON.stringify({ error: 'OptimoRoute API key not configured', success: false }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return createErrorResponse('OptimoRoute API key not configured', 500);
     }
     
     // Create Supabase client for database operations
@@ -44,10 +34,7 @@ serve(async (req) => {
     
     if (!supabaseUrl || !supabaseKey) {
       console.error('Supabase configuration missing');
-      return new Response(
-        JSON.stringify({ error: 'Supabase configuration missing', success: false }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return createErrorResponse('Supabase configuration missing', 500);
     }
     
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -58,7 +45,8 @@ serve(async (req) => {
     const response = await fetch('https://api.optimoroute.com/v1/search_orders', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`  // Add the API key in the header
       },
       body: JSON.stringify({
         dateRange: {
@@ -73,26 +61,21 @@ serve(async (req) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`OptimoRoute API error: ${response.status} - ${errorText}`);
-      return new Response(
-        JSON.stringify({ 
-          success: false,
-          error: `OptimoRoute API error: ${errorText}` 
-        }),
-        { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return createErrorResponse(`OptimoRoute API error: ${errorText}`, response.status);
     }
     
     const data = await response.json();
     
-    if (!data.success || !data.orders) {
-      console.error('Invalid response from OptimoRoute API');
-      return new Response(
-        JSON.stringify({ 
-          success: false,
-          error: 'Invalid response from OptimoRoute API' 
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    // Check for success field in response
+    if (!data.success) {
+      console.error('OptimoRoute API returned success: false', data);
+      return createErrorResponse('OptimoRoute API returned success: false', 500);
+    }
+    
+    // Check for orders field in response
+    if (!data.orders) {
+      console.error('OptimoRoute API response missing orders field', data);
+      return createErrorResponse('OptimoRoute API response missing orders field', 500);
     }
     
     console.log(`Retrieved ${data.orders.length} orders total`);
@@ -148,28 +131,18 @@ serve(async (req) => {
     }
     
     // Return response
-    return new Response(
-      JSON.stringify({
-        success: true,
-        totalOrders: data.orders.length,
-        unscheduledOrders: unscheduledOrders.length,
-        dateRange: {
-          startDate,
-          endDate
-        },
-        insertResult
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return createSuccessResponse({
+      totalOrders: data.orders.length,
+      unscheduledOrders: unscheduledOrders.length,
+      dateRange: {
+        startDate,
+        endDate
+      },
+      insertResult
+    });
     
   } catch (error) {
     console.error('Error in get-unscheduled-orders function:', error);
-    return new Response(
-      JSON.stringify({ 
-        success: false,
-        error: error.message || 'An unexpected error occurred' 
-      }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return createErrorResponse(error.message || 'An unexpected error occurred', 500);
   }
 });
