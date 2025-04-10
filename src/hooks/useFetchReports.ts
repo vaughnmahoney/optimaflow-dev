@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -28,21 +29,16 @@ export const useFetchReports = () => {
         method: 'POST',
       });
       
-      console.log("[useFetchReports] Raw response from invoke:", { data, error });
-      
       if (error) {
         console.error("Error calling fetch-reports:", error);
         toast.error(`Error fetching reports: ${error.message || 'Unknown error'}`);
-        const errorResult = { success: false, error: error.message };
-        console.log("[useFetchReports] Setting error result state:", errorResult);
-        setResults(errorResult);
+        setResults({ success: false, error: error.message });
         return;
       }
       
       console.log("Response from fetch-reports:", data);
       
       // Set results
-      console.log("[useFetchReports] Setting success result state:", data);
       setResults(data);
       
       // Display success/error message
@@ -55,9 +51,7 @@ export const useFetchReports = () => {
     } catch (error: any) {
       console.error("Error in fetchReports:", error);
       toast.error(`Error: ${error.message || 'Unknown error'}`);
-      const catchResult = { success: false, error: error.message };
-      console.log("[useFetchReports] Setting catch block result state:", catchResult);
-      setResults(catchResult);
+      setResults({ success: false, error: error.message });
     } finally {
       setIsLoading(false);
     }
