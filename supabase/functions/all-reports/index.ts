@@ -36,7 +36,12 @@ serve(async (req) => {
       );
     }
     
+    // Log the environment for debugging
+    console.log("Available environment variables:", Object.keys(Deno.env.toObject()));
+    
     const apiKey = Deno.env.get('OPTIMOROUTE_API_KEY');
+    console.log("API Key available:", apiKey ? "Yes (length: " + apiKey.length + ")" : "No");
+    
     if (!apiKey) {
       return new Response(
         JSON.stringify({
