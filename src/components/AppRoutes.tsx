@@ -9,6 +9,7 @@ import MaterialRequirements from "@/pages/MaterialRequirements";
 import Login from "@/pages/Login";
 import Users from "@/pages/Users";
 import Reports from "@/pages/Reports";
+import CalendarPage from "@/pages/Calendar";
 
 const AppRoutes = () => {
   return (
@@ -21,6 +22,7 @@ const AppRoutes = () => {
       <Route path="bulk-orders-progressive" element={<BulkOrdersProgressive />} />
       <Route path="users" element={<Users />} />
       <Route path="reports" element={<Reports />} />
+      <Route path="calendar" element={<CalendarPage />} />
     </Routes>
   );
 };
