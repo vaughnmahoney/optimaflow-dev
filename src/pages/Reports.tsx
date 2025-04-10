@@ -6,6 +6,7 @@ import { startOfMonth, endOfMonth } from "date-fns";
 import { FilterBar } from "@/components/reports/dashboard/FilterBar";
 import { Dashboard } from "@/components/reports/dashboard";
 import { ReportsFetchControl } from "@/components/reports/ReportsFetchControl";
+import { UnscheduledOrdersControl } from "@/components/reports/UnscheduledOrdersControl";
 
 const Reports = () => {
   // Initialize with current month
@@ -29,6 +30,9 @@ const Reports = () => {
         
         {/* Reports Fetch Control */}
         <ReportsFetchControl />
+        
+        {/* Unscheduled Orders Control */}
+        <UnscheduledOrdersControl />
         
         {/* Filter Bar */}
         <FilterBar 
