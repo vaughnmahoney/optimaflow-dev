@@ -93,7 +93,7 @@ serve(async (req) => {
       
       try {
         // Call search_orders API
-        const response = await fetch('https://api.optimoroute.com/v1/search_orders', {
+        const response = await fetch('https://api.optimoroute.com/v1/search_orders?key=${apiKey}', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
