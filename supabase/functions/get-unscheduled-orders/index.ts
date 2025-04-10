@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Starting unscheduled orders fetch...');
+    console.log('Starting orders fetch...');
     
     // Parse request body to get date range
     const body = await req.json();
@@ -27,17 +27,6 @@ serve(async (req) => {
       console.error('OptimoRoute API key not configured');
       return createErrorResponse('OptimoRoute API key not configured', 500);
     }
-    
-    // Create Supabase client for database operations
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    
-    if (!supabaseUrl || !supabaseKey) {
-      console.error('Supabase configuration missing');
-      return createErrorResponse('Supabase configuration missing', 500);
-    }
-    
-    const supabase = createClient(supabaseUrl, supabaseKey);
     
     console.log(`Fetching orders for date range: ${startDate} to ${endDate}`);
     
@@ -86,65 +75,14 @@ serve(async (req) => {
       
       console.log(`Retrieved ${data.orders.length} orders total`);
       
-      // Process the data to identify unscheduled orders
-      const unscheduledOrders = data.orders.filter(order => order.scheduleInformation === null);
-      console.log(`Found ${unscheduledOrders.length} unscheduled orders`);
-      
-      // Map to format needed for database insert
-      const ordersToInsert = unscheduledOrders.map(order => {
-        return {
-          order_id: order.id,
-          order_no: order.data?.orderNo || 'unknown',
-          date: order.data?.date || null,
-          location_name: order.data?.location?.locationName || null,
-          test: 'unscheduled', // Set test column value to "unscheduled"
-          data: order
-        };
-      });
-      
-      // Insert into test table
-      let insertResult;
-      if (ordersToInsert.length > 0) {
-        console.log(`Inserting ${ordersToInsert.length} orders into test_orders table`);
-        
-        // Upsert orders into the test_orders table (will create or update based on order_id)
-        const { data: insertedData, error: insertError } = await supabase
-          .from('test_orders')
-          .upsert(ordersToInsert, { 
-            onConflict: 'order_id',
-            ignoreDuplicates: false
-          });
-        
-        if (insertError) {
-          console.error('Error inserting data:', insertError);
-          insertResult = {
-            success: false,
-            error: insertError.message
-          };
-        } else {
-          console.log('Successfully inserted data');
-          insertResult = {
-            success: true,
-            count: ordersToInsert.length
-          };
-        }
-      } else {
-        console.log('No unscheduled orders to insert');
-        insertResult = {
-          success: true,
-          count: 0
-        };
-      }
-      
-      // Return response
+      // Return all orders from the API without filtering
       return createSuccessResponse({
         totalOrders: data.orders.length,
-        unscheduledOrders: unscheduledOrders.length,
         dateRange: {
           startDate,
           endDate
         },
-        insertResult
+        orders: data.orders
       });
     } catch (fetchError) {
       console.error('Error fetching data from OptimoRoute:', fetchError);

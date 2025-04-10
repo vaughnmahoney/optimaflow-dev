@@ -9,6 +9,7 @@ import { CalendarIcon, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { OrdersSearchTable } from './OrdersSearchTable';
 
 export const UnscheduledOrdersControl = () => {
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
@@ -16,7 +17,11 @@ export const UnscheduledOrdersControl = () => {
     to: new Date()
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [results, setResults] = useState<any>(null);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [searchStats, setSearchStats] = useState<{
+    totalOrders: number;
+    dateRange: { startDate: string; endDate: string };
+  } | null>(null);
 
   const handleFetch = async () => {
     if (!dateRange?.from || !dateRange?.to) {
@@ -25,13 +30,14 @@ export const UnscheduledOrdersControl = () => {
     }
     
     setIsLoading(true);
-    setResults(null);
+    setOrders([]);
+    setSearchStats(null);
     
     try {
       const formattedStartDate = format(dateRange.from, 'yyyy-MM-dd');
       const formattedEndDate = format(dateRange.to, 'yyyy-MM-dd');
       
-      console.log(`Fetching unscheduled orders for date range: ${formattedStartDate} to ${formattedEndDate}`);
+      console.log(`Fetching orders for date range: ${formattedStartDate} to ${formattedEndDate}`);
       
       const { data, error } = await supabase.functions.invoke('get-unscheduled-orders', {
         body: {
@@ -41,55 +47,40 @@ export const UnscheduledOrdersControl = () => {
       });
       
       if (error) {
-        console.error('Error fetching unscheduled orders:', error);
+        console.error('Error fetching orders:', error);
         
-        let errorMessage = 'Failed to fetch unscheduled orders';
+        let errorMessage = 'Failed to fetch orders';
         if (error.message) {
           errorMessage = `Error: ${error.message}`;
         }
         
         toast.error(errorMessage);
-        setResults({
-          success: false,
-          message: errorMessage
-        });
         return;
       }
       
-      console.log('Unscheduled orders response:', data);
+      console.log('Orders response:', data);
       
       if (!data || !data.success) {
         const errorMessage = data?.error || 'Invalid response from server';
         console.error('API error:', errorMessage);
         toast.error(`Error: ${errorMessage}`);
-        setResults({
-          success: false,
-          message: errorMessage
-        });
         return;
       }
       
-      setResults({
-        success: true,
+      // Set the orders and search stats
+      setOrders(data.data.orders || []);
+      setSearchStats({
         totalOrders: data.data.totalOrders,
-        unscheduledOrders: data.data.unscheduledOrders,
-        insertedCount: data.data.insertResult?.count || 0,
-        message: `Found ${data.data.unscheduledOrders} unscheduled orders out of ${data.data.totalOrders} total orders.`
+        dateRange: data.data.dateRange
       });
       
-      toast.success(`Found ${data.data.unscheduledOrders} unscheduled orders`);
+      toast.success(`Found ${data.data.totalOrders} orders`);
       
     } catch (error) {
-      console.error('Exception fetching unscheduled orders:', error);
+      console.error('Exception fetching orders:', error);
       
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      
-      setResults({
-        success: false,
-        message: errorMessage
-      });
-      
-      toast.error('Failed to fetch unscheduled orders');
+      toast.error(`Failed to fetch orders: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
@@ -98,10 +89,10 @@ export const UnscheduledOrdersControl = () => {
   return (
     <Card className="mb-6">
       <CardHeader>
-        <CardTitle>Unscheduled Orders Report</CardTitle>
+        <CardTitle>Orders Search Tool</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
+        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center mb-4">
           <div className="grid gap-2 flex-1">
             <label className="text-sm font-medium">Select Date Range</label>
             <Popover>
@@ -143,25 +134,25 @@ export const UnscheduledOrdersControl = () => {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processing...
+                Searching...
               </>
             ) : (
-              'Fetch Unscheduled Orders'
+              'Search Orders'
             )}
           </Button>
         </div>
         
-        {results && (
-          <div className={`mt-4 text-sm p-3 rounded-md ${results.success ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}>
-            <p className="font-medium">{results.message}</p>
-            {results.success && (
-              <>
-                <p className="mt-1">Found {results.unscheduledOrders} unscheduled orders out of {results.totalOrders} total orders</p>
-                <p className="mt-1">Saved {results.insertedCount} orders to test table with status "unscheduled"</p>
-              </>
-            )}
+        {searchStats && (
+          <div className="bg-slate-50 p-3 rounded-md mb-4 text-sm">
+            <p>
+              Found <span className="font-semibold">{searchStats.totalOrders}</span> orders 
+              from <span className="font-semibold">{searchStats.dateRange.startDate}</span> 
+              to <span className="font-semibold">{searchStats.dateRange.endDate}</span>
+            </p>
           </div>
         )}
+        
+        <OrdersSearchTable orders={orders} isLoading={isLoading} />
       </CardContent>
     </Card>
   );
