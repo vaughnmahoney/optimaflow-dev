@@ -108,7 +108,7 @@ serve(async (req) => {
         order_no: order.data?.orderNo || 'unknown',
         date: order.data?.date || null,
         location_name: order.data?.location?.locationName || null,
-        test: 'unscheduled', // Map status to test column as requested
+        test: 'unscheduled', // Set test column value to "unscheduled"
         data: order
       };
     });
@@ -116,9 +116,9 @@ serve(async (req) => {
     // Insert into test table
     let insertResult;
     if (ordersToInsert.length > 0) {
-      console.log(`Inserting ${ordersToInsert.length} orders into test table`);
+      console.log(`Inserting ${ordersToInsert.length} orders into test_orders table`);
       
-      // Upsert orders into the test table (will create or update based on order_id)
+      // Upsert orders into the test_orders table (will create or update based on order_id)
       const { data: insertedData, error: insertError } = await supabase
         .from('test_orders')
         .upsert(ordersToInsert, { 

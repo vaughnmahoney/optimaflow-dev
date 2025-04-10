@@ -390,6 +390,39 @@ export type Database = {
           },
         ]
       }
+      test_orders: {
+        Row: {
+          created_at: string
+          data: Json | null
+          date: string | null
+          id: number
+          location_name: string | null
+          order_id: string
+          order_no: string | null
+          test: string | null
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          date?: string | null
+          id?: number
+          location_name?: string | null
+          order_id: string
+          order_no?: string | null
+          test?: string | null
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          date?: string | null
+          id?: number
+          location_name?: string | null
+          order_id?: string
+          order_no?: string | null
+          test?: string | null
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           created_at: string | null
