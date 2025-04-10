@@ -26,6 +26,7 @@ interface ReportEntry {
   tech_name: string | null;
   region: string | null;
   fetched_at: string;     // When we fetched this data
+  lds: string | null;     // Added: Last Delivery Service date from customField5
 }
 
 serve(async (req) => {
@@ -96,6 +97,82 @@ serve(async (req) => {
         
         const orderNo = stop.orderNo !== "-" ? stop.orderNo : null;
         if (orderNo) orderNumbers.push(orderNo);
+      }
+    }
+    
+    const orderDetailsMap = new Map();
+    const SEARCH_BATCH_SIZE = 500;
+    
+    async function getOrderDetails(orderNumbers: string[], apiKey: string): Promise<any> {
+      if (orderNumbers.length === 0) return { orders: [], success: true };
+      
+      const searchUrl = `https://api.optimoroute.com/v1/search_orders?key=${apiKey}`;
+      const orders = orderNumbers.map(orderNo => ({ orderNo }));
+      
+      try {
+        console.log(`Fetching order details for ${orders.length} orders via search_orders API`);
+        
+        const response = await fetch(searchUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 
+            orders,
+            includeOrderData: true
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`API returned status ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        if (!data.success) {
+          console.error('API reported unsuccessful operation:', data);
+        }
+        
+        return data;
+      } catch (error) {
+        console.error("Error fetching order details:", error);
+        return { orders: [], success: false, error: error.message };
+      }
+    }
+    
+    for (let i = 0; i < orderNumbers.length; i += SEARCH_BATCH_SIZE) {
+      const batch = orderNumbers.slice(i, i + SEARCH_BATCH_SIZE);
+      
+      const orderDetails = await getOrderDetails(batch, apiKey);
+      
+      if (orderDetails && orderDetails.orders) {
+        console.log(`Received ${orderDetails.orders.length} order details in search results`);
+        
+        if (orderDetails.orders.length > 0) {
+          const sampleOrder = orderDetails.orders[0];
+          console.log(`Sample order structure from search_orders:`, JSON.stringify({
+            orderNo: sampleOrder.orderNo,
+            hasCustomField5: sampleOrder.data?.customField5 ? true : false,
+            customField5Value: sampleOrder.data?.customField5 || 'not found'
+          }, null, 2));
+          
+          for (const order of orderDetails.orders) {
+            if (order.orderNo && order.data) {
+              const ldsDate = order.data.customField5 || null;
+              orderDetailsMap.set(order.orderNo, {
+                ldsDate: ldsDate
+              });
+              
+              if (ldsDate && Math.random() < 0.05) {
+                console.log(`Extracted LDS date for order ${order.orderNo}: ${ldsDate}`);
+              }
+            }
+          }
+        }
+      }
+      
+      if (orderNumbers.length > SEARCH_BATCH_SIZE && i + SEARCH_BATCH_SIZE < orderNumbers.length) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
     
@@ -244,6 +321,15 @@ serve(async (req) => {
         
         const completionDetail = completionDetailsMap.get(orderNo);
         const optimorouteStatus = completionDetail ? completionDetail.status : "Planned";
+        
+        const orderDetail = orderDetailsMap.get(orderNo);
+        let ldsDate = null;
+        if (orderDetail && orderDetail.ldsDate) {
+          ldsDate = orderDetail.ldsDate;
+          if (orderNo.endsWith('1') || orderNo.endsWith('2') || orderNo.endsWith('3')) {
+            console.log(`LDS date for order ${orderNo}: ${ldsDate}`);
+          }
+        }
         
         let endTime = null;
         let startTime = null;
@@ -409,6 +495,7 @@ serve(async (req) => {
             cust_group: custGroup || custName,
             tech_name: techName,
             region: region,
+            lds: ldsDate,
             fetched_at: now
           });
         }
@@ -434,18 +521,25 @@ serve(async (req) => {
     const reportsWithEndTime = reportsPayload.filter(r => r.end_time !== null).length;
     const reportsWithNotes = reportsPayload.filter(r => r.notes !== null).length;
     const reportsWithAddress = reportsPayload.filter(r => r.address !== null).length;
+    const reportsWithLDS = reportsPayload.filter(r => r.lds !== null).length;
     
     console.log(`CRITICAL DATA FIELDS:`);
     console.log(`START_TIME: ${reportsWithStartTime} / ${reportsPayload.length}`);
     console.log(`END_TIME: ${reportsWithEndTime} / ${reportsPayload.length}`);
     console.log(`NOTES: ${reportsWithNotes} / ${reportsPayload.length}`);
     console.log(`ADDRESS: ${reportsWithAddress} / ${reportsPayload.length}`);
+    console.log(`LDS: ${reportsWithLDS} / ${reportsPayload.length}`);
     
     if (reportsPayload.length > 0) {
       const sampleNotes = reportsPayload.filter(r => r.notes !== null).slice(0, 3).map(r => 
         `${r.order_no}: ${r.notes!.substring(0, 50)}${r.notes!.length > 50 ? '...' : ''}`
       );
       console.log(`Sample notes (${sampleNotes.length}):`, sampleNotes);
+      
+      const sampleLDS = reportsPayload.filter(r => r.lds !== null).slice(0, 5).map(r => 
+        `${r.order_no}: ${r.lds}`
+      );
+      console.log(`Sample LDS dates (${sampleLDS.length}):`, sampleLDS);
       
       console.log(`Sample report payload:`, JSON.stringify(reportsPayload[0], null, 2));
     }
@@ -518,12 +612,14 @@ serve(async (req) => {
       reportsWithEndTime: reportsPayload.filter(r => r.end_time !== null).length,
       reportsWithAddress: reportsPayload.filter(r => r.address !== null).length,
       reportsWithNotes: reportsPayload.filter(r => r.notes !== null).length,
+      reportsWithLDS: reportsPayload.filter(r => r.lds !== null).length,
       sampleReports: reportsPayload.slice(0, 3).map(r => ({
         order_no: r.order_no,
         start_time: r.start_time,
         end_time: r.end_time,
         job_duration: r.job_duration,
         address: r.address,
+        lds: r.lds,
         notes: r.notes ? r.notes.substring(0, 50) + (r.notes.length > 50 ? '...' : '') : null
       }))
     };

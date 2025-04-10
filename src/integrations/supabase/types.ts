@@ -251,6 +251,7 @@ export type Database = {
           id: number
           job_duration: unknown | null
           latitude: number | null
+          lds: string | null
           longitude: number | null
           notes: string | null
           optimoroute_status: string | null
@@ -271,6 +272,7 @@ export type Database = {
           id?: number
           job_duration?: unknown | null
           latitude?: number | null
+          lds?: string | null
           longitude?: number | null
           notes?: string | null
           optimoroute_status?: string | null
@@ -291,6 +293,7 @@ export type Database = {
           id?: number
           job_duration?: unknown | null
           latitude?: number | null
+          lds?: string | null
           longitude?: number | null
           notes?: string | null
           optimoroute_status?: string | null
