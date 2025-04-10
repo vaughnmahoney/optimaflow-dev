@@ -33,26 +33,22 @@ serve(async (req) => {
     console.log(`Using API key: ${apiKey ? 'FOUND (key exists)' : 'MISSING'}`);
     
     try {
-      // Create properly formatted request body according to OptimoRoute API docs
-      const requestBody = {
-        key: apiKey,
-        dateRange: {
-          from: startDate,
-          to: endDate
-        },
-        includeOrderData: true,
-        includeScheduleInformation: true
-      };
-      
-      console.log('Request body:', JSON.stringify(requestBody));
-      
       // Make request to OptimoRoute search_orders API
+      // According to OptimoRoute docs, we need to pass the key in the request body
       const response = await fetch('https://api.optimoroute.com/v1/search_orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify({
+          key: apiKey,
+          dateRange: {
+            from: startDate,
+            to: endDate
+          },
+          includeOrderData: true,
+          includeScheduleInformation: true
+        })
       });
       
       if (!response.ok) {
