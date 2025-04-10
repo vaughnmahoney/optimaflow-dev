@@ -32,8 +32,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const reportDate = dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : null;
   
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {/* Key Performance Indicators - Top Row */}
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Top Row - 4 Small KPI Cards in a square at top left */}
       <JobsCompletedCard />
       <AverageJobDurationCard 
         reportDate={reportDate}
@@ -42,22 +42,38 @@ export const Dashboard: React.FC<DashboardProps> = ({
         selectedCustomerNames={selectedCustomerNames}
       />
       <FlagRateCard />
-      
-      {/* Map and Charts - Middle Row */}
-      <MapCard />
-      <CompletionTrendCard />
-      
-      {/* Additional Charts - Bottom Rows */}
-      <TechnicianPerformanceCard />
-      <MostFlaggedTechniciansCard />
-      <TopCustomersCard />
       <StatusBreakdownCard 
         chartSelectedDate={dateRange?.from}
         selectedDrivers={selectedDrivers}
         selectedCustomerGroups={selectedCustomerGroups}
         selectedCustomerNames={selectedCustomerNames}
       />
-      <CustomerFlagBreakdownCard />
+      
+      {/* Top Right - Bar Chart spanning 2 grid columns */}
+      <div className="col-span-1 md:col-span-4 lg:col-span-2">
+        <TechnicianPerformanceCard />
+      </div>
+
+      {/* Bottom Left - Map spanning 2 grid columns */}
+      <div className="col-span-1 md:col-span-2">
+        <MapCard />
+      </div>
+      
+      {/* Bottom Right - Trend Card spanning 2 grid columns */}
+      <div className="col-span-1 md:col-span-2">
+        <CompletionTrendCard />
+      </div>
+      
+      {/* Additional Cards - Bottom row */}
+      <div className="col-span-1 md:col-span-2">
+        <MostFlaggedTechniciansCard />
+      </div>
+      <div className="col-span-1 md:col-span-2">
+        <TopCustomersCard />
+      </div>
+      <div className="col-span-1 md:col-span-4">
+        <CustomerFlagBreakdownCard />
+      </div>
     </div>
   );
 };

@@ -2,15 +2,15 @@
 import React, { useState } from "react";
 import { Layout } from "@/components/Layout";
 import { DateRange } from "react-day-picker";
-import { startOfWeek, endOfWeek } from "date-fns";
+import { startOfMonth, endOfMonth } from "date-fns";
 import { FilterBar } from "@/components/reports/dashboard/FilterBar";
 import { Dashboard } from "@/components/reports/dashboard";
 
 const Reports = () => {
-  // Initialize with current week
+  // Initialize with current month
   const [dateRange, setDateRange] = useState<DateRange>({
-    from: startOfWeek(new Date(), { weekStartsOn: 1 }),
-    to: endOfWeek(new Date(), { weekStartsOn: 1 })
+    from: startOfMonth(new Date()),
+    to: endOfMonth(new Date())
   });
   
   // Filter states
