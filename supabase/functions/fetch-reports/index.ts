@@ -613,15 +613,9 @@ serve(async (req) => {
       reportsWithAddress: reportsPayload.filter(r => r.address !== null).length,
       reportsWithNotes: reportsPayload.filter(r => r.notes !== null).length,
       reportsWithLDS: reportsPayload.filter(r => r.lds !== null).length,
-      sampleReports: reportsPayload.slice(0, 3).map(r => ({
-        order_no: r.order_no,
-        start_time: r.start_time,
-        end_time: r.end_time,
-        job_duration: r.job_duration,
-        address: r.address,
-        lds: r.lds,
-        notes: r.notes ? r.notes.substring(0, 50) + (r.notes.length > 50 ? '...' : '') : null
-      }))
+      sampleLDS: reportsPayload.filter(r => r.lds !== null).slice(0, 5).map(r => 
+        `${r.order_no}: ${r.lds}`
+      )
     };
     
     return new Response(JSON.stringify({
