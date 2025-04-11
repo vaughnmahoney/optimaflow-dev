@@ -1,140 +1,54 @@
 
-import { CheckCircle, Flag, Trash2, MoreVertical, CheckCheck, Clock, AlertTriangle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { WorkOrder } from "../types";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Eye, Image, MoreHorizontal, Trash2 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface ActionsMenuProps {
-  workOrder: WorkOrder;
-  onStatusUpdate: (workOrderId: string, newStatus: string, options?: any) => void;
-  onDelete: (workOrderId: string) => void;
-  filters?: any;
-  workOrders?: WorkOrder[];
-  onAdvanceToNextOrder?: (nextOrderId: string) => void;
+  workOrderId: string;
+  orderNo: string;
+  onDelete?: (id: string) => void;
+  onImageView?: (id: string) => void;
 }
 
 export const ActionsMenu = ({ 
-  workOrder, 
-  onStatusUpdate, 
-  onDelete,
-  filters,
-  workOrders,
-  onAdvanceToNextOrder
+  workOrderId, 
+  orderNo,
+  onDelete, 
+  onImageView 
 }: ActionsMenuProps) => {
-  const isResolved = workOrder.status === 'resolved';
-  const isFlagged = workOrder.status === 'flagged' || workOrder.status === 'flagged_followup';
-  const isApproved = workOrder.status === 'approved';
-  const isPending = workOrder.status === 'pending_review';
-  const isRejected = workOrder.status === 'rejected';
-
-  // Get status-specific styling for the disabled status menu item
-  const getStatusItemStyle = () => {
-    if (isApproved) return "text-green-700 bg-green-50 hover:bg-green-100";
-    if (isFlagged) return "text-red-700 bg-red-50 hover:bg-red-100";
-    if (isResolved) return "text-blue-700 bg-blue-50 hover:bg-blue-100";
-    if (isRejected) return "text-orange-700 bg-orange-50 hover:bg-orange-100";
-    return "text-gray-500 hover:bg-gray-100";
-  };
-
-  // Handler to prevent event propagation and perform action
-  const handleAction = (e: React.MouseEvent, action: () => void) => {
-    e.preventDefault();
-    e.stopPropagation();
-    action();
-  };
-  
-  const handleStatusUpdate = (newStatus: string) => {
-    const options = {
-      skipRefresh: true, // Skip refresh by default
-      updateLocal: true, // Update local UI state
-      ...(filters && workOrders && onAdvanceToNextOrder
-        ? { filters, workOrders, onAdvanceToNextOrder }
-        : {})
-    };
-    
-    onStatusUpdate(workOrder.id, newStatus, options);
-  };
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="icon"
-          className="h-8 w-8 hover:bg-slate-100"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <MoreVertical className="h-4 w-4" />
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <span className="sr-only">Open menu</span>
+          <MoreHorizontal className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48" onClick={(e) => e.stopPropagation()}>
-        {/* Current status - clicking returns to pending */}
-        {!isPending && (
-          <DropdownMenuItem 
-            onClick={(e) => handleAction(e, () => handleStatusUpdate("pending_review"))}
-            className={getStatusItemStyle()}
-          >
-            <Clock className="h-4 w-4 mr-2" />
-            {isApproved ? "Approved" : isFlagged ? "Flagged" : isResolved ? "Resolved" : isRejected ? "Rejected" : "Status"}
-          </DropdownMenuItem>
-        )}
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem asChild>
+          <Link to={`/order/${orderNo}`} className="flex items-center w-full cursor-pointer">
+            <Eye className="mr-2 h-4 w-4" />
+            <span>View Details</span>
+          </Link>
+        </DropdownMenuItem>
         
-        {/* Show approve option if not already approved and not rejected */}
-        {!isApproved && !isRejected && (
-          <DropdownMenuItem 
-            onClick={(e) => handleAction(e, () => handleStatusUpdate("approved"))}
-          >
-            <CheckCircle className="h-4 w-4 mr-2" />
-            Approve
-          </DropdownMenuItem>
-        )}
-        
-        {/* Show flag option if not already flagged and not rejected */}
-        {!isFlagged && !isRejected && (
-          <DropdownMenuItem 
-            onClick={(e) => handleAction(e, () => handleStatusUpdate("flagged"))}
-          >
-            <Flag className="h-4 w-4 mr-2" />
-            Flag
-          </DropdownMenuItem>
-        )}
-        
-        {/* Show resolve option for flagged states */}
-        {isFlagged && (
-          <DropdownMenuItem 
-            onClick={(e) => handleAction(e, () => handleStatusUpdate("resolved"))}
-            className="text-blue-600"
-          >
-            <CheckCheck className="h-4 w-4 mr-2" />
-            Resolve
-          </DropdownMenuItem>
-        )}
-        
-        {/* If rejected, show option to reopen */}
-        {isRejected && (
-          <DropdownMenuItem 
-            onClick={(e) => handleAction(e, () => handleStatusUpdate("pending_review"))}
-            className="text-yellow-600"
-          >
-            <Clock className="h-4 w-4 mr-2" />
-            Reopen
-          </DropdownMenuItem>
-        )}
-        
-        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => onImageView && onImageView(workOrderId)}>
+          <Image className="mr-2 h-4 w-4" />
+          <span>View Images</span>
+        </DropdownMenuItem>
         
         <DropdownMenuItem 
-          onClick={(e) => handleAction(e, () => onDelete(workOrder.id))}
-          className="text-destructive"
+          onClick={() => onDelete && onDelete(workOrderId)}
+          className="text-destructive focus:text-destructive"
         >
-          <Trash2 className="h-4 w-4 mr-2" />
-          Delete
+          <Trash2 className="mr-2 h-4 w-4" />
+          <span>Delete</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

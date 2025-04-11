@@ -9,7 +9,8 @@ import MaterialRequirements from "@/pages/MaterialRequirements";
 import Login from "@/pages/Login";
 import Users from "@/pages/Users";
 import Reports from "@/pages/Reports";
-import CalendarPage from "@/pages/Calendar";
+import CalendarPage from "@/pages/CalendarPage";
+import OrderDetailsPage from "@/components/workorders/detail/OrderDetailsPage";
 
 const AppRoutes = () => {
   return (
@@ -17,6 +18,7 @@ const AppRoutes = () => {
       <Route path="/" element={<Login />} />
       <Route path="login" element={<Login />} />
       <Route path="work-orders" element={<WorkOrders />} />
+      <Route path="order/:orderNo" element={<OrderDetailsPage />} />
       <Route path="bulk-orders" element={<BulkOrdersTest />} />
       <Route path="material-requirements" element={<MaterialRequirements />} />
       <Route path="bulk-orders-progressive" element={<BulkOrdersProgressive />} />
