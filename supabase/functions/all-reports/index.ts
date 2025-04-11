@@ -153,6 +153,10 @@ serve(async (req) => {
         // Add orders to our collection
         allOrders = allOrders.concat(data.orders);
         
+        // Add detailed logging for after_tag before the condition check
+        console.log(`PAGINATION DEBUG: after_tag type: ${typeof data.after_tag}, value:`, data.after_tag);
+        console.log(`PAGINATION DEBUG: response structure keys:`, Object.keys(data));
+        
         // Check if there are more pages to fetch - directly checking for after_tag at the top level
         if (data.after_tag) {
           afterTag = data.after_tag;
@@ -212,6 +216,10 @@ serve(async (req) => {
             console.log(`Retry successful! Received ${retryBatchSize} orders in retry for page ${pageCount}`);
             
             allOrders = allOrders.concat(retryData.orders);
+            
+            // Add detailed logging for after_tag in retry response
+            console.log(`RETRY PAGINATION DEBUG: after_tag type: ${typeof retryData.after_tag}, value:`, retryData.after_tag);
+            console.log(`RETRY PAGINATION DEBUG: response structure keys:`, Object.keys(retryData));
             
             // Check for after_tag at the top level for pagination in retry
             if (retryData.after_tag) {
