@@ -68,9 +68,12 @@ serve(async (req) => {
     // Process orders in batches using afterTag pagination
     while (hasMorePages) {
       pageCount++;
-      console.log(`Fetching orders page ${pageCount}${afterTag ? ' with afterTag' : ''}`);
+      console.log(`Fetching orders page ${pageCount}${afterTag ? ' with afterTag: ' + afterTag : ''}`);
       
-      // Prepare request body WITHOUT the API key
+      // Build the URL with the API key as a query parameter
+      const searchUrl = `https://api.optimoroute.com/v1/search_orders?key=${apiKey}`;
+      
+      // Prepare request body
       const requestBody = {
         dateRange: {
           from: startDate,
@@ -84,9 +87,6 @@ serve(async (req) => {
       if (afterTag) {
         requestBody.afterTag = afterTag;
       }
-      
-      // Build the URL with the API key as a query parameter
-      const searchUrl = `https://api.optimoroute.com/v1/search_orders?key=${apiKey}`;
       
       // Log request details (but sanitize the API key for security)
       const logSafeUrl = `https://api.optimoroute.com/v1/search_orders?key=${apiKey.substring(0, 4)}...${apiKey.substring(apiKey.length - 4)}`;
@@ -158,26 +158,81 @@ serve(async (req) => {
           afterTag = data.afterTag;
           console.log(`More pages available, next afterTag: ${afterTag}`);
           // Increase delay between requests to avoid rate limiting
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Increased from 500ms to 1000ms
         } else {
           hasMorePages = false;
           console.log(`No more pages, finished after ${pageCount} page(s)`);
         }
+        
+        // If we've fetched 5000 orders, stop to avoid processing too much at once
+        if (totalProcessed >= 5000) {
+          console.log(`Reached order limit of 5000, stopping pagination`);
+          hasMorePages = false;
+        }
       } catch (error) {
         console.error(`Error in page ${pageCount}:`, error);
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: `Error fetching data: ${error.message}`
-          }),
-          {
-            status: 500,
-            headers: {
-              "Content-Type": "application/json",
-              ...corsHeaders
+        // Add a retry mechanism for failed requests
+        const maxRetries = 3;
+        let retryCount = 0;
+        let retrySuccess = false;
+        
+        while (retryCount < maxRetries && !retrySuccess) {
+          retryCount++;
+          console.log(`Retry attempt ${retryCount}/${maxRetries} for page ${pageCount}...`);
+          
+          // Exponential backoff: wait longer between each retry
+          const backoffDelay = Math.pow(2, retryCount) * 1000;
+          console.log(`Waiting ${backoffDelay}ms before retry...`);
+          await new Promise(resolve => setTimeout(resolve, backoffDelay));
+          
+          try {
+            const retryResponse = await fetch(searchUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(requestBody)
+            });
+            
+            if (!retryResponse.ok) {
+              console.error(`Retry failed with status ${retryResponse.status}`);
+              continue;
             }
+            
+            const retryData = await retryResponse.json();
+            
+            if (retryData.success !== true || !Array.isArray(retryData.orders)) {
+              console.error("Retry returned invalid data:", retryData);
+              continue;
+            }
+            
+            // Retry was successful
+            const retryBatchSize = retryData.orders.length;
+            totalProcessed += retryBatchSize;
+            console.log(`Retry successful! Received ${retryBatchSize} orders in retry for page ${pageCount}`);
+            
+            allOrders = allOrders.concat(retryData.orders);
+            
+            if (retryData.afterTag) {
+              afterTag = retryData.afterTag;
+            } else {
+              hasMorePages = false;
+            }
+            
+            retrySuccess = true;
+          } catch (retryError) {
+            console.error(`Retry ${retryCount} failed:`, retryError);
           }
-        );
+        }
+        
+        if (!retrySuccess) {
+          // If all retries failed, continue to the next page or stop
+          console.log(`All retries failed for page ${pageCount}, ${hasMorePages ? 'continuing to next page' : 'stopping pagination'}`);
+          // If we had an afterTag, we can try to continue from the next page
+          if (!afterTag) {
+            hasMorePages = false;
+          }
+        }
       }
     }
     
