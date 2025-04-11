@@ -11,6 +11,7 @@ import Users from "@/pages/Users";
 import Reports from "@/pages/Reports";
 import CalendarPage from "@/pages/Calendar"; // Changed from @/pages/CalendarPage
 import OrderDetailsPage from "@/components/workorders/detail/OrderDetailsPage";
+import OrderHistory from "@/pages/OrderHistory";
 
 const AppRoutes = () => {
   return (
@@ -19,6 +20,7 @@ const AppRoutes = () => {
       <Route path="login" element={<Login />} />
       <Route path="work-orders" element={<WorkOrders />} />
       <Route path="order/:orderNo" element={<OrderDetailsPage />} />
+      <Route path="order-history" element={<OrderHistory />} />
       <Route path="bulk-orders" element={<BulkOrdersTest />} />
       <Route path="material-requirements" element={<MaterialRequirements />} />
       <Route path="bulk-orders-progressive" element={<BulkOrdersProgressive />} />
