@@ -1,3 +1,4 @@
+
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
 
 const corsHeaders = {
@@ -70,8 +71,11 @@ async function handleBatchRequest(orderNumbers, optimoRouteApiKey, supabase, cor
   
   try {
     // 1. First get the order details with correct format
+    // Build the URL with API key as query parameter
+    const searchUrl = `https://api.optimoroute.com/v1/search_orders?key=${optimoRouteApiKey}`;
+    
     const searchResponse = await fetch(
-      `https://api.optimoroute.com/v1/search_orders?key=${optimoRouteApiKey}`,
+      searchUrl,
       {
         method: 'POST',
         headers: {
@@ -125,9 +129,12 @@ async function handleSingleRequest(searchQuery, optimoRouteApiKey, supabase, cor
     );
   }
   
+  // Build the URL with API key as query parameter
+  const searchUrl = `https://api.optimoroute.com/v1/search_orders?key=${optimoRouteApiKey}`;
+  
   // 1. First get the order details with correct format
   const searchResponse = await fetch(
-    `https://api.optimoroute.com/v1/search_orders?key=${optimoRouteApiKey}`,
+    searchUrl,
     {
       method: 'POST',
       headers: {
@@ -156,8 +163,11 @@ async function handleSingleRequest(searchQuery, optimoRouteApiKey, supabase, cor
   const order = searchData.orders[0];
 
   // 2. Then get the completion details with correct format
+  // Build the URL with API key as query parameter
+  const completionUrl = `https://api.optimoroute.com/v1/get_completion_details?key=${optimoRouteApiKey}`;
+  
   const completionResponse = await fetch(
-    `https://api.optimoroute.com/v1/get_completion_details?key=${optimoRouteApiKey}`,
+    completionUrl,
     {
       method: 'POST',
       headers: {

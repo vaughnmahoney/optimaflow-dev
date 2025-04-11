@@ -70,9 +70,8 @@ serve(async (req) => {
       pageCount++;
       console.log(`Fetching orders page ${pageCount}${afterTag ? ' with afterTag' : ''}`);
       
-      // Prepare request body for search_orders API
+      // Prepare request body WITHOUT the API key
       const requestBody = {
-        key: apiKey,
         dateRange: {
           from: startDate,
           to: endDate
@@ -86,16 +85,17 @@ serve(async (req) => {
         requestBody.afterTag = afterTag;
       }
       
-      // Log request details (but sanitize the API key for security)
-      const sanitizedRequestBody = { ...requestBody };
-      sanitizedRequestBody.key = `${apiKey.substring(0, 4)}...${apiKey.substring(apiKey.length - 4)}`;
-      console.log("Request to OptimoRoute:", JSON.stringify(sanitizedRequestBody));
-
-
+      // Build the URL with the API key as a query parameter
       const searchUrl = `https://api.optimoroute.com/v1/search_orders?key=${apiKey}`;
+      
+      // Log request details (but sanitize the API key for security)
+      const logSafeUrl = `https://api.optimoroute.com/v1/search_orders?key=${apiKey.substring(0, 4)}...${apiKey.substring(apiKey.length - 4)}`;
+      console.log("Request to OptimoRoute URL:", logSafeUrl);
+      console.log("Request body:", JSON.stringify(requestBody));
+
       try {
-        // Call search_orders API
-         const response = await fetch(searchUrl, {
+        // Call search_orders API with key in URL
+        const response = await fetch(searchUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -157,8 +157,8 @@ serve(async (req) => {
         if (data.afterTag) {
           afterTag = data.afterTag;
           console.log(`More pages available, next afterTag: ${afterTag}`);
-          // Small delay to avoid rate limiting
-          await new Promise(resolve => setTimeout(resolve, 300));
+          // Increase delay between requests to avoid rate limiting
+          await new Promise(resolve => setTimeout(resolve, 500));
         } else {
           hasMorePages = false;
           console.log(`No more pages, finished after ${pageCount} page(s)`);

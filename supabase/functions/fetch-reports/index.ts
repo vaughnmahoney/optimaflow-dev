@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.170.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
@@ -54,6 +55,7 @@ serve(async (req) => {
       pageCount++;
       console.log(`Fetching routes page ${pageCount}${afterTag ? ' with afterTag' : ''}`);
       
+      // Build the URL with API key as query parameter
       let routesUrl = `https://api.optimoroute.com/v1/get_routes?key=${apiKey}&date=${requestDate}`;
       if (afterTag) {
         routesUrl += `&afterTag=${afterTag}`;
@@ -106,6 +108,7 @@ serve(async (req) => {
     async function getOrderDetails(orderNumbers: string[], apiKey: string): Promise<any> {
       if (orderNumbers.length === 0) return { orders: [], success: true };
       
+      // Build URL with API key as query parameter
       const searchUrl = `https://api.optimoroute.com/v1/search_orders?key=${apiKey}`;
       const orders = orderNumbers.map(orderNo => ({ orderNo }));
       
@@ -119,7 +122,7 @@ serve(async (req) => {
           },
           body: JSON.stringify({ 
             orders,
-            includeOrderData: true
+            includeOrderData: true,
             includeScheduleInformation: true
           })
         });
@@ -180,6 +183,7 @@ serve(async (req) => {
     async function getCompletionDetails(orderNumbers: string[], apiKey: string): Promise<any> {
       if (orderNumbers.length === 0) return { orders: [], success: true };
       
+      // Build URL with API key as query parameter
       const completionUrl = `https://api.optimoroute.com/v1/get_completion_details?key=${apiKey}`;
       const orders = orderNumbers.map(orderNo => ({ orderNo }));
       
