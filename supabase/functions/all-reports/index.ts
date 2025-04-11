@@ -83,7 +83,7 @@ serve(async (req) => {
         includeScheduleInformation: true
       };
       
-      // Add after_tag if we're not on the first page - using the correct parameter name
+      // Add after_tag if we're not on the first page
       if (afterTag) {
         requestBody.after_tag = afterTag;
       }
@@ -153,7 +153,7 @@ serve(async (req) => {
         // Add orders to our collection
         allOrders = allOrders.concat(data.orders);
         
-        // Check if there are more pages to fetch - using the correct property name after_tag
+        // Check if there are more pages to fetch - directly checking for after_tag at the top level
         if (data.after_tag) {
           afterTag = data.after_tag;
           console.log(`More pages available, next after_tag: ${afterTag}`);
@@ -213,7 +213,7 @@ serve(async (req) => {
             
             allOrders = allOrders.concat(retryData.orders);
             
-            // Use the correct property name after_tag for checking pagination
+            // Check for after_tag at the top level for pagination in retry
             if (retryData.after_tag) {
               afterTag = retryData.after_tag;
             } else {
