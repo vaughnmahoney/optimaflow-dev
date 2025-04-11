@@ -68,7 +68,7 @@ serve(async (req) => {
     // Process orders in batches using afterTag pagination
     while (hasMorePages) {
       pageCount++;
-      console.log(`Fetching orders page ${pageCount}${afterTag ? ' with afterTag: ' + afterTag : ''}`);
+      console.log(`Fetching orders page ${pageCount}${afterTag ? ' with after_tag: ' + afterTag : ''}`);
       
       // Build the URL with the API key as a query parameter
       const searchUrl = `https://api.optimoroute.com/v1/search_orders?key=${apiKey}`;
@@ -83,9 +83,9 @@ serve(async (req) => {
         includeScheduleInformation: true
       };
       
-      // Add afterTag if we're not on the first page
+      // Add after_tag if we're not on the first page - using the correct parameter name
       if (afterTag) {
-        requestBody.afterTag = afterTag;
+        requestBody.after_tag = afterTag;
       }
       
       // Log request details (but sanitize the API key for security)
@@ -153,10 +153,10 @@ serve(async (req) => {
         // Add orders to our collection
         allOrders = allOrders.concat(data.orders);
         
-        // Check if there are more pages to fetch
-        if (data.afterTag) {
-          afterTag = data.afterTag;
-          console.log(`More pages available, next afterTag: ${afterTag}`);
+        // Check if there are more pages to fetch - using the correct property name after_tag
+        if (data.after_tag) {
+          afterTag = data.after_tag;
+          console.log(`More pages available, next after_tag: ${afterTag}`);
           // Increase delay between requests to avoid rate limiting
           await new Promise(resolve => setTimeout(resolve, 1000)); // Increased from 500ms to 1000ms
         } else {
@@ -213,8 +213,9 @@ serve(async (req) => {
             
             allOrders = allOrders.concat(retryData.orders);
             
-            if (retryData.afterTag) {
-              afterTag = retryData.afterTag;
+            // Use the correct property name after_tag for checking pagination
+            if (retryData.after_tag) {
+              afterTag = retryData.after_tag;
             } else {
               hasMorePages = false;
             }
