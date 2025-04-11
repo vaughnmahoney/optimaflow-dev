@@ -9,7 +9,7 @@ import MaterialRequirements from "@/pages/MaterialRequirements";
 import Login from "@/pages/Login";
 import Users from "@/pages/Users";
 import Reports from "@/pages/Reports";
-import CalendarPage from "@/pages/CalendarPage";
+import CalendarPage from "@/pages/Calendar"; // Changed from @/pages/CalendarPage
 import OrderDetailsPage from "@/components/workorders/detail/OrderDetailsPage";
 
 const AppRoutes = () => {
