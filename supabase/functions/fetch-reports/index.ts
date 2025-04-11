@@ -120,6 +120,7 @@ serve(async (req) => {
           body: JSON.stringify({ 
             orders,
             includeOrderData: true
+            includeScheduleInformation: true
           })
         });
 
