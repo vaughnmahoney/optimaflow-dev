@@ -1,26 +1,24 @@
 
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
+import React from "react";
+import { MoreHorizontal } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Eye, Image, MoreHorizontal, Trash2 } from "lucide-react";
-import { Link } from "react-router-dom";
 
-interface ActionsMenuProps {
+export interface ActionsMenuProps {
   workOrderId: string;
-  orderNo: string;
-  onDelete?: (id: string) => void;
-  onImageView?: (id: string) => void;
+  onStatusUpdate: (workOrderId: string, newStatus: string) => void;
+  onDelete: (workOrderId: string) => void;
 }
 
-export const ActionsMenu = ({ 
-  workOrderId, 
-  orderNo,
-  onDelete, 
-  onImageView 
+export const ActionsMenu = ({
+  workOrderId,
+  onStatusUpdate,
+  onDelete,
 }: ActionsMenuProps) => {
   return (
     <DropdownMenu>
@@ -31,24 +29,21 @@ export const ActionsMenu = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem asChild>
-          <Link to={`/order/${orderNo}`} className="flex items-center w-full cursor-pointer">
-            <Eye className="mr-2 h-4 w-4" />
-            <span>View Details</span>
-          </Link>
-        </DropdownMenuItem>
-        
-        <DropdownMenuItem onClick={() => onImageView && onImageView(workOrderId)}>
-          <Image className="mr-2 h-4 w-4" />
-          <span>View Images</span>
-        </DropdownMenuItem>
-        
-        <DropdownMenuItem 
-          onClick={() => onDelete && onDelete(workOrderId)}
-          className="text-destructive focus:text-destructive"
+        <DropdownMenuItem
+          onClick={() => onStatusUpdate(workOrderId, "approved")}
         >
-          <Trash2 className="mr-2 h-4 w-4" />
-          <span>Delete</span>
+          Approve
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => onStatusUpdate(workOrderId, "flagged")}
+        >
+          Flag
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => onDelete(workOrderId)}
+          className="text-red-600"
+        >
+          Delete
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
