@@ -1,6 +1,6 @@
 
 import React from "react";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Eye, FileText } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,20 +8,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { WorkOrder } from "../types";
 
-export interface ActionsMenuProps {
+interface TechActionsMenuProps {
   workOrderId: string;
-  onStatusUpdate: (workOrderId: string, newStatus: string) => void;
-  onDelete: (workOrderId: string) => void;
-  workOrder?: WorkOrder; // Add optional workOrder prop
+  onImageView: (workOrderId: string) => void;
+  onAddNotes: (workOrderId: string) => void;
 }
 
-export const ActionsMenu = ({
+export const TechActionsMenu = ({
   workOrderId,
-  onStatusUpdate,
-  onDelete,
-}: ActionsMenuProps) => {
+  onImageView,
+  onAddNotes,
+}: TechActionsMenuProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -32,20 +30,16 @@ export const ActionsMenu = ({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem
-          onClick={() => onStatusUpdate(workOrderId, "approved")}
+          onClick={() => onImageView(workOrderId)}
         >
-          Approve
+          <Eye className="mr-2 h-4 w-4" />
+          View Images
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => onStatusUpdate(workOrderId, "flagged")}
+          onClick={() => onAddNotes(workOrderId)}
         >
-          Flag
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => onDelete(workOrderId)}
-          className="text-red-600"
-        >
-          Delete
+          <FileText className="mr-2 h-4 w-4" />
+          Add/Edit Notes
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
