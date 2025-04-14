@@ -1,3 +1,4 @@
+
 import { useRef, useEffect } from "react";
 import { ImageThumbnail } from "./ImageThumbnail";
 import { ImageType } from "@/components/workorders/types/image";
@@ -35,7 +36,8 @@ export const MobileThumbnails = ({
     <div className="p-2 border-t bg-white">
       <div 
         ref={thumbnailsContainerRef}
-        className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-none"
+        className="flex gap-2 overflow-x-auto pb-2 scrollbar-none"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {images.map((image, idx) => (
           <ImageThumbnail

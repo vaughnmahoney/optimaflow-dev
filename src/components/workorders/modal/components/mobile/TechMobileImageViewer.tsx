@@ -42,7 +42,7 @@ export const TechMobileImageViewer = ({
   };
 
   // Use our custom hooks
-  const { isLoading, loadedImages, handleImageLoad } = useImagePreloading(images, currentImageIndex);
+  const { isLoading, handleImageLoad } = useImagePreloading(images, currentImageIndex);
   
   const { handleTouchStart, handleTouchMove, handleTouchEnd } = useTouchGestures({
     onSwipeLeft: handleNext,
@@ -69,7 +69,7 @@ export const TechMobileImageViewer = ({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {isLoading && !loadedImages[currentImageIndex] && (
+        {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
             <div className="h-14 w-14 border-4 border-t-blue-500 border-r-transparent border-b-blue-500 border-l-transparent rounded-full animate-spin"></div>
           </div>
@@ -110,6 +110,7 @@ export const TechMobileImageViewer = ({
         </div>
       </div>
       
+      {/* Mobile Thumbnails */}
       <MobileThumbnails
         images={images}
         currentImageIndex={currentImageIndex}

@@ -32,6 +32,10 @@ export const ImageThumbnail = forwardRef(({
         className="w-full h-full object-cover"
       />
       
+      <span className="absolute bottom-0 right-0 text-[10px] bg-black/60 text-white px-1 rounded-tl-sm">
+        {index + 1}
+      </span>
+      
       {image.flagged && (
         <div className="absolute top-0 right-0 bg-red-500 p-1 rounded-bl-md">
           <Flag className="h-3 w-3 text-white" />
