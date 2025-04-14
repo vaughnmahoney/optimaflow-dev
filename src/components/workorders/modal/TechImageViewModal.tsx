@@ -5,8 +5,8 @@ import { WorkOrder } from "../types";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useImageViewer } from "@/hooks/useImageViewer";
-import { ImageContent } from "./components/ImageContent";
-import { MobileImageViewer } from "./components/mobile/MobileImageViewer";
+import { TechImageContent } from "./components/TechImageContent";
+import { TechMobileImageViewer } from "./components/mobile/TechMobileImageViewer";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface TechImageViewModalProps {
@@ -45,8 +45,7 @@ export const TechImageViewModal = ({
           </DialogTitle>
           
           {workOrder && (
-            <MobileImageViewer
-              workOrderId={workOrder.id}
+            <TechMobileImageViewer
               images={images}
               currentImageIndex={currentImageIndex}
               setCurrentImageIndex={setCurrentImageIndex}
@@ -73,10 +72,9 @@ export const TechImageViewModal = ({
         </div>
         
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Image content */}
+          {/* Image content using tech-specific component */}
           {workOrder && (
-            <ImageContent 
-              workOrderId={workOrder.id}
+            <TechImageContent 
               images={images}
               currentImageIndex={currentImageIndex}
               setCurrentImageIndex={setCurrentImageIndex}
