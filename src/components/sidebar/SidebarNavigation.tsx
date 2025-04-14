@@ -2,7 +2,7 @@
 import { useLocation } from "react-router-dom";
 import { 
   AlertCircle, Database, Users, BarChart2,
-  LucideIcon  // Add explicit import for LucideIcon type
+  LucideIcon, FileText  // Added FileText icon
 } from "lucide-react";
 import { SidebarNavItem } from "./SidebarNavItem";
 import { useAuth } from "@/components/AuthProvider";
@@ -15,11 +15,11 @@ interface SidebarNavigationProps {
 
 interface NavItem {
   to: string;
-  icon: LucideIcon;  // Now properly typed
+  icon: LucideIcon;
   label: string;
   isActive: boolean;
   badge?: number;
-  roles?: string[]; // Add roles to control visibility
+  roles?: string[];
 }
 
 export function SidebarNavigation({ 
@@ -38,28 +38,35 @@ export function SidebarNavigation({
       label: "Quality Control", 
       isActive: location.pathname.startsWith("/work-orders"),
       badge: flaggedWorkOrdersCount > 0 ? flaggedWorkOrdersCount : undefined,
-      roles: ["admin", "lead", "user"] // Everyone can see this
+      roles: ["admin", "lead", "user"] 
+    },
+    { 
+      to: "/order-history", 
+      icon: FileText, 
+      label: "Order History", 
+      isActive: location.pathname.startsWith("/order-history"),
+      roles: ["admin", "lead", "user", "technician"] // Include technician role
     },
     { 
       to: "/bulk-orders", 
       icon: Database, 
       label: "Bulk Import Test", 
       isActive: location.pathname.startsWith("/bulk-orders"),
-      roles: ["admin"] // Only admins
+      roles: ["admin"] 
     },
     {
       to: "/reports",
       icon: BarChart2,
       label: "Reports",
       isActive: location.pathname.startsWith("/reports"),
-      roles: ["admin"] // Only admins
+      roles: ["admin"] 
     },
     { 
       to: "/users", 
       icon: Users, 
       label: "User Management", 
       isActive: location.pathname.startsWith("/users"),
-      roles: ["admin"] // Only admins
+      roles: ["admin"] 
     }
   ];
 
