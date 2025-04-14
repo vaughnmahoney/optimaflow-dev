@@ -9,6 +9,8 @@ import { TechImageContent } from "./components/TechImageContent";
 import { TechMobileImageViewer } from "./components/mobile/TechMobileImageViewer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { TechImageViewerFooter } from "./components/TechImageViewerFooter";
+import { TechMobileImageHeader } from "./components/mobile/TechMobileImageHeader";
+import { TechMobileNotesTab } from "./components/mobile/TechMobileNotesTab";
 
 interface TechImageViewModalProps {
   workOrder: WorkOrder | null;
@@ -23,6 +25,7 @@ export const TechImageViewModal = ({
 }: TechImageViewModalProps) => {
   const isMobile = useIsMobile();
   const [isSafetyNotesDialogOpen, setIsSafetyNotesDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("images");
   
   // Get images from the work order's completion_response
   const images = workOrder?.completion_response?.orders?.[0]?.data?.form?.images || [];
@@ -41,6 +44,10 @@ export const TechImageViewModal = ({
     setIsSafetyNotesDialogOpen(true);
   };
 
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+  };
+
   // Use mobile version for small screens
   if (isMobile) {
     return (
@@ -52,12 +59,23 @@ export const TechImageViewModal = ({
           
           {workOrder && (
             <>
-              <TechMobileImageViewer
-                images={images}
-                currentImageIndex={currentImageIndex}
-                setCurrentImageIndex={setCurrentImageIndex}
+              <TechMobileImageHeader 
                 onClose={onClose}
+                activeTab={activeTab}
+                onTabChange={handleTabChange}
               />
+              
+              {activeTab === "images" ? (
+                <TechMobileImageViewer
+                  images={images}
+                  currentImageIndex={currentImageIndex}
+                  setCurrentImageIndex={setCurrentImageIndex}
+                  onClose={onClose}
+                />
+              ) : (
+                <TechMobileNotesTab workOrder={workOrder} />
+              )}
+              
               <TechImageViewerFooter 
                 onSafetyNotesClick={handleSafetyNotesClick}
               />
