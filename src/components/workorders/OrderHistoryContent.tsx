@@ -2,16 +2,18 @@
 import React, { useState } from "react";
 import { useLocationSearch } from "@/hooks/useLocationSearch";
 import { SearchBar } from "./search/SearchBar";
-import { WorkOrderTable } from "./table/WorkOrderTable";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingSkeleton } from "./LoadingSkeleton";
-import { EmptyState } from "./table/EmptyState";
 import { Button } from "@/components/ui/button";
 import { History, Search, FileText } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { TechWorkOrderRow } from "./table/TechWorkOrderRow";
+import { TechWorkOrderCard } from "./table/TechWorkOrderCard";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export const OrderHistoryContent = () => {
   const { searchResults, isLoading, noResults, searchByLocation } = useLocationSearch();
@@ -20,6 +22,7 @@ export const OrderHistoryContent = () => {
   const [techNote, setTechNote] = useState("");
   const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isMobile = useIsMobile();
   
   const handleSearch = (value: string) => {
     setSearchQuery(value);
@@ -66,6 +69,11 @@ export const OrderHistoryContent = () => {
     }
   };
 
+  const handleOrderImageView = (workOrderId: string) => {
+    console.log(`View images for order: ${workOrderId}`);
+    // This would be implemented to view images without QC actions
+  };
+
   const EmptySearchState = () => (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <History className="h-12 w-12 text-muted-foreground mb-4" />
@@ -93,18 +101,49 @@ export const OrderHistoryContent = () => {
     </div>
   );
 
-  // Custom actions menu specifically for technician view
-  const handleOrderImageView = (workOrderId: string) => {
-    console.log(`View images for order: ${workOrderId}`);
-    // This would be implemented to view images without QC actions
+  // Render grid for mobile or table for desktop
+  const renderWorkOrders = () => {
+    if (isMobile) {
+      return (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {searchResults.map((workOrder) => (
+            <TechWorkOrderCard
+              key={workOrder.id}
+              workOrder={workOrder}
+              onImageView={handleOrderImageView}
+              onAddNotes={handleOpenNoteDialog}
+            />
+          ))}
+        </div>
+      );
+    } else {
+      return (
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Order #</TableHead>
+                <TableHead>Date/Time</TableHead>
+                <TableHead>Driver</TableHead>
+                <TableHead>Location</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {searchResults.map((workOrder) => (
+                <TechWorkOrderRow
+                  key={workOrder.id}
+                  workOrder={workOrder}
+                  onImageView={handleOrderImageView}
+                  onAddNotes={handleOpenNoteDialog}
+                />
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      );
+    }
   };
-  
-  const handleAddNotes = (workOrderId: string) => {
-    handleOpenNoteDialog(workOrderId);
-  };
-  
-  // Empty function for delete as we may not need this for techs
-  const handleDelete = () => {};
 
   return (
     <div className="space-y-4">
@@ -124,23 +163,7 @@ export const OrderHistoryContent = () => {
           {isLoading ? (
             <LoadingSkeleton />
           ) : searchResults.length > 0 ? (
-            <WorkOrderTable 
-              workOrders={searchResults}
-              onStatusUpdate={() => {}} // No-op as techs don't change status
-              onImageView={handleOrderImageView}
-              onDelete={handleDelete}
-              filters={{
-                status: null,
-                dateRange: { from: null, to: null },
-                driver: null,
-                location: null,
-                orderNo: null,
-                optimoRouteStatus: null
-              }}
-              onColumnFilterChange={() => {}}
-              onColumnFilterClear={() => {}}
-              onClearAllFilters={() => {}}
-            />
+            renderWorkOrders()
           ) : noResults ? (
             <NoResultsState />
           ) : (
