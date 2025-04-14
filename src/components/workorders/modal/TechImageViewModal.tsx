@@ -9,8 +9,6 @@ import { TechImageContent } from "./components/TechImageContent";
 import { TechMobileImageViewer } from "./components/mobile/TechMobileImageViewer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { TechImageViewerFooter } from "./components/TechImageViewerFooter";
-import { TechMobileImageHeader } from "./components/mobile/TechMobileImageHeader";
-import { TechMobileNotesTab } from "./components/mobile/TechMobileNotesTab";
 
 interface TechImageViewModalProps {
   workOrder: WorkOrder | null;
@@ -54,17 +52,12 @@ export const TechImageViewModal = ({
           
           {workOrder && (
             <>
-              <TechMobileImageHeader 
-                onClose={onClose}
-              />
-              
               <TechMobileImageViewer
                 images={images}
                 currentImageIndex={currentImageIndex}
                 setCurrentImageIndex={setCurrentImageIndex}
                 onClose={onClose}
               />
-              
               <TechImageViewerFooter 
                 onSafetyNotesClick={handleSafetyNotesClick}
               />

@@ -4,8 +4,9 @@ import { useRef } from "react";
 import { ImageType } from "../../../types/image";
 import { useImagePreloading } from "@/hooks/useImagePreloading";
 import { useTouchGestures } from "@/hooks/useTouchGestures";
-import { ChevronLeft, ChevronRight, Download } from "lucide-react";
+import { TechMobileImageHeader } from "./TechMobileImageHeader";
 import { MobileThumbnails } from "./MobileThumbnails";
+import { ChevronLeft, ChevronRight, Download } from "lucide-react";
 
 interface TechMobileImageViewerProps {
   images: ImageType[];
@@ -52,6 +53,9 @@ export const TechMobileImageViewer = ({
   if (images.length === 0) {
     return (
       <div className="flex flex-col h-full">
+        <TechMobileImageHeader
+          onClose={onClose}
+        />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center p-4">
             <p className="text-gray-500 font-medium">No images available</p>
@@ -64,6 +68,10 @@ export const TechMobileImageViewer = ({
 
   return (
     <div className="flex flex-col h-full">
+      <TechMobileImageHeader
+        onClose={onClose}
+      />
+      
       <div 
         ref={containerRef}
         className="flex-1 flex items-center justify-center bg-gray-100 overflow-hidden relative"

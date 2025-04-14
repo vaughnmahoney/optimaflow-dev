@@ -6,16 +6,16 @@ interface TechMobileImageHeaderProps {
   onClose: () => void;
 }
 
-export const TechMobileImageHeader = ({ 
-  onClose 
-}: TechMobileImageHeaderProps) => {
+export const TechMobileImageHeader = ({ onClose }: TechMobileImageHeaderProps) => {
   return (
     <div className="p-3 flex justify-between items-center border-b bg-white">
-      {/* Empty div for alignment */}
-      <div className="w-24"></div>
+      {/* Left side placeholder for alignment */}
+      <div className="w-24 flex justify-start">
+        {/* No flag button */}
+      </div>
       
-      {/* Center: Order History text */}
-      <span className="font-medium">Order History</span>
+      {/* Center: Images text */}
+      <span className="font-medium">Images</span>
       
       {/* Right side: Close button with fixed width */}
       <div className="w-24 flex justify-end pr-1">
