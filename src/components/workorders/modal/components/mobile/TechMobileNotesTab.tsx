@@ -1,12 +1,18 @@
 
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ShieldCheck } from "lucide-react";
 import { WorkOrder } from "../../../types";
 
 interface TechMobileNotesTabProps {
   workOrder: WorkOrder;
+  onSafetyNotesClick?: () => void;
 }
 
-export const TechMobileNotesTab = ({ workOrder }: TechMobileNotesTabProps) => {
+export const TechMobileNotesTab = ({ 
+  workOrder, 
+  onSafetyNotesClick 
+}: TechMobileNotesTabProps) => {
   const completionData = workOrder.completion_response?.orders?.[0]?.data;
   const searchData = workOrder.search_response?.data;
 
@@ -57,6 +63,18 @@ export const TechMobileNotesTab = ({ workOrder }: TechMobileNotesTabProps) => {
           </div>
         </div>
       </Card>
+      
+      <div className="bg-white border-t px-4 py-3 flex justify-center items-center">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={onSafetyNotesClick}
+          className="gap-2"
+        >
+          <ShieldCheck className="h-4 w-4" />
+          Safety Notes
+        </Button>
+      </div>
     </div>
   );
 };

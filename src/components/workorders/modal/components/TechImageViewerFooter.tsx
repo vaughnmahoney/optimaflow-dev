@@ -1,26 +1,14 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { ShieldCheck } from 'lucide-react';
 
 interface TechImageViewerFooterProps {
-  onSafetyNotesClick?: () => void;
+  // No additional props needed for the image viewer
 }
 
-export const TechImageViewerFooter = ({ 
-  onSafetyNotesClick 
-}: TechImageViewerFooterProps) => {
+export const TechImageViewerFooter = () => {
   return (
     <div className="bg-white border-t px-4 py-3 flex justify-center items-center">
-      <Button 
-        variant="outline" 
-        size="sm" 
-        onClick={onSafetyNotesClick}
-        className="gap-2"
-      >
-        <ShieldCheck className="h-4 w-4" />
-        Safety Notes
-      </Button>
+      {/* Empty footer for image viewer */}
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useRef } from "react";
 import { ImageType } from "../../../types/image";
@@ -65,7 +64,7 @@ export const TechMobileImageViewer = ({
       <div 
         ref={containerRef}
         className="flex-1 flex items-center justify-center bg-gray-100 overflow-hidden relative"
-        style={{ maxHeight: "calc(100% - 90px)" }} // Ensure consistent height for the image area
+        style={{ maxHeight: "calc(100% - 90px)" }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -91,7 +90,6 @@ export const TechMobileImageViewer = ({
           />
         </div>
 
-        {/* Left navigation arrow */}
         <div className="absolute left-2 inset-y-0 flex items-center">
           <Button
             variant="outline"
@@ -104,7 +102,6 @@ export const TechMobileImageViewer = ({
           </Button>
         </div>
 
-        {/* Right navigation arrow */}
         <div className="absolute right-2 inset-y-0 flex items-center">
           <Button
             variant="outline"
@@ -118,7 +115,6 @@ export const TechMobileImageViewer = ({
         </div>
       </div>
       
-      {/* Fixed footer section with thumbnails */}
       <div className="w-full" style={{ minHeight: "90px" }}> 
         <MobileThumbnails
           images={images}
@@ -127,7 +123,6 @@ export const TechMobileImageViewer = ({
         />
         
         <div className="py-2 px-3 bg-white text-center text-sm text-gray-600 border-t flex justify-between items-center">
-          {/* Download button on the left with ghost styling */}
           {onDownloadAll && (
             <Button 
               className="w-9 h-9 justify-center items-center p-0 text-gray-600 hover:bg-gray-100"
@@ -140,12 +135,10 @@ export const TechMobileImageViewer = ({
             </Button>
           )}
           
-          {/* Image counter centered or right-aligned if download button exists */}
           <div className={onDownloadAll ? "flex-1 text-center" : "w-full text-center"}>
             {currentImageIndex + 1} of {images.length}
           </div>
           
-          {/* Empty div to help with alignment when download button exists */}
           {onDownloadAll && <div className="w-9"></div>}
         </div>
       </div>

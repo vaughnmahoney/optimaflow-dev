@@ -76,12 +76,13 @@ export const TechImageViewModal = ({
                   />
                 </div>
               ) : (
-                <TechMobileNotesTab workOrder={workOrder} />
+                <TechMobileNotesTab 
+                  workOrder={workOrder} 
+                  onSafetyNotesClick={handleSafetyNotesClick}
+                />
               )}
               
-              <TechImageViewerFooter 
-                onSafetyNotesClick={handleSafetyNotesClick}
-              />
+              <TechImageViewerFooter />
             </>
           )}
         </DialogContent>
