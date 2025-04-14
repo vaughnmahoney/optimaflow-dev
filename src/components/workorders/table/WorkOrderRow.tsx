@@ -1,3 +1,4 @@
+
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
@@ -140,6 +141,7 @@ export const WorkOrderRow = ({ workOrder, onStatusUpdate, onImageView, onDelete 
           </Button>
           
           <ActionsMenu 
+            workOrderId={workOrder.id}
             workOrder={workOrder}
             onStatusUpdate={onStatusUpdate}
             onDelete={onDelete}
