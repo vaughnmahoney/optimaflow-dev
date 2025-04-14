@@ -31,8 +31,8 @@ export const OrderHistoryContent = () => {
     
     // Get existing tech notes if available
     const selectedOrder = searchResults.find(order => order.id === workOrderId);
-    if (selectedOrder && selectedOrder.tech_notes) {
-      setTechNote(selectedOrder.tech_notes);
+    if (selectedOrder && selectedOrder.qc_notes) {
+      setTechNote(selectedOrder.qc_notes);
     } else {
       setTechNote("");
     }
@@ -48,7 +48,7 @@ export const OrderHistoryContent = () => {
     try {
       const { error } = await supabase
         .from('work_orders')
-        .update({ tech_notes: techNote })
+        .update({ qc_notes: techNote })
         .eq('id', selectedOrderId);
         
       if (error) throw error;
