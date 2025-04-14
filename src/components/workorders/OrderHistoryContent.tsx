@@ -14,6 +14,7 @@ import { TechWorkOrderRow } from "./table/TechWorkOrderRow";
 import { TechWorkOrderCard } from "./table/TechWorkOrderCard";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { TechImageViewModal } from "./modal/TechImageViewModal";
 
 export const OrderHistoryContent = () => {
   const { searchResults, isLoading, noResults, searchByLocation } = useLocationSearch();
@@ -22,6 +23,7 @@ export const OrderHistoryContent = () => {
   const [techNote, setTechNote] = useState("");
   const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
   const isMobile = useIsMobile();
   
   const handleSearch = (value: string) => {
@@ -70,9 +72,16 @@ export const OrderHistoryContent = () => {
   };
 
   const handleOrderImageView = (workOrderId: string) => {
-    console.log(`View images for order: ${workOrderId}`);
-    // This would be implemented to view images without QC actions
+    setSelectedOrderId(workOrderId);
+    setIsImageViewerOpen(true);
   };
+  
+  const closeImageViewer = () => {
+    setIsImageViewerOpen(false);
+  };
+  
+  // Get the currently selected work order
+  const selectedWorkOrder = searchResults.find(order => order.id === selectedOrderId) || null;
 
   const EmptySearchState = () => (
     <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -207,6 +216,13 @@ export const OrderHistoryContent = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      {/* Image View Modal */}
+      <TechImageViewModal
+        workOrder={selectedWorkOrder}
+        isOpen={isImageViewerOpen}
+        onClose={closeImageViewer}
+      />
     </div>
   );
 };
