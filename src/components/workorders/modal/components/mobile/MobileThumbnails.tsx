@@ -1,4 +1,3 @@
-
 import { useRef, useEffect } from "react";
 import { ImageThumbnail } from "./ImageThumbnail";
 import { ImageType } from "@/components/workorders/types/image";
@@ -33,22 +32,24 @@ export const MobileThumbnails = ({
   }, [currentImageIndex]);
 
   return (
-    <div className="p-3 border-t bg-white">
+    <div className="py-3 border-t bg-white">
       <div 
         ref={thumbnailsContainerRef}
-        className="flex gap-3 overflow-x-auto pb-1 px-3 mx-auto max-w-full"
+        className="flex gap-3 overflow-x-auto pb-1 px-6 mx-auto scrollbar-hide"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        {images.map((image, idx) => (
-          <ImageThumbnail
-            key={idx}
-            ref={idx === currentImageIndex ? activeThumbRef : null}
-            image={image}
-            index={idx}
-            isActive={idx === currentImageIndex}
-            onClick={() => setCurrentImageIndex(idx)}
-          />
-        ))}
+        <div className="flex gap-3 px-2 min-w-0">
+          {images.map((image, idx) => (
+            <ImageThumbnail
+              key={idx}
+              ref={idx === currentImageIndex ? activeThumbRef : null}
+              image={image}
+              index={idx}
+              isActive={idx === currentImageIndex}
+              onClick={() => setCurrentImageIndex(idx)}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
