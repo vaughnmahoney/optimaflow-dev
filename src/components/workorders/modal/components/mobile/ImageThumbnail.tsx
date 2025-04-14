@@ -20,9 +20,9 @@ export const ImageThumbnail = forwardRef(({
     <div 
       ref={ref}
       onClick={onClick}
-      className={`relative flex-shrink-0 cursor-pointer transition-all duration-200 w-16 h-16 ${
+      className={`relative flex-shrink-0 cursor-pointer transition-all duration-200 w-14 h-14 ${
         isActive 
-          ? 'border-2 border-primary shadow-sm scale-[1.05] z-10' 
+          ? 'border-2 border-primary shadow-sm scale-105 z-10' 
           : 'border border-gray-200 opacity-70 hover:opacity-100'
       } rounded-md overflow-hidden`}
     >

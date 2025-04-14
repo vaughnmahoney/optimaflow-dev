@@ -33,10 +33,10 @@ export const MobileThumbnails = ({
   }, [currentImageIndex]);
 
   return (
-    <div className="p-2 border-t bg-white">
+    <div className="p-3 border-t bg-white">
       <div 
         ref={thumbnailsContainerRef}
-        className="flex gap-2 overflow-x-auto pb-2 scrollbar-none"
+        className="flex gap-3 overflow-x-auto pb-1 px-3 mx-auto max-w-full"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {images.map((image, idx) => (
