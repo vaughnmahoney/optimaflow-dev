@@ -8,6 +8,7 @@ import { useImageViewer } from "@/hooks/useImageViewer";
 import { TechImageContent } from "./components/TechImageContent";
 import { TechMobileImageViewer } from "./components/mobile/TechMobileImageViewer";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { TechImageViewerFooter } from "./components/TechImageViewerFooter";
 
 interface TechImageViewModalProps {
   workOrder: WorkOrder | null;
@@ -21,6 +22,7 @@ export const TechImageViewModal = ({
   onClose
 }: TechImageViewModalProps) => {
   const isMobile = useIsMobile();
+  const [isSafetyNotesDialogOpen, setIsSafetyNotesDialogOpen] = useState(false);
   
   // Get images from the work order's completion_response
   const images = workOrder?.completion_response?.orders?.[0]?.data?.form?.images || [];
@@ -35,6 +37,10 @@ export const TechImageViewModal = ({
     initialIndex: 0
   });
 
+  const handleSafetyNotesClick = () => {
+    setIsSafetyNotesDialogOpen(true);
+  };
+
   // Use mobile version for small screens
   if (isMobile) {
     return (
@@ -45,12 +51,17 @@ export const TechImageViewModal = ({
           </DialogTitle>
           
           {workOrder && (
-            <TechMobileImageViewer
-              images={images}
-              currentImageIndex={currentImageIndex}
-              setCurrentImageIndex={setCurrentImageIndex}
-              onClose={onClose}
-            />
+            <>
+              <TechMobileImageViewer
+                images={images}
+                currentImageIndex={currentImageIndex}
+                setCurrentImageIndex={setCurrentImageIndex}
+                onClose={onClose}
+              />
+              <TechImageViewerFooter 
+                onSafetyNotesClick={handleSafetyNotesClick}
+              />
+            </>
           )}
         </DialogContent>
       </Dialog>
@@ -83,6 +94,10 @@ export const TechImageViewModal = ({
             />
           )}
         </div>
+
+        <TechImageViewerFooter 
+          onSafetyNotesClick={handleSafetyNotesClick}
+        />
       </DialogContent>
     </Dialog>
   );
