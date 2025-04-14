@@ -35,10 +35,15 @@ export const MobileThumbnails = ({
     <div className="py-3 border-t bg-white">
       <div 
         ref={thumbnailsContainerRef}
-        className="flex gap-3 overflow-x-auto pb-1 px-6 mx-auto scrollbar-hide"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        className="flex gap-3 overflow-x-auto px-4 mx-auto scrollbar-hide no-scrollbar"
+        style={{ 
+          scrollbarWidth: 'none', 
+          msOverflowStyle: 'none',
+          WebkitOverflowScrolling: 'touch',
+          scrollSnapType: 'x mandatory'
+        }}
       >
-        <div className="flex gap-3 px-2 min-w-0">
+        <div className="flex gap-3 px-2">
           {images.map((image, idx) => (
             <ImageThumbnail
               key={idx}
