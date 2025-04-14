@@ -66,7 +66,8 @@ export const TechImageViewModal = ({
               />
               
               {activeTab === "images" ? (
-                <div className="flex-1 flex flex-col">
+                // Use a fixed container to prevent layout shifts with different image orientations
+                <div className="flex-1 flex flex-col overflow-hidden">
                   <TechMobileImageViewer
                     images={images}
                     currentImageIndex={currentImageIndex}

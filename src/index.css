@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -170,6 +171,22 @@
 
 .compact-sheet .sheet-content {
   @apply px-3 py-2;
+}
+
+/* Image container styles for better handling of vertical images */
+.image-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.image-container img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }
 
 /* Hide scrollbar for thumbnail containers */
