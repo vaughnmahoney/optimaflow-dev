@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { useRef } from "react";
 import { ImageType } from "../../../types/image";
+import { useWorkOrderMutations } from "@/hooks/useWorkOrderMutations";
 import { useImagePreloading } from "@/hooks/useImagePreloading";
 import { useTouchGestures } from "@/hooks/useTouchGestures";
 import { MobileImageHeader } from "./MobileImageHeader";
@@ -25,6 +26,7 @@ export const MobileImageViewer = ({
   onClose,
   onDownloadAll,
 }: MobileImageViewerProps) => {
+  const { toggleImageFlag } = useWorkOrderMutations();
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Handle image navigation
@@ -52,10 +54,23 @@ export const MobileImageViewer = ({
     onSwipeRight: handlePrevious
   });
 
+  const handleFlagToggle = () => {
+    if (images.length <= 0 || currentImageIndex < 0) return;
+    
+    const currentImage = images[currentImageIndex];
+    const isFlagged = !currentImage.flagged;
+    
+    toggleImageFlag(workOrderId, currentImageIndex, isFlagged);
+  };
+
   if (images.length === 0) {
     return (
       <div className="flex flex-col h-full">
-        <MobileImageHeader onClose={onClose} />
+        <MobileImageHeader
+          isFlagged={false}
+          onFlagToggle={() => {}}
+          onClose={onClose}
+        />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center p-4">
             <p className="text-gray-500 font-medium">No images available</p>
@@ -66,9 +81,15 @@ export const MobileImageViewer = ({
     );
   }
 
+  const currentImageFlagged = images[currentImageIndex]?.flagged || false;
+
   return (
     <div className="flex flex-col h-full">
-      <MobileImageHeader onClose={onClose} />
+      <MobileImageHeader
+        isFlagged={currentImageFlagged}
+        onFlagToggle={handleFlagToggle}
+        onClose={onClose}
+      />
       
       <div 
         ref={containerRef}
