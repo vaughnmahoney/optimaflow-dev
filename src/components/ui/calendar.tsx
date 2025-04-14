@@ -7,10 +7,15 @@ import { buttonVariants } from "@/components/ui/button"
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>
 
-// Custom navigation component for DayPicker v8+
-function CustomNavigation({ nextMonth, previousMonth, onNextClick, onPreviousClick }: NavigationProps) {
+// ✅ Custom navigation component using Chevron icons
+function CustomNavigation({
+  nextMonth,
+  previousMonth,
+  onNextClick,
+  onPreviousClick
+}: NavigationProps) {
   return (
-    <div className="space-x-1 flex items-center absolute right-1">
+    <div className="flex space-x-1 absolute right-1">
       <button
         type="button"
         onClick={() => onPreviousClick?.()}
@@ -82,13 +87,12 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        Navigation: CustomNavigation,
+        Navigation: CustomNavigation, // ✅ Only this, no iconLeft/iconRight
       }}
       {...props}
     />
   )
 }
-
 Calendar.displayName = "Calendar"
 
 export { Calendar }
