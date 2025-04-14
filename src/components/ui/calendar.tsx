@@ -1,7 +1,6 @@
-
 import * as React from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import { DayPicker, NavigationProps } from "react-day-picker"
+import { DayPicker } from "react-day-picker"
 
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
@@ -14,7 +13,12 @@ function CustomNavigation({
   previousMonth,
   onNextClick,
   onPreviousClick
-}: NavigationProps) {
+}: {
+  nextMonth?: Date
+  previousMonth?: Date
+  onNextClick?: () => void
+  onPreviousClick?: () => void
+}) {
   return (
     <div className="flex space-x-1 absolute right-1">
       <button
@@ -88,7 +92,7 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        Navigation: CustomNavigation, // ✅ Only this, no iconLeft/iconRight
+        Navigation: CustomNavigation
       }}
       {...props}
     />
