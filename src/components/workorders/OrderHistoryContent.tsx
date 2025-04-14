@@ -1,11 +1,10 @@
-
 import React, { useState } from "react";
 import { useLocationSearch } from "@/hooks/useLocationSearch";
 import { SearchBar } from "./search/SearchBar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { Button } from "@/components/ui/button";
-import { History, Search, FileText } from "lucide-react";
+import { History, Search, FileText, ShieldCheck } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -15,6 +14,7 @@ import { TechWorkOrderCard } from "./table/TechWorkOrderCard";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { TechImageViewModal } from "./modal/TechImageViewModal";
+import { SafetyNotesDialog } from "./modal/components/SafetyNotesDialog";
 
 export const OrderHistoryContent = () => {
   const { searchResults, isLoading, noResults, searchByLocation } = useLocationSearch();
@@ -22,6 +22,7 @@ export const OrderHistoryContent = () => {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [techNote, setTechNote] = useState("");
   const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
+  const [isSafetyNotesDialogOpen, setIsSafetyNotesDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
   const isMobile = useIsMobile();
@@ -34,7 +35,6 @@ export const OrderHistoryContent = () => {
   const handleOpenNoteDialog = (workOrderId: string) => {
     setSelectedOrderId(workOrderId);
     
-    // Get existing tech notes if available
     const selectedOrder = searchResults.find(order => order.id === workOrderId);
     if (selectedOrder && selectedOrder.qc_notes) {
       setTechNote(selectedOrder.qc_notes);
@@ -43,6 +43,11 @@ export const OrderHistoryContent = () => {
     }
     
     setIsNoteDialogOpen(true);
+  };
+
+  const handleOpenSafetyNotesDialog = (workOrderId: string) => {
+    setSelectedOrderId(workOrderId);
+    setIsSafetyNotesDialogOpen(true);
   };
 
   const handleSaveNote = async () => {
@@ -61,7 +66,6 @@ export const OrderHistoryContent = () => {
       toast.success("Notes saved successfully");
       setIsNoteDialogOpen(false);
       
-      // Update the local data to reflect the change
       searchByLocation(searchQuery);
     } catch (error: any) {
       console.error("Error saving tech notes:", error);
@@ -80,7 +84,10 @@ export const OrderHistoryContent = () => {
     setIsImageViewerOpen(false);
   };
   
-  // Get the currently selected work order
+  const handleSafetyNotesSaved = () => {
+    searchByLocation(searchQuery);
+  };
+  
   const selectedWorkOrder = searchResults.find(order => order.id === selectedOrderId) || null;
 
   const EmptySearchState = () => (
@@ -110,7 +117,6 @@ export const OrderHistoryContent = () => {
     </div>
   );
 
-  // Render grid for mobile or table for desktop
   const renderWorkOrders = () => {
     if (isMobile) {
       return (
@@ -121,6 +127,7 @@ export const OrderHistoryContent = () => {
               workOrder={workOrder}
               onImageView={handleOrderImageView}
               onAddNotes={handleOpenNoteDialog}
+              onSafetyNotesClick={() => handleOpenSafetyNotesDialog(workOrder.id)}
             />
           ))}
         </div>
@@ -145,6 +152,7 @@ export const OrderHistoryContent = () => {
                   workOrder={workOrder}
                   onImageView={handleOrderImageView}
                   onAddNotes={handleOpenNoteDialog}
+                  onSafetyNotesClick={() => handleOpenSafetyNotesDialog(workOrder.id)}
                 />
               ))}
             </TableBody>
@@ -181,7 +189,6 @@ export const OrderHistoryContent = () => {
         </CardContent>
       </Card>
       
-      {/* Notes Dialog */}
       <Dialog open={isNoteDialogOpen} onOpenChange={setIsNoteDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -217,7 +224,16 @@ export const OrderHistoryContent = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Image View Modal */}
+      {selectedWorkOrder && (
+        <SafetyNotesDialog
+          isOpen={isSafetyNotesDialogOpen}
+          onClose={() => setIsSafetyNotesDialogOpen(false)}
+          workOrderId={selectedWorkOrder.id}
+          initialNotes={selectedWorkOrder.safety_notes || ""}
+          onNotesSaved={handleSafetyNotesSaved}
+        />
+      )}
+      
       <TechImageViewModal
         workOrder={selectedWorkOrder}
         isOpen={isImageViewerOpen}

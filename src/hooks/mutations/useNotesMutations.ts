@@ -1,88 +1,102 @@
 
-import { useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
-/**
- * Hook for work order notes-related mutations
- */
 export const useNotesMutations = () => {
   const queryClient = useQueryClient();
 
-  /**
-   * Update the QC notes for a work order
-   */
-  const updateWorkOrderQcNotes = async (workOrderId: string, qcNotes: string) => {
-    try {
-      const { error } = await supabase
+  // QC Notes Mutation
+  const updateWorkOrderQcNotes = useMutation({
+    mutationFn: async ({ workOrderId, qcNotes }: { workOrderId: string; qcNotes: string }) => {
+      const { data, error } = await supabase
         .from('work_orders')
         .update({ qc_notes: qcNotes })
-        .eq('id', workOrderId);
+        .eq('id', workOrderId)
+        .select()
+        .single();
 
       if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      toast.success('QC notes updated successfully');
+      queryClient.invalidateQueries({
+        queryKey: ['work-orders'],
+      });
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to update QC notes: ${error.message}`);
+    },
+  });
 
-      // Update the local cache without triggering a full refetch that would filter out the work order
-      queryClient.setQueriesData(
-        { queryKey: ["workOrders"] },
-        (oldData: any) => {
-          if (!oldData) return oldData;
-          
-          const newData = {
-            ...oldData,
-            data: oldData.data.map((wo: any) => 
-              wo.id === workOrderId ? { ...wo, qc_notes: qcNotes } : wo
-            )
-          };
-          return newData;
-        }
-      );
-      
-      // Also update badge counts separately without affecting the current view
-      queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
-    } catch (error) {
-      console.error('QC notes update error:', error);
-      throw error; // We'll handle this in the component
-    }
-  };
-
-  /**
-   * Update the resolution notes for a work order
-   */
-  const updateWorkOrderResolutionNotes = async (workOrderId: string, resolutionNotes: string) => {
-    try {
-      const { error } = await supabase
+  // Resolution Notes Mutation
+  const updateWorkOrderResolutionNotes = useMutation({
+    mutationFn: async ({
+      workOrderId,
+      resolutionNotes,
+    }: {
+      workOrderId: string;
+      resolutionNotes: string;
+    }) => {
+      const { data, error } = await supabase
         .from('work_orders')
         .update({ resolution_notes: resolutionNotes })
-        .eq('id', workOrderId);
+        .eq('id', workOrderId)
+        .select()
+        .single();
 
       if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      toast.success('Resolution notes updated successfully');
+      queryClient.invalidateQueries({
+        queryKey: ['work-orders'],
+      });
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to update resolution notes: ${error.message}`);
+    },
+  });
 
-      // Update the local cache without triggering a full refetch that would filter out the work order
-      queryClient.setQueriesData(
-        { queryKey: ["workOrders"] },
-        (oldData: any) => {
-          if (!oldData) return oldData;
-          
-          const newData = {
-            ...oldData,
-            data: oldData.data.map((wo: any) => 
-              wo.id === workOrderId ? { ...wo, resolution_notes: resolutionNotes } : wo
-            )
-          };
-          return newData;
-        }
+  // Safety Notes Mutation
+  const updateWorkOrderSafetyNotes = useMutation({
+    mutationFn: async ({
+      workOrderId,
+      safetyNotes,
+    }: {
+      workOrderId: string;
+      safetyNotes: string;
+    }) => {
+      const { data, error } = await supabase
+        .from('work_orders')
+        .update({ safety_notes: safetyNotes })
+        .eq('id', workOrderId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      toast.success(
+        variables.safetyNotes 
+          ? 'Safety notes updated successfully' 
+          : 'Safety notes removed successfully'
       );
-      
-      // Also update badge counts separately without affecting the current view
-      queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
-    } catch (error) {
-      console.error('Resolution notes update error:', error);
-      throw error;
-    }
-  };
+      queryClient.invalidateQueries({
+        queryKey: ['work-orders'],
+      });
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to update safety notes: ${error.message}`);
+    },
+  });
 
   return {
     updateWorkOrderQcNotes,
-    updateWorkOrderResolutionNotes
+    updateWorkOrderResolutionNotes,
+    updateWorkOrderSafetyNotes
   };
 };

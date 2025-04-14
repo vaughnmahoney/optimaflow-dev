@@ -25,7 +25,6 @@ export const TechImageViewModal = ({
 }: TechImageViewModalProps) => {
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState("images");
-  const [isSafetyNotesDialogOpen, setIsSafetyNotesDialogOpen] = useState(false);
   
   // Get images from the work order's completion_response
   const images = workOrder?.completion_response?.orders?.[0]?.data?.form?.images || [];
@@ -39,10 +38,6 @@ export const TechImageViewModal = ({
     images,
     initialIndex: 0
   });
-
-  const handleSafetyNotesClick = () => {
-    setIsSafetyNotesDialogOpen(true);
-  };
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -76,10 +71,7 @@ export const TechImageViewModal = ({
                   />
                 </div>
               ) : (
-                <TechMobileNotesTab 
-                  workOrder={workOrder} 
-                  onSafetyNotesClick={handleSafetyNotesClick}
-                />
+                <TechMobileNotesTab workOrder={workOrder} />
               )}
               
               <TechImageViewerFooter />
@@ -117,9 +109,7 @@ export const TechImageViewModal = ({
           )}
         </div>
 
-        <TechImageViewerFooter 
-          onSafetyNotesClick={handleSafetyNotesClick}
-        />
+        <TechImageViewerFooter />
       </DialogContent>
     </Dialog>
   );

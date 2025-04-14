@@ -1,15 +1,31 @@
 
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { WorkOrder } from "@/components/workorders/types";
-import { Package, FileText, ClipboardCheck } from "lucide-react";
+import { Package, FileText, ClipboardCheck, ShieldCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { SafetyNotesDialog } from "../components/SafetyNotesDialog";
 
 interface NotesTabProps {
   workOrder: WorkOrder;
 }
 
 export const NotesTab = ({ workOrder }: NotesTabProps) => {
+  const [isSafetyNotesDialogOpen, setIsSafetyNotesDialogOpen] = useState(false);
+  const [safetyNotes, setSafetyNotes] = useState(workOrder.safety_notes || "");
+  
   const completionData = workOrder.completion_response?.orders?.[0]?.data;
   const searchData = workOrder.search_response?.data;
+  
+  const hasSafetyNotes = !!safetyNotes;
+
+  const handleSafetyNotesClick = () => {
+    setIsSafetyNotesDialogOpen(true);
+  };
+
+  const handleNotesSaved = (notes: string) => {
+    setSafetyNotes(notes);
+  };
   
   return (
     <div className="p-4 space-y-3">
@@ -63,6 +79,43 @@ export const NotesTab = ({ workOrder }: NotesTabProps) => {
           </div>
         </div>
       </Card>
+      
+      {/* Safety Notes card (conditionally shown) */}
+      {hasSafetyNotes && (
+        <Card className="overflow-hidden border border-blue-200 shadow-sm bg-blue-50">
+          <div className="p-4 space-y-2">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-blue-500" />
+              <h4 className="text-sm font-medium text-blue-700">Safety Notes</h4>
+            </div>
+            <div className="pl-6 mt-1">
+              <p className="text-sm whitespace-pre-wrap text-gray-700">{safetyNotes}</p>
+            </div>
+          </div>
+        </Card>
+      )}
+      
+      {/* Safety Notes Button (at the bottom) */}
+      <div className="pt-3 flex justify-center">
+        <Button 
+          variant={hasSafetyNotes ? "outline" : "outline"}
+          size="sm" 
+          onClick={handleSafetyNotesClick}
+          className={`gap-2 ${hasSafetyNotes ? 'bg-blue-50 border-blue-300 text-blue-600 hover:bg-blue-100 hover:text-blue-700' : ''}`}
+        >
+          <ShieldCheck className={`h-4 w-4 ${hasSafetyNotes ? 'text-blue-500' : ''}`} />
+          Safety Notes
+        </Button>
+      </div>
+      
+      {/* Safety Notes Dialog */}
+      <SafetyNotesDialog
+        isOpen={isSafetyNotesDialogOpen}
+        onClose={() => setIsSafetyNotesDialogOpen(false)}
+        workOrderId={workOrder.id}
+        initialNotes={safetyNotes}
+        onNotesSaved={handleNotesSaved}
+      />
     </div>
   );
 };

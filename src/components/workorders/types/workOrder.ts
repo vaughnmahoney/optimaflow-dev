@@ -18,6 +18,7 @@ export interface WorkOrder {
   notes?: string;
   qc_notes?: string;
   resolution_notes?: string;
+  safety_notes?: string;  // New field for safety notes
   optimoroute_status?: string; // New field for OptimoRoute status
   
   // User tracking fields

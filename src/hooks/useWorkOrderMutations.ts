@@ -22,6 +22,7 @@ export const useWorkOrderMutations = () => {
     // Notes mutations
     updateWorkOrderQcNotes: notesMutations.updateWorkOrderQcNotes,
     updateWorkOrderResolutionNotes: notesMutations.updateWorkOrderResolutionNotes,
+    updateWorkOrderSafetyNotes: notesMutations.updateWorkOrderSafetyNotes,
     
     // Image mutations
     toggleImageFlag: imageMutations.toggleImageFlag,
