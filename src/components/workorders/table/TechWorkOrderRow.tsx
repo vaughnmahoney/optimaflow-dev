@@ -5,7 +5,7 @@ import { WorkOrder } from "../types";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, FileText, Image, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { formatDateForDisplay } from "@/utils/dateUtils";
+import { formatLocalTime } from "@/utils/dateUtils";
 
 interface TechWorkOrderRowProps {
   workOrder: WorkOrder;
@@ -26,7 +26,7 @@ export const TechWorkOrderRow = ({
   
   // Get date and format it
   const date = workOrder.service_date || workOrder.end_time || workOrder.timestamp;
-  const formattedDate = formatDateForDisplay(date);
+  const formattedDate = formatLocalTime(date, "MMM d, yyyy", "N/A");
   
   return (
     <TableRow>

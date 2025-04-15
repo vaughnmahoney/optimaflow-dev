@@ -29,7 +29,10 @@ export const ResolutionNotesSheet = ({ workOrder }: ResolutionNotesSheetProps) =
   const handleSaveResolutionNotes = async () => {
     setIsSaving(true);
     try {
-      await updateWorkOrderResolutionNotes(workOrder.id, resolutionNotes);
+      await updateWorkOrderResolutionNotes.mutateAsync({
+        workOrderId: workOrder.id,
+        resolutionNotes: resolutionNotes
+      });
       toast.success("Resolution notes saved successfully");
       setIsOpen(false);
     } catch (error) {

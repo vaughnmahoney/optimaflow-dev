@@ -1,53 +1,73 @@
 
-import React from "react";
+// src/pages/Calendar.tsx
 import { Layout } from "@/components/Layout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarIcon, Clock, Users } from "lucide-react";
-import { Calendar } from "@/components/ui/calendar";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Month, Year, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { format, addMonths, subMonths } from "date-fns";
 
-const CalendarPage = () => {
+const Calendar = () => {
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+  const [view, setView] = useState<"month" | "year">("month");
+
+  const handleNextMonth = () => {
+    setCurrentMonth(addMonths(currentMonth, 1));
+  };
+
+  const handlePrevMonth = () => {
+    setCurrentMonth(subMonths(currentMonth, 1));
+  };
+
+  const handleTodayClick = () => {
+    const today = new Date();
+    setSelectedDate(today);
+    setCurrentMonth(today);
+  };
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      setSelectedDate(date);
+    }
+  };
+
   return (
-    <Layout>
-      <div className="container mx-auto py-6">
-        <h1 className="text-2xl font-bold mb-6">Calendar</h1>
-        
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Calendar Overview</CardTitle>
-            <CardDescription>
-              Track company meetings, delivery ETAs, and important events
-            </CardDescription>
+    <Layout title="Calendar">
+      <div className="space-y-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="flex justify-between items-center">
+              <CardTitle>Calendar</CardTitle>
+              <div className="flex space-x-2">
+                <Button variant="outline" size="sm" onClick={handleTodayClick}>
+                  Today
+                </Button>
+                <Button variant="outline" size="icon" onClick={handlePrevMonth}>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button variant="outline" size="icon" onClick={handleNextMonth}>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <div className="text-muted-foreground font-medium mt-2">
+              {format(currentMonth, "MMMM yyyy")}
+            </div>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-600 mb-4">
-              This calendar system will allow you to:
-            </p>
-            <ul className="space-y-2 mb-4">
-              <li className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <span>Schedule and track company meetings</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                <span>Monitor delivery ETAs from vendors</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-muted-foreground" />
-                <span>Coordinate team availability</span>
-              </li>
-            </ul>
+            <CalendarComponent
+              selected={selectedDate}
+              onSelect={handleDateSelect}
+              defaultMonth={currentMonth}
+              className="rounded-md border"
+            />
           </CardContent>
         </Card>
-        
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-lg font-medium mb-4">Demo Calendar</h2>
-          <div className="border rounded-md">
-            <Calendar mode="single" />
-          </div>
-        </div>
       </div>
     </Layout>
   );
 };
 
-export default CalendarPage;
+export default Calendar;

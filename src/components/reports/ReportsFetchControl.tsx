@@ -1,10 +1,10 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Calendar } from "lucide-react";
+import { Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Calendar } from "@/components/ui/calendar";
 import { useFetchReports } from "@/hooks/useFetchReports";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,13 +34,12 @@ export const ReportsFetchControl = () => {
                   variant="outline"
                   className="w-full md:w-[200px] justify-start text-left font-normal"
                 >
-                  <Calendar className="mr-2 h-4 w-4" />
+                  <CalendarIcon className="mr-2 h-4 w-4" />
                   {date ? format(date, 'PPP') : <span>Pick a date</span>}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
-                <CalendarComponent
-                  mode="single"
+                <Calendar
                   selected={date}
                   onSelect={setDate}
                   initialFocus

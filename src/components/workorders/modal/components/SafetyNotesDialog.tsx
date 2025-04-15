@@ -11,7 +11,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { useWorkOrderMutations } from "@/hooks/useWorkOrderMutations";
 
 interface SafetyNotesDialogProps {
   isOpen: boolean;
@@ -30,6 +30,7 @@ export const SafetyNotesDialog = ({
 }: SafetyNotesDialogProps) => {
   const [notes, setNotes] = useState(initialNotes);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { updateWorkOrderSafetyNotes } = useWorkOrderMutations();
 
   const handleSave = async () => {
     if (!workOrderId) return;
@@ -37,12 +38,10 @@ export const SafetyNotesDialog = ({
     setIsSubmitting(true);
     
     try {
-      const { error } = await supabase
-        .from('work_orders')
-        .update({ safety_notes: notes })
-        .eq('id', workOrderId);
-        
-      if (error) throw error;
+      await updateWorkOrderSafetyNotes.mutateAsync({
+        workOrderId,
+        safetyNotes: notes
+      });
       
       toast.success(notes ? "Safety notes saved" : "Safety notes removed");
       onNotesSaved(notes);

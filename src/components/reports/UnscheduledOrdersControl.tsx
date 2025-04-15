@@ -140,7 +140,7 @@ export const UnscheduledOrdersControl = () => {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Searching...
+                Fetching...
               </>
             ) : (
               'Search Orders'
@@ -157,16 +157,16 @@ export const UnscheduledOrdersControl = () => {
         )}
         
         {searchStats && (
-          <div className="bg-slate-50 p-3 rounded-md mb-4 text-sm">
-            <p>
-              Found <span className="font-semibold">{searchStats.totalOrders}</span> orders 
-              from <span className="font-semibold">{searchStats.dateRange.startDate}</span> 
-              to <span className="font-semibold">{searchStats.dateRange.endDate}</span>
+          <div className="mb-4">
+            <p className="text-sm font-medium mb-1">
+              Found {searchStats.totalOrders} orders between {searchStats.dateRange.startDate} and {searchStats.dateRange.endDate}
             </p>
           </div>
         )}
         
-        <OrdersSearchTable orders={orders} isLoading={isLoading} />
+        {orders.length > 0 && (
+          <OrdersSearchTable orders={orders} />
+        )}
       </CardContent>
     </Card>
   );

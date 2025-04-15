@@ -1,22 +1,27 @@
+
 // src/components/ui/calendar.tsx
 import * as React from "react"
 import { DayPicker } from "react-day-picker"
+import { type DateRange } from "react-day-picker"
 import "react-day-picker/dist/style.css"
+import { cn } from "@/lib/utils"
 
-export interface CalendarProps {
-  selected?: Date
-  onSelect?: (date: Date | undefined) => void
-}
+export type CalendarProps = React.ComponentProps<typeof DayPicker>
 
-export function Calendar({ selected, onSelect }: CalendarProps) {
+export function Calendar({
+  className,
+  classNames,
+  showOutsideDays = true,
+  ...props
+}: CalendarProps) {
   return (
-    <div className="p-3">
-      <DayPicker
-        mode="single"
-        selected={selected}
-        onSelect={onSelect}
-        showOutsideDays
-      />
-    </div>
+    <DayPicker
+      showOutsideDays={showOutsideDays}
+      className={cn("p-3 pointer-events-auto", className)}
+      classNames={{
+        ...classNames
+      }}
+      {...props}
+    />
   )
 }

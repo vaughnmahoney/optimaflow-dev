@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { WorkOrderFilters } from "../types";
+import { DateRange } from "react-day-picker";
 
 interface TodayDateButtonProps {
   className?: string;
@@ -20,7 +21,7 @@ export const TodayDateButton = ({
 }: TodayDateButtonProps) => {
   const today = new Date();
   
-  const handleSelect = (dateRange: { from: Date | undefined; to: Date | undefined } | undefined) => {
+  const handleSelect = (dateRange: DateRange | undefined) => {
     if (!dateRange || !onDateChange) return;
     
     onDateChange({ 

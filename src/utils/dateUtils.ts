@@ -68,5 +68,28 @@ export const formatLocalTime = (
   }
 };
 
+/**
+ * Format date for display in a consistent format across the application
+ * @param dateString Date string to format
+ * @param fallback Optional fallback text if date is invalid
+ * @returns Formatted date string
+ */
+export const formatDateForDisplay = (
+  dateString: string | undefined | null,
+  fallback: string = "N/A"
+): string => {
+  if (!dateString) return fallback;
+  
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return fallback;
+    
+    return format(date, "MMM d, yyyy");
+  } catch (error) {
+    console.error("Error formatting date for display:", error);
+    return fallback;
+  }
+};
+
 // Import format from date-fns
 import { format } from "date-fns";

@@ -29,7 +29,10 @@ export const QcNotesSheet = ({ workOrder }: QcNotesSheetProps) => {
   const handleSaveQcNotes = async () => {
     setIsSaving(true);
     try {
-      await updateWorkOrderQcNotes(workOrder.id, qcNotes);
+      await updateWorkOrderQcNotes.mutateAsync({
+        workOrderId: workOrder.id,
+        qcNotes: qcNotes
+      });
       toast.success("QC notes saved successfully");
       setIsOpen(false);
     } catch (error) {

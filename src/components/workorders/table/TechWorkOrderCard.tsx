@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Clock, FileText, Image, MapPin, ShieldCheck, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { WorkOrder } from "../types";
-import { formatDateForDisplay } from "@/utils/dateUtils";
+import { formatLocalTime } from "@/utils/dateUtils";
 
 interface TechWorkOrderCardProps {
   workOrder: WorkOrder;
@@ -26,7 +26,7 @@ export const TechWorkOrderCard = ({
   
   // Get date and format it
   const date = workOrder.service_date || workOrder.end_time || workOrder.timestamp;
-  const formattedDate = formatDateForDisplay(date);
+  const formattedDate = formatLocalTime(date, "MMM d, yyyy", "N/A");
   
   return (
     <Card className="overflow-hidden">
