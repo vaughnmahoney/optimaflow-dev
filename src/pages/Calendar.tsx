@@ -1,53 +1,71 @@
-import React from 'react';
-import { Calendar as CalendarIcon, List } from 'lucide-react';
+
+// src/pages/Calendar.tsx
 import { Layout } from "@/components/Layout";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarView } from "@/components/calendar/CalendarView";
-import { ListView } from "@/components/calendar/ListView";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Month, Year, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { format, addMonths, subMonths } from "date-fns";
 
 const Calendar = () => {
-  const [view, setView] = useState<"calendar" | "list">("calendar");
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+  const [view, setView] = useState<"month" | "year">("month");
+
+  const handleNextMonth = () => {
+    setCurrentMonth(addMonths(currentMonth, 1));
+  };
+
+  const handlePrevMonth = () => {
+    setCurrentMonth(subMonths(currentMonth, 1));
+  };
+
+  const handleTodayClick = () => {
+    const today = new Date();
+    setSelectedDate(today);
+    setCurrentMonth(today);
+  };
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      setSelectedDate(date);
+    }
+  };
 
   return (
     <Layout title="Calendar">
-      <Card className="mb-6">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle>Schedule</CardTitle>
-            <div className="flex space-x-2">
-              <Button
-                variant={view === "calendar" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setView("calendar")}
-              >
-                <CalendarIcon className="h-4 w-4 mr-2" />
-                Calendar
-              </Button>
-              <Button
-                variant={view === "list" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setView("list")}
-              >
-                <List className="h-4 w-4 mr-2" />
-                List
-              </Button>
+      <div className="space-y-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="flex justify-between items-center">
+              <CardTitle>Calendar</CardTitle>
+              <div className="flex space-x-2">
+                <Button variant="outline" size="sm" onClick={handleTodayClick}>
+                  Today
+                </Button>
+                <Button variant="outline" size="icon" onClick={handlePrevMonth}>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button variant="outline" size="icon" onClick={handleNextMonth}>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="calendar" value={view}>
-            <TabsContent value="calendar" className="mt-0">
-              <CalendarView />
-            </TabsContent>
-            <TabsContent value="list" className="mt-0">
-              <ListView />
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+            <div className="text-muted-foreground font-medium mt-2">
+              {format(currentMonth, "MMMM yyyy")}
+            </div>
+          </CardHeader>
+          <CardContent>
+            <CalendarComponent
+              selected={selectedDate}
+              onSelect={handleDateSelect}
+              defaultMonth={currentMonth}
+              className="rounded-md border"
+            />
+          </CardContent>
+        </Card>
+      </div>
     </Layout>
   );
 };
