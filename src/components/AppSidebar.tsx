@@ -3,9 +3,11 @@ import { useState, useEffect, useRef, KeyboardEvent } from "react";
 import { useLocation } from "react-router-dom";
 import { X, Search } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
+import { SidebarProfile } from "@/components/sidebar/SidebarProfile";
 import { SidebarLogout } from "@/components/sidebar/SidebarLogout";
 import { SidebarToggleButton } from "@/components/sidebar/SidebarToggleButton";
 import { SidebarNavigation } from "@/components/sidebar/SidebarNavigation";
+import { MobileSidebarToggle } from "@/components/sidebar/MobileSidebarToggle";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,11 +15,12 @@ import { supabase } from "@/integrations/supabase/client";
 export function AppSidebar() {
   const location = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Get sidebar state from context
-  const { state, toggleSidebar, openMobile, setOpenMobile } = useSidebar();
+  const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
 
   // Read and set sidebar state from localStorage
@@ -39,8 +42,8 @@ export function AppSidebar() {
 
   // Close mobile sidebar when route changes
   useEffect(() => {
-    setOpenMobile(false);
-  }, [location, setOpenMobile]);
+    setIsMobileOpen(false);
+  }, [location]);
 
   // Fetch flagged work orders count for badge
   const { data: flaggedWorkOrdersCount = 0 } = useQuery({
@@ -71,6 +74,12 @@ export function AppSidebar() {
 
   return (
     <>
+      {/* Mobile Toggle Button */}
+      <MobileSidebarToggle 
+        isMobileOpen={isMobileOpen} 
+        setIsMobileOpen={setIsMobileOpen} 
+      />
+
       {/* Main Sidebar */}
       <div
         ref={sidebarRef}
@@ -79,7 +88,7 @@ export function AppSidebar() {
           "flex flex-col bg-sidebar border-r border-sidebar-border shadow-sm",
           "transition-all duration-300 ease-in-out",
           "md:translate-x-0", // Always visible on desktop
-          openMobile ? "translate-x-0" : "-translate-x-full" // Toggle on mobile
+          isMobileOpen ? "translate-x-0" : "-translate-x-full" // Toggle on mobile
         )}
         style={{
           width: isCollapsed ? 'var(--sidebar-width-collapsed)' : 'var(--sidebar-width)',
@@ -87,16 +96,10 @@ export function AppSidebar() {
         aria-label="Main navigation"
         role="navigation"
       >
-        {/* Mobile close button */}
-        {openMobile && (
-          <button
-            className="absolute right-2 top-2 p-1 rounded-full bg-sidebar-accent md:hidden"
-            onClick={() => setOpenMobile(false)}
-            aria-label="Close sidebar"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        )}
+        {/* Profile Section - Moved to top of sidebar */}
+        <div className="px-3 py-4 border-b border-sidebar-border">
+          <SidebarProfile isCollapsed={isCollapsed} />
+        </div>
         
         {/* Navigation Items - Scrollable Area */}
         <div className="overflow-y-auto flex-1 py-3 px-2">
@@ -114,10 +117,10 @@ export function AppSidebar() {
       </div>
       
       {/* Backdrop overlay for mobile - closes sidebar when clicked */}
-      {openMobile && (
+      {isMobileOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-30 md:hidden animate-fade-in"
-          onClick={() => setOpenMobile(false)}
+          onClick={() => setIsMobileOpen(false)}
           aria-hidden="true"
         />
       )}

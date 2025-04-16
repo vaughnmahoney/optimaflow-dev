@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { AttendanceList } from "./AttendanceList";
@@ -42,7 +41,7 @@ export const DailyAttendanceCard = ({
 
   if (isEditing) {
     return (
-      <Card className="border border-primary/30 shadow-md">
+      <Card>
         <AttendanceList
           technicians={technicians}
           todayAttendance={record.records}
@@ -58,7 +57,7 @@ export const DailyAttendanceCard = ({
   }
 
   return (
-    <Card className="border border-gray-200 shadow-sm overflow-hidden">
+    <Card>
       <DailyAttendanceHeader
         date={record.date}
         isToday={isToday}
@@ -66,14 +65,12 @@ export const DailyAttendanceCard = ({
         onSearchChange={setSearchQuery}
         onEdit={() => onEdit(record.date)}
       />
-      <CardContent className="p-4">
+      <CardContent>
         <AttendanceStats stats={record.stats} />
-        <div className="mt-4">
-          <DailyAttendanceList
-            records={filteredRecords}
-            getTechnicianName={getTechnicianName}
-          />
-        </div>
+        <DailyAttendanceList
+          records={filteredRecords}
+          getTechnicianName={getTechnicianName}
+        />
       </CardContent>
     </Card>
   );

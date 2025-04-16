@@ -1,32 +1,20 @@
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { SortField, SortDirection, PaginationState, WorkOrderFilters } from "@/components/workorders/types";
 import { useWorkOrderFetch } from "./useWorkOrderFetch";
 import { useWorkOrderStatusCounts } from "./useWorkOrderStatusCounts";
 import { useWorkOrderMutations } from "./useWorkOrderMutations";
 import { useWorkOrderImport } from "./useWorkOrderImport";
-import { useAutoImport } from "./useAutoImport";
 
 export const useWorkOrderData = () => {
-  // Get today's date
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
-  // End of today
-  const endOfToday = new Date(today);
-  endOfToday.setHours(23, 59, 59, 999);
-  
   const [filters, setFilters] = useState<WorkOrderFilters>({
     status: null,
-    dateRange: { from: today, to: endOfToday }, // Default to today's date
+    dateRange: { from: null, to: null },
     driver: null,
     location: null,
-    orderNo: null,
-    optimoRouteStatus: null,
-    searchText: null // Add this for the global search
+    orderNo: null
   });
   
-  const [sortField, setSortField] = useState<SortField>('end_time');
+  const [sortField, setSortField] = useState<SortField>('service_date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [pagination, setPagination] = useState<PaginationState>({
     page: 1,
@@ -42,8 +30,6 @@ export const useWorkOrderData = () => {
     sortDirection
   );
   
-  const { runAutoImport } = useAutoImport();
-  
   const workOrders = workOrdersData.data;
   const total = workOrdersData.total;
   
@@ -51,17 +37,10 @@ export const useWorkOrderData = () => {
     setPagination(prev => ({ ...prev, total }));
   }
   
-  // Pass filters to useWorkOrderStatusCounts to filter by date range
-  const statusCounts = useWorkOrderStatusCounts(workOrders, filters.status, filters);
+  const statusCounts = useWorkOrderStatusCounts(workOrders, filters.status);
   
   const { searchOptimoRoute } = useWorkOrderImport();
   const { updateWorkOrderStatus, deleteWorkOrder } = useWorkOrderMutations();
-
-  // This combined function will handle both refetch and auto-import
-  const handleRefreshWithAutoImport = async () => {
-    await refetch();
-    await runAutoImport();
-  };
 
   const handleColumnFilterChange = (column: string, value: any) => {
     setFilters(prev => {
@@ -82,12 +61,6 @@ export const useWorkOrderData = () => {
           break;
         case 'status':
           newFilters.status = value;
-          break;
-        case 'optimoroute_status':
-          newFilters.optimoRouteStatus = value;
-          break;
-        case 'search':
-          newFilters.searchText = value;
           break;
       }
       
@@ -117,12 +90,6 @@ export const useWorkOrderData = () => {
         case 'status':
           newFilters.status = null;
           break;
-        case 'optimoroute_status':
-          newFilters.optimoRouteStatus = null;
-          break;
-        case 'search':
-          newFilters.searchText = null;
-          break;
       }
       
       return newFilters;
@@ -134,12 +101,10 @@ export const useWorkOrderData = () => {
   const clearAllFilters = () => {
     setFilters({
       status: null,
-      dateRange: { from: today, to: endOfToday },
+      dateRange: { from: null, to: null },
       driver: null,
       location: null,
-      orderNo: null,
-      optimoRouteStatus: null,
-      searchText: null // Clear search text too
+      orderNo: null
     });
     
     handlePageChange(1);
@@ -169,10 +134,6 @@ export const useWorkOrderData = () => {
     handlePageChange(1);
   };
 
-  const handleSearchChange = (searchText: string) => {
-    handleColumnFilterChange('search', searchText || null);
-  };
-
   return {
     data: workOrders,
     isLoading,
@@ -196,7 +157,6 @@ export const useWorkOrderData = () => {
     },
     handlePageChange,
     handlePageSizeChange,
-    refetch: handleRefreshWithAutoImport,
-    handleSearchChange
+    refetch
   };
 };

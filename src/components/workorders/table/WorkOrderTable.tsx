@@ -6,15 +6,11 @@ import {
 import { WorkOrder, SortDirection, SortField, PaginationState, WorkOrderFilters } from "../types";
 import { WorkOrderTableHeader } from "./TableHeader";
 import { WorkOrderRow } from "./WorkOrderRow";
-import { WorkOrderCard } from "./WorkOrderCard";
 import { EmptyState } from "./EmptyState";
 import { useSortableTable } from "./useSortableTable";
 import { Pagination } from "./Pagination";
 import { Button } from "@/components/ui/button";
 import { FilterX } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { checkHasActiveFilters } from "../filters/filter-sort/filterUtils";
-import { PaginationIndicator } from "./PaginationIndicator";
 
 interface WorkOrderTableProps {
   workOrders: WorkOrder[];
@@ -47,10 +43,8 @@ export const WorkOrderTable = ({
   filters,
   onColumnFilterChange,
   onColumnFilterClear,
-  onClearAllFilters,
+  onClearAllFilters
 }: WorkOrderTableProps) => {
-  const isMobile = useIsMobile();
-  
   const { 
     workOrders, 
     sortField, 
@@ -63,43 +57,62 @@ export const WorkOrderTable = ({
     externalOnSort
   );
 
-  // Check if any non-date filter is active
-  const hasActiveFilters = checkHasActiveFilters(filters, false);
+  // Check if any filter is active
+  const hasActiveFilters = 
+    filters.status !== null || 
+    filters.orderNo !== null || 
+    filters.driver !== null || 
+    filters.location !== null || 
+    filters.dateRange.from !== null || 
+    filters.dateRange.to !== null;
 
   return (
-    <div className="space-y-3">
-      {/* Clear Filters button */}
+    <div className="space-y-2">
+      {/* Active filters indicator */}
       {hasActiveFilters && (
-        <div className="flex justify-end">
+        <div className="flex items-center justify-between mb-2 px-2">
+          <div className="text-sm text-muted-foreground">
+            Active filters applied
+          </div>
           <Button
             variant="ghost"
-            size="xs"
+            size="sm"
             onClick={onClearAllFilters}
-            className="h-7"
+            className="h-8 text-xs"
           >
             <FilterX className="h-3 w-3 mr-1" />
-            Clear filters
+            Clear all filters
           </Button>
         </div>
       )}
-
-      {/* Card grid layout for both mobile and desktop */}
-      <div className="space-y-2">
-        {workOrders.length === 0 ? (
-          <EmptyState />
-        ) : (
-          <div className={`grid gap-2 ${isMobile ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"}`}>
-            {workOrders.map((workOrder) => (
-              <WorkOrderCard
-                key={workOrder.id}
-                workOrder={workOrder}
-                onStatusUpdate={onStatusUpdate}
-                onImageView={onImageView}
-                onDelete={onDelete}
-              />
-            ))}
-          </div>
-        )}
+    
+      <div className="rounded-md border">
+        <Table>
+          <WorkOrderTableHeader 
+            sortField={sortField} 
+            sortDirection={sortDirection} 
+            onSort={handleSort}
+            filters={filters}
+            onFilterChange={onColumnFilterChange}
+            onFilterClear={onColumnFilterClear}
+          />
+          <TableBody>
+            {workOrders.length === 0 ? (
+              <EmptyState />
+            ) : (
+              workOrders.map((workOrder) => (
+                <WorkOrderRow 
+                  key={workOrder.id}
+                  workOrder={workOrder}
+                  onStatusUpdate={onStatusUpdate}
+                  onImageView={onImageView}
+                  onDelete={onDelete}
+                />
+              ))
+            )}
+          </TableBody>
+        </Table>
+        
         {pagination && onPageChange && onPageSizeChange && (
           <Pagination 
             pagination={pagination}

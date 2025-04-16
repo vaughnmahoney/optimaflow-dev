@@ -1,6 +1,5 @@
 
 import { format } from "date-fns";
-import { toLocalTime, formatLocalTime } from "@/utils/dateUtils";
 
 export const getStatusBorderColor = (status: string) => {
   switch (status) {
@@ -37,17 +36,19 @@ export const getStatusBgColor = (status: string) => {
 };
 
 export const formatDate = (dateStr?: string, formatString: string = "EEEE, MMMM d, yyyy") => {
-  return formatLocalTime(dateStr, formatString, 'N/A');
+  if (!dateStr) return 'N/A';
+  try {
+    return format(new Date(dateStr), formatString);
+  } catch {
+    return 'Invalid Date';
+  }
 };
 
 export const calculateDuration = (startTime?: string, endTime?: string) => {
   if (!startTime || !endTime) return "N/A";
   try {
-    const start = toLocalTime(startTime);
-    const end = toLocalTime(endTime);
-    
-    if (!start || !end) return "N/A";
-    
+    const start = new Date(startTime);
+    const end = new Date(endTime);
     const diffInMinutes = Math.floor((end.getTime() - start.getTime()) / (1000 * 60));
     const hours = Math.floor(diffInMinutes / 60);
     const minutes = diffInMinutes % 60;

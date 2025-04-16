@@ -21,8 +21,7 @@ export const useRawWorkOrders = () => {
     dateRange: { from: null, to: null },
     driver: null,
     location: null,
-    orderNo: null,
-    optimoRouteStatus: null // Add this required field
+    orderNo: null
   });
 
   const [pagination, setPagination] = useState<PaginationState>({

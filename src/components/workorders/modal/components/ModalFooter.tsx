@@ -1,20 +1,14 @@
 
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
-import { useEffect } from "react";
-import { QcNotesSheet } from "./QcNotesSheet";
-import { ResolutionNotesSheet } from "./ResolutionNotesSheet";
-import { MobileStatusButton } from "./mobile/MobileStatusButton";
-import { WorkOrder } from "../../types";
+import { Check, Download, Flag, ThumbsDown, CheckCheck, Clock } from "lucide-react";
 
 interface ModalFooterProps {
   workOrderId: string;
-  onStatusUpdate?: (workOrderId: string, status: string, options?: any) => void;
+  onStatusUpdate?: (workOrderId: string, status: string) => void;
   onDownloadAll?: () => void;
   hasImages: boolean;
   status?: string;
   onResolveFlag?: (workOrderId: string, resolution: string) => void;
-  workOrder?: WorkOrder; 
 }
 
 export const ModalFooter = ({
@@ -23,142 +17,108 @@ export const ModalFooter = ({
   onDownloadAll,
   hasImages,
   status,
-  workOrder = {} as WorkOrder
+  onResolveFlag
 }: ModalFooterProps) => {
-  // Debug logging to see what data we're receiving
-  useEffect(() => {
-    if (workOrder) {
-      console.log('ModalFooter workOrder data:', {
-        status: workOrder.status,
-        flagged_user: workOrder.flagged_user,
-        flagged_at: workOrder.flagged_at,
-        approved_user: workOrder.approved_user,
-        approved_at: workOrder.approved_at,
-        resolved_user: workOrder.resolved_user,
-        resolved_at: workOrder.resolved_at,
-        rejected_user: workOrder.rejected_user,
-        rejected_at: workOrder.rejected_at
-      });
-    }
-  }, [workOrder]);
+  // Determine if this order is in a specific state
+  const isFlagged = status === "flagged" || status === "flagged_followup";
+  const isResolved = status === "resolved";
+  const isApproved = status === "approved";
+  const isPending = status === "pending_review";
+  const isRejected = status === "rejected";
   
-  // Determine which attribution data to show based on current status
-  const getStatusAttributionInfo = (workOrder: WorkOrder) => {
-    const status = workOrder.status;
-    
-    if (status === "approved" && workOrder.approved_user && workOrder.approved_at) {
-      return {
-        user: workOrder.approved_user,
-        timestamp: workOrder.approved_at
-      };
-    } else if ((status === "flagged" || status === "flagged_followup") && workOrder.flagged_user && workOrder.flagged_at) {
-      return {
-        user: workOrder.flagged_user,
-        timestamp: workOrder.flagged_at
-      };
-    } else if (status === "resolved" && workOrder.resolved_user && workOrder.resolved_at) {
-      return {
-        user: workOrder.resolved_user,
-        timestamp: workOrder.resolved_at
-      };
-    } else if (status === "rejected" && workOrder.rejected_user && workOrder.rejected_at) {
-      return {
-        user: workOrder.rejected_user,
-        timestamp: workOrder.rejected_at
-      };
-    } else if (workOrder.last_action_user && workOrder.last_action_at) {
-      return {
-        user: workOrder.last_action_user,
-        timestamp: workOrder.last_action_at
-      };
-    }
-    
-    return { user: undefined, timestamp: undefined };
-  };
-  
-  const attributionInfo = getStatusAttributionInfo(workOrder);
-  
-  // Get user action information for display
-  const getUserActionInfo = () => {
-    const isApproved = status === "approved";
-    const isFlagged = status === "flagged" || status === "flagged_followup";
-    const isResolved = status === "resolved";
-    const isRejected = status === "rejected";
-    
-    if (isApproved && workOrder?.approved_user) {
-      return `Approved by ${workOrder.approved_user}`;
-    }
-    if (isFlagged && workOrder?.flagged_user) {
-      return `Flagged by ${workOrder.flagged_user}`;
-    }
-    if (isResolved && workOrder?.resolved_user) {
-      return `Resolved by ${workOrder.resolved_user}`;
-    }
-    if (isRejected && workOrder?.rejected_user) {
-      return `Rejected by ${workOrder.rejected_user}`;
-    }
-    return null;
-  };
-  
-  const userActionInfo = getUserActionInfo();
-  const userActionTime = () => {
-    const isApproved = status === "approved";
-    const isFlagged = status === "flagged" || status === "flagged_followup";
-    const isResolved = status === "resolved";
-    const isRejected = status === "rejected";
-    
-    if (isApproved && workOrder?.approved_at) {
-      return new Date(workOrder.approved_at).toLocaleString();
-    }
-    if (isFlagged && workOrder?.flagged_at) {
-      return new Date(workOrder.flagged_at).toLocaleString();
-    }
-    if (isResolved && workOrder?.resolved_at) {
-      return new Date(workOrder.resolved_at).toLocaleString();
-    }
-    if (isRejected && workOrder?.rejected_at) {
-      return new Date(workOrder.rejected_at).toLocaleString();
-    }
-    return null;
+  // Get status-specific styling for the disabled status button
+  const getStatusButtonStyle = () => {
+    if (isApproved) return "bg-green-50 text-green-700 border-green-200";
+    if (isFlagged) return "bg-red-50 text-red-700 border-red-200";
+    if (isResolved) return "bg-blue-50 text-blue-700 border-blue-200";
+    if (isRejected) return "bg-orange-50 text-orange-700 border-orange-200";
+    return "bg-gray-100 text-gray-500";
   };
   
   return (
-    <div className="p-3 bg-white dark:bg-gray-950 border-t flex flex-wrap justify-between items-center gap-2">
-      <div className="flex flex-wrap items-center gap-2">
-        {/* Notes buttons */}
-        <QcNotesSheet workOrder={workOrder} />
-        <ResolutionNotesSheet workOrder={workOrder} />
+    <div className="p-3 bg-white dark:bg-gray-950 border-t flex justify-between items-center">
+      <div className="flex gap-2 flex-wrap">
+        {/* Current Status Button - always show and disabled, clicking returns to pending */}
+        {onStatusUpdate && !isPending && (
+          <Button 
+            variant="outline" 
+            className={`${getStatusButtonStyle()} cursor-pointer`}
+            onClick={() => onStatusUpdate(workOrderId, "pending_review")}
+          >
+            <Clock className="mr-1 h-4 w-4" />
+            {isApproved ? "Approved" : isFlagged ? "Flagged" : isResolved ? "Resolved" : isRejected ? "Rejected" : "Status"}
+          </Button>
+        )}
         
-        {/* Status button with attribution data */}
-        <MobileStatusButton 
-          workOrderId={workOrderId}
-          currentStatus={status || "pending_review"}
-          onStatusUpdate={onStatusUpdate}
-          statusUser={attributionInfo.user}
-          statusTimestamp={attributionInfo.timestamp}
-        />
+        {/* Show approve button for non-approved orders */}
+        {onStatusUpdate && !isApproved && !isRejected && (
+          <Button 
+            variant="custom"
+            className="bg-green-500 hover:bg-green-600 text-white font-medium rounded-md transition-colors shadow-sm"
+            onClick={() => onStatusUpdate(workOrderId, "approved")}
+          >
+            <Check className="mr-1 h-4 w-4" />
+            Approve
+          </Button>
+        )}
         
-        {/* User attribution information */}
-        {userActionInfo && (
-          <div className="ml-2 text-sm text-gray-500 flex flex-col">
-            <span className="font-medium">{userActionInfo}</span>
-            {userActionTime() && (
-              <span className="text-xs">{userActionTime()}</span>
-            )}
-          </div>
+        {/* Show flag button for non-flagged orders */}
+        {onStatusUpdate && !isFlagged && !isRejected && (
+          <Button 
+            variant="custom"
+            className="bg-red-500 hover:bg-red-600 text-white font-medium rounded-md transition-colors shadow-sm"
+            onClick={() => onStatusUpdate(workOrderId, "flagged")}
+          >
+            <Flag className="mr-1 h-4 w-4" />
+            Flag
+          </Button>
+        )}
+        
+        {/* Show resolve button for flagged orders */}
+        {onStatusUpdate && isFlagged && (
+          <Button 
+            variant="custom"
+            className="bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-md transition-colors shadow-sm"
+            onClick={() => onStatusUpdate(workOrderId, "resolved")}
+          >
+            <CheckCheck className="mr-1 h-4 w-4" />
+            Resolve
+          </Button>
+        )}
+        
+        {/* Show reject button for flagged orders */}
+        {onResolveFlag && isFlagged && (
+          <Button 
+            variant="custom"
+            className="bg-red-500 hover:bg-red-600 text-white font-medium rounded-md transition-colors shadow-sm"
+            onClick={() => onResolveFlag(workOrderId, "rejected")}
+          >
+            <ThumbsDown className="mr-1 h-4 w-4" />
+            Reject
+          </Button>
+        )}
+        
+        {/* For rejected status, show button to reopen as pending */}
+        {onStatusUpdate && isRejected && (
+          <Button 
+            variant="custom"
+            className="bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-md transition-colors shadow-sm"
+            onClick={() => onStatusUpdate(workOrderId, "pending_review")}
+          >
+            <Clock className="mr-1 h-4 w-4" />
+            Reopen
+          </Button>
         )}
       </div>
-
       <div>
         {onDownloadAll && hasImages && (
           <Button 
-            variant="outline" 
-            size="sm" 
-            className="gap-1 px-2 py-1 h-7 rounded-md bg-white border border-gray-200 hover:bg-gray-50"
+            variant="outline"
+            className="border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-800 font-medium rounded-md transition-colors shadow-sm"
             onClick={onDownloadAll}
           >
-            <Download className="h-3.5 w-3.5 text-gray-600" />
-            <span className="text-xs font-medium text-gray-700">Download All</span>
+            <Download className="mr-1 h-4 w-4" />
+            Download All
           </Button>
         )}
       </div>

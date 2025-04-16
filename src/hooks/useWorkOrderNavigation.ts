@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { WorkOrder } from "@/components/workorders/types";
 
@@ -7,26 +6,22 @@ interface UseWorkOrderNavigationProps {
   initialWorkOrderId: string | null;
   isOpen: boolean;
   onClose: () => void;
-  onPageBoundary?: (direction: 'next' | 'previous') => void;
 }
 
 export const useWorkOrderNavigation = ({
   workOrders,
   initialWorkOrderId,
   isOpen,
-  onClose,
-  onPageBoundary
+  onClose
 }: UseWorkOrderNavigationProps) => {
   const [currentWorkOrderId, setCurrentWorkOrderId] = useState<string | null>(initialWorkOrderId);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isNavigatingPages, setIsNavigatingPages] = useState(false);
   
   // Reset state when modal opens/closes
   useEffect(() => {
     if (isOpen && initialWorkOrderId) {
       setCurrentWorkOrderId(initialWorkOrderId);
       setCurrentImageIndex(0);
-      setIsNavigatingPages(false);
     }
   }, [isOpen, initialWorkOrderId]);
   
@@ -38,15 +33,6 @@ export const useWorkOrderNavigation = ({
   useEffect(() => {
     setCurrentImageIndex(0);
   }, [currentWorkOrderId]);
-
-  // If we're navigating pages and the workOrders array changes (meaning new page data has arrived),
-  // and we don't have a current work order selected, select the first one in the new page
-  useEffect(() => {
-    if (isNavigatingPages && workOrders.length > 0 && !currentWorkOrder) {
-      setCurrentWorkOrderId(workOrders[0].id);
-      setIsNavigatingPages(false);
-    }
-  }, [workOrders, currentWorkOrder, isNavigatingPages]);
   
   // Add keyboard navigation
   useEffect(() => {
@@ -82,10 +68,6 @@ export const useWorkOrderNavigation = ({
     if (currentIndex > 0) {
       setCurrentWorkOrderId(workOrders[currentIndex - 1].id);
       setCurrentImageIndex(0);
-    } else if (onPageBoundary && currentIndex === 0) {
-      // We're at the first order of the current page
-      setIsNavigatingPages(true);
-      onPageBoundary('previous');
     }
   };
 
@@ -93,12 +75,6 @@ export const useWorkOrderNavigation = ({
     if (currentIndex < workOrders.length - 1) {
       setCurrentWorkOrderId(workOrders[currentIndex + 1].id);
       setCurrentImageIndex(0);
-    } else if (onPageBoundary && currentIndex === workOrders.length - 1) {
-      // We're at the last order of the current page
-      // Just trigger the page boundary event without trying to select the first order
-      setIsNavigatingPages(true);
-      onPageBoundary('next');
-      // Don't attempt to select any work order - we'll wait for the new page data
     }
   };
 
@@ -137,9 +113,7 @@ export const useWorkOrderNavigation = ({
     currentWorkOrder,
     currentIndex,
     currentImageIndex,
-    isNavigatingPages,
     setCurrentImageIndex,
-    setIsNavigatingPages,
     handlePreviousOrder,
     handleNextOrder,
     handleSetOrder,

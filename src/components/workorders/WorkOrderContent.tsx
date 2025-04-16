@@ -7,7 +7,7 @@ interface WorkOrderContentProps {
   isLoading: boolean;
   filters: WorkOrderFilters;
   onFiltersChange: (filters: WorkOrderFilters) => void;
-  onStatusUpdate: (workOrderId: string, newStatus: string, options?: any) => void;
+  onStatusUpdate: (workOrderId: string, newStatus: string) => void;
   onImageView: (workOrderId: string) => void;
   onDelete: (workOrderId: string) => void;
   onSearchChange?: (value: string) => void;
@@ -29,9 +29,7 @@ interface WorkOrderContentProps {
   onColumnFilterChange: (column: string, value: any) => void;
   clearColumnFilter: (column: string) => void;
   clearAllFilters: () => void;
-  onResolveFlag?: (workOrderId: string, resolution: string, options?: any) => void;
-  refetch?: () => Promise<any>;
-  isRefreshing?: boolean;
+  onResolveFlag?: (workOrderId: string, resolution: string) => void;
 }
 
 export const WorkOrderContent = ({
@@ -54,9 +52,7 @@ export const WorkOrderContent = ({
   onColumnFilterChange,
   clearColumnFilter,
   clearAllFilters,
-  onResolveFlag,
-  refetch,
-  isRefreshing
+  onResolveFlag
 }: WorkOrderContentProps) => {
   return (
     <WorkOrderList
@@ -80,8 +76,6 @@ export const WorkOrderContent = ({
       clearColumnFilter={clearColumnFilter}
       clearAllFilters={clearAllFilters}
       onResolveFlag={onResolveFlag}
-      refetch={refetch}
-      isRefreshing={isRefreshing}
     />
   );
 };

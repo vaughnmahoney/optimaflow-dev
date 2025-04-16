@@ -7,10 +7,9 @@ import { StatusBadge } from "@/components/workorders/StatusBadge";
 import { useBulkOrderStatus } from "@/hooks/bulk-orders/useBulkOrderStatus";
 import { Button } from "@/components/ui/button";
 import { useBulkOrderImport } from "@/hooks/bulk-orders/useBulkOrderImport";
-import { Loader2, Database, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, Database, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
-import { useState } from "react";
 
 interface RawOrdersTableProps {
   orders: any[];
@@ -21,10 +20,6 @@ interface RawOrdersTableProps {
 export const RawOrdersTable = ({ orders, isLoading, originalCount }: RawOrdersTableProps) => {
   const { getCompletionStatus, getQcStatus } = useBulkOrderStatus();
   const { importOrders, isImporting, importResult, importProgress } = useBulkOrderImport();
-  
-  // State for limiting displayed orders
-  const [displayLimit, setDisplayLimit] = useState(20);
-  const [showAll, setShowAll] = useState(false);
 
   if (isLoading) {
     return <div className="py-8 text-center">Loading orders...</div>;
@@ -33,9 +28,6 @@ export const RawOrdersTable = ({ orders, isLoading, originalCount }: RawOrdersTa
   if (!orders || orders.length === 0) {
     return <div className="py-8 text-center">No orders found</div>;
   }
-
-  // Limit the number of orders displayed to prevent performance issues
-  const displayedOrders = showAll ? orders : orders.slice(0, displayLimit);
 
   // Extract basic info to display in the table
   const getOrderNo = (order: any) => {
@@ -82,14 +74,8 @@ export const RawOrdersTable = ({ orders, isLoading, originalCount }: RawOrdersTa
     return !!(order.completionDetails?.data?.form?.images?.length > 0);
   };
 
-  // Handle importing ALL orders, not just the displayed ones
   const handleImport = async () => {
     await importOrders(orders);
-  };
-
-  // Toggle between showing limited orders and all orders
-  const toggleShowAll = () => {
-    setShowAll(!showAll);
   };
 
   return (
@@ -97,14 +83,9 @@ export const RawOrdersTable = ({ orders, isLoading, originalCount }: RawOrdersTa
       {/* Stats section */}
       <div className="text-sm bg-slate-50 p-3 rounded border">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-          <div>
-            <span className="font-medium">
-              Found <span className="text-green-600 font-bold">{orders.length}</span> orders
-            </span>
-            <p className="text-muted-foreground text-xs">
-              Displaying {displayedOrders.length} of {orders.length} orders to improve performance
-            </p>
-          </div>
+          <span className="font-medium">
+            Displaying <span className="text-green-600 font-bold">{orders.length}</span> orders
+          </span>
           
           {originalCount !== undefined && originalCount !== orders.length && (
             <div className="text-muted-foreground">
@@ -163,22 +144,6 @@ export const RawOrdersTable = ({ orders, isLoading, originalCount }: RawOrdersTa
         </Alert>
       )}
       
-      {/* Display toggle button only if there are more orders than the limit */}
-      {orders.length > displayLimit && !showAll && (
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={toggleShowAll}
-          className="w-full flex items-center justify-center text-sm"
-        >
-          {showAll ? (
-            <>Show Less <ChevronUp className="ml-2 h-4 w-4" /></>
-          ) : (
-            <>Show All Orders <ChevronDown className="ml-2 h-4 w-4" /></>
-          )}
-        </Button>
-      )}
-      
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -192,7 +157,7 @@ export const RawOrdersTable = ({ orders, isLoading, originalCount }: RawOrdersTa
             </TableRow>
           </TableHeader>
           <TableBody>
-            {displayedOrders.map((order, index) => (
+            {orders.map((order, index) => (
               <TableRow key={index}>
                 <TableCell className="font-medium">{getOrderNo(order)}</TableCell>
                 <TableCell>{getServiceDate(order)}</TableCell>
@@ -220,34 +185,6 @@ export const RawOrdersTable = ({ orders, isLoading, originalCount }: RawOrdersTa
           </TableBody>
         </Table>
       </div>
-      
-      {/* Warning message when showing limited orders */}
-      {!showAll && orders.length > displayLimit && (
-        <div className="text-center text-sm text-muted-foreground">
-          <p>Showing {displayedOrders.length} of {orders.length} orders</p>
-          <p>Limited display for better performance</p>
-          <Button 
-            variant="link" 
-            onClick={toggleShowAll}
-            className="h-6 p-0"
-          >
-            Show All
-          </Button>
-        </div>
-      )}
-      
-      {/* Display toggle button at the bottom too */}
-      {showAll && (
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={toggleShowAll}
-          className="w-full flex items-center justify-center text-sm"
-        >
-          <ChevronUp className="mr-2 h-4 w-4" />
-          Show Less
-        </Button>
-      )}
     </div>
   );
 };

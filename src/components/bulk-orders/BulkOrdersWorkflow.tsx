@@ -79,21 +79,8 @@ export const BulkOrdersWorkflow = () => {
             
             {isLoading && dataFlowLogging.batchStats && (
               <FetchProgressBar 
-                state={{
-                  isLoading: isLoading,
-                  currentPage: dataFlowLogging.batchStats.completedBatches || 0,
-                  totalPages: dataFlowLogging.batchStats.totalBatches || 0,
-                  progress: dataFlowLogging.batchStats.completedBatches / (dataFlowLogging.batchStats.totalBatches || 1) * 100,
-                  processedOrders: dataFlowLogging.statusFilteredOrders || 0,
-                  totalOrders: dataFlowLogging.totalOrdersFromAPI || 0,
-                  isComplete: false,
-                  error: null,
-                  continuationToken: null,
-                  isPaused: false
-                }}
-                onPause={() => {}}
-                onResume={() => {}}
-                onReset={() => {}}
+                processing={isLoading}
+                stats={dataFlowLogging.batchStats}
               />
             )}
           </div>

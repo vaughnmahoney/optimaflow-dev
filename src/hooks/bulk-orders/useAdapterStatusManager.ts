@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { WorkOrder } from "@/components/workorders/types";
+import { toast } from "sonner";
 
 /**
  * Hook to manage status changes for bulk order adapter
@@ -50,6 +51,8 @@ export const useAdapterStatusManager = (workOrders: WorkOrder[]) => {
       )
     );
     
+    toast.success(`Status updated to ${newStatus}`);
+    
     // Also update status counts
     setStatusCounts(prev => {
       const newCounts = { ...prev };
@@ -87,6 +90,7 @@ export const useAdapterStatusManager = (workOrders: WorkOrder[]) => {
     
     // Just remove from local state
     setWorkOrders(prev => prev.filter(wo => wo.id !== workOrderId));
+    toast.success("Work order removed from view");
     
     // Update status counts if we found the order
     if (orderToDelete) {

@@ -1,13 +1,13 @@
 
-import React from "react";
+import { useState } from "react";
 import { WorkOrder } from "../../types";
-import { ImageContent } from "./ImageContent";
-import { ImageType } from "../../types/image";
-import { MobileOrderDetails } from "./mobile/MobileOrderDetails";
+import { ImageThumbnails } from "./ImageThumbnails";
+import { ImageViewer } from "./ImageViewer";
+import { useWorkOrderMutations } from "@/hooks/useWorkOrderMutations";
 
 interface ModalContentProps {
   workOrder: WorkOrder;
-  images: ImageType[];
+  images: Array<{ url: string; flagged?: boolean }>;
   currentImageIndex: number;
   setCurrentImageIndex: (index: number) => void;
   isImageExpanded: boolean;
@@ -22,24 +22,34 @@ export const ModalContent = ({
   isImageExpanded,
   toggleImageExpand,
 }: ModalContentProps) => {
+  const { toggleImageFlag } = useWorkOrderMutations();
+  
+  // Handle image flag toggle
+  const handleToggleFlag = (imageIndex: number, flagged: boolean) => {
+    toggleImageFlag(workOrder.id, imageIndex, flagged);
+  };
+
   return (
-    <div className="flex flex-col md:flex-row flex-1 h-full overflow-hidden">
-      {/* Left side: Image viewer */}
-      <div className="flex-1 md:w-2/3 flex flex-col h-full">
-        <ImageContent 
-          workOrderId={workOrder.id}
+    <div className="flex-1 overflow-hidden flex h-full">
+      {!isImageExpanded && (
+        <ImageThumbnails
+          images={images}
+          currentImageIndex={currentImageIndex}
+          setCurrentImageIndex={setCurrentImageIndex}
+        />
+      )}
+      
+      <div className={`flex-1 h-full ${isImageExpanded ? 'w-full' : ''}`}>
+        <ImageViewer
           images={images}
           currentImageIndex={currentImageIndex}
           setCurrentImageIndex={setCurrentImageIndex}
           isImageExpanded={isImageExpanded}
           toggleImageExpand={toggleImageExpand}
+          onToggleFlag={handleToggleFlag}
+          workOrderId={workOrder.id}
         />
-      </div>
-      
-      {/* Right side: Order details panel with continuous scrolling */}
-      <div className="w-full md:w-1/3 flex flex-col border-l h-full overflow-hidden">
-        <MobileOrderDetails workOrder={workOrder} />
       </div>
     </div>
   );
-}
+};

@@ -1,11 +1,11 @@
-
 import { useLocation } from "react-router-dom";
 import { 
-  AlertCircle, Database, Users, BarChart2,
-  LucideIcon, FileText  // Added FileText icon
+  LayoutDashboard, AlertCircle, CreditCard, Car, 
+  Package2, Clock, Users, Receipt, ExternalLink,
+  CalendarDays, LucideIcon, PackageCheck
 } from "lucide-react";
 import { SidebarNavItem } from "./SidebarNavItem";
-import { useAuth } from "@/components/AuthProvider";
+import { navigationConfig } from "@/config/navigationConfig";
 
 interface SidebarNavigationProps {
   isCollapsed: boolean;
@@ -19,7 +19,6 @@ interface NavItem {
   label: string;
   isActive: boolean;
   badge?: number;
-  roles?: string[];
 }
 
 export function SidebarNavigation({ 
@@ -28,52 +27,81 @@ export function SidebarNavigation({
   flaggedWorkOrdersCount = 0
 }: SidebarNavigationProps) {
   const location = useLocation();
-  const { userRole } = useAuth();
   
-  // Create navigation items with role-based visibility
+  // Create navigation items
   const navItems: NavItem[] = [
+    { 
+      to: "/dashboard", 
+      icon: LayoutDashboard, 
+      label: "Dashboard", 
+      isActive: location.pathname === "/dashboard" || location.pathname === "/" 
+    },
     { 
       to: "/work-orders", 
       icon: AlertCircle, 
       label: "Quality Control", 
       isActive: location.pathname.startsWith("/work-orders"),
-      badge: flaggedWorkOrdersCount > 0 ? flaggedWorkOrdersCount : undefined,
-      roles: ["admin", "lead", "user"] 
+      badge: flaggedWorkOrdersCount > 0 ? flaggedWorkOrdersCount : undefined
     },
     { 
-      to: "/order-history", 
-      icon: FileText, 
-      label: "Order History", 
-      isActive: location.pathname.startsWith("/order-history"),
-      roles: ["admin", "lead", "user", "technician"] // Include technician role
+      to: "/payroll", 
+      icon: CreditCard, 
+      label: "Payroll", 
+      isActive: location.pathname.startsWith("/payroll") 
     },
     { 
-      to: "/bulk-orders", 
-      icon: Database, 
-      label: "Bulk Import Test", 
-      isActive: location.pathname.startsWith("/bulk-orders"),
-      roles: ["admin"] 
+      to: "/vehicle-maintenance", 
+      icon: Car, 
+      label: "Vehicle Maintenance", 
+      isActive: location.pathname.startsWith("/vehicle-maintenance") 
     },
     {
-      to: "/reports",
-      icon: BarChart2,
-      label: "Reports",
-      isActive: location.pathname.startsWith("/reports"),
-      roles: ["admin"] 
+      to: "/storage", 
+      icon: Package2, 
+      label: "Storage Units", 
+      isActive: location.pathname.startsWith("/storage") || location.pathname.startsWith("/inventory")
+    },
+    {
+      to: "/attendance", 
+      icon: Clock, 
+      label: "Attendance", 
+      isActive: location.pathname.startsWith("/attendance") || location.pathname.startsWith("/supervisor")
     },
     { 
-      to: "/users", 
+      to: "/employees", 
       icon: Users, 
-      label: "User Management", 
-      isActive: location.pathname.startsWith("/users"),
-      roles: ["admin"] 
-    }
+      label: "Employees", 
+      isActive: location.pathname.startsWith("/employees") || location.pathname.startsWith("/admin") 
+    },
+    { 
+      to: "/receipts", 
+      icon: Receipt, 
+      label: "Receipts", 
+      isActive: location.pathname.startsWith("/receipts") || location.pathname.startsWith("/reports")
+    },
+    { 
+      to: "/integrations", 
+      icon: ExternalLink, 
+      label: "Integrations", 
+      isActive: location.pathname.startsWith("/integrations") || location.pathname.startsWith("/api") 
+    },
+    { 
+      to: "/calendar", 
+      icon: CalendarDays, 
+      label: "Calendar", 
+      isActive: location.pathname.startsWith("/calendar")
+    },
+    { 
+      to: "/materials", 
+      icon: PackageCheck, 
+      label: "Materials", 
+      isActive: location.pathname.startsWith("/materials")
+    },
   ];
 
-  // Filter items by role and search term
+  // Filter navigation items based on search
   const filteredNavItems = navItems.filter(item => 
-    item.label.toLowerCase().includes(searchTerm.toLowerCase()) && 
-    (!item.roles || item.roles.includes(userRole))
+    item.label.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
