@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
@@ -11,6 +10,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { OrdersSearchTable } from './OrdersSearchTable';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
+interface OrdersSearchTableProps {
+  orders: any[];
+  isLoading?: boolean;
+}
 
 export const UnscheduledOrdersControl = () => {
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
@@ -72,7 +76,6 @@ export const UnscheduledOrdersControl = () => {
         return;
       }
       
-      // Set the orders and search stats
       setOrders(data.data.orders || []);
       setSearchStats({
         totalOrders: data.data.totalOrders,
@@ -165,7 +168,10 @@ export const UnscheduledOrdersControl = () => {
         )}
         
         {orders.length > 0 && (
-          <OrdersSearchTable orders={orders} />
+          <OrdersSearchTable 
+            orders={orders} 
+            isLoading={isLoading}
+          />
         )}
       </CardContent>
     </Card>
