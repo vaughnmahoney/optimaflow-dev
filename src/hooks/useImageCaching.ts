@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -42,11 +43,14 @@ export const useImageCaching = () => {
       // Check if already cached
       const { data: workOrder, error: fetchError } = await supabase
         .from('work_orders')
-        .select('images_cached, cached_images')
+        .select('*')
         .eq('id', workOrderId)
         .single();
       
-      if (fetchError) throw fetchError;
+      if (fetchError) {
+        console.error('Error fetching work order:', fetchError);
+        throw fetchError;
+      }
       
       // If already cached, return true
       if (workOrder.images_cached && workOrder.cached_images) {
@@ -75,7 +79,7 @@ export const useImageCaching = () => {
       return true;
     } catch (error) {
       console.error('Error in cacheWorkOrderImages:', error);
-      toast.error('Error caching images: ' + error.message);
+      toast.error('Error caching images: ' + (error as Error).message);
       return false;
     } finally {
       setIsProcessing(false);

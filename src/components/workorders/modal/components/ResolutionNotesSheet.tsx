@@ -12,30 +12,35 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useNotesMutations } from "@/hooks/mutations/useNotesMutations";
+import { WorkOrder } from "../../../types/workOrder";
 
 interface ResolutionNotesSheetProps {
   isOpen: boolean;
   onClose: () => void;
   workOrderId: string;
   initialNotes?: string;
+  workOrder?: WorkOrder; // Add support for passing the full workOrder
 }
 
 export const ResolutionNotesSheet = ({ 
   isOpen, 
   onClose, 
   workOrderId, 
+  workOrder,
   initialNotes = "" 
 }: ResolutionNotesSheetProps) => {
-  const [notes, setNotes] = useState(initialNotes);
+  const [notes, setNotes] = useState(initialNotes || workOrder?.resolution_notes || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { updateWorkOrderResolutionNotes } = useNotesMutations();
 
   const handleSubmit = async () => {
-    if (!workOrderId) return;
+    // Use workOrderId from props, falling back to workOrder.id if available
+    const id = workOrderId || (workOrder ? workOrder.id : null);
+    if (!id) return;
     
     setIsSubmitting(true);
     try {
-      await updateWorkOrderResolutionNotes(workOrderId, notes);
+      await updateWorkOrderResolutionNotes(id, notes);
       onClose();
     } catch (error) {
       console.error("Error saving resolution notes:", error);

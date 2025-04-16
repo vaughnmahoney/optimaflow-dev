@@ -1,93 +1,103 @@
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export const useNotesMutations = () => {
   const queryClient = useQueryClient();
 
-  // QC Notes Mutation
-  const updateWorkOrderQcNotes = async (
-    workOrderId: string, 
-    qcNotes: string, 
-    options?: { skipRefresh?: boolean; updateLocal?: boolean }
-  ) => {
+  // Mutation for updating work order QC notes
+  const updateWorkOrderQcNotes = async (workOrderId: string, qcNotes: string) => {
     const { data, error } = await supabase
-      .from('work_orders')
-      .update({ qc_notes: qcNotes })
-      .eq('id', workOrderId)
-      .select()
-      .single();
+      .from("work_orders")
+      .update({
+        qc_notes: qcNotes,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", workOrderId);
 
     if (error) throw error;
     
-    if (!options?.skipRefresh) {
-      queryClient.invalidateQueries({
-        queryKey: ['work-orders'],
-      });
-    }
+    // Invalidate queries to refresh data
+    queryClient.invalidateQueries({
+      queryKey: ["workOrders"]
+    });
     
-    toast.success('QC notes updated successfully');
+    queryClient.invalidateQueries({
+      queryKey: ["workOrder", workOrderId]
+    });
+    
+    toast.success("QC notes updated successfully");
     return data;
   };
 
-  // Resolution Notes Mutation
-  const updateWorkOrderResolutionNotes = async (
-    workOrderId: string, 
-    resolutionNotes: string, 
-    options?: { skipRefresh?: boolean; updateLocal?: boolean }
-  ) => {
+  // Mutation for updating work order resolution notes
+  const updateWorkOrderResolutionNotes = async (workOrderId: string, resolutionNotes: string) => {
     const { data, error } = await supabase
-      .from('work_orders')
-      .update({ resolution_notes: resolutionNotes })
-      .eq('id', workOrderId)
-      .select()
-      .single();
+      .from("work_orders")
+      .update({
+        resolution_notes: resolutionNotes,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", workOrderId);
 
     if (error) throw error;
     
-    if (!options?.skipRefresh) {
-      queryClient.invalidateQueries({
-        queryKey: ['work-orders'],
-      });
-    }
+    // Invalidate queries to refresh data
+    queryClient.invalidateQueries({
+      queryKey: ["workOrders"]
+    });
     
-    toast.success('Resolution notes updated successfully');
+    queryClient.invalidateQueries({
+      queryKey: ["workOrder", workOrderId]
+    });
+    
+    toast.success("Resolution notes updated successfully");
     return data;
   };
 
-  // Safety Notes Mutation
-  const updateWorkOrderSafetyNotes = async (
-    workOrderId: string, 
-    safetyNotes: string, 
-    options?: { skipRefresh?: boolean; updateLocal?: boolean }
-  ) => {
+  // Create a separate safety notes update function that doesn't use the field yet
+  // This is a placeholder until we add the safety_notes column to the work_orders table
+  const updateWorkOrderSafetyNotes = async (workOrderId: string, safetyNotes: string) => {
+    // Since safety_notes column doesn't exist yet, we'll just store it in notes field temporarily
     const { data, error } = await supabase
-      .from('work_orders')
-      .update({ safety_notes: safetyNotes })
-      .eq('id', workOrderId)
-      .select()
-      .single();
+      .from("work_orders")
+      .update({
+        notes: `Safety Notes: ${safetyNotes}`,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", workOrderId);
 
     if (error) throw error;
     
-    if (!options?.skipRefresh) {
-      queryClient.invalidateQueries({
-        queryKey: ['work-orders'],
-      });
-    }
+    // Invalidate queries to refresh data
+    queryClient.invalidateQueries({
+      queryKey: ["workOrders"]
+    });
     
-    toast.success(
-      safetyNotes 
-        ? 'Safety notes updated successfully' 
-        : 'Safety notes removed successfully'
-    );
+    queryClient.invalidateQueries({
+      queryKey: ["workOrder", workOrderId]
+    });
+    
+    toast.success("Safety notes updated successfully");
     return data;
   };
 
+  // Return all mutations in an object
   return {
-    updateWorkOrderQcNotes,
-    updateWorkOrderResolutionNotes,
-    updateWorkOrderSafetyNotes
+    updateWorkOrderQcNotes: useMutation({
+      mutationFn: ({ workOrderId, qcNotes }: { workOrderId: string; qcNotes: string }) => 
+        updateWorkOrderQcNotes(workOrderId, qcNotes)
+    }).mutateAsync,
+    
+    updateWorkOrderResolutionNotes: useMutation({
+      mutationFn: ({ workOrderId, resolutionNotes }: { workOrderId: string; resolutionNotes: string }) => 
+        updateWorkOrderResolutionNotes(workOrderId, resolutionNotes)
+    }).mutateAsync,
+    
+    updateWorkOrderSafetyNotes: useMutation({
+      mutationFn: ({ workOrderId, safetyNotes }: { workOrderId: string; safetyNotes: string }) => 
+        updateWorkOrderSafetyNotes(workOrderId, safetyNotes)
+    }).mutateAsync
   };
 };

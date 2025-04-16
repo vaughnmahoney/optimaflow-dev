@@ -12,25 +12,29 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useNotesMutations } from "@/hooks/mutations/useNotesMutations";
+import { WorkOrder } from "../../../types/workOrder";
 
 interface QcNotesSheetProps {
   isOpen: boolean;
   onClose: () => void;
   workOrderId: string;
   initialNotes?: string;
+  workOrder?: WorkOrder; // Add support for passing the full workOrder
 }
 
-export const QcNotesSheet = ({ isOpen, onClose, workOrderId, initialNotes = "" }: QcNotesSheetProps) => {
-  const [notes, setNotes] = useState(initialNotes);
+export const QcNotesSheet = ({ isOpen, onClose, workOrderId, workOrder, initialNotes = "" }: QcNotesSheetProps) => {
+  const [notes, setNotes] = useState(initialNotes || workOrder?.qc_notes || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { updateWorkOrderQcNotes } = useNotesMutations();
 
   const handleSubmit = async () => {
-    if (!workOrderId) return;
+    // Use workOrderId from props, falling back to workOrder.id if available
+    const id = workOrderId || (workOrder ? workOrder.id : null);
+    if (!id) return;
     
     setIsSubmitting(true);
     try {
-      await updateWorkOrderQcNotes(workOrderId, notes);
+      await updateWorkOrderQcNotes(id, notes);
       onClose();
     } catch (error) {
       console.error("Error saving QC notes:", error);

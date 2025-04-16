@@ -63,4 +63,15 @@ export interface WorkOrder {
       };
     };
   };
+  
+  // Add new cached image fields
+  images_cached?: boolean;
+  cached_images?: Array<{
+    originalUrl: string;
+    cachedUrl: string;
+    type?: string;
+    fileName?: string;
+    filePath?: string;
+    flagged?: boolean;
+  }>;
 }
