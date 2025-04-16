@@ -1,5 +1,5 @@
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { useImageZoom } from "@/hooks/useImageZoom";
 import { ImageType } from "../../types/image";
 import { useWorkOrderMutations } from "@/hooks/useWorkOrderMutations";
@@ -8,6 +8,10 @@ import { ImageNavigationButtons } from "./ImageNavigationButtons";
 import { ImageControlButtons } from "./ImageControlButtons";
 import { ImageStatusIndicators } from "./ImageStatusIndicators";
 import { ImageEmptyState } from "./ImageEmptyState";
+import { useImageCaching } from "@/hooks/useImageCaching";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
 
 interface ImageViewerProps {
   images: ImageType[];
@@ -28,6 +32,7 @@ export const ImageViewer = ({
 }: ImageViewerProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { toggleImageFlag } = useWorkOrderMutations();
+  const { isProcessing, cacheWorkOrderImages, isImageCached } = useImageCaching();
   
   const {
     zoomLevel,
@@ -45,6 +50,37 @@ export const ImageViewer = ({
   } = useImageZoom({ isImageExpanded });
   
   const { isLoading, handleImageLoad } = useImagePreloading(images, currentImageIndex);
+  
+  // Check if the current image is cached
+  const currentImageIsCached = currentImageIndex >= 0 && 
+                               images.length > currentImageIndex && 
+                               isImageCached(images[currentImageIndex]?.url || '');
+  
+  useEffect(() => {
+    // If there are images but the current one doesn't appear to be cached, show a message
+    if (images.length > 0 && !currentImageIsCached && !isLoading) {
+      // Only show this message if the image URL doesn't appear to be from our storage
+      // This avoids showing the message for already cached images
+      const currentImageUrl = images[currentImageIndex]?.url || '';
+      if (!currentImageUrl.includes('supabase.co')) {
+        toast.info(
+          <div className="flex flex-col gap-2">
+            <p>This image is from OptimoRoute and may not be available after a week.</p>
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={() => handleCacheImages()}
+              disabled={isProcessing}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              {isProcessing ? 'Caching...' : 'Cache all images'}
+            </Button>
+          </div>,
+          { duration: 6000 }
+        );
+      }
+    }
+  }, [currentImageIndex, images, currentImageIsCached]);
   
   const handlePrevious = () => {
     if (currentImageIndex > 0) {
@@ -76,6 +112,16 @@ export const ImageViewer = ({
     toggleImageFlag(workOrderId, currentImageIndex, isFlagged);
   };
 
+  // Handle caching images
+  const handleCacheImages = async () => {
+    if (!workOrderId) return;
+    
+    const success = await cacheWorkOrderImages(workOrderId);
+    if (success) {
+      toast.success('Images cached successfully. Refresh the page to see cached images.');
+    }
+  };
+
   if (images.length === 0) {
     return <ImageEmptyState />;
   }
@@ -98,6 +144,22 @@ export const ImageViewer = ({
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
             <div className="h-16 w-16 border-4 border-t-blue-500 border-r-transparent border-b-blue-500 border-l-transparent rounded-full animate-spin"></div>
+          </div>
+        )}
+        
+        {/* Cache notice for non-cached images */}
+        {!currentImageIsCached && !isLoading && (
+          <div className="absolute top-4 right-4 z-10">
+            <Button 
+              size="sm" 
+              variant="secondary" 
+              onClick={handleCacheImages}
+              disabled={isProcessing}
+              className="bg-white/90 hover:bg-white text-gray-900 border shadow-md"
+            >
+              <Download className="h-4 w-4 mr-1" />
+              {isProcessing ? 'Caching...' : 'Cache for long-term storage'}
+            </Button>
           </div>
         )}
         

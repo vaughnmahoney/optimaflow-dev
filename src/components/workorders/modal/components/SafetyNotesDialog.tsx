@@ -1,24 +1,24 @@
 
 import { useState } from "react";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle,
+import {
+  Dialog,
+  DialogContent,
   DialogDescription,
-  DialogFooter
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
 } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import { useWorkOrderMutations } from "@/hooks/useWorkOrderMutations";
+import { Textarea } from "@/components/ui/textarea";
+import { Loader2, ShieldAlert } from "lucide-react";
+import { useNotesMutations } from "@/hooks/mutations/useNotesMutations";
 
 interface SafetyNotesDialogProps {
   isOpen: boolean;
   onClose: () => void;
   workOrderId: string;
   initialNotes?: string;
-  onNotesSaved: (notes: string) => void;
+  onNotesSaved?: () => void;
 }
 
 export const SafetyNotesDialog = ({
@@ -30,25 +30,20 @@ export const SafetyNotesDialog = ({
 }: SafetyNotesDialogProps) => {
   const [notes, setNotes] = useState(initialNotes);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { updateWorkOrderSafetyNotes } = useWorkOrderMutations();
+  const { updateWorkOrderSafetyNotes } = useNotesMutations();
 
-  const handleSave = async () => {
+  const handleSubmit = async () => {
     if (!workOrderId) return;
     
     setIsSubmitting(true);
-    
     try {
-      await updateWorkOrderSafetyNotes.mutateAsync({
-        workOrderId,
-        safetyNotes: notes
-      });
-      
-      toast.success(notes ? "Safety notes saved" : "Safety notes removed");
-      onNotesSaved(notes);
+      await updateWorkOrderSafetyNotes(workOrderId, notes);
+      if (onNotesSaved) {
+        onNotesSaved();
+      }
       onClose();
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error saving safety notes:", error);
-      toast.error(`Error: ${error.message}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -58,33 +53,49 @@ export const SafetyNotesDialog = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Safety Notes</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <ShieldAlert className="h-5 w-5 text-yellow-500" />
+            Safety Notes
+          </DialogTitle>
           <DialogDescription>
-            Add or edit safety notes for this location. These notes will be visible to all technicians who service this location.
+            Add safety information about this location for technicians to review before visits.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-4">
-          <Textarea 
-            placeholder="Enter safety information here..." 
-            className="min-h-[200px]"
+        
+        <div className="mt-4">
+          <Textarea
+            className="min-h-[150px]"
+            placeholder="Enter safety notes here..."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
           />
+          <p className="text-xs text-muted-foreground mt-2">
+            Note: These notes will be visible to all technicians visiting this location.
+          </p>
         </div>
-        <DialogFooter>
+        
+        <DialogFooter className="gap-2 sm:gap-0">
           <Button
             type="button"
-            variant="secondary"
+            variant="outline"
             onClick={onClose}
+            disabled={isSubmitting}
           >
             Cancel
           </Button>
-          <Button 
-            type="button" 
-            onClick={handleSave}
+          <Button
+            type="submit"
+            onClick={handleSubmit}
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Saving..." : "Save Notes"}
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              'Save Notes'
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
