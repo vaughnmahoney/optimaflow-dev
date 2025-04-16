@@ -1,65 +1,62 @@
 
 import { corsHeaders } from '../_shared/cors.ts';
 
-// Format a success response with all required data
+/**
+ * Formats a successful response with the given data
+ */
 export function formatSuccessResponse(
   orders: any[],
   filteringMetadata: {
-    unfilteredOrderCount: number;
-    filteredOrderCount: number;
-    completionDetailCount: number;
+    unfilteredOrderCount: number,
+    filteredOrderCount: number,
+    completionDetailCount: number
   },
-  isComplete: boolean
+  isComplete: boolean = true,
+  continuationToken: string | null = null,
+  currentPage: number = 1,
+  totalPages: number | null = null
 ) {
-  // Include complete raw data samples in the response for debugging
-  const rawDataSamples = {
-    searchSample: orders.length > 0 ? orders[0] : null,
-    completionSample: orders.length > 0 && orders[0].completionDetails ? orders[0].completionDetails : null
-  };
-  
-  console.log("Response formatter metadata:", JSON.stringify({
-    totalOrdersCount: orders.length,
-    unfilteredCount: filteringMetadata.unfilteredOrderCount,
-    filteredCount: filteringMetadata.filteredOrderCount,
-    completionDetailCount: filteringMetadata.completionDetailCount,
-    isComplete
-  }, null, 2));
-  
-  // Create response data object
-  const responseData = {
+  const data = {
     success: true,
+    message: "Orders retrieved successfully",
     orders,
-    totalCount: filteringMetadata.unfilteredOrderCount,
-    filteredCount: filteringMetadata.filteredOrderCount,
+    totalOrders: orders.length,
+    filteringMetadata,
     isComplete,
-    rawDataSamples,
-    filteringMetadata
+    continuationToken,
+    currentPage,
+    totalPages
   };
-  
-  // Return both the data object and a formatted Response object
-  return {
-    data: responseData,
-    response: new Response(
-      JSON.stringify(responseData),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    )
-  };
+
+  const response = new Response(
+    JSON.stringify(data),
+    {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200
+    }
+  );
+
+  return { data, response };
 }
 
-// Format an error response with proper status code
-export function formatErrorResponse(error: string, status: number = 500) {
-  console.error(`Formatting error response: ${error}`);
-  
+/**
+ * Formats an error response with the given message
+ */
+export function formatErrorResponse(
+  message: string,
+  status: number = 500
+) {
+  const data = {
+    success: false,
+    message,
+    error: message
+  };
+
   return new Response(
-    JSON.stringify({ 
-      error,
-      success: false 
-    }),
-    { 
-      status, 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    JSON.stringify(data),
+    {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status
     }
   );
 }

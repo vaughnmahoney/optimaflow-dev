@@ -20,3 +20,76 @@ export const getWeekEnd = (date: Date): Date => {
   const diff = d.getDate() - day + (day === 0 ? 0 : 7);
   return new Date(d.setDate(diff));
 };
+
+/**
+ * Converts a UTC date string to the user's local timezone
+ * @param dateString The UTC date string to convert
+ * @returns Date object in local timezone or null if invalid
+ */
+export const toLocalTime = (dateString: string | undefined | null): Date | null => {
+  if (!dateString) return null;
+  
+  try {
+    // Parse the date string (assumed to be in UTC/ISO format)
+    const date = new Date(dateString);
+    
+    // Check if the date is valid
+    if (isNaN(date.getTime())) {
+      return null;
+    }
+    
+    return date; // Date constructor automatically converts to local timezone
+  } catch (error) {
+    console.error("Error converting date to local time:", error);
+    return null;
+  }
+};
+
+/**
+ * Formats a date string to the user's local timezone with the specified format
+ * @param dateString The UTC date string to format
+ * @param formatStr Optional format string for date-fns format function
+ * @param fallback Fallback string to return if date is invalid
+ * @returns Formatted date string in local timezone
+ */
+export const formatLocalTime = (
+  dateString: string | undefined | null,
+  formatStr: string = "MMM d, yyyy h:mm a",
+  fallback: string = "N/A"
+): string => {
+  const localDate = toLocalTime(dateString);
+  if (!localDate) return fallback;
+  
+  try {
+    return format(localDate, formatStr);
+  } catch (error) {
+    console.error("Error formatting local time:", error);
+    return fallback;
+  }
+};
+
+/**
+ * Format date for display in a consistent format across the application
+ * @param dateString Date string to format
+ * @param fallback Optional fallback text if date is invalid
+ * @returns Formatted date string
+ */
+export const formatDateForDisplay = (
+  dateString: string | undefined | null,
+  fallback: string = "N/A"
+): string => {
+  if (!dateString) return fallback;
+  
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return fallback;
+    
+    return format(date, "MMM d, yyyy");
+  } catch (error) {
+    console.error("Error formatting date for display:", error);
+    return fallback;
+  }
+};
+
+// Import format from date-fns
+import { format } from "date-fns";

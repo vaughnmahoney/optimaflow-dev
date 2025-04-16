@@ -17,6 +17,101 @@ interface RawOrderData {
 }
 
 /**
+ * Extract the end_time from various sources in the order data
+ * @param order Raw order data
+ * @param completionData Normalized completion data
+ * @returns ISO string timestamp or null
+ */
+const extractEndTime = (order: RawOrderData, completionData: any): string | null => {
+  // First check completion_response for endTime
+  if (order.completion_response && typeof order.completion_response === 'object') {
+    if (order.completion_response.orders && 
+        Array.isArray(order.completion_response.orders) && 
+        order.completion_response.orders[0]) {
+      const completionOrder = order.completion_response.orders[0];
+      // Try to get end_time from completion_response.orders[0].data.endTime
+      if (completionOrder.data && completionOrder.data.endTime) {
+        const timeData = completionOrder.data.endTime;
+        if (timeData.localTime) {
+          return new Date(timeData.localTime).toISOString();
+        }
+      }
+    }
+  }
+  
+  // Next check completionDetails
+  if (order.completionDetails && typeof order.completionDetails === 'object') {
+    // Try to get end_time from completionDetails.data.endTime
+    if (order.completionDetails.data && order.completionDetails.data.endTime) {
+      const timeData = order.completionDetails.data.endTime;
+      if (timeData.localTime) {
+        return new Date(timeData.localTime).toISOString();
+      }
+    }
+  }
+  
+  // Check normalized completion data
+  if (completionData && completionData.endTime) {
+    return new Date(completionData.endTime).toISOString();
+  }
+  
+  // Fallback to service_date if available
+  const serviceDate = order.service_date || 
+                     (order.searchResponse && order.searchResponse.data && order.searchResponse.data.date);
+  
+  if (serviceDate) {
+    // We don't have a time component, so use end of day for sorting purposes
+    return new Date(`${serviceDate}T23:59:59Z`).toISOString();
+  }
+  
+  return null;
+};
+
+/**
+ * Extract the OptimoRoute status from various sources in the order data
+ * @param order Raw order data
+ * @param completionData Normalized completion data
+ * @returns string status or null
+ */
+const extractOptimoRouteStatus = (order: RawOrderData, completionData: any): string | null => {
+  // First check completion_response for status
+  if (order.completion_response && typeof order.completion_response === 'object') {
+    if (order.completion_response.orders && 
+        Array.isArray(order.completion_response.orders) && 
+        order.completion_response.orders[0]) {
+      const completionOrder = order.completion_response.orders[0];
+      // Try to get status from completion_response.orders[0].data.status
+      if (completionOrder.data && completionOrder.data.status) {
+        return completionOrder.data.status;
+      }
+    }
+    // Check direct data property
+    if (order.completion_response.data && order.completion_response.data.status) {
+      return order.completion_response.data.status;
+    }
+  }
+  
+  // Next check completionDetails
+  if (order.completionDetails && typeof order.completionDetails === 'object') {
+    if (order.completionDetails.data && order.completionDetails.data.status) {
+      return order.completionDetails.data.status;
+    }
+  }
+  
+  // Check normalized completion data
+  if (completionData && completionData.status) {
+    return completionData.status;
+  }
+  
+  // Finally check if the order already has an optimoroute_status
+  if (order.optimoroute_status) {
+    return order.optimoroute_status;
+  }
+  
+  return null;
+};
+
+/**
  * Transform a raw API order into a consistent WorkOrder type
  * @param order Raw order data from API
  * @returns Formatted WorkOrder object
@@ -42,6 +137,12 @@ export const transformOrder = (order: RawOrderData): WorkOrder => {
   const orderNo = order.order_no || order.orderNo || searchData.orderNo || searchData.order_no || 'N/A';
   const serviceDate = searchData.date || searchData.serviceDate || null;
   const serviceNotes = searchData.notes || searchData.serviceNotes || '';
+  
+  // Extract end_time using the dedicated function
+  const endTime = extractEndTime(order, completionData);
+  
+  // Extract optimoroute_status using the new dedicated function
+  const optimoRouteStatus = extractOptimoRouteStatus(order, completionData);
   
   // Extract driver information
   const driver = extractDriverInfo(order, searchData);
@@ -75,6 +176,7 @@ export const transformOrder = (order: RawOrderData): WorkOrder => {
     status,
     timestamp: new Date().toISOString(),
     service_date: serviceDate,
+    end_time: endTime,
     service_notes: serviceNotes,
     tech_notes: techNotes,
     notes: order.notes || '',
@@ -86,6 +188,7 @@ export const transformOrder = (order: RawOrderData): WorkOrder => {
     signature_url: signatureUrl,
     tracking_url: trackingUrl,
     completion_status: completionStatus,
+    optimoroute_status: optimoRouteStatus, // Add the extracted optimoroute_status
     search_response: order.searchResponse || null,
     completion_response: rawCompletionDetails || null
   };

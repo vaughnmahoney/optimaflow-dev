@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Flag, Download, Loader2 } from "lucide-react";
 import {
@@ -8,7 +7,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useState } from "react";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -16,7 +14,7 @@ interface ActionButtonsProps {
   workOrderId: string;
   hasImages: boolean;
   currentStatus: string;
-  onStatusUpdate?: (workOrderId: string, status: string) => void;
+  onStatusUpdate?: (workOrderId: string, status: string, options?: any) => void;
   onDownloadAll?: () => void;
 }
 
@@ -33,22 +31,16 @@ export const ActionButtons = ({
   const handleStatusUpdate = async (status: string) => {
     try {
       setIsUpdating(status);
-      await onStatusUpdate?.(workOrderId, status);
       
-      // Immediately invalidate the badge count query to update the sidebar badge
+      // Pass skipRefresh: true to prevent automatic filtering
+      // But also include updateLocal: true to update the UI status
+      await onStatusUpdate?.(workOrderId, status, { skipRefresh: true, updateLocal: true });
+      
+      // Update badge count separately to keep the sidebar accurate
+      // This won't affect the current filtered list
       queryClient.invalidateQueries({ queryKey: ["flaggedWorkOrdersCount"] });
-      
-      toast.success(
-        status === 'approved' 
-          ? 'Work order approved successfully' 
-          : 'Work order flagged for review'
-      );
     } catch (error) {
-      toast.error(
-        status === 'approved'
-          ? 'Failed to approve work order'
-          : 'Failed to flag work order'
-      );
+      console.error('Error updating status:', error);
     } finally {
       setIsUpdating(null);
     }
@@ -61,7 +53,7 @@ export const ActionButtons = ({
           <TooltipTrigger asChild>
             <Button 
               className="w-full justify-start relative"
-              variant="outline"
+              variant="ghost"
               onClick={() => handleStatusUpdate('approved')}
               disabled={isUpdating !== null || currentStatus === 'approved'}
             >
@@ -85,7 +77,7 @@ export const ActionButtons = ({
           <TooltipTrigger asChild>
             <Button 
               className="w-full justify-start relative"
-              variant="outline"
+              variant="ghost"
               onClick={() => handleStatusUpdate('flagged')}
               disabled={isUpdating !== null || currentStatus === 'flagged'}
             >
@@ -107,7 +99,7 @@ export const ActionButtons = ({
         
         <Button 
           className="w-full justify-start"
-          variant="outline"
+          variant="ghost"
           onClick={onDownloadAll}
           disabled={!hasImages}
         >

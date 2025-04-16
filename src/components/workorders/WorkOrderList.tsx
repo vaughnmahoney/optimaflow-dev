@@ -1,11 +1,14 @@
 
-import { useState } from "react";
 import { WorkOrderListProps } from "./types";
-import { StatusFilterCards } from "./filters/StatusFilterCards";
 import { DebugDataDisplay } from "./debug/DebugDataDisplay";
 import { WorkOrderTable } from "./table/WorkOrderTable";
 import { LoadingSkeleton } from "./LoadingSkeleton";
-import { ImageViewModal } from "./modal/ImageViewModal";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { FiltersSection } from "./list-components/FiltersSection";
+import { TopPagination } from "./list-components/TopPagination";
+import { WorkOrderImageModal } from "./list-components/WorkOrderImageModal";
+import { useWorkOrderListState } from "./list-components/useWorkOrderListState";
+import { SearchBar } from "./search/SearchBar";
 
 export const WorkOrderList = ({ 
   workOrders, 
@@ -27,58 +30,73 @@ export const WorkOrderList = ({
   onColumnFilterChange,
   clearColumnFilter,
   clearAllFilters,
-  onResolveFlag
+  onResolveFlag,
+  refetch,
+  isRefreshing
 }: WorkOrderListProps) => {
-  const [searchResponse, setSearchResponse] = useState<any>(null);
-  const [transformedData, setTransformedData] = useState<any>(null);
-  const [selectedWorkOrder, setSelectedWorkOrder] = useState<string | null>(null);
-  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const isMobile = useIsMobile();
+  
+  const {
+    searchResponse,
+    setSearchResponse,
+    transformedData,
+    setTransformedData,
+    selectedWorkOrder,
+    setSelectedWorkOrder,
+    isImageModalOpen,
+    handleImageView,
+    handleCloseImageModal,
+    handleSortChange,
+    handlePageBoundary
+  } = useWorkOrderListState();
 
   if (isLoading) {
     return <LoadingSkeleton />;
   }
 
-  // Get the current work order and its index
-  const currentWorkOrder = workOrders.find(wo => wo.id === selectedWorkOrder) || null;
-  const currentIndex = currentWorkOrder ? workOrders.findIndex(wo => wo.id === currentWorkOrder.id) : -1;
-
-  // Handle the image view click
-  const handleImageView = (workOrderId: string) => {
-    setSelectedWorkOrder(workOrderId);
-    setIsImageModalOpen(true);
-    // Also call the passed onImageView function if needed
+  // Handle image view, update both local state and inform parent
+  const handleImageViewWithCallback = (workOrderId: string) => {
+    handleImageView(workOrderId);
     if (onImageView) onImageView(workOrderId);
   };
 
-  // Handle navigation between work orders in the modal
-  const handleNavigate = (index: number) => {
-    if (index >= 0 && index < workOrders.length) {
-      setSelectedWorkOrder(workOrders[index].id);
-    }
-  };
-
-  // Handle status filter change
-  const handleStatusFilterChange = (status: string | null) => {
-    onFiltersChange({
-      ...filters,
-      status
-    });
-  };
+  // Create the page boundary handler with the current pagination, page change handler, and work orders
+  const pageBoundaryHandler = handlePageBoundary(pagination, onPageChange, workOrders);
 
   return (
-    <div className="space-y-4">
-      <StatusFilterCards 
-        statusFilter={filters.status}
-        onStatusFilterChange={handleStatusFilterChange}
-        statusCounts={{
-          approved: statusCounts.approved,
-          pending_review: statusCounts.pending_review,
-          flagged: statusCounts.flagged,
-          resolved: statusCounts.resolved,
-          rejected: statusCounts.rejected || 0,
-          all: statusCounts.all
-        }}
-      />
+    <div className="space-y-3">
+      {/* Header section with work title and search */}
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-xl font-bold">Work Orders</h1>
+        <SearchBar 
+          initialValue={filters.searchText || ""} 
+          onSearch={onSearchChange || (() => {})}
+          placeholder={isMobile ? "Search..." : "Search orders, drivers, locations..."} 
+        />
+      </div>
+
+      {/* Filters section */}
+      <div className="flex flex-col space-y-2">
+        <FiltersSection 
+          filters={filters}
+          onFiltersChange={onFiltersChange}
+          statusCounts={statusCounts}
+          onColumnFilterChange={onColumnFilterChange}
+          clearColumnFilter={clearColumnFilter}
+          clearAllFilters={clearAllFilters}
+          sortField={sortField}
+          sortDirection={sortDirection}
+          onSort={handleSortChange(onSort)}
+        />
+        
+        {/* Top pagination indicator with refresh button */}
+        <TopPagination 
+          pagination={pagination}
+          onPageChange={onPageChange}
+          onRefresh={refetch}
+          isRefreshing={isRefreshing}
+        />
+      </div>
 
       <DebugDataDisplay 
         searchResponse={searchResponse}
@@ -88,7 +106,7 @@ export const WorkOrderList = ({
       <WorkOrderTable 
         workOrders={workOrders}
         onStatusUpdate={onStatusUpdate}
-        onImageView={handleImageView}
+        onImageView={handleImageViewWithCallback}
         onDelete={onDelete}
         sortField={sortField}
         sortDirection={sortDirection}
@@ -102,22 +120,18 @@ export const WorkOrderList = ({
         onClearAllFilters={clearAllFilters}
       />
 
-      {currentWorkOrder && (
-        <ImageViewModal
-          workOrder={currentWorkOrder}
-          workOrders={workOrders}
-          currentIndex={currentIndex}
-          isOpen={isImageModalOpen}
-          onClose={() => setIsImageModalOpen(false)}
-          onStatusUpdate={onStatusUpdate}
-          onNavigate={handleNavigate}
-          onResolveFlag={onResolveFlag}
-          onDownloadAll={() => {
-            // Placeholder for download all functionality
-            console.log("Download all images for:", currentWorkOrder.id);
-          }}
-        />
-      )}
+      {/* Image modal */}
+      <WorkOrderImageModal 
+        selectedWorkOrder={selectedWorkOrder}
+        workOrders={workOrders}
+        onImageView={setSelectedWorkOrder}
+        onStatusUpdate={onStatusUpdate}
+        onResolveFlag={onResolveFlag}
+        filters={filters}
+        onClose={handleCloseImageModal}
+        isOpen={isImageModalOpen}
+        onPageBoundary={pageBoundaryHandler}
+      />
     </div>
   );
 };

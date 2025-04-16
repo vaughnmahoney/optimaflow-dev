@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogOverlay } from "@/components/ui/dialog";
 import { WorkOrder } from "../types";
 import { ModalHeader } from "./components/ModalHeader";
 import { ModalContent } from "./components/ModalContent";
@@ -8,9 +8,9 @@ import { ModalFooter } from "./components/ModalFooter";
 import { NavigationControls } from "./components/NavigationControls";
 import { getStatusBorderColor } from "./utils/modalUtils";
 import { useWorkOrderNavigation } from "@/hooks/useWorkOrderNavigation";
-import { OrderDetailsTab } from "./tabs/OrderDetailsTab";
-import { NotesTab } from "./tabs/NotesTab";
-import { SignatureTab } from "./tabs/SignatureTab";
+import { MobileImageViewModal } from "./MobileImageViewModal";
+import { useMobile } from "@/hooks/use-mobile";
+import { Loader2 } from "lucide-react";
 
 interface ImageViewModalProps {
   workOrder: WorkOrder | null;
@@ -20,8 +20,10 @@ interface ImageViewModalProps {
   onClose: () => void;
   onStatusUpdate?: (workOrderId: string, status: string) => void;
   onNavigate: (index: number) => void;
+  onPageBoundary?: (direction: 'next' | 'previous') => void;
   onDownloadAll?: () => void;
   onResolveFlag?: (workOrderId: string, resolution: string) => void;
+  filters?: any;
 }
 
 export const ImageViewModal = ({
@@ -32,17 +34,21 @@ export const ImageViewModal = ({
   onClose,
   onStatusUpdate,
   onNavigate,
+  onPageBoundary,
   onDownloadAll,
   onResolveFlag,
+  filters
 }: ImageViewModalProps) => {
+  const isMobile = useMobile();
   const [isImageExpanded, setIsImageExpanded] = useState(false);
-  const [activeTab, setActiveTab] = useState("details");
   
   const {
     currentWorkOrder,
     currentIndex: navIndex,
     currentImageIndex,
+    isNavigatingPages,
     setCurrentImageIndex,
+    setIsNavigatingPages,
     handlePreviousOrder,
     handleNextOrder,
     handleSetOrder
@@ -50,8 +56,54 @@ export const ImageViewModal = ({
     workOrders,
     initialWorkOrderId: workOrder?.id || null,
     isOpen,
-    onClose
+    onClose,
+    onPageBoundary
   });
+  
+  if (isMobile && currentWorkOrder) {
+    return (
+      <MobileImageViewModal 
+        workOrder={currentWorkOrder}
+        workOrders={workOrders}
+        currentIndex={navIndex}
+        isOpen={isOpen}
+        onClose={onClose}
+        onStatusUpdate={onStatusUpdate}
+        onNavigate={onNavigate}
+        onPageBoundary={onPageBoundary}
+        onDownloadAll={onDownloadAll}
+        onResolveFlag={onResolveFlag}
+        filters={filters}
+      />
+    );
+  }
+  
+  if (isNavigatingPages && !currentWorkOrder) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogOverlay />
+        <DialogContent className="max-w-6xl p-0 h-[90vh] flex flex-col rounded-lg overflow-hidden border-t-4 bg-white shadow-xl w-[95%] m-0">
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center p-6">
+              <div className="mb-4 flex justify-center">
+                <Loader2 className="h-10 w-10 animate-spin text-gray-500" />
+              </div>
+              <p className="text-lg font-medium text-gray-600">Loading work orders...</p>
+            </div>
+          </div>
+          <NavigationControls
+            currentIndex={navIndex >= 0 ? navIndex : 0}
+            totalOrders={workOrders.length}
+            onPreviousOrder={handlePreviousOrder}
+            onNextOrder={handleNextOrder}
+            isNavigatingPages={isNavigatingPages}
+            hasPreviousPage={onPageBoundary !== undefined && navIndex === 0}
+            hasNextPage={onPageBoundary !== undefined && navIndex === workOrders.length - 1}
+          />
+        </DialogContent>
+      </Dialog>
+    );
+  }
   
   if (!currentWorkOrder) return null;
 
@@ -63,63 +115,57 @@ export const ImageViewModal = ({
   const images = completionData?.form?.images || [];
   
   const statusBorderColor = getStatusBorderColor(currentWorkOrder.status || "pending_review");
+  
+  const getBorderColor = () => {
+    switch (statusBorderColor) {
+      case "border-green-500":
+        return "#22c55e";
+      case "border-red-500":
+        return "#ef4444";
+      case "border-yellow-500":
+        return "#eab308";
+      case "border-blue-500":
+        return "#3b82f6";
+      case "border-orange-500":
+        return "#f97316";
+      default:
+        return "#64748b";
+    }
+  };
 
   const handleNavigate = (index: number) => {
     handleSetOrder(index);
     onNavigate(index);
   };
+  
+  const handleAdvanceToNextOrder = (nextOrderId: string) => {
+    const nextIndex = workOrders.findIndex(wo => wo.id === nextOrderId);
+    if (nextIndex !== -1) {
+      handleNavigate(nextIndex);
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`max-w-6xl p-0 h-[90vh] flex flex-col rounded-lg overflow-hidden border-t-4 ${statusBorderColor}`}>
-        <ModalHeader workOrder={currentWorkOrder} onClose={onClose} />
+      <DialogOverlay />
+      <DialogContent className="max-w-6xl p-0 h-[90vh] flex flex-col rounded-lg overflow-hidden border-t-4 bg-white shadow-xl w-[95%] m-0" style={{ borderTopColor: getBorderColor() }}>
+        <ModalHeader 
+          workOrder={currentWorkOrder} 
+          onClose={onClose} 
+          filters={filters}
+          workOrders={workOrders}
+          onAdvanceToNextOrder={handleAdvanceToNextOrder}
+        />
         
-        <div className="flex-1 flex overflow-hidden">
-          {/* Left side - Image viewer (60% width) */}
-          <div className="w-[60%] h-full overflow-hidden">
-            <ModalContent
-              workOrder={currentWorkOrder}
-              images={images}
-              currentImageIndex={currentImageIndex}
-              setCurrentImageIndex={setCurrentImageIndex}
-              isImageExpanded={isImageExpanded}
-              toggleImageExpand={toggleImageExpand}
-            />
-          </div>
-          
-          {/* Right side - Information (40% width) */}
-          <div className="w-[40%] h-full border-l">
-            <div className="h-full flex flex-col">
-              {/* Horizontal tabs */}
-              <div className="flex border-b">
-                <div 
-                  className={`px-6 py-3 font-medium cursor-pointer ${activeTab === 'details' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}
-                  onClick={() => setActiveTab('details')}
-                >
-                  Order Details
-                </div>
-                <div 
-                  className={`px-6 py-3 font-medium cursor-pointer ${activeTab === 'notes' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}
-                  onClick={() => setActiveTab('notes')}
-                >
-                  Notes
-                </div>
-                <div 
-                  className={`px-6 py-3 font-medium cursor-pointer ${activeTab === 'signature' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}
-                  onClick={() => setActiveTab('signature')}
-                >
-                  Signature
-                </div>
-              </div>
-              
-              {/* Tab content */}
-              <div className="flex-1 overflow-auto">
-                {activeTab === 'details' && <OrderDetailsTab workOrder={currentWorkOrder} />}
-                {activeTab === 'notes' && <NotesTab workOrder={currentWorkOrder} />}
-                {activeTab === 'signature' && <SignatureTab workOrder={currentWorkOrder} />}
-              </div>
-            </div>
-          </div>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <ModalContent
+            workOrder={currentWorkOrder}
+            images={images}
+            currentImageIndex={currentImageIndex}
+            setCurrentImageIndex={setCurrentImageIndex}
+            isImageExpanded={isImageExpanded}
+            toggleImageExpand={toggleImageExpand}
+          />
         </div>
         
         <ModalFooter 
@@ -129,6 +175,7 @@ export const ImageViewModal = ({
           hasImages={images.length > 0}
           status={currentWorkOrder.status}
           onResolveFlag={onResolveFlag}
+          workOrder={currentWorkOrder}
         />
         
         <NavigationControls 
@@ -136,6 +183,9 @@ export const ImageViewModal = ({
           totalOrders={workOrders.length}
           onPreviousOrder={handlePreviousOrder}
           onNextOrder={handleNextOrder}
+          isNavigatingPages={isNavigatingPages}
+          hasPreviousPage={onPageBoundary !== undefined && navIndex === 0}
+          hasNextPage={onPageBoundary !== undefined && navIndex === workOrders.length - 1}
         />
       </DialogContent>
     </Dialog>

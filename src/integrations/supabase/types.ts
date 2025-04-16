@@ -83,71 +83,93 @@ export type Database = {
         }
         Relationships: []
       }
-      billing_history: {
+      auto_import_logs: {
         Row: {
-          action: string
-          change_details: Json | null
           created_at: string | null
-          details: Json | null
+          execution_time: string
           id: string
-          invoice_id: string
-          performed_by: string
+          result: Json
         }
         Insert: {
-          action: string
-          change_details?: Json | null
           created_at?: string | null
-          details?: Json | null
+          execution_time?: string
           id?: string
-          invoice_id: string
-          performed_by: string
+          result: Json
         }
         Update: {
-          action?: string
-          change_details?: Json | null
           created_at?: string | null
-          details?: Json | null
+          execution_time?: string
           id?: string
-          invoice_id?: string
-          performed_by?: string
+          result?: Json
         }
-        Relationships: [
-          {
-            foreignKeyName: "billing_history_invoice_id_fkey"
-            columns: ["invoice_id"]
-            isOneToOne: false
-            referencedRelation: "invoices"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
-      customers: {
+      custMast: {
         Row: {
-          billing_address: Json | null
-          contact_info: Json | null
+          address: string | null
+          city: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
           created_at: string | null
-          id: string
-          name: string
-          type: string
+          cust_group: string
+          cust_name: string
+          default_service_frequency: string | null
+          id: number
+          last_service_date: string | null
+          notes: string | null
+          org_id: string
+          pricing_tier: string | null
+          region: string | null
+          service_type: string | null
+          state: string | null
+          store_id: string | null
           updated_at: string | null
+          zip_code: string | null
         }
         Insert: {
-          billing_address?: Json | null
-          contact_info?: Json | null
+          address?: string | null
+          city?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
           created_at?: string | null
-          id?: string
-          name: string
-          type: string
+          cust_group: string
+          cust_name: string
+          default_service_frequency?: string | null
+          id?: number
+          last_service_date?: string | null
+          notes?: string | null
+          org_id: string
+          pricing_tier?: string | null
+          region?: string | null
+          service_type?: string | null
+          state?: string | null
+          store_id?: string | null
           updated_at?: string | null
+          zip_code?: string | null
         }
         Update: {
-          billing_address?: Json | null
-          contact_info?: Json | null
+          address?: string | null
+          city?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
           created_at?: string | null
-          id?: string
-          name?: string
-          type?: string
+          cust_group?: string
+          cust_name?: string
+          default_service_frequency?: string | null
+          id?: number
+          last_service_date?: string | null
+          notes?: string | null
+          org_id?: string
+          pricing_tier?: string | null
+          region?: string | null
+          service_type?: string | null
+          state?: string | null
+          store_id?: string | null
           updated_at?: string | null
+          zip_code?: string | null
         }
         Relationships: []
       }
@@ -219,198 +241,113 @@ export type Database = {
         }
         Relationships: []
       }
-      invoices: {
+      reports: {
         Row: {
-          amount: number
-          billing_date: string
-          created_at: string | null
-          customer_id: string
-          due_date: string
-          id: string
+          address: string | null
+          cust_group: string | null
+          cust_name: string | null
+          end_time: string | null
+          fetched_at: string | null
+          id: number
+          job_duration: unknown | null
+          latitude: number | null
+          lds: string | null
+          longitude: number | null
           notes: string | null
-          quickbooks_id: string | null
-          status: string
-          store_id: string | null
-          updated_at: string | null
-          work_order_id: string
-        }
-        Insert: {
-          amount: number
-          billing_date: string
-          created_at?: string | null
-          customer_id: string
-          due_date: string
-          id?: string
-          notes?: string | null
-          quickbooks_id?: string | null
-          status?: string
-          store_id?: string | null
-          updated_at?: string | null
-          work_order_id: string
-        }
-        Update: {
-          amount?: number
-          billing_date?: string
-          created_at?: string | null
-          customer_id?: string
-          due_date?: string
-          id?: string
-          notes?: string | null
-          quickbooks_id?: string | null
-          status?: string
-          store_id?: string | null
-          updated_at?: string | null
-          work_order_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "invoices_customer_id_fkey"
-            columns: ["customer_id"]
-            isOneToOne: false
-            referencedRelation: "customers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "invoices_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
-            referencedRelation: "stores"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "invoices_work_order_id_fkey"
-            columns: ["work_order_id"]
-            isOneToOne: false
-            referencedRelation: "qc_dashboard_view"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "invoices_work_order_id_fkey"
-            columns: ["work_order_id"]
-            isOneToOne: false
-            referencedRelation: "work_orders"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      pricing_rules: {
-        Row: {
-          base_rate: number
-          conditions: Json | null
-          created_at: string | null
-          customer_id: string | null
-          id: string
+          optimoroute_status: string | null
+          order_no: string
+          org_id: string
           region: string | null
-          service_type: string
-          store_id: string | null
-          updated_at: string | null
+          scheduled_time: string | null
+          start_time: string | null
+          status: string | null
+          tech_name: string | null
         }
         Insert: {
-          base_rate: number
-          conditions?: Json | null
-          created_at?: string | null
-          customer_id?: string | null
-          id?: string
+          address?: string | null
+          cust_group?: string | null
+          cust_name?: string | null
+          end_time?: string | null
+          fetched_at?: string | null
+          id?: number
+          job_duration?: unknown | null
+          latitude?: number | null
+          lds?: string | null
+          longitude?: number | null
+          notes?: string | null
+          optimoroute_status?: string | null
+          order_no: string
+          org_id: string
           region?: string | null
-          service_type: string
-          store_id?: string | null
-          updated_at?: string | null
+          scheduled_time?: string | null
+          start_time?: string | null
+          status?: string | null
+          tech_name?: string | null
         }
         Update: {
-          base_rate?: number
-          conditions?: Json | null
-          created_at?: string | null
-          customer_id?: string | null
-          id?: string
+          address?: string | null
+          cust_group?: string | null
+          cust_name?: string | null
+          end_time?: string | null
+          fetched_at?: string | null
+          id?: number
+          job_duration?: unknown | null
+          latitude?: number | null
+          lds?: string | null
+          longitude?: number | null
+          notes?: string | null
+          optimoroute_status?: string | null
+          order_no?: string
+          org_id?: string
           region?: string | null
-          service_type?: string
-          store_id?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "pricing_rules_customer_id_fkey"
-            columns: ["customer_id"]
-            isOneToOne: false
-            referencedRelation: "customers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pricing_rules_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
-            referencedRelation: "stores"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      service_types: {
-        Row: {
-          created_at: string | null
-          default_rate: number | null
-          description: string | null
-          id: string
-          name: string
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          default_rate?: number | null
-          description?: string | null
-          id?: string
-          name: string
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          default_rate?: number | null
-          description?: string | null
-          id?: string
-          name?: string
-          updated_at?: string | null
+          scheduled_time?: string | null
+          start_time?: string | null
+          status?: string | null
+          tech_name?: string | null
         }
         Relationships: []
       }
-      stores: {
+      techMast: {
         Row: {
-          address: Json | null
-          contact_info: Json | null
+          address: string | null
           created_at: string | null
-          customer_id: string
-          id: string
-          name: string
-          store_number: string | null
+          email: string
+          id: number
+          notes: string | null
+          phone: string | null
+          region: string | null
+          status: string | null
+          storage_location: string | null
+          tech_name: string
           updated_at: string | null
         }
         Insert: {
-          address?: Json | null
-          contact_info?: Json | null
+          address?: string | null
           created_at?: string | null
-          customer_id: string
-          id?: string
-          name: string
-          store_number?: string | null
+          email: string
+          id?: number
+          notes?: string | null
+          phone?: string | null
+          region?: string | null
+          status?: string | null
+          storage_location?: string | null
+          tech_name: string
           updated_at?: string | null
         }
         Update: {
-          address?: Json | null
-          contact_info?: Json | null
+          address?: string | null
           created_at?: string | null
-          customer_id?: string
-          id?: string
-          name?: string
-          store_number?: string | null
+          email?: string
+          id?: number
+          notes?: string | null
+          phone?: string | null
+          region?: string | null
+          status?: string | null
+          storage_location?: string | null
+          tech_name?: string
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "stores_customer_id_fkey"
-            columns: ["customer_id"]
-            isOneToOne: false
-            referencedRelation: "customers"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       technicians: {
         Row: {
@@ -453,179 +390,173 @@ export type Database = {
           },
         ]
       }
-      work_order_images: {
+      test_orders: {
+        Row: {
+          created_at: string
+          data: Json | null
+          date: string | null
+          id: number
+          location_name: string | null
+          order_id: string
+          order_no: string | null
+          test: string | null
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          date?: string | null
+          id?: number
+          location_name?: string | null
+          order_id: string
+          order_no?: string | null
+          test?: string | null
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          date?: string | null
+          id?: number
+          location_name?: string | null
+          order_id?: string
+          order_no?: string | null
+          test?: string | null
+        }
+        Relationships: []
+      }
+      user_profiles: {
         Row: {
           created_at: string | null
+          created_by: string | null
+          email: string | null
+          full_name: string | null
           id: string
-          storage_path: string
-          uploaded_at: string | null
-          work_order_id: string
+          is_active: boolean
+          phone_number: string | null
+          role: Database["public"]["Enums"]["user_role"] | null
+          updated_at: string | null
         }
         Insert: {
           created_at?: string | null
-          id?: string
-          storage_path: string
-          uploaded_at?: string | null
-          work_order_id: string
+          created_by?: string | null
+          email?: string | null
+          full_name?: string | null
+          id: string
+          is_active?: boolean
+          phone_number?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
+          updated_at?: string | null
         }
         Update: {
           created_at?: string | null
+          created_by?: string | null
+          email?: string | null
+          full_name?: string | null
           id?: string
-          storage_path?: string
-          uploaded_at?: string | null
-          work_order_id?: string
+          is_active?: boolean
+          phone_number?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
+          updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "work_order_images_work_order_id_fkey"
-            columns: ["work_order_id"]
-            isOneToOne: false
-            referencedRelation: "qc_dashboard_view"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "work_order_images_work_order_id_fkey"
-            columns: ["work_order_id"]
-            isOneToOne: false
-            referencedRelation: "work_orders"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       work_orders: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
+          approved_user: string | null
           completion_response: Json | null
           created_at: string | null
+          driver_name: string | null
+          end_time: string | null
+          flagged_at: string | null
+          flagged_by: string | null
+          flagged_user: string | null
           id: string
+          last_action_at: string | null
+          last_action_by: string | null
+          last_action_user: string | null
+          location_name: string | null
+          optimoroute_status: string | null
           order_no: string | null
           qc_notes: string | null
+          rejected_at: string | null
+          rejected_by: string | null
+          rejected_user: string | null
           resolution_notes: string | null
           resolved_at: string | null
+          resolved_by: string | null
+          resolved_user: string | null
           resolver_id: string | null
           search_response: Json | null
+          service_date: string | null
           status: string | null
           timestamp: string | null
           updated_at: string | null
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          approved_user?: string | null
           completion_response?: Json | null
           created_at?: string | null
+          driver_name?: string | null
+          end_time?: string | null
+          flagged_at?: string | null
+          flagged_by?: string | null
+          flagged_user?: string | null
           id?: string
+          last_action_at?: string | null
+          last_action_by?: string | null
+          last_action_user?: string | null
+          location_name?: string | null
+          optimoroute_status?: string | null
           order_no?: string | null
           qc_notes?: string | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejected_user?: string | null
           resolution_notes?: string | null
           resolved_at?: string | null
+          resolved_by?: string | null
+          resolved_user?: string | null
           resolver_id?: string | null
           search_response?: Json | null
+          service_date?: string | null
           status?: string | null
           timestamp?: string | null
           updated_at?: string | null
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          approved_user?: string | null
           completion_response?: Json | null
           created_at?: string | null
+          driver_name?: string | null
+          end_time?: string | null
+          flagged_at?: string | null
+          flagged_by?: string | null
+          flagged_user?: string | null
           id?: string
+          last_action_at?: string | null
+          last_action_by?: string | null
+          last_action_user?: string | null
+          location_name?: string | null
+          optimoroute_status?: string | null
           order_no?: string | null
           qc_notes?: string | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejected_user?: string | null
           resolution_notes?: string | null
           resolved_at?: string | null
+          resolved_by?: string | null
+          resolved_user?: string | null
           resolver_id?: string | null
           search_response?: Json | null
+          service_date?: string | null
           status?: string | null
           timestamp?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      work_orders_backup: {
-        Row: {
-          billing_status: string | null
-          completion_data: Json | null
-          completion_notes: string | null
-          created_at: string | null
-          customer_id: string | null
-          description: string | null
-          end_time: string | null
-          external_id: string | null
-          flag_reason: string | null
-          id: string | null
-          location: Json | null
-          notes: string | null
-          optimoroute_id: string | null
-          optimoroute_order_number: string | null
-          optimoroute_status: string | null
-          priority: string | null
-          qc_notes: string | null
-          qc_status: string | null
-          service_date: string | null
-          service_details: Json | null
-          service_name: string | null
-          service_type_id: string | null
-          start_time: string | null
-          status: string | null
-          technician_id: string | null
-          time_on_site: unknown | null
-          timestamps: Json | null
-          updated_at: string | null
-        }
-        Insert: {
-          billing_status?: string | null
-          completion_data?: Json | null
-          completion_notes?: string | null
-          created_at?: string | null
-          customer_id?: string | null
-          description?: string | null
-          end_time?: string | null
-          external_id?: string | null
-          flag_reason?: string | null
-          id?: string | null
-          location?: Json | null
-          notes?: string | null
-          optimoroute_id?: string | null
-          optimoroute_order_number?: string | null
-          optimoroute_status?: string | null
-          priority?: string | null
-          qc_notes?: string | null
-          qc_status?: string | null
-          service_date?: string | null
-          service_details?: Json | null
-          service_name?: string | null
-          service_type_id?: string | null
-          start_time?: string | null
-          status?: string | null
-          technician_id?: string | null
-          time_on_site?: unknown | null
-          timestamps?: Json | null
-          updated_at?: string | null
-        }
-        Update: {
-          billing_status?: string | null
-          completion_data?: Json | null
-          completion_notes?: string | null
-          created_at?: string | null
-          customer_id?: string | null
-          description?: string | null
-          end_time?: string | null
-          external_id?: string | null
-          flag_reason?: string | null
-          id?: string | null
-          location?: Json | null
-          notes?: string | null
-          optimoroute_id?: string | null
-          optimoroute_order_number?: string | null
-          optimoroute_status?: string | null
-          priority?: string | null
-          qc_notes?: string | null
-          qc_status?: string | null
-          service_date?: string | null
-          service_details?: Json | null
-          service_name?: string | null
-          service_type_id?: string | null
-          start_time?: string | null
-          status?: string | null
-          technician_id?: string | null
-          time_on_site?: unknown | null
-          timestamps?: Json | null
           updated_at?: string | null
         }
         Relationships: []
@@ -684,10 +615,20 @@ export type Database = {
       }
     }
     Functions: {
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      safe_json_extract_text: {
+        Args: { json_data: Json; path: string }
+        Returns: string
+      }
+      safe_json_extract_timestamp: {
+        Args: { json_data: Json; path: string }
+        Returns: string
+      }
       submit_attendance_to_history: {
-        Args: {
-          submission_date: string
-        }
+        Args: { submission_date: string }
         Returns: undefined
       }
       system_user: {
@@ -696,7 +637,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      user_role: "admin" | "lead"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -704,27 +645,29 @@ export type Database = {
   }
 }
 
-type PublicSchema = Database[Extract<keyof Database, "public">]
+type DefaultSchema = Database[Extract<keyof Database, "public">]
 
 export type Tables<
-  PublicTableNameOrOptions extends
-    | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-        Database[PublicTableNameOrOptions["schema"]]["Views"])
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof Database
+  }
+    ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-      Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
+  ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
-        PublicSchema["Views"])
-    ? (PublicSchema["Tables"] &
-        PublicSchema["Views"])[PublicTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -732,20 +675,22 @@ export type Tables<
     : never
 
 export type TablesInsert<
-  PublicTableNameOrOptions extends
-    | keyof PublicSchema["Tables"]
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof Database
+  }
+    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
+  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -753,20 +698,22 @@ export type TablesInsert<
     : never
 
 export type TablesUpdate<
-  PublicTableNameOrOptions extends
-    | keyof PublicSchema["Tables"]
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof Database
+  }
+    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
+  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -774,21 +721,23 @@ export type TablesUpdate<
     : never
 
 export type Enums<
-  PublicEnumNameOrOptions extends
-    | keyof PublicSchema["Enums"]
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
     | { schema: keyof Database },
-  EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof Database
+  }
+    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = PublicEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
-    ? PublicSchema["Enums"][PublicEnumNameOrOptions]
+> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
+  ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof PublicSchema["CompositeTypes"]
+    | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof Database },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof Database
@@ -797,6 +746,14 @@ export type CompositeTypes<
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
   ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
-    ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      user_role: ["admin", "lead"],
+    },
+  },
+} as const

@@ -1,109 +1,50 @@
 
-import { CheckCircle, Flag, Trash2, MoreVertical, CheckCheck, Clock, AlertTriangle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { WorkOrder } from "../types";
+import React from "react";
+import { MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { WorkOrder } from "../types";
 
-interface ActionsMenuProps {
-  workOrder: WorkOrder;
+export interface ActionsMenuProps {
+  workOrderId: string;
   onStatusUpdate: (workOrderId: string, newStatus: string) => void;
   onDelete: (workOrderId: string) => void;
+  workOrder?: WorkOrder; // Add optional workOrder prop
 }
 
-export const ActionsMenu = ({ workOrder, onStatusUpdate, onDelete }: ActionsMenuProps) => {
-  const isResolved = workOrder.status === 'resolved';
-  const isFlagged = workOrder.status === 'flagged' || workOrder.status === 'flagged_followup';
-  const isApproved = workOrder.status === 'approved';
-  const isPending = workOrder.status === 'pending_review';
-  const isRejected = workOrder.status === 'rejected';
-
-  // Get status-specific styling for the disabled status menu item
-  const getStatusItemStyle = () => {
-    if (isApproved) return "text-green-700 bg-green-50 hover:bg-green-100";
-    if (isFlagged) return "text-red-700 bg-red-50 hover:bg-red-100";
-    if (isResolved) return "text-blue-700 bg-blue-50 hover:bg-blue-100";
-    if (isRejected) return "text-orange-700 bg-orange-50 hover:bg-orange-100";
-    return "text-gray-500 hover:bg-gray-100";
-  };
-
+export const ActionsMenu = ({
+  workOrderId,
+  onStatusUpdate,
+  onDelete,
+}: ActionsMenuProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="icon"
-          className="h-8 w-8 hover:bg-slate-100"
-        >
-          <MoreVertical className="h-4 w-4" />
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <span className="sr-only">Open menu</span>
+          <MoreHorizontal className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        {/* Current status - clicking returns to pending */}
-        {!isPending && (
-          <DropdownMenuItem 
-            onClick={() => onStatusUpdate(workOrder.id, "pending_review")}
-            className={getStatusItemStyle()}
-          >
-            <Clock className="h-4 w-4 mr-2" />
-            {isApproved ? "Approved" : isFlagged ? "Flagged" : isResolved ? "Resolved" : isRejected ? "Rejected" : "Status"}
-          </DropdownMenuItem>
-        )}
-        
-        {/* Show approve option if not already approved and not rejected */}
-        {!isApproved && !isRejected && (
-          <DropdownMenuItem 
-            onClick={() => onStatusUpdate(workOrder.id, "approved")}
-          >
-            <CheckCircle className="h-4 w-4 mr-2" />
-            Approve
-          </DropdownMenuItem>
-        )}
-        
-        {/* Show flag option if not already flagged and not rejected */}
-        {!isFlagged && !isRejected && (
-          <DropdownMenuItem 
-            onClick={() => onStatusUpdate(workOrder.id, "flagged")}
-          >
-            <Flag className="h-4 w-4 mr-2" />
-            Flag
-          </DropdownMenuItem>
-        )}
-        
-        {/* Show resolve option for flagged states */}
-        {isFlagged && (
-          <DropdownMenuItem 
-            onClick={() => onStatusUpdate(workOrder.id, "resolved")}
-            className="text-blue-600"
-          >
-            <CheckCheck className="h-4 w-4 mr-2" />
-            Resolve
-          </DropdownMenuItem>
-        )}
-        
-        {/* If rejected, show option to reopen */}
-        {isRejected && (
-          <DropdownMenuItem 
-            onClick={() => onStatusUpdate(workOrder.id, "pending_review")}
-            className="text-yellow-600"
-          >
-            <Clock className="h-4 w-4 mr-2" />
-            Reopen
-          </DropdownMenuItem>
-        )}
-        
-        <DropdownMenuSeparator />
-        
-        <DropdownMenuItem 
-          onClick={() => onDelete(workOrder.id)}
-          className="text-destructive"
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem
+          onClick={() => onStatusUpdate(workOrderId, "approved")}
         >
-          <Trash2 className="h-4 w-4 mr-2" />
+          Approve
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => onStatusUpdate(workOrderId, "flagged")}
+        >
+          Flag
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => onDelete(workOrderId)}
+          className="text-red-600"
+        >
           Delete
         </DropdownMenuItem>
       </DropdownMenuContent>

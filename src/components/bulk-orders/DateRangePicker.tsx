@@ -2,10 +2,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Calendar } from "lucide-react";
+import { Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Calendar } from "@/components/ui/calendar";
 
 interface DateRangePickerProps {
   startDate: Date | undefined;
@@ -40,15 +40,14 @@ export const DateRangePicker = ({
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className="w-full justify-start text-left font-normal"
+                className="w-full md:w-[200px] justify-start text-left font-normal"
               >
-                <Calendar className="mr-2 h-4 w-4" />
-                {startDate ? format(startDate, "PPP") : "Select start date"}
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {startDate ? format(startDate, 'PPP') : "Select start date"}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <CalendarComponent
-                mode="single"
+            <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
+              <Calendar
                 selected={startDate}
                 onSelect={(date) => {
                   onStartDateChange(date);
@@ -66,15 +65,14 @@ export const DateRangePicker = ({
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className="w-full justify-start text-left font-normal"
+                className="w-full md:w-[200px] justify-start text-left font-normal"
               >
-                <Calendar className="mr-2 h-4 w-4" />
-                {endDate ? format(endDate, "PPP") : "Select end date"}
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {endDate ? format(endDate, 'PPP') : "Select end date"}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <CalendarComponent
-                mode="single"
+            <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
+              <Calendar
                 selected={endDate}
                 onSelect={(date) => {
                   onEndDateChange(date);

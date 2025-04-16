@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { SortDirection, SortField, WorkOrder, WorkOrderFilters, PaginationState } from "@/components/workorders/types";
 import { useWorkOrderMutations } from "./useWorkOrderMutations";
@@ -20,11 +19,12 @@ export const useBulkOrderWorkOrders = (
     dateRange: { from: null, to: null },
     driver: null,
     location: null,
-    orderNo: null
+    orderNo: null,
+    optimoRouteStatus: null // Initialize with null
   });
   
-  // Initialize with default sorting by service_date descending (newest first)
-  const [sortField, setSortField] = useState<SortField>('service_date');
+  // Initialize with default sorting by end_time descending (newest first)
+  const [sortField, setSortField] = useState<SortField>('end_time');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [pagination, setPagination] = useState<PaginationState>({
     page: 1,

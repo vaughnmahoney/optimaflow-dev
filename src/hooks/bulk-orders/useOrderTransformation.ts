@@ -1,88 +1,91 @@
 
 import { useState, useEffect } from "react";
+import { BulkOrdersResponse } from "@/components/bulk-orders/types";
 import { WorkOrder } from "@/components/workorders/types";
+import { transformOrder } from "@/components/bulk-orders/utils/orderTransformer";
+import { deduplicateOrders } from "@/components/bulk-orders/utils/deduplicationUtils";
 
 /**
- * Hook to transform raw bulk orders into work order format
+ * Transforms bulk orders API response to WorkOrder format
+ * Ensures all critical fields like end_time are properly extracted
  */
-export const useOrderTransformation = (rawOrders: any[] | null) => {
-  const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
+export const useOrdersTransformer = (response: BulkOrdersResponse | null, activeTab: string) => {
+  const [transformedOrders, setTransformedOrders] = useState<WorkOrder[]>([]);
+  const [isTransforming, setIsTransforming] = useState(false);
+  const [transformStats, setTransformStats] = useState({
+    inputCount: 0,
+    transformedCount: 0,
+    uniqueCount: 0,
+    elapsedTime: 0
+  });
 
-  // Transform bulk orders to work order format when rawOrders changes
+  // Effect to transform orders when response changes
   useEffect(() => {
-    if (rawOrders && rawOrders.length > 0) {
-      const transformedOrders: WorkOrder[] = rawOrders.map((order, index) => {
-        // Extract order number from different possible locations
-        const orderNo = order.data?.orderNo || 
-                       order.orderNo || 
-                       (order.completionDetails && order.completionDetails.orderNo) ||
-                       `BULK-${index}`;
-        
-        // Extract service date
-        const serviceDate = order.data?.date ||
-                           order.service_date || 
-                           (order.searchResponse && order.searchResponse.data && order.searchResponse.data.date) ||
-                           new Date().toISOString();
-        
-        // Extract driver information
-        const driverName = order.driver?.name || 
-                          (order.scheduleInformation && order.scheduleInformation.driverName) ||
-                          (order.searchResponse?.scheduleInformation?.driverName) ||
-                          "Unknown Driver";
-        
-        // Extract location information
-        const location = order.location || 
-                        (order.searchResponse && order.searchResponse.data && order.searchResponse.data.location) ||
-                        { name: "Unknown Location" };
-        
-        // Determine status - default to pending_review for new imports
-        const status = order.status || 
-                      order.completion_status ||
-                      (order.completionDetails?.data?.status) || 
-                      "pending_review";
-                      
-        // Get completion response data
-        const completionResponse = {
-          success: true,
-          orders: [{
-            id: orderNo,
-            data: {
-              form: {
-                images: order.completionDetails?.data?.form?.images || [],
-                note: order.completionDetails?.data?.form?.note || ""
-              },
-              startTime: order.completionDetails?.data?.startTime,
-              endTime: order.completionDetails?.data?.endTime,
-              tracking_url: order.completionDetails?.data?.tracking_url
-            }
-          }]
-        };
-                      
-        // Create a work order object from the bulk order data
-        return {
-          id: order.id || `bulk-order-${index}`,
-          order_no: orderNo,
-          status: status,
-          timestamp: new Date().toISOString(),
-          service_date: serviceDate,
-          service_notes: order.service_notes || "",
-          notes: order.notes || "",
-          location: location,
-          driver: { name: driverName },
-          has_images: (order.completionDetails?.data?.form?.images?.length || 0) > 0,
-          completion_response: completionResponse,
-          search_response: order.searchResponse || null
-        };
+    if (!response || !response.orders || response.orders.length === 0) {
+      setTransformedOrders([]);
+      setTransformStats({
+        inputCount: 0,
+        transformedCount: 0,
+        uniqueCount: 0,
+        elapsedTime: 0
       });
-      
-      setWorkOrders(transformedOrders);
-    } else {
-      setWorkOrders([]);
+      return;
     }
-  }, [rawOrders]);
+    
+    // Start transformation process
+    setIsTransforming(true);
+    const startTime = performance.now();
+    
+    // Process the transformation asynchronously to avoid blocking UI
+    const transformProcess = async () => {
+      try {
+        console.log(`Starting transformation of ${response.orders.length} orders`);
+        
+        // Process orders in batches to avoid blocking UI
+        const batchSize = 50;
+        let transformedBatches: WorkOrder[] = [];
+        
+        for (let i = 0; i < response.orders.length; i += batchSize) {
+          const batch = response.orders.slice(i, i + batchSize);
+          
+          // Transform each order in this batch
+          const transformedBatch = batch.map(order => transformOrder(order));
+          transformedBatches = [...transformedBatches, ...transformedBatch];
+          
+          // Allow UI to update between batches
+          await new Promise(resolve => setTimeout(resolve, 0));
+        }
+        
+        // Deduplicate the transformed orders
+        const uniqueOrders = deduplicateOrders(transformedBatches);
+        
+        // Calculate statistics
+        const endTime = performance.now();
+        setTransformStats({
+          inputCount: response.orders.length,
+          transformedCount: transformedBatches.length,
+          uniqueCount: uniqueOrders.length,
+          elapsedTime: Math.round(endTime - startTime)
+        });
+        
+        console.log(`Transformation complete: ${uniqueOrders.length} unique orders in ${Math.round(endTime - startTime)}ms`);
+        console.log(`Orders with end_time: ${uniqueOrders.filter(o => !!o.end_time).length} of ${uniqueOrders.length}`);
+        
+        // Update state with the transformed orders
+        setTransformedOrders(uniqueOrders);
+      } catch (error) {
+        console.error("Error during order transformation:", error);
+      } finally {
+        setIsTransforming(false);
+      }
+    };
+    
+    transformProcess();
+  }, [response]);
 
-  return {
-    workOrders,
-    setWorkOrders
+  return { 
+    transformedOrders, 
+    isTransforming,
+    transformStats
   };
 };

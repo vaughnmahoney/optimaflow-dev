@@ -1,4 +1,3 @@
-
 import { WorkOrder } from "@/components/workorders/types";
 import { transformWorkOrderData } from "./workOrderUtils";
 
@@ -40,7 +39,27 @@ export const executeDataQuery = async (dataQuery: any): Promise<any[]> => {
  * @returns Array of transformed WorkOrder objects
  */
 export const transformWorkOrderResults = (rawData: any[]): WorkOrder[] => {
-  return rawData.map(transformWorkOrderData);
+  return rawData.map(item => {
+    const workOrder = transformWorkOrderData(item);
+    
+    // Ensure driver and location are properly formatted using the new dedicated columns
+    if (item.driver_name) {
+      workOrder.driver = workOrder.driver || {};
+      workOrder.driver.name = item.driver_name;
+    }
+    
+    if (item.location_name) {
+      workOrder.location = workOrder.location || {};
+      workOrder.location.name = item.location_name;
+    }
+    
+    // Ensure service_date is set
+    if (item.service_date) {
+      workOrder.service_date = item.service_date;
+    }
+    
+    return workOrder;
+  });
 };
 
 /**

@@ -1,4 +1,6 @@
 
+import { ImageType } from '../workorders/types/image';
+
 export interface BulkOrdersResponse {
   success?: boolean;
   error?: string;
@@ -40,5 +42,5 @@ export interface BatchProcessingStats {
   successfulBatches: number;
   failedBatches: number;
   totalOrdersProcessed: number;
-  errors?: string[]; // Added the errors property as optional
+  errors?: string[];
 }

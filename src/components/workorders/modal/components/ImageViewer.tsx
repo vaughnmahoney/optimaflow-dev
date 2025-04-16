@@ -1,17 +1,21 @@
 
-import { useState, useRef } from "react";
+import { useRef } from "react";
 import { useImageZoom } from "@/hooks/useImageZoom";
-import { ImageControls } from "./ImageControls";
+import { ImageType } from "../../types/image";
+import { useWorkOrderMutations } from "@/hooks/useWorkOrderMutations";
+import { useImagePreloading } from "@/hooks/useImagePreloading";
+import { ImageNavigationButtons } from "./ImageNavigationButtons";
+import { ImageControlButtons } from "./ImageControlButtons";
+import { ImageStatusIndicators } from "./ImageStatusIndicators";
 import { ImageEmptyState } from "./ImageEmptyState";
 
 interface ImageViewerProps {
-  images: Array<{ url: string; flagged?: boolean }>;
+  images: ImageType[];
   currentImageIndex: number;
   setCurrentImageIndex: (index: number) => void;
   isImageExpanded: boolean;
   toggleImageExpand: () => void;
-  onToggleFlag?: (index: number, flagged: boolean) => void;
-  workOrderId?: string;
+  workOrderId: string;
 }
 
 export const ImageViewer = ({
@@ -20,11 +24,10 @@ export const ImageViewer = ({
   setCurrentImageIndex,
   isImageExpanded,
   toggleImageExpand,
-  onToggleFlag,
-  workOrderId
+  workOrderId,
 }: ImageViewerProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const { toggleImageFlag } = useWorkOrderMutations();
   
   const {
     zoomLevel,
@@ -41,12 +44,12 @@ export const ImageViewer = ({
     resetZoomOnImageChange
   } = useImageZoom({ isImageExpanded });
   
+  const { isLoading, handleImageLoad } = useImagePreloading(images, currentImageIndex);
+  
   const handlePrevious = () => {
     if (currentImageIndex > 0) {
-      setIsLoading(true);
       setCurrentImageIndex(currentImageIndex - 1);
     } else if (images.length > 0) {
-      setIsLoading(true);
       setCurrentImageIndex(images.length - 1);
     }
     // Reset zoom when changing images
@@ -55,104 +58,98 @@ export const ImageViewer = ({
   
   const handleNext = () => {
     if (currentImageIndex < images.length - 1) {
-      setIsLoading(true);
       setCurrentImageIndex(currentImageIndex + 1);
     } else if (images.length > 0) {
-      setIsLoading(true);
       setCurrentImageIndex(0);
     }
     // Reset zoom when changing images
     resetZoomOnImageChange();
   };
 
-  // Handle image load complete
-  const handleImageLoad = () => {
-    setIsLoading(false);
-  };
-
   // Handle flag toggle
-  const handleToggleFlag = () => {
-    if (onToggleFlag && images[currentImageIndex]) {
-      const currentFlaggedStatus = images[currentImageIndex].flagged || false;
-      onToggleFlag(currentImageIndex, !currentFlaggedStatus);
-    }
+  const handleFlagToggle = () => {
+    if (images.length <= 0 || currentImageIndex < 0) return;
+    
+    const currentImage = images[currentImageIndex];
+    const isFlagged = !currentImage.flagged;
+    
+    toggleImageFlag(workOrderId, currentImageIndex, isFlagged);
   };
 
-  const currentImage = images[currentImageIndex];
-  const isFlagged = currentImage?.flagged || false;
+  if (images.length === 0) {
+    return <ImageEmptyState />;
+  }
+
+  const currentImageFlagged = images[currentImageIndex]?.flagged || false;
 
   return (
     <div 
       ref={containerRef}
       className="relative flex items-center justify-center bg-gray-100 dark:bg-gray-800 overflow-hidden h-full w-full"
     >
-      {images.length > 0 ? (
-        <>
-          <div 
-            className="max-h-full max-w-full overflow-hidden flex items-center justify-center"
-            style={{ 
-              width: "100%", 
-              height: "100%",
-            }}
-          >
-            {/* Show skeleton while loading */}
-            {isLoading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
-                <div className="h-16 w-16 border-4 border-t-blue-500 border-r-transparent border-b-blue-500 border-l-transparent rounded-full animate-spin"></div>
-              </div>
-            )}
-            
-            {/* Flagged indicator */}
-            {isFlagged && (
-              <div className="absolute top-14 left-14 z-10 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium animate-pulse">
-                Flagged
-              </div>
-            )}
-            
-            <img 
-              ref={imageRef}
-              src={images[currentImageIndex]?.url} 
-              alt={`Service image ${currentImageIndex + 1}`}
-              className="max-h-full max-w-full object-contain transition-all duration-200"
-              style={{ 
-                transform: `scale(${zoomLevel})`,
-                transformOrigin: "center center",
-                translate: `${position.x}px ${position.y}px`,
-                cursor: zoomModeEnabled 
-                  ? (zoomLevel === 1 
-                    ? 'zoom-in' 
-                    : isDragging 
-                      ? 'grabbing' 
-                      : 'grab')
-                  : 'pointer'
-              }}
-              onClick={handleImageClick}
-              onMouseMove={handleMouseMove}
-              onMouseDown={handleMouseDown}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseLeave}
-              onLoad={handleImageLoad}
-              draggable="false"
-            />
+      <div 
+        className="h-full w-full flex items-center justify-center"
+        style={{ 
+          width: "100%", 
+          height: "100%",
+        }}
+      >
+        {/* Show skeleton while loading */}
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
+            <div className="h-16 w-16 border-4 border-t-blue-500 border-r-transparent border-b-blue-500 border-l-transparent rounded-full animate-spin"></div>
           </div>
-          
-          <ImageControls 
-            imagesCount={images.length}
-            currentImageIndex={currentImageIndex}
-            handlePrevious={handlePrevious}
-            handleNext={handleNext}
-            isImageExpanded={isImageExpanded}
-            toggleImageExpand={toggleImageExpand}
-            zoomModeEnabled={zoomModeEnabled}
-            toggleZoomMode={toggleZoomMode}
-            zoomLevel={zoomLevel}
-            isFlagged={isFlagged}
-            onToggleFlag={handleToggleFlag}
-          />
-        </>
-      ) : (
-        <ImageEmptyState />
-      )}
+        )}
+        
+        <img 
+          ref={imageRef}
+          src={images[currentImageIndex]?.url} 
+          alt={`Service image ${currentImageIndex + 1}`}
+          className="max-h-full max-w-full object-contain transition-all duration-200"
+          style={{ 
+            transform: `scale(${zoomLevel})`,
+            transformOrigin: "center center",
+            translate: `${position.x}px ${position.y}px`,
+            cursor: zoomModeEnabled 
+              ? (zoomLevel === 1 
+                ? 'zoom-in' 
+                : isDragging 
+                  ? 'grabbing' 
+                  : 'grab')
+              : 'pointer'
+          }}
+          onClick={handleImageClick}
+          onMouseMove={handleMouseMove}
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseLeave}
+          onLoad={handleImageLoad}
+          draggable="false"
+        />
+      </div>
+      
+      {/* Status indicators */}
+      <ImageStatusIndicators 
+        currentIndex={currentImageIndex} 
+        totalImages={images.length}
+        zoomLevel={zoomLevel}
+        isImageExpanded={isImageExpanded}
+      />
+      
+      {/* Navigation buttons */}
+      <ImageNavigationButtons 
+        handlePrevious={handlePrevious}
+        handleNext={handleNext}
+      />
+      
+      {/* Control buttons */}
+      <ImageControlButtons
+        currentImageFlagged={currentImageFlagged}
+        handleFlagToggle={handleFlagToggle}
+        isImageExpanded={isImageExpanded}
+        zoomModeEnabled={zoomModeEnabled}
+        toggleZoomMode={toggleZoomMode}
+      />
     </div>
   );
 };

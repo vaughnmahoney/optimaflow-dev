@@ -16,6 +16,7 @@ interface WorkOrderTableHeaderProps {
     driver: string | null;
     location: string | null;
     status: string | null;
+    optimoRouteStatus: string | null; // Add the required field
   };
   onFilterChange: (column: string, value: any) => void;
   onFilterClear: (column: string) => void;
@@ -66,13 +67,13 @@ export const WorkOrderTableHeader = ({
         
         <ColumnHeader
           label="Service Date"
-          column="service_date"
-          sortDirection={sortField === 'service_date' ? sortDirection : null}
-          onSort={() => onSort('service_date')}
-          isFiltered={isColumnFiltered('service_date', filters)}
+          column="end_time" // Changed from service_date to end_time
+          sortDirection={sortField === 'end_time' ? sortDirection : null} // Changed from service_date to end_time
+          onSort={() => onSort('end_time')} // Changed from service_date to end_time
+          isFiltered={isColumnFiltered('service_date', filters)} // Keep this as service_date for UI continuity
           filterContent={
             <DateFilter 
-              column="service_date" 
+              column="service_date" // Keep this as service_date for UI continuity
               value={filters.dateRange} 
               onChange={(value) => handleFilterChange('service_date', value)}
               onClear={() => {

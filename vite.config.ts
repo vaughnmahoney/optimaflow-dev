@@ -12,7 +12,6 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    // Disable the Lovable tagger in development mode
     mode === 'development' &&
     componentTagger(),
   ].filter(Boolean),
