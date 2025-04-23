@@ -467,6 +467,7 @@ export type Database = {
           approved_at: string | null
           approved_by: string | null
           approved_user: string | null
+          cached_images: Json[] | null
           completion_response: Json | null
           created_at: string | null
           driver_name: string | null
@@ -475,6 +476,7 @@ export type Database = {
           flagged_by: string | null
           flagged_user: string | null
           id: string
+          images_cached: boolean | null
           last_action_at: string | null
           last_action_by: string | null
           last_action_user: string | null
@@ -500,6 +502,7 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           approved_user?: string | null
+          cached_images?: Json[] | null
           completion_response?: Json | null
           created_at?: string | null
           driver_name?: string | null
@@ -508,6 +511,7 @@ export type Database = {
           flagged_by?: string | null
           flagged_user?: string | null
           id?: string
+          images_cached?: boolean | null
           last_action_at?: string | null
           last_action_by?: string | null
           last_action_user?: string | null
@@ -533,6 +537,7 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           approved_user?: string | null
+          cached_images?: Json[] | null
           completion_response?: Json | null
           created_at?: string | null
           driver_name?: string | null
@@ -541,6 +546,7 @@ export type Database = {
           flagged_by?: string | null
           flagged_user?: string | null
           id?: string
+          images_cached?: boolean | null
           last_action_at?: string | null
           last_action_by?: string | null
           last_action_user?: string | null
