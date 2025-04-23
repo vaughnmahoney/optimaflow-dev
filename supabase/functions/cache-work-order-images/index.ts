@@ -80,7 +80,7 @@ serve(async (req) => {
         const imageResponse = await fetch(image.url)
         const imageBlob = await imageResponse.blob()
         
-        const fileName = `work_order_images/${workOrderId}_image_${index}.webp`
+        const fileName = `work_order_${workOrderId}_image_${index}.webp`
         
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('work-order-images')
@@ -149,7 +149,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message 
+        error: (error as Error).message 
       }), 
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -158,3 +158,4 @@ serve(async (req) => {
     )
   }
 })
+
